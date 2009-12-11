@@ -7,7 +7,7 @@ ini_set("display_errors", 1);
 
 # Global configuration
 #
-$includes='../includes/';
+$includes='../includes/base/';
 $site_includes='../includes/site/';
 
 # Load configuration
