@@ -59,15 +59,22 @@ require($site_includes."site_logic.inc.php");
 # Check if needed site defines are entered
 #
 if (!defined('MAIL_ADDRESS'))
-	die("No MAIL_ADDRESS defined. Exitting!");
+	define('MAIL_ADDRESS', 'unknown@unknown.com');
+
 if (!defined('MAIL_FOOTER'))
-	die("No MAIL_FOOTER defined. Exitting!");
+	define('MAIL_FOOTER', '');
+
 if (!defined('SITE_NAME'))
-	die("No SITE_NAME defined. Exitting!");
+	define('SITE_NAME', 'Unknown');
+
 if (!defined('SITE_DEFAULT_PAGE'))
-	die("No SITE_DEFAULT_PAGE defined. Exitting!");
+	define('SITE_DEFAULT_PAGE', 'main');
+
+if (!defined('SITE_LOGIN_PAGE'))
+	define('SITE_LOGIN_PAGE', 'login');
+
 if (!defined('DEFAULT_LOGIN_RETURN'))
-	die("No DEFAULT_LOGIN_RETURN defined. Exitting!");
+	define('DEFAULT_LOGIN_RETURN', 'main');
 
 ####################################################################
 
@@ -192,7 +199,7 @@ $has_permissions = user_has_permissions($page_permissions);
 if (!$has_permissions) {
 	if (!$state['logged_in']) {
 		# Redirect to login page
-		header("Location: ?page=login&mtype=info&message=".urlencode("Authentication required. Please login.")."&return=".urlencode($_SERVER['QUERY_STRING']));
+		header("Location: ?page=".SITE_LOGIN_PAGE."&mtype=info&message=".urlencode("Authentication required. Please login.")."&return=".urlencode($_SERVER['QUERY_STRING']));
 		exit(0);
 	} else {
 		# Access denied
