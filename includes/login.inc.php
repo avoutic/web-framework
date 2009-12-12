@@ -87,7 +87,7 @@ function do_page_logic()
 function display_header()
 {
 ?>
-<script src="sha1.js" type="text/javascript"></script>
+<script src="base/sha1.js" type="text/javascript"></script>
 <?
 }
 
