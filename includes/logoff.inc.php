@@ -26,7 +26,7 @@ function do_page_logic()
 
 	session_destroy();
 
-	header("Location: ?".$state['input']['return']);
+	header("Location: /".$state['input']['return']);
 }
 
 function display_header()
