@@ -4,6 +4,7 @@
 #
 error_reporting(E_ALL | E_STRICT);
 ini_set("display_errors", 1);
+srand();
 date_default_timezone_set('UTC');
 
 # Global configuration
@@ -120,9 +121,9 @@ function set_message($type, $message, $extra_message)
 }
 
 $fixed_page_filter = array(
-	'page'	=> '[\w_]+',
-	'message' => '[\w \(\)\.]+',
-	'extra_message' => '[\w \(\)\.]+',
+	'page'	=> '[\w_\/]+',
+	'message' => '[\w \(\)\.\-!\?]+',
+	'extra_message' => '[\w \(\)\.\-!\?]+',
 	'mtype' => 'error|info|warning|success'
 );
 
@@ -145,6 +146,14 @@ array_walk($fixed_page_filter, 'validate_input');
 # Check page requested
 #
 $include_page = $state['input']['page'];
+if (!$include_page && isset($_GET['page']) && strlen($_GET['page']))
+{
+    header("HTTP/1.0 404 Not Found");
+    print "<h1>Page not found</h1>\n";
+    print "Page not found. Please return to the <a href=\"/\">main page</a>.";
+    exit(0);
+}
+
 if (!$include_page) $include_page = SITE_DEFAULT_PAGE;
 
 # Check if page is allowed
@@ -162,7 +171,7 @@ if (!is_file($include_page_file)) {
 	if (!is_file($include_page_file)) {
 		header("HTTP/1.0 404 Not Found");
 		print "<h1>Page not found</h1>\n";
-		print "Page not found. Please return to the <a href=\"?\">main page</a>.";
+		print "Page not found. Please return to the <a href=\"/\">main page</a>.";
 		exit(0);
 	}
 }
@@ -200,7 +209,7 @@ $has_permissions = user_has_permissions($page_permissions);
 if (!$has_permissions) {
 	if (!$state['logged_in']) {
 		# Redirect to login page
-		header("Location: ?page=".SITE_LOGIN_PAGE."&mtype=info&message=".urlencode("Authentication required. Please login.")."&return=".urlencode($_SERVER['QUERY_STRING']));
+		header("Location: /".SITE_LOGIN_PAGE."?mtype=info&message=".urlencode("Authentication required. Please login.")."&return=".urlencode($_SERVER['QUERY_STRING']));
 		exit(0);
 	} else {
 		# Access denied
