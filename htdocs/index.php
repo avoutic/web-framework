@@ -78,6 +78,9 @@ if (!defined('SITE_LOGIN_PAGE'))
 if (!defined('DEFAULT_LOGIN_RETURN'))
 	define('DEFAULT_LOGIN_RETURN', 'main');
 
+if(!defined('AUTHENTICATION_REQUIRED_MESSAGE'))
+    define('AUTHENTICATION_REQUIRED_MESSAGE', 'Authentication required. Please login.');
+
 ####################################################################
 
 function validate_input($filter, $item)
@@ -209,7 +212,7 @@ $has_permissions = user_has_permissions($page_permissions);
 if (!$has_permissions) {
 	if (!$state['logged_in']) {
 		# Redirect to login page
-		header("Location: /".SITE_LOGIN_PAGE."?mtype=info&message=".urlencode("Authentication required. Please login.")."&return=".urlencode($_SERVER['QUERY_STRING']));
+		header("Location: /".SITE_LOGIN_PAGE."?mtype=info&message=".urlencode(AUTHENTICATION_REQUIRED_MESSAGE)."&return=".urlencode($_SERVER['QUERY_STRING']));
 		exit(0);
 	} else {
 		# Access denied
