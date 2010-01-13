@@ -182,6 +182,8 @@ if (!is_file($include_page_file)) {
 require($include_page_file);
 
 $include_page_filter = get_page_filter();
+if (!is_array($include_page_filter))
+    die('Unexpected return value');
 
 array_walk($include_page_filter, 'validate_input');
 
