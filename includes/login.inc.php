@@ -48,7 +48,7 @@ function do_page_logic()
 		array($state['input']['username']));
 
 	if ($result->RecordCount() > 1)
-		die("Too many results for username $username! Exitting!");
+		die("Too many results for username $username! Exiting!");
 	
 	$success = false;
 	if ($result->RecordCount() == 0 || $result->fields[1] != $state['input']['password']) {

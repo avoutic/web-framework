@@ -35,7 +35,7 @@ function do_page_logic()
 		array($state['input']['user_id']));
 
 	if ($result->RecordCount() != 1)
-		die("No correct results for username $user_id! Exitting!");
+		die("No correct results for username $user_id! Exiting!");
 
 	// Check if verified
 	//

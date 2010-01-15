@@ -73,7 +73,7 @@ function do_page_logic()
 		array($state['input']['username']));
 
 	if ($result->RecordCount() > 1)
-		die("Too many results for username $username! Exitting!");
+		die("Too many results for username $username! Exiting!");
 	
 	if ($result->RecordCount() == 1) {
 		set_message('error', 'Username already exists.', 'Please enter a unique username.');
@@ -88,7 +88,7 @@ function do_page_logic()
 				$state['input']['name'],
 				$state['input']['email'])))
 	{
-		die("Failed to insert data! Exitting!");
+		die("Failed to insert data! Exiting!");
 	}
 
 	// Send mail to administrator

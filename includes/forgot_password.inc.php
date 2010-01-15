@@ -51,7 +51,7 @@ function do_page_logic()
 					$state['input']['username']
 				)))
 		{
-			die("Failed to update data! Exitting!");
+			die("Failed to update data! Exiting!");
 		}
 
 		// Send mail to user

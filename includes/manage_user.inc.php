@@ -55,7 +55,7 @@ function do_page_logic()
 			array($state['input']['user_id']));
 
 	if ($result->RecordCount() != 1)
-		die("Incorrect number of results for username $username! Exitting!");
+		die("Incorrect number of results for username $username! Exiting!");
 
 	$page_content['user']['user_id'] = $result->fields[0];
 	$page_content['user']['username'] = $result->fields[1];

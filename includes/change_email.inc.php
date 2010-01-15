@@ -41,7 +41,7 @@ function do_page_logic()
                 array($state['input']['email'],
                     $state['user_id'])))
     {
-        die("Failed to update data! Exitting!");
+        die("Failed to update data! Exiting!");
     }
 
     $_SESSION['logged_in'] = false;

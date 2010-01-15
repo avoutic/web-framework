@@ -74,7 +74,7 @@ function do_page_logic()
 				$state['input']['orig_password']
 			)))
 	{
-		die("Failed to update data! Exitting!");
+		die("Failed to update data! Exiting!");
 	}
 
 	// Redirect to main sceen
