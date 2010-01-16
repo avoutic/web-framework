@@ -22,7 +22,8 @@ $base_config = array(
 	'database_host' => '',
 	'database_user' => '',
 	'database_password' =>'',
-	'database_database' => ''
+	'database_database' => '',
+    'server_name' => $_SERVER['SERVER_NAME']
 );
 if (!is_file($site_includes."config.php"))
 {
