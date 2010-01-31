@@ -35,6 +35,16 @@ class MailMessage
         return TRUE;
     }
 
+    function add_cc($address)
+    {
+        if (!preg_match('/^\s*'.FORMAT_EMAIL.'\s*$/m', $address))
+            return ERROR_INVALID_EMAIL;
+
+        $this->mail_headers .= "CC: $address".PHP_EOL;
+
+        return TRUE;
+    }
+
     function set_subject($subject)
     {
         $this->mail_subject = $subject;
