@@ -203,6 +203,12 @@ if (isset($_SESSION['logged_in']))
 	$state['username'] = $_SESSION['username'];
 	$state['name'] = $_SESSION['name'];
 	$state['email'] = $_SESSION['email'];
+
+	if (isset($_SESSION['first_name']))
+        $state['first_name'] = $_SESSION['first_name'];
+	
+    if (isset($_SESSION['last_name']))
+        $state['last_name'] = $_SESSION['last_name'];
 	
 	# Set permissions in state
 	#
