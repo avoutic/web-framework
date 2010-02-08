@@ -24,7 +24,10 @@ $base_config = array(
 	'database_password' =>'',
 	'database_database' => '',
     'server_name' => $_SERVER['SERVER_NAME'],
-    'document_root' => $_SERVER['DOCUMENT_ROOT']
+    'document_root' => $_SERVER['DOCUMENT_ROOT'],
+    'memcache_enabled' => false,
+    'memcache_host' => 'localhost',
+    'memcache_port' => '11211'
 );
 if (!is_file($site_includes."config.php"))
 {
@@ -145,6 +148,10 @@ session_start();
 
 $database = new Database();
 $database->Connect($config);
+
+$memcache = new Memcache();
+if ($config['memcache_enabled'] == true)
+    $memcache->connect($config['memcache_host'], $config['memcache_port']);
 
 array_walk($fixed_page_filter, 'validate_input');
 
