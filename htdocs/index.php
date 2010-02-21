@@ -15,19 +15,19 @@ $site_includes='../includes/site/';
 # Load configuration
 #
 $base_config = array(
-	'disabled_pages' => array(),
-    'allow_registration' => true,
-	'database_enabled' => false,
+        'disabled_pages' => array(),
+        'allow_registration' => true,
+        'database_enabled' => false,
         'database_type' => '',
-	'database_host' => '',
-	'database_user' => '',
-	'database_password' =>'',
-	'database_database' => '',
-    'server_name' => $_SERVER['SERVER_NAME'],
-    'document_root' => $_SERVER['DOCUMENT_ROOT'],
-    'memcache_enabled' => false,
-    'memcache_host' => 'localhost',
-    'memcache_port' => '11211'
+        'database_host' => '',
+        'database_user' => '',
+        'database_password' =>'',
+        'database_database' => '',
+        'server_name' => $_SERVER['SERVER_NAME'],
+        'document_root' => $_SERVER['DOCUMENT_ROOT'],
+        'memcache_enabled' => false,
+        'memcache_host' => 'localhost',
+        'memcache_port' => '11211'
 );
 if (!is_file($site_includes."config.php"))
 {
@@ -42,8 +42,11 @@ $config = array_merge($base_config, $site_config);
 
 # Load other prerequisites
 #
-require('adodb/adodb.inc.php');
-require($includes.'database.inc.php');
+if ($config['database_enabled'] == true)
+{
+    require('adodb/adodb.inc.php');
+    require($includes.'database.inc.php');
+}
 
 # Check site specific preconditions
 #
@@ -146,12 +149,19 @@ $state['page_data'] = array();
 
 session_start();
 
+# Start the database connection
+#
 $database = new Database();
 $database->Connect($config);
 
+# Start the memcache connection
+#
 $memcache = new Memcache();
 if ($config['memcache_enabled'] == true)
-    $memcache->connect($config['memcache_host'], $config['memcache_port']);
+{
+    if (FALSE === $memcache->connect($config['memcache_host']))
+        die('Failed to connect to the memcache server.');
+}
 
 array_walk($fixed_page_filter, 'validate_input');
 
