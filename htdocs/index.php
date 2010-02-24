@@ -156,9 +156,10 @@ $database->Connect($config);
 
 # Start the memcache connection
 #
-$memcache = new Memcache();
+$memcache = NULL;
 if ($config['memcache_enabled'] == true)
 {
+    $memcache = new Memcache();
     if (FALSE === $memcache->connect($config['memcache_host']))
         die('Failed to connect to the memcache server.');
 }
