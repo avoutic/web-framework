@@ -52,7 +52,7 @@ function do_page_logic()
 
     // Redirect to verification request screen
     //
-    header("Location: ?page=verify&username=".$state['username']);
+    header("Location: /verify?username=".$state['username']);
 }
 
 function display_header()
@@ -63,7 +63,7 @@ function display_page()
 {
 	global $state;
 ?>
-<form method="post" class="contactform" action="?page=change_email" enctype="multipart/form-data">
+<form method="post" class="contactform" action="/change_email" enctype="multipart/form-data">
 	<fieldset class="register">
 		<input type="hidden" name="do" value="yes"/>
 		<legend>Change email</legend>

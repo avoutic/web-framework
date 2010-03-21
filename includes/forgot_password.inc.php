@@ -64,7 +64,7 @@ function do_page_logic()
 			"Your new password is: ".$new_pw."\n\n".
 			"We advise you to login and change your password as soon ".
 			"as possible.\n\n".
-			"To login and change your password go to: http://".$_SERVER['SERVER_NAME'].dirname($_SERVER['REQUEST_URI'])."/?page=change_password\n\n".
+			"To login and change your password go to: http://".$_SERVER['SERVER_NAME'].dirname($_SERVER['REQUEST_URI'])."/change_password\n\n".
 			"Best regards,\n".
 			MAIL_FOOTER,
 			"From: ".MAIL_ADDRESS."\r\n");
@@ -84,7 +84,7 @@ function display_header()
 function display_page()
 {
 ?>
-<form method="post" class="forgot_password_form" action="?page=forgot_password">
+<form method="post" class="forgot_password_form" action="/forgot_password">
 	<fieldset class="register">
 		<input type="hidden" name="do" value="yes"/>
 

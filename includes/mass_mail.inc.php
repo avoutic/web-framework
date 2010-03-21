@@ -75,7 +75,7 @@ function display_page()
 {
 	global $state, $page_content;
 ?>
-<form class="contactform" action="?page=mass_mail" method="post">
+<form class="contactform" action="/mass_mail" method="post">
   <fieldset>
     <input type="hidden" name="do" value="preview"/>
     <legend>Selection</legend>
@@ -131,7 +131,7 @@ foreach ($page_content['user_info'] as $users) {
 ?>
   </tbody>
 </table>
-<form class="contactform" action="?page=mass_mail" method="post">
+<form class="contactform" action="/mass_mail" method="post">
   <fieldset>
     <input type="hidden" name="do" value="yes"/>
     <input type="hidden" name="address" value="<?=$state['input']['address']?>">

@@ -35,7 +35,7 @@ function display_header()
     if (!strlen($state['input']['file']))
         return;
 ?>
-  <meta http-equiv="refresh" content="3; ?page=download&do=yes&file=<?=$state['input']['file']?>">
+  <meta http-equiv="refresh" content="3; /download?do=yes&file=<?=$state['input']['file']?>">
 <?
 }
 

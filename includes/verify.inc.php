@@ -59,7 +59,7 @@ function do_page_logic()
 	mail($result->fields[2], SITE_NAME." account verification mail",
 		"Welcome ".$result->fields[3].",\n\n".
 		"You successfully created your account for ".SITE_NAME.". In order to verify the account, please go to the following web location by either clicking the link or manually entering the address into your webbrowser.\n\n".
-		"To verify the account go to: http://".$_SERVER['SERVER_NAME'].dirname($_SERVER['REQUEST_URI'])."/?page=verify&username=".$state['input']['username']."&code=$hash.\n\n".
+		"To verify the account go to: http://".$_SERVER['SERVER_NAME'].dirname($_SERVER['REQUEST_URI'])."/verify?username=".$state['input']['username']."&code=$hash.\n\n".
 		"Best regards,\n".
 		MAIL_FOOTER,
 		"From: ".MAIL_ADDRESS."\r\n");

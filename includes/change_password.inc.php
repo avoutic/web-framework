@@ -93,7 +93,7 @@ function display_page()
 {
 	global $state;
 ?>
-<form method="post" class="contactform" action="?page=change_password" enctype="multipart/form-data" onsubmit="password.value = hex_sha1(password.value); password2.value = hex_sha1(password2.value); orig_password.value = hex_sha1(orig_password.value); return true;">
+<form method="post" class="contactform" action="/change_password" enctype="multipart/form-data" onsubmit="password.value = hex_sha1(password.value); password2.value = hex_sha1(password2.value); orig_password.value = hex_sha1(orig_password.value); return true;">
 	<fieldset class="register">
 		<input type="hidden" name="do" value="yes"/>
 		<legend>Change password</legend>

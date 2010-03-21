@@ -54,10 +54,10 @@ function display_page()
 <?
 foreach ($page_content['user_info'] as $users) {
 	print("<tr>\n");
-	print("  <td><a href=\"?page=manage_user&amp;user_id=".$users['id']."\">".$users['username']."</a></td>\n");
+	print("  <td><a href=\"/manage_user?user_id=".$users['id']."\">".$users['username']."</a></td>\n");
 	print("  <td>".$users['name']."</td>\n");
 	print("  <td>".$users['email']."</td>\n");
-	print("  <td><a href=\"?page=grab_identity&amp;user_id=".$users['id']."\">Grab ".$users['username']."</a></td>\n");
+	print("  <td><a href=\"/grab_identity?user_id=".$users['id']."\">Grab ".$users['username']."</a></td>\n");
 	print("</tr>\n");
 }
 ?>

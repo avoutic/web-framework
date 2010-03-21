@@ -126,14 +126,14 @@ function display_page()
 foreach($page_content['user']['rights'] as $right) {
 	print("<tr>\n");
 	print("  <td>".$right['name']."</td>\n");
-	print("  <td><a href=\"?page=manage_user&amp;user_id=".$page_content['user']['user_id']."&amp;action=delete_right&amp;right_id=".$right['id']."&amp;do=yes\">Delete</a></td>\n");
+	print("  <td><a href=\"/manage_user?user_id=".$page_content['user']['user_id']."&amp;action=delete_right&amp;right_id=".$right['id']."&amp;do=yes\">Delete</a></td>\n");
 	print("</tr>\n");
 }
 ?>
   </tbody>
 </table>
 
-<form class="contactform" action="?page=manage_user" method="post">
+<form class="contactform" action="/manage_user" method="post">
 <fieldset>
   <input type="hidden" name="user_id" value="<?=$page_content['user']['user_id']?>" />
   <input type="hidden" name="action" value="add_right" />

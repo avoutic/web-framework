@@ -59,7 +59,7 @@ function do_page_logic()
 	// Check if verified
 	//
 	if ($result->fields[3] == 0) {
-		set_message('error', 'Account not yet verified.', 'Account is not yet verified. Please check your mailbox for the verification e-mail and go to the presented link. If you have not received such a mail, you can <a href="?page=verify&username='.$state['input']['username'].'">request a new one</a>.');
+		set_message('error', 'Account not yet verified.', 'Account is not yet verified. Please check your mailbox for the verification e-mail and go to the presented link. If you have not received such a mail, you can <a href="/verify?username='.$state['input']['username'].'">request a new one</a>.');
 		return;
 	}
 
@@ -81,7 +81,7 @@ function do_page_logic()
 	foreach($result_p as $k => $row)
 		array_push($_SESSION['permissions'], $row[0]);
 
-	header("Location: ?mtype=success&message=".urlencode('Login successful.')."&".$state['input']['return']);
+	header("Location: /".$state['input']['return']."?mtype=success&message=".urlencode('Login successful.')."&".$state['input']['return']);
 }
 
 function display_header()
@@ -95,7 +95,7 @@ function display_page()
 {
 	global $config, $state;
 ?>
-<form method="post" class="login_form" action="?page=login" enctype="multipart/form-data" onsubmit="password.value = hex_sha1(password.value); return true;">
+<form method="post" class="login_form" action="/login" enctype="multipart/form-data" onsubmit="password.value = hex_sha1(password.value); return true;">
 	<fieldset class="login">
 		<input type="hidden" name="do" value="yes"/>
 		<input type="hidden" name="return" value="<?=$state['input']['return']?>"/>
@@ -111,7 +111,7 @@ function display_page()
 		</div>
 	</fieldset>
 </form>
-<span class="login_form_links"><a class="login_forgot_password_link" href="?page=forgot_password">Forgot your password?</a><? if ($config['allow_registration']) echo "| <a class=\"login_register_link\" href=\"?page=register_account\">No account yet?</a>";?></span>
+<span class="login_form_links"><a class="login_forgot_password_link" href="/forgot_password">Forgot your password?</a><? if ($config['allow_registration']) echo "| <a class=\"login_register_link\" href=\"/register_account\">No account yet?</a>";?></span>
 <?
 }
 ?>
