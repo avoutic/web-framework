@@ -151,8 +151,12 @@ session_start();
 
 # Start the database connection
 #
-$database = new Database();
-$database->Connect($config);
+$database = NULL;
+if ($config['database_enabled'] == true)
+{
+    $database = new Database();
+    $database->Connect($config);
+}
 
 # Start the memcache connection
 #
