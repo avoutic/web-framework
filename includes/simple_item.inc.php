@@ -1,4 +1,51 @@
 <?php
+abstract class SimpleItem
+{
+    protected $database;
+    protected $id;
+
+    protected $table_name;
+    protected $field_names;
+
+    protected $select_query;
+
+    function __construct($database, $id, $table_name, $field_names)
+    {
+        $this->database = $database;
+        $this->id = $id;
+        $this->table_name = $table_name;
+        $this->field_names = $field_names;
+
+        $this->select_query = 'SELECT ';
+        $this->select_query .= implode(', ', $this->field_names);
+        $this->select_query .= ' FROM '.$this->table_name.' WHERE id=?';
+
+        // Retrieve from database
+        //
+        $result = $this->database->Query($this->select_query,
+                array($this->id));
+
+        if ($result === FALSE)
+            die('Failed to select item');
+
+        if ($result->RecordCount() != 1)
+            die('Failed to select single item');
+
+        foreach($this->field_descriptors as $name => $descriptor)
+            $this->$name = $result->fields[$name];
+    }
+
+    function get_id()
+    {
+        return $this->id;
+    }
+
+    function get_field_names()
+    {
+        return $this->field_names;
+    }
+};
+
 abstract class SimpleItemManipulator
 {
     protected $database;
