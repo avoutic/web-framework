@@ -1,4 +1,6 @@
 <?php
+require_once('base_logic.inc.php');
+
 function get_page_filter()
 {
 	return array(
@@ -29,18 +31,16 @@ function do_page_logic()
 	if (!strlen($state['input']['user_id']))
 		return;
 
+    $factory = new BaseFactory($database);
+
 	// Log in user
 	//
-	$result = $database->Query('SELECT id, username, name, verified, email FROM users WHERE id = ?',
-		array($state['input']['user_id']));
-
-	if ($result->RecordCount() != 1)
-		die("No correct results for username $user_id! Exiting!");
+    $user = $factory->get_user($state['input']['user_id'], 'UserBasic');
 
 	// Check if verified
 	//
-	if ($result->fields[3] == 0) {
-		set_message('error', 'Account not yet verified.', 'Account is not yet verified. Please check your mailbox for the verification e-mail and go to the presented link. If you have not received such a mail, you can <a href="/send_verify?username='.$state['input']['username'].'">request a new one</a>.');
+	if ($result->verified == 0) {
+		set_message('error', 'Account not yet verified.', 'Account is not yet verified. Please check your mailbox for the verification e-mail and go to the presented link. If you have not received such a mail, you can <a href="/send_verify?username='.$user->username.'">request a new one</a>.');
 		return;
 	}
 
@@ -49,11 +49,11 @@ function do_page_logic()
 	$success = true;
 
 	$_SESSION['logged_in'] = true;
-	$_SESSION['user_id'] = $result->fields[0];
-	$_SESSION['username'] = $result->fields[1];
-	$_SESSION['name'] = $result->fields[2];
+	$_SESSION['user_id'] = $user->get_id();
+	$_SESSION['username'] = $user->username;
+	$_SESSION['name'] = $user->name;
 	$_SESSION['permissions'] = array('logged_in');
-	$_SESSION['email'] = $result->fields[4];
+	$_SESSION['email'] = $user->email;
 
 	// Add permissions
 	//
@@ -62,7 +62,7 @@ function do_page_logic()
 	foreach($result_p as $k => $row)
 		array_push($_SESSION['permissions'], $row[0]);
 
-	header("Location: ?mtype=success&message=".urlencode('Login successful.'));
+	header("Location: /?mtype=success&message=".urlencode('Login successful.'));
 }
 
 function display_header()
