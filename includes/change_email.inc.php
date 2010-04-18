@@ -46,7 +46,7 @@ function do_page_logic()
 
     if ($result == User::ERR_DUPLICATE_EMAIL)
     {
-        set_message('error', 'E-mail address is alreay in use in another account.', 'The e-mail address is already in use and cannot be re-used in this account. Please choose another address.');
+        set_message('error', 'E-mail address is already in use in another account.', 'The e-mail address is already in use and cannot be re-used in this account. Please choose another address.');
         return;
     }
     if ($result != User::RESULT_SUCCESS)
