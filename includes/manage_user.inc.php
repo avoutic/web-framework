@@ -1,4 +1,6 @@
 <?php
+require_once('base_logic.inc.php');
+
 function get_page_filter()
 {
 	return array(
@@ -29,39 +31,32 @@ function do_page_logic()
 	if (!strlen($state['input']['user_id']))
 		die("Invalid input for user_id");
 
+    $factory = new BaseFactory($database);
+
+	// Retrieve user information
+	//
+    $user = $factory->get_user($state['input']['user_id'], 'UserBasic');
+
 	// Check if this is a action attempt
 	//
 	if (strlen($state['input']['do']) && strlen($state['input']['action'])) {
 		switch($state['input']['action']) {
 		case 'delete_right':
-			$database->Query('DELETE FROM user_rights WHERE id = ?',
-					array(
-						$state['input']['right_id']
-					));
+            $user->delete_right($state['input']['right_id']);
 			break;
 		case 'add_right':
-			$database->Query('INSERT INTO user_rights (user_id, right_id) VALUES (?, ?)',
-					array(
-						$state['input']['user_id'],
-						$state['input']['right_id']
-					));
+            $user->add_right($state['input']['right_id']);
 			break;
 		}
 	}
 
 	// Retrieve user information
 	//
-	$result = $database->Query('SELECT id, username, name, email, verified FROM users WHERE id = ?',
-			array($state['input']['user_id']));
-
-	if ($result->RecordCount() != 1)
-		die("Incorrect number of results for username $username! Exiting!");
-
-	$page_content['user']['user_id'] = $result->fields[0];
-	$page_content['user']['username'] = $result->fields[1];
-	$page_content['user']['name'] = $result->fields[2];
-	$page_content['user']['email'] = $result->fields[3];
-	$page_content['user']['verified'] = $result->fields[4];
+	$page_content['user']['user_id'] = $user->get_id();
+	$page_content['user']['username'] = $user->username;
+	$page_content['user']['name'] = $user->name;
+	$page_content['user']['email'] = $user->email;
+	$page_content['user']['verified'] = $user->verified;
 	$page_content['user']['rights'] = array();
 
 	$result_r = $database->Query('SELECT ur.id, r.name FROM rights AS r, user_rights AS ur WHERE r.id = ur.right_id AND ur.user_id = ?',

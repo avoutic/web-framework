@@ -83,6 +83,32 @@ class User
             die('Failed to update verified status for user! Exiting!');
         }
     }
+
+    function add_right($right_id)
+    {
+        $result = $this->database->InsertQuery('INSERT INTO user_rights (user_id, right_id) VALUES (?, ?)',
+                array(
+                    $this->id,
+                    $right_id
+                    ));
+
+        if ($result === FALSE)
+            die('Failed to insert right. Exiting!');
+
+        return $result;
+    }
+
+    function delete_right($user_right_id)
+    {
+        $result = $this->database->Query('DELETE FROM user_rights WHERE id = ? AND user_id = ?',
+                array(
+                    $user_right_id,
+                    $this->id
+                    ));
+
+        if ($result === FALSE)
+            die('Failed to delete right. Exiting!');
+    }
 };
 
 class UserBasic extends User
