@@ -1,4 +1,6 @@
 <?php
+require_once('base_logic.inc.php');
+
 function get_page_filter()
 {
 	return array(
@@ -52,34 +54,25 @@ function do_page_logic()
 		return;
 	}
 
-	// Check if original password is correct
-	//
-	$result_check = $database->Query('SELECT id FROM users WHERE username=? AND password=?',
-			array(
-				$state['username'],
-				$state['input']['orig_password']
-			));
+    $factory = new BaseFactory($database);
+    $user = $factory->get_user($state['user_id']);
+    $result = $user->change_password($state['input']['orig_password'], $state['input']['password']);
 
-	if ($result_check->RecordCount() != 1) {
+    if ($result == User::ERR_ORIG_PASSWORD_MISMATCH)
+    {
 		set_message('error', 'Original password is incorrect.', 'Please re-enter correct password.');
 		return;
 	}
 
-	// Change password
-	//
-	if (FALSE === $database->Query('UPDATE users SET password=? WHERE username=? AND password=?',
-			array(
-				$state['input']['password'],
-				$state['username'], 
-				$state['input']['orig_password']
-			)))
-	{
-		die("Failed to update data! Exiting!");
-	}
+    if ($result != User::RESULT_SUCCESS)
+    {
+        set_message('error', 'Unknown errorcode: \''.$result."'", "Please inform the administrator.");
+        return;
+    }
 
 	// Redirect to main sceen
 	//
-	header("Location: ?mtype=success&message=".urlencode('Password changed successfully.'));
+	header("Location: /?mtype=success&message=".urlencode('Password changed successfully.'));
 }
 
 function display_header()

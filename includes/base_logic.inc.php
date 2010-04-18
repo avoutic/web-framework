@@ -7,6 +7,7 @@ class User
     //
     const RESULT_SUCCESS = 0;
     const ERR_DUPLICATE_EMAIL = 1;
+    const ERR_ORIG_PASSWORD_MISMATCH = 2;
 
     protected $database;
     protected $id;
@@ -20,6 +21,34 @@ class User
     function get_id()
     {
         return $this->id;
+    }
+
+    function change_password($old_password, $new_password)
+    {
+        // Check if original password is correct
+        //
+        $result_check = $this->database->Query('SELECT username FROM users WHERE id=? AND password=?',
+                array(
+                    $this->id,
+                    $old_password
+                    ));
+
+        if ($result_check->RecordCount() != 1)
+            return User::ERR_ORIG_PASSWORD_MISMATCH;
+
+        // Change password
+        //
+        if (FALSE === $this->database->Query('UPDATE users SET password=? WHERE id=? AND password=?',
+                    array(
+                        $new_password,
+                        $this->id,
+                        $old_password
+                        )))
+        {
+            die("Failed to update data! Exiting!");
+        }
+
+        return User::RESULT_SUCCESS;
     }
 
     function change_email($email, $require_unique = false)
