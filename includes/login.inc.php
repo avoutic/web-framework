@@ -81,7 +81,7 @@ function do_page_logic()
 	foreach($result_p as $k => $row)
 		array_push($_SESSION['permissions'], $row[0]);
 
-	header("Location: /".$state['input']['return']."?mtype=success&message=".urlencode('Login successful.')."&".$state['input']['return']);
+	header("Location: /?mtype=success&message=".urlencode('Login successful.')."&".$state['input']['return']);
 }
 
 function display_header()
