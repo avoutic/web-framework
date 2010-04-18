@@ -100,7 +100,7 @@ function do_page_logic()
 	
 	// Redirect to verification request screen
 	//
-	header("Location: /verify?username=".$state['input']['username']);
+	header("Location: /send_verify?username=".$state['input']['username']);
 }
 
 function display_header()

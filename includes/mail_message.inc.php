@@ -11,6 +11,10 @@ class MailMessage
     protected $mail_message = '';
     protected $mail_headers = '';
 
+    function __construct()
+    { 
+    }
+
     function set_sender($address, $name)
     {
         if (!preg_match('/^\s*'.FORMAT_EMAIL.'\s*$/m', $address))
@@ -154,4 +158,26 @@ class MimeMailMessage extends MailMessage
         return parent::send();
     }
 }
-?>
+
+class VerifyMail extends MailMessage
+{
+    function __construct($first_name, $username, $hash)
+    {
+        global $config;
+
+        parent::__construct();
+
+        $this->mail_subject = SITE_NAME." account verification mail";
+        $this->mail_message = "
+Dear $first_name,
+
+You successfully created your account or changed important information for ".SITE_NAME.". In order to verify the account, please go to the following web location by either clicking the link or manually entering the address into your webbrowser.
+
+To verify the account go to:
+http://".$config['server_name']."/verify?username=$username&code=$hash
+
+Best regards,
+".MAIL_FOOTER;
+    }
+};
+
