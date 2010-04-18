@@ -137,6 +137,28 @@ class UserBasic extends User
         $mail->add_recipient($this->email);
         return $mail->send();
     }
+
+    function send_new_password()
+    {
+        // Generate and store password
+        //
+        $new_pw = sha1("SuperSecretHashingKey*".mt_rand(0, mt_getrandmax())."*".$this->username."*".time());
+        $new_pw = substr($new_pw, 0, 10);
+
+        if (FALSE === $this->database->Query('UPDATE users SET password = ? WHERE id = ?',
+                    array(
+                        sha1($new_pw),
+                        $this->id
+                        )))
+        {
+            die("Failed to update data! Exiting!");
+        }
+
+        $mail = new ForgotPasswordMail($this->name, $this->username, $new_pw);
+        $mail->add_recipient($this->email);
+
+        return $mail->send();
+    }
 }
 
 class BaseFactory
@@ -151,6 +173,17 @@ class BaseFactory
     function get_user($user_id, $type = 'User')
     {
         return new $type($this->database, $user_id);
+    }
+
+    function get_user_by_username($username, $type = 'User')
+    {
+        $result = $this->database->Query('SELECT id FROM users WHERE username = ?',
+                    array($username));
+
+        if ($result->RecordCount() != 1) 
+            return FALSE;
+
+        return $this->get_user($result->fields['id'], $type);
     }
 };
 

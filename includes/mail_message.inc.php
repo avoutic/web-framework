@@ -161,7 +161,7 @@ class MimeMailMessage extends MailMessage
 
 class VerifyMail extends MailMessage
 {
-    function __construct($first_name, $username, $hash)
+    function __construct($name, $username, $hash)
     {
         global $config;
 
@@ -169,12 +169,38 @@ class VerifyMail extends MailMessage
 
         $this->mail_subject = SITE_NAME." account verification mail";
         $this->mail_message = "
-Dear $first_name,
+Dear $name,
 
 You successfully created your account or changed important information for ".SITE_NAME.". In order to verify the account, please go to the following web location by either clicking the link or manually entering the address into your webbrowser.
 
 To verify the account go to:
 http://".$config['server_name']."/verify?username=$username&code=$hash
+
+Best regards,
+".MAIL_FOOTER;
+    }
+};
+
+class ForgotPasswordMail extends MailMessage
+{
+    function __construct($name, $username, $new_pw)
+    {
+        global $config;
+
+        parent::__construct();
+
+        $this->mail_subject = SITE_NAME." password reset mail";
+        $this->mail_message = "
+Dear $name,
+
+We successfully reset the password for your account '$username' for ".SITE_NAME.".
+
+Your new password is: $new_pw
+
+We advise you to login and change your password as soon as possible.
+
+To login and change your password. please go to:
+http://".$config['server_name']."/change_password
 
 Best regards,
 ".MAIL_FOOTER;

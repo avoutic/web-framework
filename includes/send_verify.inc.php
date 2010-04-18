@@ -31,19 +31,14 @@ function do_page_logic()
 
 	// Check user status
 	//
-	$result = $database->Query('SELECT id, verified, email, name FROM users WHERE username = ?',
-		array($state['input']['username']));
-
-	if ($result->RecordCount() != 1)
-		return;
+    $user = $factory->get_user_by_username($state['input']['username'], 'UserBasic');
 	
-	if ($result->fields['verified'] == 1)
+	if ($user->verified == 1)
     {
-        header('Location: /?mtype=success&message='.urlencode('User alread verified.'));
+        header('Location: /?mtype=success&message='.urlencode('User already verified.'));
         exit();
     }
 
-    $user = $factory->get_user($result->fields['id'], 'UserBasic');
     $user->send_verify_mail();
 
 	// Redirect to main sceen
