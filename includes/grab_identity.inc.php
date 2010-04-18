@@ -39,7 +39,7 @@ function do_page_logic()
 
 	// Check if verified
 	//
-	if ($result->verified == 0) {
+	if ($user->verified == 0) {
 		set_message('error', 'Account not yet verified.', 'Account is not yet verified. Please check your mailbox for the verification e-mail and go to the presented link. If you have not received such a mail, you can <a href="/send_verify?username='.$user->username.'">request a new one</a>.');
 		return;
 	}
