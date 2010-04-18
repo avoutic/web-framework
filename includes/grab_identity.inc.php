@@ -35,7 +35,7 @@ function do_page_logic()
 
 	// Log in user
 	//
-    $user = $factory->get_user($state['input']['user_id'], 'UserBasic');
+    $user = $factory->get_user($state['input']['user_id'], 'UserFull');
 
 	// Check if verified
 	//
@@ -52,15 +52,8 @@ function do_page_logic()
 	$_SESSION['user_id'] = $user->get_id();
 	$_SESSION['username'] = $user->username;
 	$_SESSION['name'] = $user->name;
-	$_SESSION['permissions'] = array('logged_in');
+	$_SESSION['permissions'] = array_merge(array('logged_in'), $user->permissions);
 	$_SESSION['email'] = $user->email;
-
-	// Add permissions
-	//
-	$result_p = $database->Query('SELECT r.short_name FROM rights AS r, user_rights AS ur WHERE r.id = ur.right_id AND ur.user_id = ?',
-		array($_SESSION['user_id']));
-	foreach($result_p as $k => $row)
-		array_push($_SESSION['permissions'], $row[0]);
 
 	header("Location: /?mtype=success&message=".urlencode('Login successful.'));
 }

@@ -164,6 +164,20 @@ class UserBasic extends User
         return $mail->send();
     }
 
+    function check_password($password)
+    {
+        $result = $this->database->Query('SELECT password FROM users WHERE id = ?',
+                array($this->id));
+
+        if ($result === FALSE)
+            die('Failed to select data. Exiting!');
+
+        if ($result->RecordCount() != 1)
+            return false;
+
+        return ($password == $result->fields['password']);
+    }
+
     function send_new_password()
     {
         // Generate and store password
@@ -186,6 +200,24 @@ class UserBasic extends User
         return $mail->send();
     }
 }
+
+class UserFull extends UserBasic
+{
+    public $permissions = array();
+
+    function __construct($database, $id)
+    {
+        parent::__construct($database, $id);
+
+        // Add permissions
+        //
+        $result = $this->database->Query('SELECT r.short_name FROM rights AS r, user_rights AS ur WHERE r.id = ur.right_id AND ur.user_id = ?',
+                array($id));
+
+        foreach($result as $k => $row)
+            array_push($this->permissions, $row['short_name']);
+    }
+};
 
 class BaseFactory
 {

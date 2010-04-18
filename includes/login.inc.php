@@ -1,4 +1,6 @@
 <?php
+require_once('base_logic.inc.php');
+
 function get_page_filter()
 {
 	return array(
@@ -42,23 +44,21 @@ function do_page_logic()
 		return;
 	}
 
+    $factory = new BaseFactory($database);
+
 	// Log in user
 	//
-	$result = $database->Query('SELECT id, password, name, verified, email FROM users WHERE username = ?',
-		array($state['input']['username']));
+    $user = $factory->get_user_by_username($state['input']['username'], 'UserFull');
 
-	if ($result->RecordCount() > 1)
-		die("Too many results for username $username! Exiting!");
-	
 	$success = false;
-	if ($result->RecordCount() == 0 || $result->fields[1] != $state['input']['password']) {
+	if ($user === FALSE || !$user->check_password($state['input']['password'])) {
 		set_message('error', 'Username and password do not match.', 'Please check if you entered the username and/or password correctly.');
 		return;
 	}
 
 	// Check if verified
 	//
-	if ($result->fields[3] == 0) {
+	if ($user->verified == 0) {
 		set_message('error', 'Account not yet verified.', 'Account is not yet verified. Please check your mailbox for the verification e-mail and go to the presented link. If you have not received such a mail, you can <a href="/send_verify?username='.$state['input']['username'].'">request a new one</a>.');
 		return;
 	}
@@ -68,18 +68,11 @@ function do_page_logic()
 	$success = true;
 
 	$_SESSION['logged_in'] = true;
-	$_SESSION['user_id'] = $result->fields[0];
-	$_SESSION['username'] = $state['input']['username'];
-	$_SESSION['name'] = $result->fields[2];
-	$_SESSION['permissions'] = array('logged_in');
-	$_SESSION['email'] = $result->fields[4];
-
-	// Add permissions
-	//
-	$result_p = $database->Query('SELECT r.short_name FROM rights AS r, user_rights AS ur WHERE r.id = ur.right_id AND ur.user_id = ?',
-		array($_SESSION['user_id']));
-	foreach($result_p as $k => $row)
-		array_push($_SESSION['permissions'], $row[0]);
+	$_SESSION['user_id'] = $user->get_id();
+	$_SESSION['username'] = $user->username;
+	$_SESSION['name'] = $user->name;
+	$_SESSION['permissions'] = array_merge(array('logged_in'), $user->permissions);
+	$_SESSION['email'] = $user->email;
 
 	header("Location: /?mtype=success&message=".urlencode('Login successful.')."&".$state['input']['return']);
 }
