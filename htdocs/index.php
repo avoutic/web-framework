@@ -2,8 +2,6 @@
 ####################################################################
 # Global settings
 #
-error_reporting(E_ALL | E_STRICT);
-ini_set("display_errors", 1);
 srand();
 date_default_timezone_set('UTC');
 
@@ -15,6 +13,7 @@ $site_includes='../includes/site/';
 # Load configuration
 #
 $base_config = array(
+        'debug' => false,
         'disabled_pages' => array(),
         'allow_registration' => true,
         'database_enabled' => false,
@@ -29,16 +28,32 @@ $base_config = array(
         'memcache_host' => 'localhost',
         'memcache_port' => '11211'
 );
+
+function http_error($code, $short_message, $message)
+{
+    header("HTTP/1.0 $code $short_message");
+    print "$message";
+    exit(0);
+}
+
 if (!is_file($site_includes."config.php"))
 {
-	header("HTTP/1.0 500 Internal Server Error");
-	print "<h1>Requirement error</h1>\n";
-	print "One of the required files is not found on the server. Please contact the administrator.";
-	exit(0);
+    http_error(500, 'Internal Server Error', "<h1>Requirement error</h1>\nOne of the required files is not found on the server. Please contact the administrator.");
 }
+
+# Merge configurations
+#
 $site_config = array();
 require($site_includes."config.php");
 $config = array_merge($base_config, $site_config);
+
+# Enable debugging if requested
+#
+if ($config['debug'] == true)
+{
+    error_reporting(E_ALL | E_STRICT);
+    ini_set("display_errors", 1);
+}
 
 # Load other prerequisites
 #
@@ -54,10 +69,7 @@ if (!is_file($site_includes."site_defines.inc.php") ||
     !is_file($site_includes."site_logic.inc.php") ||
 	!is_file($site_includes."page_frame.inc.php"))
 {
-	header("HTTP/1.0 500 Internal Server Error");
-	print "<h1>Requirement error</h1>\n";
-	print "One of the required files is not found on the server. Please contact the administrator.";
-	exit(0);
+    http_error(500, 'Internal Server Error', "<h1>Requirement error</h1>\nOne of the required files is not found on the server. Please contact the administrator.");
 }
 
 # Load global and site specific defines
@@ -156,6 +168,10 @@ if ($config['database_enabled'] == true)
 {
     $database = new Database();
     $database->Connect($config);
+    if (FALSE === $database->Connect($config))
+    {
+        http_error(500, 'Internal Server Error', "<h1>Database server connection failed</h1>\nThe connection to the database server failed. Please contact the administrator.");
+    }
 }
 
 # Start the memcache connection
@@ -165,7 +181,9 @@ if ($config['memcache_enabled'] == true)
 {
     $memcache = new Memcache();
     if (FALSE === $memcache->connect($config['memcache_host']))
-        die('Failed to connect to the memcache server.');
+    {
+        http_error(500, 'Internal Server Error', "<h1>Memcache server connection failed</h1>\nThe connection to the memcache server failed. Please contact the administrator.");
+    }
 }
 
 array_walk($fixed_page_filter, 'validate_input');
