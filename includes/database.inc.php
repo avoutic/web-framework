@@ -8,7 +8,7 @@ class Database {
 		if ($config['database_enabled'] == true) {
 			$this->database = ADONewConnection($config['database_type']);
 			if (!$this->database)
-				die('ADONewConnection failed. Exiting.');
+				return FALSE;
 
 			$result = $this->database->PConnect($config['database_host'],
 					$config['database_user'],
@@ -16,7 +16,7 @@ class Database {
 					$config['database_database']
 				);
 			if (!$result)
-				die('Database connection failed. Exiting.');
+				return FALSE;
 		}
 	}
 
