@@ -150,6 +150,17 @@ abstract class SimpleItemManipulator
             die('Failed to update item');
     }
 
+    function update_field($field, $value)
+    {
+        // Update single field in existing one
+        //
+        $result = $this->database->Query('UPDATE '.$this->table_name.' SET '.$field.' = ? WHERE id = ?',
+                array($value, $this->id));
+
+        if ($result === FALSE)
+            die('Failed to update item');
+    }
+
     function delete()
     {
         if (FALSE === $this->database->Query($this->delete_query,
