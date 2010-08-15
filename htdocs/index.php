@@ -141,6 +141,9 @@ function set_message($type, $message, $extra_message)
 	$state['input']['mtype'] = $type;
 	$state['input']['message'] = $message;
 	$state['input']['extra_message'] = $extra_message;
+	$state['message']['mtype'] = $type;
+	$state['message']['message'] = $message;
+	$state['message']['extra_message'] = $extra_message;
 }
 
 $fixed_page_filter = array(
@@ -157,6 +160,7 @@ $state['debug'] = false;
 $state['logged_in'] = false;
 $state['permissions'] = array();
 $state['input'] = array();
+$state['message'] = array();
 $state['page_data'] = array();
 
 session_start();
@@ -187,6 +191,37 @@ if ($config['memcache_enabled'] == true)
 }
 
 array_walk($fixed_page_filter, 'validate_input');
+
+$state['message']['mtype'] = $state['input']['mtype'];
+$state['message']['message'] = $state['input']['message'];
+$state['message']['extra_message'] = $state['input']['extra_message'];
+
+# Check if logged in.
+#
+if (isset($_SESSION['logged_in']))
+{
+	# Check status
+	# TODO: CHECK LIFETIME!
+
+	$state['logged_in'] = true;
+
+	# Retrieve id / long name / short name
+	#
+	$state['user_id'] = $_SESSION['user_id'];
+	$state['username'] = $_SESSION['username'];
+	$state['name'] = $_SESSION['name'];
+	$state['email'] = $_SESSION['email'];
+
+	if (isset($_SESSION['first_name']))
+        $state['first_name'] = $_SESSION['first_name'];
+	
+    if (isset($_SESSION['last_name']))
+        $state['last_name'] = $_SESSION['last_name'];
+	
+	# Set permissions in state
+	#
+	$state['permissions'] = $_SESSION['permissions'];
+}
 
 # Check page requested
 #
@@ -223,40 +258,28 @@ if (!is_file($include_page_file)) {
 
 require($include_page_file);
 
-$include_page_filter = get_page_filter();
+$object_name = preg_replace('/(?:^|_)(.?)/e',"strtoupper('$1')", 'page_'.$include_page);
+$include_page_filter = NULL;
+$page_permissions = NULL;
+$page_obj = NULL;
+
+if (class_exists($object_name))
+{
+    $page_obj = new $object_name($state);
+    $include_page_filter = $page_obj->get_filter();
+    $page_permissions = $page_obj->get_permissions();
+}
+else
+{
+    $include_page_filter = get_page_filter();
+    $page_permissions = get_page_permissions();
+}
+
 if (!is_array($include_page_filter))
     die('Unexpected return value');
 
 array_walk($include_page_filter, 'validate_input');
 
-# check if logged in.
-
-if (isset($_SESSION['logged_in']))
-{
-	# Check status
-	# TODO: CHECK LIFETIME!
-
-	$state['logged_in'] = true;
-
-	# Retrieve id / long name / short name
-	#
-	$state['user_id'] = $_SESSION['user_id'];
-	$state['username'] = $_SESSION['username'];
-	$state['name'] = $_SESSION['name'];
-	$state['email'] = $_SESSION['email'];
-
-	if (isset($_SESSION['first_name']))
-        $state['first_name'] = $_SESSION['first_name'];
-	
-    if (isset($_SESSION['last_name']))
-        $state['last_name'] = $_SESSION['last_name'];
-	
-	# Set permissions in state
-	#
-	$state['permissions'] = $_SESSION['permissions'];
-}
-
-$page_permissions = get_page_permissions();
 $has_permissions = user_has_permissions($page_permissions);
 
 if (!$has_permissions) {
@@ -273,16 +296,23 @@ if (!$has_permissions) {
 	}
 }
 
-# Fill content for the pages
-#
-$page_content = array();
+if ($page_obj != NULL)
+{
+    $page_obj->display_page();
+}
+else
+{
+    # Fill content for the pages
+    #
+    $page_content = array();
 
-do_page_logic();
+    do_page_logic();
 
-fill_site_content($page_content);
-$page_content['title'] = get_page_title();
+    fill_site_content($page_content);
+    $page_content['title'] = get_page_title();
 
-# Load main frame
-#
-require($site_includes.'page_frame.inc.php');
+    # Load main frame
+    #
+    require($site_includes.'page_frame.inc.php');
+}
 ?>
