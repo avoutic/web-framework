@@ -10,7 +10,7 @@ class ConfigValues
         $this->default_module = $default_module;
     }
 
-    function get_value($name, $module = "")
+    function get_value($name, $default = "", $module = "")
     {
         if ($module == "")
             $module == $this->default_module;
@@ -20,6 +20,9 @@ class ConfigValues
 
         if ($result === FALSE)
             die('Failed to retrieve config value.');
+
+        if ($result->RecordCount() == 0)
+            return $default;
 
         if ($result->RecordCount() != 1)
             return "";
@@ -53,7 +56,7 @@ class UserConfigValues
         $this->default_module = $default_module;
     }
 
-    function get_value($name, $default, $module = "")
+    function get_value($name, $default = "", $module = "")
     {
         if ($module == "")
             $module == $this->default_module;
