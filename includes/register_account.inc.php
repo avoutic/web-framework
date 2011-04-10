@@ -35,6 +35,14 @@ function do_page_logic()
 	if (!strlen($state['input']['do']))
 		return;
 
+    // Check if javascript is enabled
+    //
+    if (!strlen($state['input']['password']))
+    {
+        set_message('error', 'Javascript is disabled.', 'Javascript is disabled or is not allowed. It is not possible to continue without Javascript.');
+        return;
+    }
+
 	// Check if username and password are present
 	//
 	if (!strlen($state['input']['username'])) {
@@ -114,18 +122,20 @@ function display_page()
 {
 	global $state;
 ?>
-<form method="post" class="register_form" action="/register_account" enctype="multipart/form-data" onsubmit="password.value = hex_sha1(password.value); password2.value = hex_sha1(password2.value); return true;">
+<form method="post" class="register_form" action="/register_account" enctype="multipart/form-data" onsubmit="password.value = hex_sha1(password_helper.value); password2.value = hex_sha1(password2_helper.value); return true;">
 	<fieldset class="register">
 		<input type="hidden" name="do" value="yes"/>
+        <input type="hidden" id="password" name="password" value=""/>
+        <input type="hidden" id="password2" name="password2" value=""/>
 		<legend>Login Details</legend>
 		<p>
 			<label class="left" for="username">Username</label> <input type="text" class="field" id="username" name="username" value="<?=$state['input']['username']?>"/>
 		</p>
 		<p>
-			<label class="left" for="password">Password</label> <input type="password" class="field" id="password" name="password"/>
+			<label class="left" for="password_helper">Password</label> <input type="password" class="field" id="password_helper" name="password_helper"/>
 		</p>
 		<p>
-			<label class="left" for="password2">Password verification</label> <input type="password" class="field" id="password2" name="password2"/>
+			<label class="left" for="password2_helper">Password verification</label> <input type="password" class="field" id="password2_helper" name="password2_helper"/>
 		</p>
 	</fieldset>
 	<fieldset class="user_details">

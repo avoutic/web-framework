@@ -33,6 +33,14 @@ function do_page_logic()
 	if (!strlen($state['input']['return']))
 		$state['input']['return'] = DEFAULT_LOGIN_RETURN;
 
+    // Check if javascript is enabled
+    //
+    if (!strlen($state['input']['password']))
+    {
+        set_message('error', 'Javascript is disabled.', 'Javascript is disabled or is not allowed. It is not possible to continue without Javascript.');
+        return;
+    }
+
 	// Check if username and password are present
 	//
 	if (!strlen($state['input']['username'])) {
@@ -88,16 +96,17 @@ function display_page()
 {
 	global $config, $state;
 ?>
-<form method="post" class="login_form" action="/login" enctype="multipart/form-data" onsubmit="password.value = hex_sha1(password.value); return true;">
+<form method="post" class="login_form" action="/login" enctype="multipart/form-data" onsubmit="password.value = hex_sha1(password_helper.value); return true;">
 	<fieldset class="login">
 		<input type="hidden" name="do" value="yes"/>
+        <input type="hidden" id="password" name="password" value=""/>
 		<input type="hidden" name="return" value="<?=$state['input']['return']?>"/>
 		<legend>Login form</legend>
 		<p>
 			<label class="left" for="username">Username</label> <input type="text" class="field" id="username" name="username" value="<?=$state['input']['username']?>"/>
 		</p>
 		<p>
-			<label class="left" for="password">Password</label> <input type="password" class="field" id="password" name="password"/>
+			<label class="left" for="password_helper">Password</label> <input type="password" class="field" id="password_helper" name="password_helper"/>
 		</p>
 		<div>
 			<label class="left">&nbsp;</label> <input type="submit" class="button" id="submit" value="Submit" />

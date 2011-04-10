@@ -32,6 +32,14 @@ function do_page_logic()
 	if (!strlen($state['input']['do']))
 		return;
 
+    // Check if javascript is enabled
+    //
+    if (!strlen($state['input']['password']))
+    {
+        set_message('error', 'Javascript is disabled.', 'Javascript is disabled or is not allowed. It is not possible to continue without Javascript.');
+        return;
+    }
+
 	// Check if passwords are present
 	//
 	if (!strlen($state['input']['orig_password']) || $state['input']['orig_password'] == EMPTY_PASSWORD_HASH_SHA1) {
@@ -86,18 +94,21 @@ function display_page()
 {
 	global $state;
 ?>
-<form method="post" class="contactform" action="/change_password" enctype="multipart/form-data" onsubmit="password.value = hex_sha1(password.value); password2.value = hex_sha1(password2.value); orig_password.value = hex_sha1(orig_password.value); return true;">
+<form method="post" class="contactform" action="/change_password" enctype="multipart/form-data" onsubmit="password.value = hex_sha1(password_helper.value); password2.value = hex_sha1(password2_helper.value); orig_password.value = hex_sha1(orig_password_helper.value); return true;">
 	<fieldset class="register">
 		<input type="hidden" name="do" value="yes"/>
+        <input type="hidden" id="password" name="password" value=""/>
+        <input type="hidden" id="password2" name="password2" value=""/>
+        <input type="hidden" id="orig_password" name="orig_password" value=""/>
 		<legend>Change password</legend>
 		<p>
-			<label class="left" for="orig_password">Original password</label> <input type="password" class="field" id="orig_password" name="orig_password"/>
+			<label class="left" for="orig_password_helper">Original password</label> <input type="password" class="field" id="orig_password_helper" name="orig_password_helper"/>
 		</p>
 		<p>
-			<label class="left" for="password">Password</label> <input type="password" class="field" id="password" name="password"/>
+			<label class="left" for="password_helper">Password</label> <input type="password" class="field" id="password_helper" name="password_helper"/>
 		</p>
 		<p>
-			<label class="left" for="password2">Password verification</label> <input type="password" class="field" id="password2" name="password2"/>
+			<label class="left" for="password2_helper">Password verification</label> <input type="password" class="field" id="password2_helper" name="password2_helper"/>
 		</p>
 	</fieldset>
 	<p>
