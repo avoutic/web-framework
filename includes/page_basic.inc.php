@@ -9,7 +9,7 @@ class PageBasic
         $this->state = $state;
     }
 
-    function get_filter()
+    static function get_filter()
     {
         return array();
     }
@@ -29,9 +29,16 @@ class PageBasic
         return "";
     }
 
-    function get_permissions()
+    static function get_permissions()
     {
         return array();
+    }
+
+    function add_message($type, $message, $extra_message = "")
+    {
+        $this->state['message']['mtype'] = $type;
+        $this->state['message']['message'] = $message;
+        $this->state['message']['extra_message'] = $extra_message;
     }
 
     function do_logic()
