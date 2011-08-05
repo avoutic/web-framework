@@ -265,9 +265,8 @@ $page_obj = NULL;
 
 if (class_exists($object_name))
 {
-    $page_obj = new $object_name($state);
-    $include_page_filter = $page_obj->get_filter();
-    $page_permissions = $page_obj->get_permissions();
+    $include_page_filter = $object_name::get_filter();
+    $page_permissions = $object_name::get_permissions();
 }
 else
 {
@@ -296,8 +295,9 @@ if (!$has_permissions) {
 	}
 }
 
-if ($page_obj != NULL)
+if (class_exists($object_name))
 {
+    $page_obj = new $object_name($state);
     $page_obj->display_page();
 }
 else
