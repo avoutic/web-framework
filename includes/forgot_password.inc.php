@@ -1,63 +1,52 @@
 <?php
 require_once('base_logic.inc.php');
+require_once('page_basic.inc.php');
 
-function get_page_filter()
+class PageForgotPassword extends PageBasic
 {
-	return array(
-		'username' => FORMAT_USERNAME,
-		'do' => 'yes'
-	);
-}
+    static function get_filter()
+    {
+        return array(
+                'username' => FORMAT_USERNAME,
+                'do' => 'yes'
+                );
+    }
 
-function get_page_permissions()
-{
-	return array(
-		);
-}
+    function get_title()
+    {
+        return "Forgot password";
+    }
 
-function get_page_title()
-{
-	return "Forgot password";
-}
+    function do_logic()
+    {
+        // Check if this is a true attempt
+        //
+        if (!strlen($this->state['input']['do']))
+            return;
 
-function do_page_logic()
-{
-	global $state, $database;
+        // Check if user present
+        //
+        if (!strlen($this->state['input']['username'])) {
+            $this->add_message('error', 'Please enter a username.', '');
+            return;
+        }
 
-	// Check if this is a true attempt
-	//
-	if (!strlen($state['input']['do']))
-		return;
+        $factory = new BaseFactory($this->database);
 
-	// Check if user present
-	//
-	if (!strlen($state['input']['username'])) {
-		set_message('error', 'Please enter a username.', '');
-		return;
-	}
+        // Retrieve email address
+        //
+        $user = $factory->get_user_by_username($this->state['input']['username'], 'UserBasic');
 
-    $factory = new BaseFactory($database);
+        if ($user !== FALSE)
+            $user->send_new_password();
 
-	// Retrieve email address
-	//
-    $user = $factory->get_user_by_username($state['input']['username'], 'UserBasic');
+        // Redirect to main sceen
+        //
+        header("Location: /?mtype=success&message=".urlencode('New password mailed to registered email account.'));
+    }
 
-    if ($user !== FALSE)
-        $user->send_new_password();
-
-	// Redirect to main sceen
-	//
-	header("Location: /?mtype=success&message=".urlencode('New password mailed to registered email account.'));
-}
-
-function display_header()
-{
-?>
-<?
-}
-
-function display_page()
-{
+    function display_content()
+    {
 ?>
 <form method="post" class="forgot_password_form" action="/forgot_password">
 	<fieldset class="register">
@@ -73,5 +62,6 @@ function display_page()
 	</fieldset>
 </form>
 <?
-}
+    }
+};
 ?>

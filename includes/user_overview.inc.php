@@ -1,45 +1,36 @@
 <?php
-function get_page_filter()
+require_once('page_basic.inc.php');
+
+class PageUserOverview extends PageBasic
 {
-	return array(
-	);
-}
+    static function get_permissions()
+    {
+        return array(
+                'logged_in',
+                'user_management'
+                );
+    }
 
-function get_page_permissions()
-{
-	return array(
-		'logged_in',
-		'user_management'
-	);
-}
+    function get_title()
+    {
+        return "User overview";
+    }
 
-function get_page_title()
-{
-	return "User overview";
-}
+    function do_logic()
+    {
+        // Retrieve users
+        //
+        $result = $this->database->Query('SELECT id, username, name, email FROM users ORDER BY username', array());
 
-function do_page_logic()
-{
-	global $page_content, $database;
+        $this->page_content['user_info'] = array();
 
-	// Retrieve users
-	//
-	$result = $database->Query('SELECT id, username, name, email FROM users ORDER BY username', array());
-	
-	$page_content['user_info'] = array();
+        foreach ($result as $k => $row) {
+            array_push($this->page_content['user_info'], array('id' => $row[0], 'username' => $row[1], 'name' => $row[2], 'email' => $row[3]));
+        }
+    }
 
-	foreach ($result as $k => $row) {
-		array_push($page_content['user_info'], array('id' => $row[0], 'username' => $row[1], 'name' => $row[2], 'email' => $row[3]));
-	}
-}
-
-function display_header()
-{
-}
-
-function display_page()
-{
-	global $page_content;
+    function display_content()
+    {
 ?>
 <table>
   <thead>
@@ -52,17 +43,18 @@ function display_page()
   </thead>
   <tbody>
 <?
-foreach ($page_content['user_info'] as $users) {
-	print("<tr>\n");
-	print("  <td><a href=\"/manage_user?user_id=".$users['id']."\">".$users['username']."</a></td>\n");
-	print("  <td>".$users['name']."</td>\n");
-	print("  <td>".$users['email']."</td>\n");
-	print("  <td><a href=\"/grab_identity?user_id=".$users['id']."\">Grab ".$users['username']."</a></td>\n");
-	print("</tr>\n");
-}
+        foreach ($this->page_content['user_info'] as $users) {
+        	print("<tr>\n");
+            print("  <td><a href=\"/manage_user?user_id=".$users['id']."\">".$users['username']."</a></td>\n");
+            print("  <td>".$users['name']."</td>\n");
+            print("  <td>".$users['email']."</td>\n");
+            print("  <td><a href=\"/grab_identity?user_id=".$users['id']."\">Grab ".$users['username']."</a></td>\n");
+            print("</tr>\n");
+        }
 ?>
   </tbody>
 </table>
 <?
-}
+    }
+};
 ?>

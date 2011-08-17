@@ -1,50 +1,46 @@
 <?php
-function get_page_filter()
-{
-	return array(
-		'name' => FORMAT_FILE_NAME,
-		'file' => FORMAT_FILE_LOCATION,
-        'do'   => 'yes'
-	);
-}
+require_once('page_basic.inc.php');
 
-function get_page_permissions()
+class PageDownload extends PageBasic
 {
-	return array();
-}
-
-function get_page_title()
-{
-	return "Download";
-}
-
-function do_page_logic()
-{
-    global $state;
-
-    if ($state['input']['do'] == 'yes')
+    static function get_filter()
     {
-        header('Location: '.$state['input']['file']);
+        return array(
+                'name' => FORMAT_FILE_NAME,
+                'file' => FORMAT_FILE_LOCATION,
+                'do'   => 'yes'
+                );
     }
-}
 
-function display_header()
-{
-    global $state;
-
-    if (!strlen($state['input']['file']))
-        return;
-?>
-  <meta http-equiv="refresh" content="3; /download?do=yes&file=<?=$state['input']['file']?>">
-<?
-}
-
-function display_page()
-{
-	global $state;
-
-    if (!strlen($state['input']['file']))
+    function get_title()
     {
+        return "Download ".$this->page_content['name'];
+    }
+
+    function do_logic()
+    {
+        $this->page_content['name'] = $this->state['input']['name'];
+        $this->page_content['file'] = $this->state['input']['file'];
+
+        if ($this->state['input']['do'] == 'yes')
+        {
+            header('Location: '.$this->state['input']['file']);
+        }
+    }
+
+    function display_header()
+    {
+        if (!strlen($this->page_content['file']))
+            return;
+        ?>
+            <meta http-equiv="refresh" content="3; /download?do=yes&file=<?=$this->page_content['file']?>">
+            <?
+    }
+
+    function display_content()
+    {
+        if (!strlen($this->page_content['file']))
+        {
 ?>
 <div class="source_item">
   <h2>File download</h2>
@@ -53,16 +49,17 @@ function display_page()
   </div>
 </div>
 <?
-    } else {
+        } else {
 ?>
 <div class="source_item">
   <h2>File download</h2>
   <div class="source_content">
-    <p>Downloading of <b><?=$state['input']['name']?></b> should start automatically.</p>
-    <p>If the downloading does not start within 10 seconds, you can manually start the download by clicking on the following link: <a href="<?=$state['input']['file']?>"><?=$state['input']['name']?></a>.</p>
+    <p>Downloading of <b><?=$this->page_content['name']?></b> should start automatically.</p>
+    <p>If the downloading does not start within 10 seconds, you can manually start the download by clicking on the following link: <a href="<?=$this->page_content['file']?>"><?=$this->page_content['name']?></a>.</p>
   </div>
 </div>
 <?
+        }
     }
-}
+};
 ?>

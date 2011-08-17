@@ -1,7 +1,10 @@
 <?php
 require_once('base_logic.inc.php');
+require_once('page_basic.inc.php');
 
-function get_page_filter()
+class PageChangePassword extends PageBasic
+{
+    static function get_filter()
 {
 	return array(
 		'orig_password' => FORMAT_PASSWORD,
@@ -11,70 +14,72 @@ function get_page_filter()
 	);
 }
 
-function get_page_permissions()
+static function get_permissions()
 {
 	return array(
 		'logged_in'
 		);
 }
 
-function get_page_title()
+function get_title()
 {
 	return "Change password";
 }
 
-function do_page_logic()
+function do_logic()
 {
-	global $state, $database;
-
 	// Check if this is a true attempt
 	//
-	if (!strlen($state['input']['do']))
+	if (!strlen($this->state['input']['do']))
 		return;
+
+    $orig_password = $this->state['input']['orig_password'];
+    $password = $this->state['input']['password'];
+    $password2 = $this->state['input']['password2'];
 
     // Check if javascript is enabled
     //
-    if (!strlen($state['input']['password']))
+    if (!strlen($password))
     {
-        set_message('error', 'Javascript is disabled.', 'Javascript is disabled or is not allowed. It is not possible to continue without Javascript.');
+        $this->add_message('error', 'Javascript is disabled.', 'Javascript is disabled or is not allowed. It is not possible to continue without Javascript.');
         return;
     }
 
 	// Check if passwords are present
 	//
-	if (!strlen($state['input']['orig_password']) || $state['input']['orig_password'] == EMPTY_PASSWORD_HASH_SHA1) {
-		set_message('error', 'Please enter original password.', 'Passwords can contain any printable character.');
+	if (!strlen($orig_password) || $orig_password == EMPTY_PASSWORD_HASH_SHA1) {
+		$this->add_message('error', 'Please enter original password.', 'Passwords can contain any printable character.');
 		return;
 	}
 
-	if (!strlen($state['input']['password']) || $state['input']['password'] == EMPTY_PASSWORD_HASH_SHA1) {
-		set_message('error', 'Please enter a password.', 'Passwords can contain any printable character.');
+	if (!strlen($password) || $password == EMPTY_PASSWORD_HASH_SHA1) {
+		$this->add_message('error', 'Please enter a password.', 'Passwords can contain any printable character.');
 		return;
 	}
 
-	if (!strlen($state['input']['password2']) || $state['input']['password2'] == EMPTY_PASSWORD_HASH_SHA1) {
-		set_message('error', 'Please enter the password verification.', 'Password verification should match password.');
+	if (!strlen($password2) || $password2 == EMPTY_PASSWORD_HASH_SHA1) {
+		$this->add_message('error', 'Please enter the password verification.', 'Password verification should match password.');
 		return;
 	}
 
-	if ($state['input']['password'] != $state['input']['password2']) {
-		set_message('error', 'Passwords don\'t match.', 'Password and password verification should be the same.');
+	if ($password != $password2) {
+		$this->add_message('error', 'Passwords don\'t match.', 'Password and password verification should be the same.');
 		return;
 	}
 
-    $factory = new BaseFactory($database);
-    $user = $factory->get_user($state['user_id']);
-    $result = $user->change_password($state['input']['orig_password'], $state['input']['password']);
+    $factory = new BaseFactory($this->database);
+    $user = $factory->get_user($this->state['user_id']);
+    $result = $user->change_password($orig_password, $password);
 
     if ($result == User::ERR_ORIG_PASSWORD_MISMATCH)
     {
-		set_message('error', 'Original password is incorrect.', 'Please re-enter correct password.');
+		$this->add_message('error', 'Original password is incorrect.', 'Please re-enter correct password.');
 		return;
 	}
 
     if ($result != User::RESULT_SUCCESS)
     {
-        set_message('error', 'Unknown errorcode: \''.$result."'", "Please inform the administrator.");
+        $this->add_message('error', 'Unknown errorcode: \''.$result."'", "Please inform the administrator.");
         return;
     }
 
@@ -90,9 +95,8 @@ function display_header()
 <?
 }
 
-function display_page()
+function display_content()
 {
-	global $state;
 ?>
 <form method="post" class="contactform" action="/change_password" enctype="multipart/form-data" onsubmit="password.value = hex_sha1(password_helper.value); password2.value = hex_sha1(password2_helper.value); orig_password.value = hex_sha1(orig_password_helper.value); return true;">
 	<fieldset class="register">
@@ -117,4 +121,5 @@ function display_page()
 </form>
 <?
 }
+};
 ?>

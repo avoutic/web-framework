@@ -1,45 +1,38 @@
 <?php
-function get_page_filter()
+require_once('page_basic.inc.php');
+
+class PageLogoff extends PageBasic
 {
-	return array(
-		'return' => FORMAT_RETURN_PAGE,
-	);
-}
+    static function get_filter()
+    {
+        return array(
+                'return_page' => FORMAT_RETURN_PAGE,
+                );
+    }
 
-function get_page_permissions()
-{
-	return array();
-}
+    function get_title()
+    {
+        return "Logoff";
+    }
 
-function get_page_title()
-{
-	return "Logoff";
-}
+    function do_logic()
+    {
+        $_SESSION['logged_in'] = false;
+        $_SESSION['user_id'] = "";
+        $_SESSION['permissions'] = array();
 
-function do_page_logic()
-{
-	global $state;
+        session_destroy();
 
-	$_SESSION['logged_in'] = false;
-	$_SESSION['user_id'] = "";
-	$_SESSION['permissions'] = array();
+        header("Location: /".$this->state['input']['return_page']);
+    }
 
-	session_destroy();
-
-	header("Location: /".$state['input']['return']);
-}
-
-function display_header()
-{
-}
-
-function display_page()
-{
-	global $state;
+    function display_content()
+    {
 ?>
 <div>
-Logging off.
+  Logging off.
 </div>
 <?
-}
+    }
+};
 ?>

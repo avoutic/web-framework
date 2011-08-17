@@ -1,92 +1,91 @@
 <?php
 require_once('base_logic.inc.php');
+require_once('page_basic.inc.php');
 
-function get_page_filter()
+class PageChangeEmail extends PageBasic
 {
-	return array(
-		'email' => FORMAT_EMAIL,
-		'do' => 'yes'
-	);
-}
-
-function get_page_permissions()
-{
-	return array(
-		'logged_in'
-		);
-}
-
-function get_page_title()
-{
-	return "Change email address";
-}
-
-function do_page_logic()
-{
-	global $state, $database;
-
-	// Check if this is a true attempt
-	//
-	if (!strlen($state['input']['do']))
-		return;
-
-	// Check if email address is present
-	//
-	if (!strlen($state['input']['email'])) {
-        set_message('error', 'Please enter a correct Email address.', 'Email addresses can contain letters, digits, hyphens, underscores, dots and at\'s.');
-        return;
-    }
-
-	// Change email
-	//
-    $factory = new BaseFactory($database);
-    $user = $factory->get_user($state['user_id'], 'UserBasic');
-
-    $result = $user->change_email($state['input']['email']);
-
-    if ($result == User::ERR_DUPLICATE_EMAIL)
+    static function get_filter()
     {
-        set_message('error', 'E-mail address is already in use in another account.', 'The e-mail address is already in use and cannot be re-used in this account. Please choose another address.');
-        return;
+        return array(
+                'email' => FORMAT_EMAIL,
+                'do' => 'yes'
+                );
     }
-    if ($result != User::RESULT_SUCCESS)
+
+    static function get_permissions()
     {
-        set_message('error', 'Unknown errorcode: \''.$result."'", "Please inform the administrator.");
-        return;
+        return array(
+                'logged_in'
+                );
     }
 
-    // Logout user
-    //
-    $_SESSION['logged_in'] = false;
-    $_SESSION['user_id'] = "";
-    $_SESSION['permissions'] = array();
+    function get_title()
+    {
+        return "Change email address";
+    }
 
-    session_destroy();
+    function do_logic()
+    {
+        $email = $this->state['input']['email'];
+        $this->page_content['email'] = $email;
 
-    // Send verification mail
-    //
-    $user->send_verify_mail();
+        // Check if this is a true attempt
+        //
+        if (!strlen($this->state['input']['do']))
+            return;
 
-    // Redirect to verification request screen
-    //
-    header('Location: /?mtype=success&message='.urlencode('Verification mail has been sent.').'&extra_message='.urlencode('The verification mail has been sent. Please wait for the e-mail in your inbox and follow the instructions.'));
-    exit();
-}
+        // Check if email address is present
+        //
+        if (!strlen($email)) {
+            $this->add_message('error', 'Please enter a correct Email address.', 'Email addresses can contain letters, digits, hyphens, underscores, dots and at\'s.');
+            return;
+        }
 
-function display_header()
-{
-}
+        // Change email
+        //
+        $factory = new BaseFactory($this->database);
+        $user = $factory->get_user($this->state['user_id'], 'UserBasic');
 
-function display_page()
-{
-	global $state;
+        $result = $user->change_email($email);
+
+        if ($result == User::ERR_DUPLICATE_EMAIL)
+        {
+            $this->add_message('error', 'E-mail address is already in use in another account.', 'The e-mail address is already in use and cannot be re-used in this account. Please choose another address.');
+            return;
+        }
+        if ($result != User::RESULT_SUCCESS)
+        {
+            $this->add_message('error', 'Unknown errorcode: \''.$result."'", "Please inform the administrator.");
+            return;
+        }
+
+        // Logout user
+        //
+        $_SESSION['logged_in'] = false;
+        $_SESSION['user_id'] = "";
+        $_SESSION['permissions'] = array();
+
+        session_destroy();
+
+        // Send verification mail
+        //
+        $user->send_verify_mail();
+
+        // Redirect to verification request screen
+        //
+        header('Location: /?mtype=success&message='.urlencode('Verification mail has been sent.').'&extra_message='.urlencode('The verification mail has been sent. Please wait for the e-mail in your inbox and follow the instructions.'));
+        exit();
+    }
+
+    function display_content()
+    {
 ?>
 <form method="post" class="contactform" action="/change_email" enctype="multipart/form-data">
 	<fieldset class="register">
 		<input type="hidden" name="do" value="yes"/>
 		<legend>Change email</legend>
         <p>
-            <label class="left" for="email">E-mail</label> <input type="text" class="field" id="email" name="email" value="<?=$state['input']['email']?>"/>
+            <label class="left" for="email">E-mail</label> <input type="text" class="field" id="email" name="email" value="<?=$this->page_content['email']?>"/>
         </p>
 	</fieldset>
 	<p>
@@ -94,5 +93,6 @@ function display_page()
 	</p>
 </form>
 <?
-}
+    }
+};
 ?>

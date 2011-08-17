@@ -2,11 +2,15 @@
 class PageBasic
 {
     protected $state = array();
+    protected $database;
+    protected $frame_file;
     protected $page_content = array();
 
-    function __construct($state)
+    function __construct($database, $state, $frame_file)
     {
+        $this->database = $database;
         $this->state = $state;
+        $this->frame_file = $frame_file;
     }
 
     static function get_filter()
@@ -17,6 +21,11 @@ class PageBasic
     function get_title()
     {
         return "No Title Defined";
+    }
+
+    function get_content_title()
+    {
+        return $this->get_title();
     }
 
     function get_keywords()
@@ -45,13 +54,26 @@ class PageBasic
     {
     }
 
-    function display_page()
+    function display_header()
     {
-        $this->do_logic();
+        return "";
+    }
+
+    function display_content()
+    {
+        return "";
+    }
+
+    function display_frame()
+    {
+        global $site_includes;
+
         unset($this->state['input']);
         $this->page_content['title'] = $this->get_title();
         $this->page_content['keywords'] = $this->get_keywords();
         $this->page_content['description'] = $this->get_description();
+
+        require($site_includes.$this->frame_file);
     }
 };
 ?>
