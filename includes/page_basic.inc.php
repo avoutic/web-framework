@@ -67,11 +67,7 @@ class PageBasic
     function display_frame()
     {
         global $site_includes;
-
         unset($this->state['input']);
-        $this->page_content['title'] = $this->get_title();
-        $this->page_content['keywords'] = $this->get_keywords();
-        $this->page_content['description'] = $this->get_description();
 
         require($site_includes.$this->frame_file);
     }
