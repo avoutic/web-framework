@@ -39,6 +39,16 @@ class MailMessage
         return TRUE;
     }
 
+    function set_recipient($address)
+    {
+        if (!preg_match('/^\s*'.FORMAT_EMAIL.'\s*$/m', $address))
+            return ERROR_INVALID_EMAIL;
+
+        $this->recipients = array($address);
+
+        return TRUE;
+    }
+
     function add_cc($address)
     {
         if (!preg_match('/^\s*'.FORMAT_EMAIL.'\s*$/m', $address))
