@@ -256,6 +256,7 @@ if (!is_file($include_page_file)) {
 	}
 }
 
+require($includes.'page_basic.inc.php');
 require($include_page_file);
 
 $object_name = preg_replace('/(?:^|_)(.?)/e',"strtoupper('$1')", 'page_'.$include_page);
