@@ -1,21 +1,35 @@
 <?php
-class PageBasic
+class PageCore
 {
     protected $state = array();
     protected $database;
-    protected $frame_file;
-    protected $page_content = array();
 
-    function __construct($database, $state, $frame_file)
+    function __construct($database, $state)
     {
         $this->database = $database;
         $this->state = $state;
-        $this->frame_file = $frame_file;
     }
 
     static function get_filter()
     {
         return array();
+    }
+
+    static function get_permissions()
+    {
+        return array();
+    }
+};
+
+class PageBasic extends PageCore
+{
+    protected $frame_file;
+    protected $page_content = array();
+
+    function __construct($database, $state, $frame_file)
+    {
+        parent::__construct($database, $state);
+        $this->frame_file = $frame_file;
     }
 
     function get_title()
@@ -38,11 +52,6 @@ class PageBasic
         return "";
     }
 
-    static function get_permissions()
-    {
-        return array();
-    }
-
     function add_message($type, $message, $extra_message = "")
     {
         $this->state['message']['mtype'] = $type;
@@ -61,7 +70,7 @@ class PageBasic
 
     function display_content()
     {
-        return "";
+        return "No content.";
     }
 
     function display_frame()
@@ -69,7 +78,8 @@ class PageBasic
         global $site_includes;
         unset($this->state['input']);
 
-        require($site_includes.$this->frame_file);
+        if (strlen($this->frame_file))
+            require($site_includes.$this->frame_file);
     }
 };
 ?>

@@ -233,6 +233,21 @@ class BaseFactory
         return new $type($this->database, $user_id);
     }
 
+    function get_user_list()
+    {
+        $result = $this->database->Query('SELECT u.id, u.name FROM users AS u', array());
+
+        if ($result === FALSE)
+            die('Failed to retrieve information.');
+
+        $info = array();
+
+        foreach ($result as $k => $row)
+            array_push($info, array('id' => $row[0], 'name' => $row[1]));
+
+        return $info;
+    }
+
     function get_user_by_username($username, $type = 'User')
     {
         $result = $this->database->Query('SELECT id FROM users WHERE username = ?',
