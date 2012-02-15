@@ -211,9 +211,9 @@ require($includes.'auth.inc.php');
 
 $authenticator = null;
 if ($config['auth_mode'] == 'form')
-    $authenticator = new AuthForm($database, $config['form_authenticator']);
+    $authenticator = new AuthForm($global_database, $config['authenticator']);
 else if ($config['auth_mode'] == 'www-authenticate')
-    $authenticator = new AuthWwwAuthenticate($database, $config['www_authenticator']);
+    $authenticator = new AuthWwwAuthenticate($global_database, $config['authenticator']);
 else
     die('No valid authenticator found.');
 
