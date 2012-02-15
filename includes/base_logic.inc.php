@@ -10,7 +10,7 @@ class User
     const ERR_ORIG_PASSWORD_MISMATCH = 2;
 
     protected $database;
-    protected $id;
+    public $id;
 
     function __construct($database, $id)
     {
@@ -253,7 +253,7 @@ class BaseFactory
         $result = $this->database->Query('SELECT id FROM users WHERE username = ?',
                     array($username));
 
-        if ($result->RecordCount() != 1) 
+        if ($result === FALSE || $result->RecordCount() != 1) 
             return FALSE;
 
         return $this->get_user($result->fields['id'], $type);

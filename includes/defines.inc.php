@@ -1,6 +1,7 @@
 <?php
 # Format defines for verifying input
 #
+define("FORMAT_ID", '\d+');
 define("FORMAT_USERNAME", '[\w_\-\.]+');
 define("FORMAT_PASSWORD", '[\w]{40}');
 define("FORMAT_NAME", '[\w _\-\.\']+');

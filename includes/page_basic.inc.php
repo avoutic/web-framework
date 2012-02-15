@@ -3,11 +3,13 @@ class PageCore
 {
     protected $state = array();
     protected $database;
+    protected $config;
 
-    function __construct($database, $state)
+    function __construct($database, $state, $config)
     {
         $this->database = $database;
         $this->state = $state;
+        $this->config = $config;
     }
 
     static function get_filter()
@@ -26,10 +28,10 @@ class PageBasic extends PageCore
     protected $frame_file;
     protected $page_content = array();
 
-    function __construct($database, $state, $frame_file)
+    function __construct($database, $state, $config)
     {
-        parent::__construct($database, $state);
-        $this->frame_file = $frame_file;
+        parent::__construct($database, $state, $config);
+        $this->frame_file = $config['default_frame_file'];
     }
 
     function get_title()
@@ -81,5 +83,24 @@ class PageBasic extends PageCore
         if (strlen($this->frame_file))
             require($site_includes.$this->frame_file);
     }
+
+    function html_main()
+    {
+        $this->do_logic();
+        $this->display_frame();
+    }
 };
+
+class PageService extends PageCore
+{
+    function output_json($success, $output)
+    {
+        print(json_encode(
+                    array(
+                        'success' => $success,
+                        'result' => $output
+                        )));
+    }
+};
+
 ?>

@@ -22,12 +22,20 @@ $base_config = array(
         'database_user' => '',
         'database_password' =>'',
         'database_database' => '',
+        'auth_mode' => 'form',            // form, oauth or www-authenticate
         'server_name' => $_SERVER['SERVER_NAME'],
         'document_root' => $_SERVER['DOCUMENT_ROOT'],
         'memcache_enabled' => false,
         'memcache_host' => 'localhost',
         'memcache_port' => '11211',
-        'default_frame_file' => ''
+        'authenticator' => array(
+            'site_login_page' => 'login',
+            'default_login_return' => 'main',
+            'authentication_required_message' => 'Authentication required. Please login.'
+        ),
+        'page' => array(
+            'default_frame_file' => ''
+        )
 );
 
 function http_error($code, $short_message, $message)
@@ -35,6 +43,11 @@ function http_error($code, $short_message, $message)
     header("HTTP/1.0 $code $short_message");
     print "$message";
     exit(0);
+}
+
+function send_404()
+{
+    http_error(404, 'Not Found', '<h1>Page not found</h1>\nPage not found. Please return to the <a href="/">main page</a>.');
 }
 
 if (!is_file($site_includes."config.php"))
@@ -64,23 +77,20 @@ if ($config['database_enabled'] == true)
     require($includes.'database.inc.php');
 }
 
-# Check site specific preconditions
-#
-if (!is_file($site_includes."site_defines.inc.php"))
-{
-    http_error(500, 'Internal Server Error', "<h1>Requirement error</h1>\nOne of the required files is not found on the server. Please contact the administrator.");
-}
-
-if (!strlen($config['default_frame_file']))
-{
-    http_error(500, 'Internal Server Error', "<h1>Requirement error</h1>\nOne of the required configuration settings is not found on the server. Please contact the administrator.");
-}
-
 # Load global and site specific defines
 #
 require($includes."defines.inc.php");
-require($site_includes."site_defines.inc.php");
 
+if (is_file($site_includes."site_defines.inc.php"))
+    include_once($site_includes."site_defines.inc.php");
+
+# Load route array if available
+#
+$route_array = array();
+
+if (is_file($site_includes."site_logic.inc.php"))
+    include_once($site_includes."site_logic.inc.php");
+ 
 # Check if needed site defines are entered
 #
 if (!defined('MAIL_ADDRESS'))
@@ -95,15 +105,6 @@ if (!defined('SITE_NAME'))
 if (!defined('SITE_DEFAULT_PAGE'))
 	define('SITE_DEFAULT_PAGE', 'main');
 
-if (!defined('SITE_LOGIN_PAGE'))
-	define('SITE_LOGIN_PAGE', 'login');
-
-if (!defined('DEFAULT_LOGIN_RETURN'))
-	define('DEFAULT_LOGIN_RETURN', 'main');
-
-if(!defined('AUTHENTICATION_REQUIRED_MESSAGE'))
-    define('AUTHENTICATION_REQUIRED_MESSAGE', 'Authentication required. Please login.');
-
 ####################################################################
 
 function validate_input($filter, $item)
@@ -116,7 +117,9 @@ function validate_input($filter, $item)
 	$str = "";
 	$global_state['input'][$item] = "";
 
-	if (isset($_POST[$item]))
+    if (isset($global_state['raw_post'][$item]))
+        $str = $global_state['raw_post'][$item];
+	else if (isset($_POST[$item]))
 		$str = $_POST[$item];
 	else if (isset($_GET[$item]))
 		$str = $_GET[$item];
@@ -141,9 +144,10 @@ function set_message($type, $message, $extra_message)
 {
 	global $global_state;
 
-	$global_state['message']['mtype'] = $type;
-	$global_state['message']['message'] = $message;
-	$global_state['message']['extra_message'] = $extra_message;
+    array_push($global_state['messages'], array(
+        'mtype' => $type,
+        'message' => $message,
+        'extra_message' => $extra_message));
 }
 
 $fixed_page_filter = array(
@@ -160,8 +164,13 @@ $global_state['debug'] = false;
 $global_state['logged_in'] = false;
 $global_state['permissions'] = array();
 $global_state['input'] = array();
-$global_state['message'] = array();
-$global_state['page_data'] = array();
+$global_state['messages'] = array();
+
+$global_state['raw_post'] = array();
+$data = file_get_contents("php://input");
+$data = json_decode($data, true);
+if (is_array($data))
+    $global_state['raw_post'] = $data;
 
 session_start();
 
@@ -196,83 +205,122 @@ $global_state['message']['mtype'] = $global_state['input']['mtype'];
 $global_state['message']['message'] = $global_state['input']['message'];
 $global_state['message']['extra_message'] = $global_state['input']['extra_message'];
 
+# Create Authenticator
+#
+require($includes.'auth.inc.php');
+
+$authenticator = null;
+if ($config['auth_mode'] == 'form')
+    $authenticator = new AuthForm($database, $config['form_authenticator']);
+else if ($config['auth_mode'] == 'www-authenticate')
+    $authenticator = new AuthWwwAuthenticate($database, $config['www_authenticator']);
+else
+    die('No valid authenticator found.');
+
 # Check if logged in.
 #
-if (isset($_SESSION['logged_in']))
-{
-	# Check status
-	# TODO: CHECK LIFETIME!
+$logged_in = $authenticator->get_logged_in();
 
+if ($logged_in !== FALSE)
+{
+    $global_state['auth'] = $logged_in;
 	$global_state['logged_in'] = true;
 
 	# Retrieve id / long name / short name
 	#
-	$global_state['user_id'] = $_SESSION['user_id'];
-	$global_state['username'] = $_SESSION['username'];
-	$global_state['name'] = $_SESSION['name'];
-	$global_state['email'] = $_SESSION['email'];
+	$global_state['user_id'] = $global_state['auth']['user_id'];
+	$global_state['username'] = $global_state['auth']['username'];
+	$global_state['name'] = $global_state['auth']['name'];
+	$global_state['email'] = $global_state['auth']['email'];
 
-	if (isset($_SESSION['first_name']))
-        $global_state['first_name'] = $_SESSION['first_name'];
-	
-    if (isset($_SESSION['last_name']))
-        $global_state['last_name'] = $_SESSION['last_name'];
-	
 	# Set permissions in state
 	#
-	$global_state['permissions'] = $_SESSION['permissions'];
+	$global_state['permissions'] = $global_state['auth']['permissions'];
 }
 
 # Check page requested
 #
-$include_page = $global_state['input']['page'];
-if (!$include_page && isset($_GET['page']) && strlen($_GET['page']))
+$request_uri = '/';
+if (isset($_SERVER['REDIRECT_URL']))
+    $request_uri = $_SERVER['REDIRECT_URL'];
+
+$global_state['request_uri'] = $request_uri;
+
+$request_uri = $_SERVER['REQUEST_METHOD'].' '.$request_uri;
+
+if (!preg_match("/^\w+ [\w\-_\/]+$/m", $request_uri))
+    send_404();
+
+# Check if there is a route to follow
+#
+$target_info = null;
+foreach ($route_array as $route => $target)
 {
-    header("HTTP/1.0 404 Not Found");
-    print "<h1>Page not found</h1>\n";
-    print "Page not found. Please return to the <a href=\"/\">main page</a>.";
-    exit(0);
+    if (preg_match("!^$route$!", $request_uri, $matches))
+    {
+        $target_info = $target;
+        break;
+    }
+}
+
+$include_page = "";
+if ($target_info != null)
+{
+    $include_page = $target_info['include_file'];
+}
+else
+{
+    $include_page = $global_state['input']['page'];
+    if (!$include_page && isset($_GET['page']) && strlen($_GET['page']))
+        send_404();
+    $matches = null;
 }
 
 if (!$include_page) $include_page = SITE_DEFAULT_PAGE;
 
 # Check if page is allowed
 #
-if (in_array($include_page, $config['disabled_pages'])) {
-	header("HTTP/1.0 403 Page disabled");
-	print "<h1>Page has been disabled</h1>\n";
-	print "This page has been disabled. Please return to the main page.";
-	exit(0);
-}
+if (in_array($include_page, $config['disabled_pages']))
+    $authenticator->show_disabled();
 
 $include_page_file = $site_includes.$include_page.".inc.php";
 if (!is_file($include_page_file)) {
 	$include_page_file = $includes.$include_page.".inc.php";
-	if (!is_file($include_page_file)) {
-		header("HTTP/1.0 404 Not Found");
-		print "<h1>Page not found</h1>\n";
-		print "Page not found. Please return to the <a href=\"/\">main page</a>.";
-		exit(0);
-	}
+
+	if (!is_file($include_page_file))
+		send_404();
 }
 
 require($includes.'page_basic.inc.php');
 require($include_page_file);
 
-$object_name = preg_replace('/(?:^|_)(.?)/e',"strtoupper('$1')", 'page_'.$include_page);
+$object_name = "";
+$function_name = "";
+
+if ($target_info != null)
+{
+    $target = explode('.', $target_info['class']);
+    if (count($target) != 2)
+        die('Illegal target name.');
+
+    $object_name = $target[0];
+    $function_name = $target[1];
+}
+else
+{
+    $object_name = preg_replace('/(?:^|_)(.?)/e',"strtoupper('$1')", 'page_'.$include_page);
+    $function_name = "html_main";
+}
+
 $include_page_filter = NULL;
 $page_permissions = NULL;
 $page_obj = NULL;
 
-if (class_exists($object_name))
-{
-    $include_page_filter = $object_name::get_filter();
-    $page_permissions = $object_name::get_permissions();
-}
-else
-{
+if (!class_exists($object_name))
     http_error(500, 'Internal Server Error', "<h1>Object not found</h1>\nThe requested object could not be located. Please contact the administrator.");
-}
+
+$include_page_filter = $object_name::get_filter();
+$page_permissions = $object_name::get_permissions();
 
 if (!is_array($include_page_filter))
     die('Unexpected return value');
@@ -283,31 +331,23 @@ $has_permissions = user_has_permissions($page_permissions);
 
 if (!$has_permissions) {
 	if (!$global_state['logged_in']) {
-		# Redirect to login page
-        $query = $_SERVER['QUERY_STRING'];
-
-        if (substr($query, 0, 5) != 'page=')
-            http_error(500, 'Internal Server Error', '<h1>Unauthorized call to authorized page</h1>\nThe call order was wrong. Please contact the administrator.');
-        
-        $pos = strpos($query, '&');
-        if ($pos !== FALSE)
-            $query = substr($query, $pos);
-        else
-            $query = "";
-
-		header("Location: /".SITE_LOGIN_PAGE."?mtype=info&message=".urlencode(AUTHENTICATION_REQUIRED_MESSAGE)."&return_page=".urlencode($include_page)."&return_query=".urlencode($query));
+        $authenticator->redirect_login($include_page);
 		exit(0);
 	} else {
-		# Access denied
-		header("HTTP/1.0 403 Access Denied");
-		print "<h1>Access Denied</h1>\n";
-		print "You do not have the authorization to view this page. Please return to the main page.";
+        $authenticator->access_denied();
 		exit(0);
 	}
 }
 
-$page_obj = new $object_name($global_database, $global_state, $config['default_frame_file']);
-$page_obj->do_logic();
-unset($global_state['input']);
-$page_obj->display_frame();
+$page_obj = new $object_name($global_database, $global_state, $config['page']);
+$argument_count = 0;
+if (is_array($matches))
+    $argument_count = count($matches) - 1;
+
+if ($argument_count == 0)
+    $page_obj->$function_name();
+else if ($argument_count == 1)
+    $page_obj->$function_name($matches[1]);
+else
+    echo "No method for $argument_count yet..\n";
 ?>
