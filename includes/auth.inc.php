@@ -63,7 +63,7 @@ class AuthForm extends Authenticator
         $query = $_SERVER['QUERY_STRING'];
 
         if (substr($query, 0, 5) != 'page=')
-            http_error(500, 'Internal Server Error', '<h1>Unauthorized call to authorized page</h1>\nThe call order was wrong. Please contact the administrator.');
+            http_error(500, 'Internal Server Error', "<h1>Unauthorized call to authorized page</h1>\nThe call order was wrong. Please contact the administrator.");
 
         $pos = strpos($query, '&');
         if ($pos !== FALSE)
@@ -101,7 +101,7 @@ class AuthWwwAuthenticate extends Authenticator
         $username = $_SERVER['PHP_AUTH_USER'];
         $password = sha1($_SERVER['PHP_AUTH_PW']);
 
-        $factory = new BaseFactory($database);
+        $factory = new BaseFactory($this->database);
 
         $user = $factory->get_user_by_username($username, 'UserFull');
 
