@@ -10,8 +10,8 @@ abstract class Authenticator
         $this->config = $config;
     }
 
-    function get_logged_in();
-    function redirect_login();
+    abstract function get_logged_in();
+    abstract function redirect_login($target);
 
     function show_disabled()
     {
@@ -40,7 +40,7 @@ class AuthForm extends Authenticator
 
     function get_logged_in()
     {
-        if (!$_SESSION['logged_in'])
+        if (!isset($_SESSION['logged_in']))
             return FALSE;
 
         $info = array(
@@ -71,7 +71,7 @@ class AuthForm extends Authenticator
         else
             $query = "";
 
-        header('Location: /'.$this->config['site_login_page'].'?mtype=info&message='.urlencode(.$config['auth_required_page'].).'&return_page='.urlencode($target).'&return_query='.urlencode($query));
+        header('Location: /'.$this->config['site_login_page'].'?mtype=info&message='.urlencode($config['auth_required_page']).'&return_page='.urlencode($target).'&return_query='.urlencode($query));
         exit(0);
     }
 };
