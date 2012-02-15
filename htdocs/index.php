@@ -31,7 +31,7 @@ $base_config = array(
         'authenticator' => array(
             'site_login_page' => 'login',
             'default_login_return' => 'main',
-            'authentication_required_message' => 'Authentication required. Please login.'
+            'auth_required_message' => 'Authentication required. Please login.'
         ),
         'page' => array(
             'default_frame_file' => ''
@@ -201,9 +201,8 @@ if ($config['memcache_enabled'] == true)
 
 array_walk($fixed_page_filter, 'validate_input');
 
-$global_state['message']['mtype'] = $global_state['input']['mtype'];
-$global_state['message']['message'] = $global_state['input']['message'];
-$global_state['message']['extra_message'] = $global_state['input']['extra_message'];
+if (strlen($global_state['input']['mtype']))
+    set_message($global_state['input']['mtype'], $global_state['input']['message'], $global_state['input']['extra_message']);
 
 # Create Authenticator
 #
