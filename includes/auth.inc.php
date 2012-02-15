@@ -71,7 +71,7 @@ class AuthForm extends Authenticator
         else
             $query = "";
 
-        header('Location: /'.$this->config['site_login_page'].'?mtype=info&message='.urlencode($config['auth_required_page']).'&return_page='.urlencode($target).'&return_query='.urlencode($query));
+        header('Location: /'.$this->config['site_login_page'].'?mtype=info&message='.urlencode($this->config['auth_required_message']).'&return_page='.urlencode($target).'&return_query='.urlencode($query));
         exit(0);
     }
 };
