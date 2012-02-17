@@ -14,7 +14,7 @@ abstract class DataCore
         $this->table_name = $table_name;
         $this->base_fields = $base_fields;
 
-        this->fill_fields();
+        $this->fill_fields();
     }
 
     static function exists($database, $id)
@@ -87,7 +87,7 @@ abstract class DataCore
 
 class FactoryCore
 {
-    private $database;
+    protected $database;
 
     function __construct($database)
     {
@@ -111,6 +111,6 @@ class FactoryCore
             die("Core Object not known!");
 
         return $type::exists($this->database, $id);
-    };
+    }
 };
 ?>
