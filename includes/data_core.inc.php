@@ -13,6 +13,8 @@ abstract class DataCore
         $this->id = $id;
         $this->table_name = $table_name;
         $this->base_fields = $base_fields;
+
+        this->fill_fields();
     }
 
     static function exists($database, $id)
@@ -81,5 +83,34 @@ abstract class DataCore
                     array($this->id)))
             die('Failed to delete item.');
     }
+};
+
+class FactoryCore
+{
+    private $database;
+
+    function __construct($database)
+    {
+        $this->database = $database;
+    }
+
+    protected function get_core_object($type, $id)
+    {
+        if (!class_exists($type))
+            die("Core Object not known!");
+
+        if (FALSE === $type::exists($this->database, $id))
+            return FALSE;
+
+        return new $type($this->database, $id);
+    }
+
+    protected function core_object_exists($type, $id)
+    {
+        if (!class_exists($type))
+            die("Core Object not known!");
+
+        return $type::exists($this->database, $id);
+    };
 };
 ?>

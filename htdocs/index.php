@@ -47,7 +47,7 @@ function http_error($code, $short_message, $message)
 
 function send_404()
 {
-    http_error(404, 'Not Found', '<h1>Page not found</h1>\nPage not found. Please return to the <a href="/">main page</a>.');
+    http_error(404, 'Not Found', "<h1>Page not found</h1>\nPage not found. Please return to the <a href=\"/\">main page</a>.");
 }
 
 if (!is_file($site_includes."config.php"))
