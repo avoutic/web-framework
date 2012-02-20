@@ -93,8 +93,14 @@ class PageBasic extends PageCore
 
 class PageService extends PageCore
 {
-    function output_json($success, $output)
+    function output_json($success, $output, $direct = false)
     {
+        if ($direct && $success)
+        {
+            print(json_encode($output));
+            return;
+        }
+
         print(json_encode(
                     array(
                         'success' => $success,

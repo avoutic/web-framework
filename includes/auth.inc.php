@@ -126,4 +126,46 @@ class AuthWwwAuthenticate extends Authenticator
         print "Please include a WWW-Authenticate header field in the request.\n";
     }
 };
+
+class AuthOAuth2 extends Authenticator
+{
+    function __construct($database, $config)
+    {
+        parent::__construct($database, $config);
+    }
+
+    function get_logged_in()
+    {
+        if (!isset($_SESSION['logged_in']))
+            return FALSE;
+
+        $info = array(
+            'user_id' => $_SESSION['user_id'],
+            'username' => $_SESSION['username'],
+            'name' => $_SESSION['name'],
+            'email' => $_SESSION['email'],
+            'oauth_token' => $_SESSION['oauth_token'],
+            'oauth_token_secret' => $_SESSION['oauth_token_secret'],
+            'permissions' => $_SESSION['permissions']);
+
+        return $info;
+    }
+
+    function redirect_login($target)
+    {
+        $query = $_SERVER['QUERY_STRING'];
+
+        if (substr($query, 0, 5) != 'page=')
+            http_error(500, 'Internal Server Error', "<h1>Unauthorized call to authorized page</h1>\nThe call order was wrong. Please contact the administrator.");
+
+        $pos = strpos($query, '&');
+        if ($pos !== FALSE)
+            $query = substr($query, $pos);
+        else
+            $query = "";
+
+        header('Location: /'.$this->config['site_login_page'].'?mtype=info&message='.urlencode($this->config['auth_required_message']).'&return_page='.urlencode($target).'&return_query='.urlencode($query));
+        exit(0);
+    }
+};
 ?>

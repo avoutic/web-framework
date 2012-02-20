@@ -22,7 +22,7 @@ $base_config = array(
         'database_user' => '',
         'database_password' =>'',
         'database_database' => '',
-        'auth_mode' => 'form',            // form, oauth or www-authenticate
+        'auth_mode' => 'form',            // form, oauth2 or www-authenticate
         'server_name' => $_SERVER['SERVER_NAME'],
         'document_root' => $_SERVER['DOCUMENT_ROOT'],
         'memcache_enabled' => false,
@@ -213,6 +213,8 @@ if ($config['auth_mode'] == 'form')
     $authenticator = new AuthForm($global_database, $config['authenticator']);
 else if ($config['auth_mode'] == 'www-authenticate')
     $authenticator = new AuthWwwAuthenticate($global_database, $config['authenticator']);
+else if ($config['auth_mode'] == 'oauth2')
+    $authenticator = new AuthOAuth2($global_database, $config['authenticator']);
 else
     die('No valid authenticator found.');
 

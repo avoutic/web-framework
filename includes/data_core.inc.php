@@ -4,22 +4,20 @@ abstract class DataCore
     protected $database;
     public $id;
 
-    protected $table_name;
-    protected $base_fields;
+    static protected $table_name;
+    static protected $base_fields;
 
-    function __construct($database, $id, $table_name, $base_fields)
+    function __construct($database, $id)
     {
         $this->database = $database;
         $this->id = $id;
-        $this->table_name = $table_name;
-        $this->base_fields = $base_fields;
 
         $this->fill_fields();
     }
 
     static function exists($database, $id)
     {
-        $result = $database->Query('SELECT id FROM '.$this->table_name.
+        $result = $database->Query('SELECT id FROM '.static::$table_name.
                                    ' WHERE id = ?', array($id));
 
         if ($result === FALSE)
@@ -45,8 +43,8 @@ abstract class DataCore
     private function fill_base_fields()
     {
         $result = $this->database->Query(
-                'SELECT '.implode(',', $this->base_fields).
-                ' FROM '.$this->table.' WHERE id = ?', array($this->id));
+                'SELECT '.implode(',', static::$base_fields).
+                ' FROM '.static::$table_name.' WHERE id = ?', array($this->id));
 
         if ($result === FALSE)
             die('Failed to retrieve information.');
@@ -56,7 +54,7 @@ abstract class DataCore
 
         $row = $result->fields;
 
-        foreach ($this->base_fields as $name)
+        foreach (static::$base_fields as $name)
             $this->$name = $row[$name];
     }
 
@@ -68,7 +66,7 @@ abstract class DataCore
     {
         // Update single field in existing item
         //
-        $result = $this->database->Query('UPDATE '.$this->table_name.
+        $result = $this->database->Query('UPDATE '.static::$table_name.
                 ' SET '.$field.' = ? WHERE id = ?',
                 array($value, $this->id));
 
@@ -79,7 +77,7 @@ abstract class DataCore
     function delete()
     {
         if (FALSE === $this->database->Query(
-                    'DELETE FROM '.$this->table_name.' WHERE id = ?',
+                    'DELETE FROM '.static::$table_name.' WHERE id = ?',
                     array($this->id)))
             die('Failed to delete item.');
     }
