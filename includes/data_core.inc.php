@@ -50,7 +50,7 @@ abstract class DataCore
             die('Failed to retrieve information.');
 
         if ($result->RecordCount() != 1)
-            die('Failed to select single item.');
+            die('Failed to select single item. ('.$result->RecordCount().' for '.$this->id.' in '.static::$table_name.')');
 
         $row = $result->fields;
 
