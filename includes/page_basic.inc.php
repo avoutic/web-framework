@@ -1,5 +1,5 @@
 <?php
-class PageCore
+abstract class PageCore
 {
     protected $state = array();
     protected $database;
@@ -21,9 +21,14 @@ class PageCore
     {
         return array();
     }
+
+    static function redirect_login_type()
+    {
+        return 'redirect';
+    }
 };
 
-class PageBasic extends PageCore
+abstract class PageBasic extends PageCore
 {
     protected $frame_file;
     protected $page_content = array();
@@ -91,8 +96,13 @@ class PageBasic extends PageCore
     }
 };
 
-class PageService extends PageCore
+abstract class PageService extends PageCore
 {
+    static function redirect_login_type()
+    {
+        return '403';
+    }
+
     function output_json($success, $output, $direct = false)
     {
         if ($direct && $success)

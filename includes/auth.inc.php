@@ -11,7 +11,44 @@ abstract class Authenticator
     }
 
     abstract function get_logged_in();
-    abstract function redirect_login($target);
+
+    function redirect_login($type, $target)
+    {
+        if ($type == '401')
+        {
+            header('WWW-Authenticate: Basic realm="'.$this->realm.'"');
+            header("HTTP/1.0 401 Unauthorized");
+            print "<h1>Page requires authentication</h1>\n";
+            print "Please include a WWW-Authenticate header field in the request.\n";
+        }
+
+        else if ($type == '403')
+        {
+            $this->access_denied($this->config['site_login_page']);
+            return;
+        }
+
+        else if ($type == 'redirect')
+        {
+            $query = $_SERVER['QUERY_STRING'];
+
+            if (substr($query, 0, 5) != 'page=')
+                http_error(500, 'Internal Server Error', "<h1>Unauthorized call to authorized page</h1>\nThe call order was wrong. Please contact the administrator.");
+
+            $pos = strpos($query, '&');
+            if ($pos !== FALSE)
+                $query = substr($query, $pos);
+            else
+                $query = "";
+
+            header('Location: /'.$this->config['site_login_page'].'?mtype=info&message='.urlencode($this->config['auth_required_message']).'&return_page='.urlencode($target).'&return_query='.urlencode($query));
+        }
+
+        else
+            die('Not a known redirect type.');
+
+        exit(0);
+    }
 
     function show_disabled()
     {
@@ -21,12 +58,12 @@ abstract class Authenticator
         exit(0);
     }
 
-    function access_denied()
+    function access_denied($login_page)
     {
         # Access denied
         header("HTTP/1.0 403 Access Denied");
-        print "<h1>Access Denied</h1>\n";
-        print "You do not have the authorization to view this page. Please return to the main page.";
+        print '<h1>Access Denied</h1>\n';
+        print 'You do not have the authorization to view this page. Please return to the main page or <a href="'.$login_page.'">log in</a>.';
         exit(0);
     }
 }
@@ -56,23 +93,6 @@ class AuthForm extends Authenticator
             $info['last_name'] = $_SESSION['last_name'];
 
         return $info;
-    }
-
-    function redirect_login($target)
-    {
-        $query = $_SERVER['QUERY_STRING'];
-
-        if (substr($query, 0, 5) != 'page=')
-            http_error(500, 'Internal Server Error', "<h1>Unauthorized call to authorized page</h1>\nThe call order was wrong. Please contact the administrator.");
-
-        $pos = strpos($query, '&');
-        if ($pos !== FALSE)
-            $query = substr($query, $pos);
-        else
-            $query = "";
-
-        header('Location: /'.$this->config['site_login_page'].'?mtype=info&message='.urlencode($this->config['auth_required_message']).'&return_page='.urlencode($target).'&return_query='.urlencode($query));
-        exit(0);
     }
 };
 
@@ -117,14 +137,6 @@ class AuthWwwAuthenticate extends Authenticator
 
         return $info;
     }
-
-    function redirect_login($target)
-    {
-        header('WWW-Authenticate: Basic realm="'.$this->realm.'"');
-        header("HTTP/1.0 401 Unauthorized");
-        print "<h1>Page requires authentication</h1>\n";
-        print "Please include a WWW-Authenticate header field in the request.\n";
-    }
 };
 
 class AuthOAuth2 extends Authenticator
@@ -151,21 +163,5 @@ class AuthOAuth2 extends Authenticator
         return $info;
     }
 
-    function redirect_login($target)
-    {
-        $query = $_SERVER['QUERY_STRING'];
-
-        if (substr($query, 0, 5) != 'page=')
-            http_error(500, 'Internal Server Error', "<h1>Unauthorized call to authorized page</h1>\nThe call order was wrong. Please contact the administrator.");
-
-        $pos = strpos($query, '&');
-        if ($pos !== FALSE)
-            $query = substr($query, $pos);
-        else
-            $query = "";
-
-        header('Location: /'.$this->config['site_login_page'].'?mtype=info&message='.urlencode($this->config['auth_required_message']).'&return_page='.urlencode($target).'&return_query='.urlencode($query));
-        exit(0);
-    }
 };
 ?>

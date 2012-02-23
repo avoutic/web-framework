@@ -332,10 +332,11 @@ $has_permissions = user_has_permissions($page_permissions);
 
 if (!$has_permissions) {
 	if (!$global_state['logged_in']) {
-        $authenticator->redirect_login($include_page);
+        $redirect_type = $object_name::redirect_login_type();
+        $authenticator->redirect_login($redirect_type, $include_page);
 		exit(0);
 	} else {
-        $authenticator->access_denied();
+        $authenticator->access_denied($config['authenticator']['site_login_page']);
 		exit(0);
 	}
 }
