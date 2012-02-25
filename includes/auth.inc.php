@@ -52,17 +52,17 @@ abstract class Authenticator
 
     function show_disabled()
     {
-        header("HTTP/1.0 403 Page disabled");
-        print "<h1>Page has been disabled</h1>\n";
-        print "This page has been disabled. Please return to the main page.";
+        header('HTTP/1.0 403 Page disabled');
+        print '<h1>Page has been disabled</h1>';
+        print 'This page has been disabled. Please return to the main page.';
         exit(0);
     }
 
     function access_denied($login_page)
     {
         # Access denied
-        header("HTTP/1.0 403 Access Denied");
-        print '<h1>Access Denied</h1>\n';
+        header('HTTP/1.0 403 Access Denied');
+        print '<h1>Access Denied</h1>';
         print 'You do not have the authorization to view this page. Please return to the main page or <a href="'.$login_page.'">log in</a>.';
         exit(0);
     }
