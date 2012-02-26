@@ -3,13 +3,15 @@ abstract class PageCore
 {
     protected $state = array();
     protected $database;
+    protected $memcache;
     protected $config;
 
-    function __construct($database, $state, $config)
+    function __construct($global_info)
     {
-        $this->database = $database;
-        $this->state = $state;
-        $this->config = $config;
+        $this->database = $global_info['database'];
+        $this->memcache = $global_info['memcache'];
+        $this->state = $global_info['state'];
+        $this->config = $global_info['config'];
     }
 
     static function get_filter()
@@ -33,10 +35,10 @@ abstract class PageBasic extends PageCore
     protected $frame_file;
     protected $page_content = array();
 
-    function __construct($database, $state, $config)
+    function __construct($global_info)
     {
-        parent::__construct($database, $state, $config);
-        $this->frame_file = $config['default_frame_file'];
+        parent::__construct($global_info);
+        $this->frame_file = $this->config['page']['default_frame_file'];
     }
 
     function get_title()

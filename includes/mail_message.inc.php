@@ -173,7 +173,7 @@ class VerifyMail extends MailMessage
 {
     function __construct($name, $username, $hash)
     {
-        global $config;
+        global $global_config;
 
         parent::__construct();
 
@@ -184,7 +184,7 @@ Dear $name,
 You successfully created your account or changed important information for ".SITE_NAME.". In order to verify the account, please go to the following web location by either clicking the link or manually entering the address into your webbrowser.
 
 To verify the account go to:
-http://".$config['server_name']."/verify?username=$username&code=$hash
+http://".$global_config['server_name']."/verify?username=$username&code=$hash
 
 Best regards,
 ".MAIL_FOOTER;
@@ -195,7 +195,7 @@ class ForgotPasswordMail extends MailMessage
 {
     function __construct($name, $username, $new_pw)
     {
-        global $config;
+        global $global_config;
 
         parent::__construct();
 
@@ -210,7 +210,7 @@ Your new password is: $new_pw
 We advise you to login and change your password as soon as possible.
 
 To login and change your password. please go to:
-http://".$config['server_name']."/change_password
+http://".$global_config['server_name']."/change_password
 
 Best regards,
 ".MAIL_FOOTER;

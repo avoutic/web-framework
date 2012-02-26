@@ -17,17 +17,21 @@ $base_config = array(
         'disabled_pages' => array(),
         'allow_registration' => true,
         'database_enabled' => false,
-        'database_type' => '',
-        'database_host' => '',
-        'database_user' => '',
-        'database_password' =>'',
-        'database_database' => '',
-        'auth_mode' => 'form',            // form, oauth2 or www-authenticate
+        'database' => array(
+            'database_type' => '',
+            'database_host' => '',
+            'database_user' => '',
+            'database_password' =>'',
+            'database_database' => ''
+        ),
         'server_name' => $_SERVER['SERVER_NAME'],
         'document_root' => $_SERVER['DOCUMENT_ROOT'],
         'memcache_enabled' => false,
-        'memcache_host' => 'localhost',
-        'memcache_port' => '11211',
+        'memcache' => array(
+            'memcache_host' => 'localhost',
+            'memcache_port' => '11211'
+        ),
+        'auth_mode' => 'form',            // form, oauth2 or www-authenticate
         'authenticator' => array(
             'site_login_page' => 'login',
             'default_login_return' => 'main',
@@ -59,11 +63,11 @@ if (!is_file($site_includes."config.php"))
 #
 $site_config = array();
 require($site_includes."config.php");
-$config = array_merge($base_config, $site_config);
+$global_config = array_merge($base_config, $site_config);
 
 # Enable debugging if requested
 #
-if ($config['debug'] == true)
+if ($global_config['debug'] == true)
 {
     error_reporting(E_ALL | E_STRICT);
     ini_set("display_errors", 1);
@@ -71,7 +75,7 @@ if ($config['debug'] == true)
 
 # Load other prerequisites
 #
-if ($config['database_enabled'] == true)
+if ($global_config['database_enabled'] == true)
 {
     require('adodb/adodb.inc.php');
     require($includes.'database.inc.php');
@@ -177,11 +181,10 @@ session_start();
 # Start the database connection
 #
 $global_database = NULL;
-if ($config['database_enabled'] == true)
+if ($global_config['database_enabled'] == true)
 {
     $global_database = new Database();
-    $global_database->Connect($config);
-    if (FALSE === $global_database->Connect($config))
+    if (FALSE === $global_database->Connect($global_config['database']))
     {
         http_error(500, 'Internal Server Error', "<h1>Database server connection failed</h1>\nThe connection to the database server failed. Please contact the administrator.");
     }
@@ -189,11 +192,11 @@ if ($config['database_enabled'] == true)
 
 # Start the memcache connection
 #
-$memcache = NULL;
-if ($config['memcache_enabled'] == true)
+$global_memcache = NULL;
+if ($global_config['memcache_enabled'] == true)
 {
-    $memcache = new Memcache();
-    if (FALSE === $memcache->connect($config['memcache_host']))
+    $global_memcache = new Memcache();
+    if (FALSE === $global_memcache->connect($global_config['memcache']['memcache_host']))
     {
         http_error(500, 'Internal Server Error', "<h1>Memcache server connection failed</h1>\nThe connection to the memcache server failed. Please contact the administrator.");
     }
@@ -209,12 +212,12 @@ if (strlen($global_state['input']['mtype']))
 require($includes.'auth.inc.php');
 
 $authenticator = null;
-if ($config['auth_mode'] == 'form')
-    $authenticator = new AuthForm($global_database, $config['authenticator']);
-else if ($config['auth_mode'] == 'www-authenticate')
-    $authenticator = new AuthWwwAuthenticate($global_database, $config['authenticator']);
-else if ($config['auth_mode'] == 'oauth2')
-    $authenticator = new AuthOAuth2($global_database, $config['authenticator']);
+if ($global_config['auth_mode'] == 'form')
+    $authenticator = new AuthForm($global_database, $global_config['authenticator']);
+else if ($global_config['auth_mode'] == 'www-authenticate')
+    $authenticator = new AuthWwwAuthenticate($global_database, $global_config['authenticator']);
+else if ($global_config['auth_mode'] == 'oauth2')
+    $authenticator = new AuthOAuth2($global_database, $global_config['authenticator']);
 else
     die('No valid authenticator found.');
 
@@ -281,7 +284,7 @@ if (!$include_page) $include_page = SITE_DEFAULT_PAGE;
 
 # Check if page is allowed
 #
-if (in_array($include_page, $config['disabled_pages']))
+if (in_array($include_page, $global_config['disabled_pages']))
     $authenticator->show_disabled();
 
 $include_page_file = $site_includes.$include_page.".inc.php";
@@ -336,12 +339,18 @@ if (!$has_permissions) {
         $authenticator->redirect_login($redirect_type, $include_page);
 		exit(0);
 	} else {
-        $authenticator->access_denied($config['authenticator']['site_login_page']);
+        $authenticator->access_denied($global_config['authenticator']['site_login_page']);
 		exit(0);
 	}
 }
 
-$page_obj = new $object_name($global_database, $global_state, $config['page']);
+$global_info = array(
+    'database' => $global_database,
+    'state' => $global_state,
+    'config' => $global_config,
+    'memcache' => $global_memcache);
+
+$page_obj = new $object_name($global_info);
 $argument_count = 0;
 if (is_array($matches))
     $argument_count = count($matches) - 1;
