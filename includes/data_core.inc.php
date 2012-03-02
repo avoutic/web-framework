@@ -81,6 +81,39 @@ abstract class DataCore
                     array($this->id)))
             die('Failed to delete item.');
     }
+
+    static function count_objects($database)
+    {
+        $result = $database->Query('SELECT COUNT(id) AS cnt FROM '.static::$table_name,
+                    array());
+
+        if ($result === FALSE)
+            die('Failed to count objects.');
+
+        if ($result->RecordCount() != 1)
+            die('Failed to count objects.');
+
+        return $result->fields['cnt'];
+    }
+
+    static function get_objects($database, $offset = 0, $results = 10)
+    {
+        $result = $database->Query('SELECT id FROM '.static::$table_name.' LIMIT ?,?',
+                array((int) $offset, (int) $results));
+
+        $class = get_called_class();
+
+        if ($result === FALSE)
+            die('Failed to retrieve objects ('.$class.').');
+
+        $info = array();
+        foreach($result as $k => $row)
+        {
+            $info[$row['id']] = new $class($database, $row['id']);
+        }
+
+        return $info;
+    }
 };
 
 class FactoryCore
@@ -109,6 +142,22 @@ class FactoryCore
             die("Core Object not known!");
 
         return $type::exists($this->database, $id);
+    }
+
+    protected function get_core_object_count($type)
+    {
+        if (!class_exists($type))
+            die("Core Object not known!");
+
+        return $type::count_objects($this->database);
+    }
+
+    protected function get_core_objects($type, $offset, $results)
+    {
+        if (!class_exists($type))
+            die("Core Object not known!");
+
+        return $type::get_objects($this->database, $offset, $results);
     }
 };
 ?>
