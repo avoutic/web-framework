@@ -40,8 +40,9 @@ $base_config = array(
             'auth_required_message' => 'Authentication required. Please login.'
         ),
         'page' => array(
-            'default_frame_file' => ''
-        )
+            'default_frame_file' => '',
+            'mods' => array()               // Should at least contain class, and include_file of mod!
+        ),
 );
 
 function http_error($code, $short_message, $message)
