@@ -31,7 +31,7 @@ $base_config = array(
             'memcache_host' => 'localhost',
             'memcache_port' => '11211'
         ),
-        'auth_mode' => 'form',            // form, oauth2 or www-authenticate
+        'auth_mode' => 'redirect',            // redirect, www-authenticate
         'authenticator' => array(
             'site_login_page' => 'login',
             'default_login_return' => 'main',
@@ -212,12 +212,10 @@ if (strlen($global_state['input']['mtype']))
 require($includes.'auth.inc.php');
 
 $authenticator = null;
-if ($global_config['auth_mode'] == 'form')
-    $authenticator = new AuthForm($global_database, $global_config['authenticator']);
+if ($global_config['auth_mode'] == 'redirect')
+    $authenticator = new AuthRedirect($global_database, $global_config['authenticator']);
 else if ($global_config['auth_mode'] == 'www-authenticate')
     $authenticator = new AuthWwwAuthenticate($global_database, $global_config['authenticator']);
-else if ($global_config['auth_mode'] == 'oauth2')
-    $authenticator = new AuthOAuth2($global_database, $global_config['authenticator']);
 else
     die('No valid authenticator found.');
 
