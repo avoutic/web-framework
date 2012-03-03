@@ -1,19 +1,19 @@
 <?php
-require_once('base_logic.inc.php');
-require_once('page_basic.inc.php');
+require_once($includes.'base_logic.inc.php');
 
-class PageSendVerify extends PageBasic
+class PageVerify extends PageBasic
 {
     static function get_filter()
     {
         return array(
                 'username' => FORMAT_USERNAME,
+                'code' => FORMAT_VERIFY_CODE
                 );
     }
 
     function get_title()
     {
-        return "Request verification mail.";
+        return "Mail address verification";
     }
 
     function do_logic()
@@ -21,6 +21,11 @@ class PageSendVerify extends PageBasic
         // Check if username is present
         //
         if (!strlen($this->state['input']['username']))
+            return;
+
+        // Check if code is present
+        //
+        if (!strlen($this->state['input']['code']))
             return;
 
         $factory = new BaseFactory($this->database);
@@ -35,11 +40,16 @@ class PageSendVerify extends PageBasic
             exit();
         }
 
-        $user->send_verify_mail();
+        $hash = $user->generate_verify_code();
 
-        // Redirect to main sceen
-        //
-        header("Location: /?mtype=success&message=".urlencode("Verification mail sent")."&extra_message=".urlencode("Verification mail is sent. Please check your mailbox and follow the instructions."));
+        if ($this->state['input']['code'] == $hash) {
+            $user->set_verified();
+
+            // Redirect to main sceen
+            //
+            header("Location: /".SITE_LOGIN_PAGE."?mtype=success&message=".urlencode("Verification succeeded")."&extra_message=".urlencode("Verification succeeded. You can now use your account."));
+            exit();
+        }
     }
 };
 ?>

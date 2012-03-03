@@ -9,6 +9,8 @@ date_default_timezone_set('UTC');
 #
 $includes='../includes/base/';
 $site_includes='../includes/site/';
+$base_views='../views/base/';
+$site_views='../views/site/';
 
 # Load configuration
 #
@@ -285,9 +287,9 @@ if (!$include_page) $include_page = SITE_DEFAULT_PAGE;
 if (in_array($include_page, $global_config['disabled_pages']))
     $authenticator->show_disabled();
 
-$include_page_file = $site_includes.$include_page.".inc.php";
+$include_page_file = $site_views.$include_page.".inc.php";
 if (!is_file($include_page_file)) {
-	$include_page_file = $includes.$include_page.".inc.php";
+	$include_page_file = $base_views.$include_page.".inc.php";
 
 	if (!is_file($include_page_file))
 		send_404();

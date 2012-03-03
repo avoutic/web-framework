@@ -1,6 +1,5 @@
 <?php
-require_once('base_logic.inc.php');
-require_once('page_basic.inc.php');
+require_once($includes.'base_logic.inc.php');
 
 class PageLogin extends PageBasic
 {

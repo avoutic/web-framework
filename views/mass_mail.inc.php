@@ -1,6 +1,4 @@
 <?php
-require_once('page_basic.inc.php');
-
 class PageMassMail extends PageBasic
 {
     static function get_filter()

@@ -89,6 +89,8 @@ abstract class PageBasic extends PageCore
 
         if (strlen($this->frame_file))
             require($site_includes.$this->frame_file);
+        else
+            $this->display_content();
     }
 
     function html_main()
