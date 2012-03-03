@@ -1,22 +1,36 @@
 <?php
 abstract class DataCore
 {
+    protected $global_info;
     protected $database;
+    protected $memcache;
     public $id;
 
     static protected $table_name;
     static protected $base_fields;
+    static protected $is_cacheable = true;
 
-    function __construct($database, $id)
+    function __construct($global_info, $id)
     {
-        $this->database = $database;
+        $this->global_info = $global_info;
+        $this->database = $global_info->database;
+        $this->memcache = $global_info->memcache;
         $this->id = $id;
 
-        $this->fill_fields();
+        $obj = FALSE;
+
+        if ($this->memcache != null && $this->is_cacheable)
+            $obj = $this->memcache->get(static::get_cache_id($id));
+
+        $this->fill_fields($obj);
     }
 
-    static function exists($database, $id)
+    static function exists($global_info, $id)
     {
+        if ($global_info->memcache != null && static::$is_cacheable)
+            if (FALSE !== $global_info->memcache->get(static::get_cache_id($id)))
+                return TRUE;
+        
         $result = $database->Query('SELECT id FROM '.static::$table_name.
                                    ' WHERE id = ?', array($id));
 
@@ -29,18 +43,27 @@ abstract class DataCore
         return TRUE;
     }
 
-    function get_id()
+    static function get_cache_id($id)
     {
-        return $this->id;
+       return static::$table_name.'{'.$id.'}';
     }
 
-    function fill_fields()
+    function fill_fields($obj = FALSE)
     {
-        $this->fill_base_fields();
+        if ($obj === FALSE)
+        {
+            $this->fill_base_fields_from_db();
+
+            if ($this->memcache != null && $this->is_cacheable)
+                $this->memcache->add(static::get_cache_id($id), $this);
+        }
+        else
+            $this->fill_base_fields_from_obj($obj);
+
         $this->fill_complex_fields();
     }
 
-    private function fill_base_fields()
+    private function fill_base_fields_from_db()
     {
         $result = $this->database->Query(
                 'SELECT '.implode(',', static::$base_fields).
@@ -58,12 +81,23 @@ abstract class DataCore
             $this->$name = $row[$name];
     }
 
+    private function fill_base_fields_from_obj($obj)
+    {
+        foreach (static::$base_fields as $name)
+            $this->$name = $obj->$name;
+    }
+
     protected function fill_complex_fields()
     {
     }
 
     function update_field($field, $value)
     {
+        $this->field = $value;
+
+        if ($this->memcache != null && $this->is_cacheable)
+            $this->memcache->replace(static::get_cache_id($this->id), $this);
+
         // Update single field in existing item
         //
         $result = $this->database->Query('UPDATE '.static::$table_name.
@@ -76,6 +110,9 @@ abstract class DataCore
 
     function delete()
     {
+        if ($this->memcache != null && $this->is_cacheable)
+            $this->memcache->delete(static::get_cache_id($this->id));
+
         if (FALSE === $this->database->Query(
                     'DELETE FROM '.static::$table_name.' WHERE id = ?',
                     array($this->id)))
@@ -96,9 +133,9 @@ abstract class DataCore
         return $result->fields['cnt'];
     }
 
-    static function get_objects($database, $offset = 0, $results = 10)
+    static function get_objects($global_info, $offset = 0, $results = 10)
     {
-        $result = $database->Query('SELECT id FROM '.static::$table_name.' LIMIT ?,?',
+        $result = $global_info->$database->Query('SELECT id FROM '.static::$table_name.' LIMIT ?,?',
                 array((int) $offset, (int) $results));
 
         $class = get_called_class();
@@ -109,7 +146,7 @@ abstract class DataCore
         $info = array();
         foreach($result as $k => $row)
         {
-            $info[$row['id']] = new $class($database, $row['id']);
+            $info[$row['id']] = new $class($global_info, $row['id']);
         }
 
         return $info;
@@ -118,11 +155,13 @@ abstract class DataCore
 
 class FactoryCore
 {
+    protected $global_info;
     protected $database;
 
-    function __construct($database)
+    function __construct($global_info)
     {
-        $this->database = $database;
+        $this->global_info = $global_info;
+        $this->database = $global_info->database;
     }
 
     protected function get_core_object($type, $id)
@@ -130,10 +169,10 @@ class FactoryCore
         if (!class_exists($type))
             die("Core Object not known!");
 
-        if (FALSE === $type::exists($this->database, $id))
+        if (FALSE === $type::exists($this->global_info, $id))
             return FALSE;
 
-        return new $type($this->database, $id);
+        return new $type($this->global_info, $id);
     }
 
     protected function core_object_exists($type, $id)
@@ -141,7 +180,7 @@ class FactoryCore
         if (!class_exists($type))
             die("Core Object not known!");
 
-        return $type::exists($this->database, $id);
+        return $type::exists($this->global_info, $id);
     }
 
     protected function get_core_object_count($type)
@@ -157,7 +196,7 @@ class FactoryCore
         if (!class_exists($type))
             die("Core Object not known!");
 
-        return $type::get_objects($this->database, $offset, $results);
+        return $type::get_objects($this->global_info, $offset, $results);
     }
 };
 ?>
