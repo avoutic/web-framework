@@ -34,11 +34,37 @@ abstract class PageBasic extends PageCore
 {
     protected $frame_file;
     protected $page_content = array();
-
+    protected $mods = array();
+    
     function __construct($global_info)
     {
         parent::__construct($global_info);
         $this->frame_file = $this->config['page']['default_frame_file'];
+
+        foreach ($this->config['page']['mods'] as $mod_info)
+        {
+            $mod_obj = FALSE;
+
+            $class = $mod_info['class'];
+            $include_file = $mod_info['include_file'];
+
+            $tag = sha1($mod_info);
+
+            if ($this->memcache != null && $class::is_cacheable)
+                $mod_obj = $this->memcache->get($tag);
+
+            if ($mod_obj === FALSE)
+            {
+                require_once($include_file);
+
+                $mod_obj = new $class($global_info, $mod_info);
+
+                if ($this->memcache != null && $class::is_cacheable)
+                    $this->memcache->set($tag, $mod_obj);
+            }
+
+            array_push($this->mods, $mod_obj);
+        }
     }
 
     function get_title()
@@ -63,9 +89,7 @@ abstract class PageBasic extends PageCore
 
     function add_message($type, $message, $extra_message = "")
     {
-        $this->state['message']['mtype'] = $type;
-        $this->state['message']['message'] = $message;
-        $this->state['message']['extra_message'] = $extra_message;
+        set_message($type, $message, $extra_message);
     }
 
     function do_logic()
@@ -87,10 +111,16 @@ abstract class PageBasic extends PageCore
         global $site_includes;
         unset($this->state['input']);
 
+        foreach ($this->mods as $mod)
+            ob_start($mod->callback);
+
         if (strlen($this->frame_file))
             require($site_includes.$this->frame_file);
         else
             $this->display_content();
+
+        foreach ($this->mods as $mod)
+            ob_end_flush();
     }
 
     function html_main()
