@@ -50,11 +50,15 @@ class PageGrabIdentity extends PageBasic
         $success = true;
 
         $_SESSION['logged_in'] = true;
-        $_SESSION['user_id'] = $user->get_id();
-        $_SESSION['username'] = $user->username;
-        $_SESSION['name'] = $user->name;
-        $_SESSION['permissions'] = array_merge(array('logged_in'), $user->permissions);
-        $_SESSION['email'] = $user->email;
+        :w
+
+        $info = array();
+        $info['user_id'] = $user->get_id();
+        $info['username'] = $user->username;
+        $info['name'] = $user->name;
+        $info['permissions'] = array_merge(array('logged_in'), $user->permissions);
+        $info['email'] = $user->email;
+        $_SESSION['auth'] = $info;
 
         header("Location: /?mtype=success&message=".urlencode('Login successful.'));
     }

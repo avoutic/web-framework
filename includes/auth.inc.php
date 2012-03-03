@@ -22,12 +22,6 @@ abstract class Authenticator
             print "Please include a WWW-Authenticate header field in the request.\n";
         }
 
-        else if ($type == '403')
-        {
-            $this->access_denied($this->config['site_login_page']);
-            return;
-        }
-
         else if ($type == 'redirect')
         {
             $query = $_SERVER['QUERY_STRING'];
@@ -68,7 +62,7 @@ abstract class Authenticator
     }
 }
 
-class AuthForm extends Authenticator
+class AuthRedirect extends Authenticator
 {
     function __construct($database, $config)
     {
@@ -80,19 +74,7 @@ class AuthForm extends Authenticator
         if (!isset($_SESSION['logged_in']))
             return FALSE;
 
-        $info = array(
-            'user_id' => $_SESSION['user_id'],
-            'username' => $_SESSION['username'],
-            'name' => $_SESSION['name'],
-            'email' => $_SESSION['email'],
-            'permissions' => $_SESSION['permissions']);
-
-        if (isset($_SESSION['first_name']))
-            $info['first_name'] = $_SESSION['first_name'];
-        if (isset($_SESSION['last_name']))
-            $info['last_name'] = $_SESSION['last_name'];
-
-        return $info;
+        return $_SESSION['auth']);
     }
 };
 
@@ -137,31 +119,5 @@ class AuthWwwAuthenticate extends Authenticator
 
         return $info;
     }
-};
-
-class AuthOAuth2 extends Authenticator
-{
-    function __construct($database, $config)
-    {
-        parent::__construct($database, $config);
-    }
-
-    function get_logged_in()
-    {
-        if (!isset($_SESSION['logged_in']))
-            return FALSE;
-
-        $info = array(
-            'user_id' => $_SESSION['user_id'],
-            'username' => $_SESSION['username'],
-            'name' => $_SESSION['name'],
-            'email' => $_SESSION['email'],
-            'oauth_token' => $_SESSION['oauth_token'],
-            'oauth_token_secret' => $_SESSION['oauth_token_secret'],
-            'permissions' => $_SESSION['permissions']);
-
-        return $info;
-    }
-
 };
 ?>

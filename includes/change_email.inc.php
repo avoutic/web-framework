@@ -62,8 +62,7 @@ class PageChangeEmail extends PageBasic
         // Logout user
         //
         $_SESSION['logged_in'] = false;
-        $_SESSION['user_id'] = "";
-        $_SESSION['permissions'] = array();
+        $_SESSION['auth'] = array();
 
         session_destroy();
 

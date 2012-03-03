@@ -18,8 +18,7 @@ class PageLogoff extends PageBasic
     function do_logic()
     {
         $_SESSION['logged_in'] = false;
-        $_SESSION['user_id'] = "";
-        $_SESSION['permissions'] = array();
+        $_SESSION['auth'] = array();
 
         session_destroy();
 
