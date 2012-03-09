@@ -13,8 +13,8 @@ abstract class DataCore
     function __construct($global_info, $id)
     {
         $this->global_info = $global_info;
-        $this->database = $global_info->database;
-        $this->memcache = $global_info->memcache;
+        $this->database = $global_info['database'];
+        $this->memcache = $global_info['memcache'];
         $this->id = $id;
 
         $obj = FALSE;
@@ -27,11 +27,11 @@ abstract class DataCore
 
     static function exists($global_info, $id)
     {
-        if ($global_info->memcache != null && static::$is_cacheable)
+        if ($global_info['memcache'] != null && static::$is_cacheable)
             if (FALSE !== $global_info->memcache->get(static::get_cache_id($id)))
                 return TRUE;
         
-        $result = $database->Query('SELECT id FROM '.static::$table_name.
+        $result = $global_info['database']->Query('SELECT id FROM '.static::$table_name.
                                    ' WHERE id = ?', array($id));
 
         if ($result === FALSE)
@@ -135,7 +135,7 @@ abstract class DataCore
 
     static function get_objects($global_info, $offset = 0, $results = 10)
     {
-        $result = $global_info->$database->Query('SELECT id FROM '.static::$table_name.' LIMIT ?,?',
+        $result = $global_info['database']->Query('SELECT id FROM '.static::$table_name.' LIMIT ?,?',
                 array((int) $offset, (int) $results));
 
         $class = get_called_class();
@@ -157,11 +157,13 @@ class FactoryCore
 {
     protected $global_info;
     protected $database;
+    protected $state;
 
     function __construct($global_info)
     {
         $this->global_info = $global_info;
-        $this->database = $global_info->database;
+        $this->database = $global_info['database'];
+        $this->state = $global_info['state'];
     }
 
     protected function get_core_object($type, $id)
@@ -191,7 +193,7 @@ class FactoryCore
         return $type::count_objects($this->database);
     }
 
-    protected function get_core_objects($type, $offset, $results)
+    protected function get_core_objects($type, $offset = 0, $results = 10)
     {
         if (!class_exists($type))
             die("Core Object not known!");
