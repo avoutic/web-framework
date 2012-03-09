@@ -1,13 +1,15 @@
 <?php
 abstract class PageCore
 {
-    protected $state = array();
+    protected $global_info;
+    protected $state;
     protected $database;
     protected $memcache;
     protected $config;
 
     function __construct($global_info)
     {
+        $this->global_info = $global_info;
         $this->database = $global_info['database'];
         $this->memcache = $global_info['memcache'];
         $this->state = $global_info['state'];
@@ -27,6 +29,13 @@ abstract class PageCore
     static function redirect_login_type()
     {
         return 'redirect';
+    }
+
+    static function encode($input, $double_encode = true)
+    {
+        assert('( is_string($input) || is_bool($input) || is_int($input) || is_float($input) || is_null($input)) && is_bool($double_encode)');
+
+        return htmlspecialchars((string)$input, ENT_QUOTES, 'UTF-8', $double_encode);
     }
 };
 
@@ -111,16 +120,21 @@ abstract class PageBasic extends PageCore
         global $site_includes;
         unset($this->state['input']);
 
-        foreach ($this->mods as $mod)
-            ob_start($mod->callback);
+        ob_start();
 
         if (strlen($this->frame_file))
             require($site_includes.$this->frame_file);
         else
             $this->display_content();
 
+        $content = ob_get_clean();
+
         foreach ($this->mods as $mod)
-            ob_end_flush();
+        {
+            $content = $mod->callback($content);
+        }
+
+        print($content);
     }
 
     function html_main()
