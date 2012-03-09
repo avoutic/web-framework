@@ -74,7 +74,7 @@ class AuthRedirect extends Authenticator
         if (!isset($_SESSION['logged_in']))
             return FALSE;
 
-        return $_SESSION['auth']);
+        return $_SESSION['auth'];
     }
 };
 
