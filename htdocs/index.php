@@ -45,6 +45,37 @@ $base_config = array(
         ),
 );
 
+assert_options(ASSERT_ACTIVE, 1);
+assert_options(ASSERT_WARNING, 0);
+assert_options(ASSERT_QUIET_EVAL, 1);
+
+// Create a handler function
+function assert_handler($file, $line, $code)
+{
+    global $global_config;
+
+    $message = "File '$file'<br />Line '$line'<br />Code '$code'<br />";
+
+    if (!$global_config['debug'] && defined('DEBUG_KEY'))
+    {
+        $message = bin2hex(mcrypt_cbc(MCRYPT_RIJNDAEL_128,
+                    substr(DEBUG_KEY, 0, 32),
+                           $message,
+                           MCRYPT_ENCRYPT,
+                           substr(DEBUG_KEY, 32, 16)));
+        $message = implode('<br />', str_split($message, 32));
+    }
+
+    echo "Failure information:<br/>";
+    echo "<pre>";
+    echo $message;
+    echo "</pre>";
+
+    die('Oops. Something went wrong. Please contact us with the information above!');
+}
+
+assert_options(ASSERT_CALLBACK, 'assert_handler');
+
 function http_error($code, $short_message, $message)
 {
     header("HTTP/1.0 $code $short_message");
@@ -91,13 +122,6 @@ require($includes."defines.inc.php");
 if (is_file($site_includes."site_defines.inc.php"))
     include_once($site_includes."site_defines.inc.php");
 
-# Load route array if available
-#
-$route_array = array();
-
-if (is_file($site_includes."site_logic.inc.php"))
-    include_once($site_includes."site_logic.inc.php");
- 
 # Check if needed site defines are entered
 #
 if (!defined('MAIL_ADDRESS'))
@@ -210,6 +234,13 @@ array_walk($fixed_page_filter, 'validate_input');
 if (strlen($global_state['input']['mtype']))
     set_message($global_state['input']['mtype'], $global_state['input']['message'], $global_state['input']['extra_message']);
 
+# Load route array and site specific logic if available
+#
+$route_array = array();
+
+if (is_file($site_includes."site_logic.inc.php"))
+    include_once($site_includes."site_logic.inc.php");
+ 
 # Create Authenticator
 #
 require($includes.'auth.inc.php');
@@ -296,8 +327,8 @@ if (!is_file($include_page_file)) {
 		send_404();
 }
 
-require($includes.'page_basic.inc.php');
-require($include_page_file);
+require_once($includes.'page_basic.inc.php');
+require_once($include_page_file);
 
 $object_name = "";
 $function_name = "";
