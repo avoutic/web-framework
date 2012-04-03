@@ -145,18 +145,41 @@ function validate_input($filter, $item)
 	if (!strlen($filter))
 		die("Unexpected input: \$filter not defined in validate_input().");
 	
-	$str = "";
-	$global_state['input'][$item] = "";
+    if (substr($item, -2) == '[]')
+    {
+        $item = substr($item, 0, -2);
 
-    if (isset($global_state['raw_post'][$item]))
-        $str = $global_state['raw_post'][$item];
-	else if (isset($_POST[$item]))
-		$str = $_POST[$item];
-	else if (isset($_GET[$item]))
-		$str = $_GET[$item];
+        // Expect multiple values
+        //
+    	$info = array();
+	    $global_state['input'][$item] = array();
+
+        if (isset($global_state['raw_post'][$item]))
+            $info = $global_state['raw_post'][$item];
+    	else if (isset($_POST[$item]))
+	    	$info = $_POST[$item];
+    	else if (isset($_GET[$item]))
+	    	$info = $_GET[$item];
 	
-	if (preg_match("/^\s*$filter\s*$/m", $str))
-		$global_state['input'][$item] = stripslashes(trim($str));
+        foreach ($info as $k => $val)
+            if (preg_match("/^\s*$filter\s*$/m", $val))
+                $global_state['input'][$item][$k] = stripslashes(trim($val));
+    }
+    else
+    {
+    	$str = "";
+	    $global_state['input'][$item] = "";
+
+        if (isset($global_state['raw_post'][$item]))
+            $str = $global_state['raw_post'][$item];
+    	else if (isset($_POST[$item]))
+	    	$str = $_POST[$item];
+    	else if (isset($_GET[$item]))
+	    	$str = $_GET[$item];
+	
+    	if (preg_match("/^\s*$filter\s*$/m", $str))
+	    	$global_state['input'][$item] = stripslashes(trim($str));
+    }
 }
 
 function user_has_permissions($permissions)
