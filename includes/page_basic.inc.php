@@ -104,6 +104,13 @@ abstract class PageBasic extends PageCore
         set_message($type, $message, $extra_message);
     }
 
+    function load_template($name, $args = array())
+    {
+        global $site_views;
+
+        include($site_views.'templates/'.$name.'.inc.php');
+    }
+
     function do_logic()
     {
     }
