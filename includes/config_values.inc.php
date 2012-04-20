@@ -56,6 +56,25 @@ class UserConfigValues
         $this->default_module = $default_module;
     }
 
+    function get_values($module = "")
+    {
+        if ($module == "")
+            $module == $this->default_module;
+
+        $result = $this->database->Query('SELECT name, value FROM user_config_values WHERE user_id = ? AND module = ?',
+            array($this->user_id, $module));
+
+        if ($result === FALSE)
+            die('Failed to retrieve config values.');
+
+        $info = array();
+        
+        foreach ($result as $row)
+            $info[$row['name']] = $row['value'];
+
+        return $info;
+    }
+
     function get_value($name, $default = "", $module = "")
     {
         if ($module == "")
@@ -86,6 +105,20 @@ class UserConfigValues
 
         if ($result === FALSE)
             die('Failed to store config value.');
+    }
+
+    function delete_value($name, $module = "")
+    {
+        if ($module == "")
+            $module == $this->default_module;
+
+        $result = $this->database->Query('DELETE user_config_values WHERE user_id = ? AND module = ? AND name = ?',
+            array($this->user_id, $module, $name));
+
+        if ($result === FALSE)
+            die('Failed to store config value.');
+
+        return TRUE;
     }
 };
 ?>
