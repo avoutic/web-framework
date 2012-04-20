@@ -1,4 +1,12 @@
 <?php
+/*
+CREATE TABLE IF NOT EXISTS config_values (
+     module VARCHAR(255) NOT NULL,
+     name VARCHAR(255) NOT NULL,
+     value VARCHAR(255) NOT NULL,
+     UNIQUE KEY `mod_name` (module,name)
+);
+*/
 class ConfigValues
 {
     private $database;
@@ -8,6 +16,25 @@ class ConfigValues
     {
         $this->database = $database;
         $this->default_module = $default_module;
+    }
+
+    function get_values($module = "")
+    {
+        if ($module == "")
+            $module == $this->default_module;
+
+        $result = $this->database->Query('SELECT name, value FROM config_values WHERE module = ?',
+            array($module));
+
+        if ($result === FALSE)
+            die('Failed to retrieve config values.');
+
+        $info = array();
+        
+        foreach ($result as $row)
+            $info[$row['name']] = $row['value'];
+
+        return $info;
     }
 
     function get_value($name, $default = "", $module = "")
@@ -41,8 +68,31 @@ class ConfigValues
         if ($result === FALSE)
             die('Failed to store config value.');
     }
+
+    function delete_value($name, $module = "")
+    {
+        if ($module == "")
+            $module == $this->default_module;
+
+        $result = $this->database->Query('DELETE config_values WHERE module = ? AND name = ?',
+            array($module, $name));
+
+        if ($result === FALSE)
+            die('Failed to delete config value.');
+
+        return TRUE;
+    }
 };
 
+/*
+CREATE TABLE IF NOT EXISTS user_config_values (
+     user_id INT NOT NULL REFERENCES users(id),
+     module VARCHAR(255) NOT NULL,
+     name VARCHAR(255) NOT NULL,
+     value VARCHAR(255) NOT NULL,
+     UNIQUE KEY `user_mod_name` (user_id,module,name)
+);
+*/
 class UserConfigValues
 {
     private $database;
@@ -116,7 +166,7 @@ class UserConfigValues
             array($this->user_id, $module, $name));
 
         if ($result === FALSE)
-            die('Failed to store config value.');
+            die('Failed to delete config value.');
 
         return TRUE;
     }
