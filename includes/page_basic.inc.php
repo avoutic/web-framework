@@ -161,6 +161,20 @@ abstract class PageService extends PageCore
         return '403';
     }
 
+    function check_required(&$var, $name)
+    {
+
+        if (!isset($this->state['input'][$name]) ||
+            !strlen($this->state['input'][$name]))
+        {
+            $this->output_json(false, 'Missing input variable \''.$name.'\'.');
+            return FALSE;
+        }
+
+        $var = $this->state['input'][$name];
+        return TRUE;
+    }
+
     function output_json($success, $output, $direct = false)
     {
         if ($direct && $success)
