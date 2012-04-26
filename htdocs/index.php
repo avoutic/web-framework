@@ -263,6 +263,17 @@ $route_array = array();
 if (is_file($site_includes."site_logic.inc.php"))
     include_once($site_includes."site_logic.inc.php");
  
+# Check if site logic wants global filter and logic
+#
+if (function_exists('site_get_filter'))
+{
+    $site_filter = site_get_filter();
+    array_walk($site_filter, 'validate_input');
+}
+
+if (function_exists('site_do_logic'))
+    site_do_logic();
+
 # Create Authenticator
 #
 require($includes.'auth.inc.php');
