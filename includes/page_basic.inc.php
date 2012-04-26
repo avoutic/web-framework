@@ -101,7 +101,10 @@ abstract class PageBasic extends PageCore
 
     function add_message($type, $message, $extra_message = "")
     {
-        set_message($type, $message, $extra_message);
+        array_push($this->state['messages'], array(
+                    'mtype' => $type,
+                    'message' => $message,
+                    'extra_message' => $extra_message));
     }
 
     function load_template($name, $args = array())
