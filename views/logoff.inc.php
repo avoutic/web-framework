@@ -21,6 +21,7 @@ class PageLogoff extends PageBasic
         session_destroy();
 
         header("Location: /".$this->state['input']['return_page']);
+        exit();
     }
 
     function display_content()
