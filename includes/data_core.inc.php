@@ -10,7 +10,7 @@ abstract class DataCore
     static protected $base_fields;
     static protected $is_cacheable = true;
 
-    function __construct($global_info, $id)
+    function __construct($global_info, $id, $fill_complex = true)
     {
         $this->global_info = $global_info;
         $this->database = $global_info['database'];
@@ -22,7 +22,7 @@ abstract class DataCore
         if ($this->memcache != null && $this->is_cacheable)
             $obj = $this->memcache->get(static::get_cache_id($id));
 
-        $this->fill_fields($obj);
+        $this->fill_fields($fill_complex, $obj);
     }
 
     static function exists($global_info, $id)
@@ -48,7 +48,7 @@ abstract class DataCore
        return static::$table_name.'{'.$id.'}';
     }
 
-    function fill_fields($obj = FALSE)
+    function fill_fields($fill_complex, $obj)
     {
         if ($obj === FALSE)
         {
@@ -60,7 +60,8 @@ abstract class DataCore
         else
             $this->fill_base_fields_from_obj($obj);
 
-        $this->fill_complex_fields();
+        if ($fill_complex)
+            $this->fill_complex_fields();
     }
 
     private function fill_base_fields_from_db()
@@ -158,12 +159,14 @@ class FactoryCore
     protected $global_info;
     protected $database;
     protected $state;
+    protected $config;
 
     function __construct($global_info)
     {
         $this->global_info = $global_info;
         $this->database = $global_info['database'];
         $this->state = $global_info['state'];
+        $this->config = $global_info['config'];
     }
 
     protected function get_core_object($type, $id)
