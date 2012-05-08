@@ -134,10 +134,29 @@ abstract class DataCore
         return $result->fields['cnt'];
     }
 
-    static function get_objects($global_info, $offset = 0, $results = 10)
+    static function get_objects($global_info, $offset = 0, $results = 10, $filter = array())
     {
-        $result = $global_info['database']->Query('SELECT id FROM '.static::$table_name.' LIMIT ?,?',
-                array((int) $offset, (int) $results));
+        $query = 'SELECT id FROM '.static::$table_name;
+        if (count($filter))
+        {
+            $query .= ' WHERE ';
+            $first = true;
+            foreach ($filter as $key => $value)
+            {
+                if (!$first)
+                    $query .= ' AND ';
+
+                $query .= ' '.$key.' = ? ';
+                
+                $first = false;
+            }
+        }
+
+        $args = $filter;
+        $query .= ' LIMIT ?,?';
+        $args = array_merge($args, array((int) $offset, (int) $results));
+
+        $result = $global_info['database']->Query($query, $args);
 
         $class = get_called_class();
 
@@ -196,12 +215,12 @@ class FactoryCore
         return $type::count_objects($this->database);
     }
 
-    protected function get_core_objects($type, $offset = 0, $results = 10)
+    protected function get_core_objects($type, $offset = 0, $results = 10, $filter = array())
     {
         if (!class_exists($type))
             die("Core Object not known!");
 
-        return $type::get_objects($this->global_info, $offset, $results);
+        return $type::get_objects($this->global_info, $offset, $results, $filter);
     }
 };
 ?>
