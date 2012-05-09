@@ -46,7 +46,7 @@ abstract class PageBasic extends PageCore
 {
     protected $frame_file;
     protected $page_content = array();
-    protected $mods = array();
+    private $mods = array();
     
     function __construct($global_info)
     {
@@ -80,6 +80,16 @@ abstract class PageBasic extends PageCore
                 array_push($this->mods, $mod_obj);
             }
         }
+    }
+
+    function add_page_mod($tag, iPageModule $mod)
+    {
+        $this->mods[$tag] = $mod;
+    }
+
+    function get_page_mod($tag)
+    {
+        return $this->mods[$tag];
     }
 
     function get_title()
