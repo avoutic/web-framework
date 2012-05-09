@@ -35,7 +35,10 @@ abstract class PageCore
     {
         assert('( is_string($input) || is_bool($input) || is_int($input) || is_float($input) || is_null($input)) && is_bool($double_encode)');
 
-        return htmlspecialchars((string)$input, ENT_QUOTES, 'UTF-8', $double_encode);
+        $str = htmlentities((string)$input, ENT_QUOTES, 'UTF-8', $double_encode);
+        if (!strlen($str))
+            $str = htmlentities((string)$input, ENT_QUOTES, 'ISO-8859-1', $double_encode);
+        return $str;
     }
 };
 
