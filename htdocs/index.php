@@ -258,21 +258,14 @@ if (strlen($global_state['input']['mtype']))
 
 # Load route array and site specific logic if available
 #
-$route_array = array();
 
 if (is_file($site_includes."site_logic.inc.php"))
     include_once($site_includes."site_logic.inc.php");
  
-# Check if site logic wants global filter and logic
-#
-if (function_exists('site_get_filter'))
-{
-    $site_filter = site_get_filter();
-    array_walk($site_filter, 'validate_input');
-}
+$route_array = array();
 
-if (function_exists('site_do_logic'))
-    site_do_logic();
+if (function_exists('site_modify_route_array'))
+    site_modify_route_array($route_array);
 
 # Create Authenticator
 #
@@ -377,6 +370,14 @@ else
     $function_name = "html_main";
 }
 
+# Check if site logic wants global filter
+#
+if (function_exists('site_get_filter'))
+{
+    $site_filter = site_get_filter();
+    array_walk($site_filter, 'validate_input');
+}
+
 $include_page_filter = NULL;
 $page_permissions = NULL;
 $page_obj = NULL;
@@ -407,9 +408,12 @@ if (!$has_permissions) {
 
 $global_info = array(
     'database' => $global_database,
-    'state' => $global_state,
+    'state' => &$global_state,
     'config' => $global_config,
     'memcache' => $global_memcache);
+
+if (function_exists('site_do_logic'))
+    site_do_logic($global_info);
 
 $page_obj = new $object_name($global_info);
 $argument_count = 0;
