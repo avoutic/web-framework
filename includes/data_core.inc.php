@@ -134,6 +134,38 @@ abstract class DataCore
         return $result->fields['cnt'];
     }
 
+    static function get_object($global_info, $filter = array())
+    {
+        $query = 'SELECT id FROM '.static::$table_name;
+        if (count($filter))
+        {
+            $query .= ' WHERE ';
+            $first = true;
+            foreach ($filter as $key => $value)
+            {
+                if (!$first)
+                    $query .= ' AND ';
+
+                $query .= ' '.$key.' = ? ';
+                
+                $first = false;
+            }
+        }
+
+        $args = $filter;
+
+        $result = $global_info['database']->Query($query, $args);
+
+        $class = get_called_class();
+
+        assert('$result !== FALSE /* Failed to retrieve object ('.$class.') */');
+
+        if ($result->RecordCount() == 0)
+            return FALSE;
+
+        return new $class($global_info, $result->fields['id']);
+    }
+
     static function get_objects($global_info, $offset = 0, $results = 10, $filter = array())
     {
         $query = 'SELECT id FROM '.static::$table_name;
@@ -160,8 +192,7 @@ abstract class DataCore
 
         $class = get_called_class();
 
-        if ($result === FALSE)
-            die('Failed to retrieve objects ('.$class.').');
+        assert('$result !== FALSE /* Failed to retrieve objects ('.$class.') */');
 
         $info = array();
         foreach($result as $k => $row)
@@ -188,7 +219,7 @@ class FactoryCore
         $this->config = $global_info['config'];
     }
 
-    protected function get_core_object($type, $id)
+    protected function get_core_object_by_id($type, $id)
     {
         if (!class_exists($type))
             die("Core Object not known!");
@@ -197,6 +228,14 @@ class FactoryCore
             return FALSE;
 
         return new $type($this->global_info, $id);
+    }
+
+    protected function get_core_object($type, $filter = array())
+    {
+        if (!class_exists($type))
+            die("Core Object not known!");
+
+        return $type::get_object($this->global_info, $filter);
     }
 
     protected function core_object_exists($type, $id)
