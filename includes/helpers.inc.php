@@ -87,7 +87,7 @@ class Helpers
         $str = html_entity_decode($str, ENT_QUOTES, 'UTF-8');
 
         // Convert accents (Montréal -> Montreal)
-        $str = strtolower(Helpers::removeAccents($str));
+        $str = strtolower(Helpers::remove_Accents($str));
 
         // Some characters need to be removed
         $str = str_replace(array("'", "\"", "?", "!", ",", ".", "/", "*", "^", "#", "@", "~"), "", $str);
