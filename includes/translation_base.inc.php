@@ -23,9 +23,22 @@ class TranslationFactory
         return $info;
     }
 
+    function get_translation($key, $lang)
+    {
+        $result = $this->database->Query('SELECT value FROM translations WHERE lang = ? AND `key` = ?',
+                array($lang, $key));
+
+        assert('$result !== FALSE /* Failed to get translation */');
+
+        if ($result->RecordCount() == 0)
+            return $key;
+
+        return $result->fields['value'];
+    }
+
     function update_translation($key, $lang, $value)
     {
-        $result = $this->database->Query('INSERT IGNORE INTO translations SET `key` = ?, lang = ?, value = ?',
+        $result = $this->database->Query('REPLACE INTO translations SET `key` = ?, lang = ?, value = ?',
                 array($key, $lang, $value));
 
         assert('$result !== FALSE /* Failed to update translation */');
