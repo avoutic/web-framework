@@ -82,7 +82,7 @@ class LocaleFactory
     function get_current_locale_string()
     {
         if (!isset($_SESSION['locale_string']))
-            return $this->default_locate;
+            return $this->default_locale;
 
         return $_SESSION['locale_string'];
     }
@@ -168,8 +168,9 @@ class CountryLocaleFactory extends LocaleFactory
         if ($result->RecordCount())
             return $result->fields['language'];
 
-        return $this->default_language;
+        return $this->default_lang;
     }
+
     function language_supported_for_country($lang, $country_code)
     {
         $result = $this->database->Query('SELECT cl.id FROM country_languages AS cl, countries AS c WHERE c.code = ? AND cl.country_id = c.id AND cl.language = ? LIMIT 1',
