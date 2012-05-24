@@ -23,6 +23,20 @@ class User
         return $this->id;
     }
 
+    function check_password($password)
+    {
+        $result = $this->database->Query('SELECT password FROM users WHERE id = ?',
+                array($this->id));
+
+        if ($result === FALSE)
+            die('Failed to select data. Exiting!');
+
+        if ($result->RecordCount() != 1)
+            return false;
+
+        return ($password == $result->fields['password']);
+    }
+
     function change_password($old_password, $new_password)
     {
         // Check if original password is correct
@@ -43,6 +57,22 @@ class User
                         $new_password,
                         $this->id,
                         $old_password
+                        )))
+        {
+            die("Failed to update data! Exiting!");
+        }
+
+        return User::RESULT_SUCCESS;
+    }
+
+    function update_password($new_password)
+    {
+        // Change password
+        //
+        if (FALSE === $this->database->Query('UPDATE users SET password=? WHERE id=?',
+                    array(
+                        $new_password,
+                        $this->id
                         )))
         {
             die("Failed to update data! Exiting!");
@@ -164,20 +194,6 @@ class UserBasic extends User
         return $mail->send();
     }
 
-    function check_password($password)
-    {
-        $result = $this->database->Query('SELECT password FROM users WHERE id = ?',
-                array($this->id));
-
-        if ($result === FALSE)
-            die('Failed to select data. Exiting!');
-
-        if ($result->RecordCount() != 1)
-            return false;
-
-        return ($password == $result->fields['password']);
-    }
-
     function send_new_password()
     {
         // Generate and store password
@@ -202,6 +218,24 @@ class UserBasic extends User
 }
 
 class UserFull extends UserBasic
+{
+    public $permissions = array();
+
+    function __construct($database, $id)
+    {
+        parent::__construct($database, $id);
+
+        // Add permissions
+        //
+        $result = $this->database->Query('SELECT r.short_name FROM rights AS r, user_rights AS ur WHERE r.id = ur.right_id AND ur.user_id = ?',
+                array($id));
+
+        foreach($result as $k => $row)
+            array_push($this->permissions, $row['short_name']);
+    }
+};
+
+class UserLogin extends User
 {
     public $permissions = array();
 
@@ -252,6 +286,17 @@ class BaseFactory
     {
         $result = $this->database->Query('SELECT id FROM users WHERE username = ?',
                     array($username));
+
+        if ($result === FALSE || $result->RecordCount() != 1) 
+            return FALSE;
+
+        return $this->get_user($result->fields['id'], $type);
+    }
+
+    function get_user_by_email($email, $type = 'User')
+    {
+        $result = $this->database->Query('SELECT id FROM users WHERE email = ?',
+                    array($email));
 
         if ($result === FALSE || $result->RecordCount() != 1) 
             return FALSE;
