@@ -162,7 +162,7 @@ function validate_input($filter, $item)
 	
         foreach ($info as $k => $val)
             if (preg_match("/^\s*$filter\s*$/m", $val))
-                $global_state['input'][$item][$k] = stripslashes(trim($val));
+                $global_state['input'][$item][$k] = trim($val);
     }
     else
     {
@@ -177,7 +177,7 @@ function validate_input($filter, $item)
 	    	$str = $_GET[$item];
 	
     	if (preg_match("/^\s*$filter\s*$/m", $str))
-	    	$global_state['input'][$item] = stripslashes(trim($str));
+	    	$global_state['input'][$item] = trim($str);
     }
 }
 
