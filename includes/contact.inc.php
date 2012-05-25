@@ -14,7 +14,7 @@ abstract class PageContactBase extends PageBasic
 
     static function get_filter()
     {
-        $contact_types = PageContactBase::get_contact_types();
+        $contact_types = static::get_contact_types();
         $regex = implode('|', array_keys($contact_types));
 
         return array(
@@ -131,7 +131,7 @@ abstract class PageContactBase extends PageBasic
 			<label class="left" for="type">Type</label>
 			<select class="select" id="type" name="type">
 <?
-        $contact_types = PageContactBase::get_contact_types();
+        $contact_types = static::get_contact_types();
 
         foreach ($contact_types as $key => $text)
         {
