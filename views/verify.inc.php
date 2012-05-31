@@ -47,7 +47,7 @@ class PageVerify extends PageBasic
 
             // Redirect to main sceen
             //
-            header("Location: /".SITE_LOGIN_PAGE."?mtype=success&message=".urlencode("Verification succeeded")."&extra_message=".urlencode("Verification succeeded. You can now use your account."));
+            header("Location: /".$this->config['authenticator']['site_login_page']."?mtype=success&message=".urlencode("Verification succeeded")."&extra_message=".urlencode("Verification succeeded. You can now use your account."));
             exit();
         }
     }

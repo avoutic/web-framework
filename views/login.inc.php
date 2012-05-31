@@ -26,7 +26,7 @@ class PageLogin extends PageBasic
         $this->page_content['return_query'] = $this->state['input']['return_query'];
 
         if (!strlen($this->page_content['return_page']))
-            $this->page_content['return_page'] = DEFAULT_LOGIN_RETURN;
+            $this->page_content['return_page'] = $this->config['authenticator']['default_login_return'];
 
         // Check if this is a login attempt
         //
