@@ -4,14 +4,14 @@ abstract class PageCore
     protected $global_info;
     protected $state;
     protected $database;
-    protected $memcache;
+    protected $cache;
     protected $config;
 
     function __construct($global_info)
     {
         $this->global_info = $global_info;
         $this->database = $global_info['database'];
-        $this->memcache = $global_info['memcache'];
+        $this->cache = $global_info['cache'];
         $this->state = $global_info['state'];
         $this->config = $global_info['config'];
     }
@@ -64,8 +64,8 @@ abstract class PageBasic extends PageCore
 
                 $tag = sha1($mod_info);
 
-                if ($this->memcache != null && $class::is_cacheable)
-                    $mod_obj = $this->memcache->get($tag);
+                if ($this->cache != null && $class::is_cacheable)
+                    $mod_obj = $this->cache->get($tag);
 
                 if ($mod_obj === FALSE)
                 {
@@ -73,8 +73,8 @@ abstract class PageBasic extends PageCore
 
                     $mod_obj = new $class($global_info, $mod_info);
 
-                    if ($this->memcache != null && $class::is_cacheable)
-                        $this->memcache->set($tag, $mod_obj);
+                    if ($this->cache != null && $class::is_cacheable)
+                        $this->cache->set($tag, $mod_obj);
                 }
 
                 array_push($this->mods, $mod_obj);

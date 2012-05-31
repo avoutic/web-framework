@@ -3,7 +3,7 @@ abstract class DataCore
 {
     protected $global_info;
     protected $database;
-    protected $memcache;
+    protected $cache;
     public $id;
 
     static protected $table_name;
@@ -14,21 +14,21 @@ abstract class DataCore
     {
         $this->global_info = $global_info;
         $this->database = $global_info['database'];
-        $this->memcache = $global_info['memcache'];
+        $this->cache = $global_info['cache'];
         $this->id = $id;
 
         $obj = FALSE;
 
-        if ($this->memcache != null && $this->is_cacheable)
-            $obj = $this->memcache->get(static::get_cache_id($id));
+        if ($this->cache != null && $this->is_cacheable)
+            $obj = $this->cache->get(static::get_cache_id($id));
 
         $this->fill_fields($fill_complex, $obj);
     }
 
     static function exists($global_info, $id)
     {
-        if ($global_info['memcache'] != null && static::$is_cacheable)
-            if (FALSE !== $global_info->memcache->get(static::get_cache_id($id)))
+        if ($global_info['cache'] != null && static::$is_cacheable)
+            if (FALSE !== $global_info->cache->get(static::get_cache_id($id)))
                 return TRUE;
         
         $result = $global_info['database']->Query('SELECT id FROM '.static::$table_name.
@@ -54,8 +54,8 @@ abstract class DataCore
         {
             $this->fill_base_fields_from_db();
 
-            if ($this->memcache != null && $this->is_cacheable)
-                $this->memcache->add(static::get_cache_id($id), $this);
+            if ($this->cache != null && $this->is_cacheable)
+                $this->cache->add(static::get_cache_id($id), $this);
         }
         else
             $this->fill_base_fields_from_obj($obj);
@@ -96,8 +96,8 @@ abstract class DataCore
     {
         $this->field = $value;
 
-        if ($this->memcache != null && $this->is_cacheable)
-            $this->memcache->replace(static::get_cache_id($this->id), $this);
+        if ($this->cache != null && $this->is_cacheable)
+            $this->cache->replace(static::get_cache_id($this->id), $this);
 
         // Update single field in existing item
         //
@@ -111,8 +111,8 @@ abstract class DataCore
 
     function delete()
     {
-        if ($this->memcache != null && $this->is_cacheable)
-            $this->memcache->delete(static::get_cache_id($this->id));
+        if ($this->cache != null && $this->is_cacheable)
+            $this->cache->delete(static::get_cache_id($this->id));
 
         if (FALSE === $this->database->Query(
                     'DELETE FROM '.static::$table_name.' WHERE id = ?',

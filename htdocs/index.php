@@ -27,10 +27,13 @@ $base_config = array(
         ),
         'server_name' => $_SERVER['SERVER_NAME'],
         'document_root' => $_SERVER['DOCUMENT_ROOT'],
-        'memcache_enabled' => false,
-        'memcache' => array(
-            'memcache_host' => 'localhost',
-            'memcache_port' => '11211'
+        'cache_enabled' => false,
+        'cache' => array(
+            'cache_type' => 'memcache',       // memcache, memcached, redis
+            'cache_host' => 'localhost',
+            'cache_port' => '11211',
+            'cache_user' => '',
+            'cache_password' => ''
         ),
         'auth_mode' => 'redirect',            // redirect, www-authenticate
         'authenticator' => array(
@@ -117,6 +120,7 @@ if ($global_config['database_enabled'] == true)
 # Load global and site specific defines
 #
 require($includes."defines.inc.php");
+require($includes."object_factory.inc.php");
 
 if (is_file($site_includes."site_defines.inc.php"))
     include_once($site_includes."site_defines.inc.php");
@@ -226,6 +230,7 @@ if (is_array($data))
     $global_state['raw_post'] = $data;
 
 session_start();
+$core_factory = new ObjectFactory();
 
 # Start the database connection
 #
@@ -239,15 +244,19 @@ if ($global_config['database_enabled'] == true)
     }
 }
 
-# Start the memcache connection
+# Start the cache connection
 #
-$global_memcache = NULL;
-if ($global_config['memcache_enabled'] == true)
+$global_cache = NULL;
+if ($global_config['cache_enabled'] == true)
 {
-    $global_memcache = new Memcache();
-    if (FALSE === $global_memcache->connect($global_config['memcache']['memcache_host']))
+    $cache_type = $global_config['cache']['cache_type'];
+    require_once($includes.'cache_'.$cache_type.'.inc.php');
+
+    $global_cache = $core_factory->create('cache', $cache_type);
+
+    if (FALSE === $global_cache->connect($global_config['cache']['cache_host']))
     {
-        http_error(500, 'Internal Server Error', "<h1>Memcache server connection failed</h1>\nThe connection to the memcache server failed. Please contact the administrator.");
+        http_error(500, 'Internal Server Error', "<h1>Cache service connection failed</h1>\nThe connection to the cache service failed. Please contact the administrator.");
     }
 }
 
@@ -410,7 +419,7 @@ $global_info = array(
     'database' => $global_database,
     'state' => &$global_state,
     'config' => $global_config,
-    'memcache' => $global_memcache);
+    'cache' => $global_cache);
 
 if (function_exists('site_do_logic'))
     site_do_logic($global_info);
