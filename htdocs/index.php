@@ -72,8 +72,10 @@ function assert_handler($file, $line, $code)
     echo "<pre>";
     echo $message;
     echo "</pre>";
+    mail(MAIL_ADDRESS, 'Assertion failed',
+        "Failure information:\n\nServer: ".$global_config['server_name']."\nFile: ".$file."\nLine: ".$line."\nCode: ".$code, "From: Assertion Handler ".SITE_NAME." <".MAIL_ADDRESS.">\n");
 
-    die('Oops. Something went wrong. Please contact us with the information above!');
+    die('Oops. Something went wrong. Please retry later or contact us with the information above!');
 }
 
 assert_options(ASSERT_CALLBACK, 'assert_handler');
