@@ -435,6 +435,8 @@ if ($argument_count == 0)
     $page_obj->$function_name();
 else if ($argument_count == 1)
     $page_obj->$function_name($matches[1]);
+else if ($argument_count == 2)
+    $page_obj->$function_name($matches[1], $matches[2]);
 else
     echo "No method for $argument_count yet..\n";
 ?>
