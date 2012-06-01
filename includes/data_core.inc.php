@@ -159,6 +159,7 @@ abstract class DataCore
         $class = get_called_class();
 
         assert('$result !== FALSE /* Failed to retrieve object ('.$class.') */');
+        assert('$result->RecordCount() <= 1 /* Non-unique object request ('.$class.') */');
 
         if ($result->RecordCount() == 0)
             return FALSE;
