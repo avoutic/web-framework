@@ -210,7 +210,7 @@ function set_message($type, $message, $extra_message)
 }
 
 $fixed_page_filter = array(
-	'page'	=> '[\w_\/]+',
+	'page'	=> '[\w_\-\/]+',
 	'message' => '[\w \(\)\.\-!\?]+',
 	'extra_message' => '[\w \(\)\.\-!\?]+',
 	'mtype' => 'error|info|warning|success'
@@ -377,7 +377,7 @@ if ($target_info != null)
 }
 else
 {
-    $object_name = preg_replace('/(?:^|_)(.?)/e',"strtoupper('$1')", 'page_'.$include_page);
+    $object_name = preg_replace('/(?:^|[_\-])(.?)/e',"strtoupper('$1')", 'page_'.$include_page);
     $function_name = "html_main";
 }
 
