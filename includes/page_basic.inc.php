@@ -102,6 +102,11 @@ abstract class PageBasic extends PageCore
         return $this->get_title();
     }
 
+    function get_onload()
+    {
+        return "";
+    }
+
     function get_keywords()
     {
         return "";
@@ -125,6 +130,11 @@ abstract class PageBasic extends PageCore
         global $site_views;
 
         include($site_views.'templates/'.$name.'.inc.php');
+    }
+
+    function load_file($name)
+    {
+        include($this->config['document_root'].$name);
     }
 
     function do_logic()
