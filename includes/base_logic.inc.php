@@ -264,6 +264,7 @@ class BaseFactory
 
     function get_user($user_id, $type = 'User')
     {
+        assert('class_exists($type) /* Selected type does not exist */');
         return new $type($this->database, $user_id);
     }
 
