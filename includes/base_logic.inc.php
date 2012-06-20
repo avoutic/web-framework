@@ -1,7 +1,14 @@
 <?php
 require_once('mail_message.inc.php');
+require_once('data_core.inc.php');
 
-class User
+class Right extends DataCore
+{
+    static protected $table_name = 'rights';
+    static protected $base_fields = array('short_name', 'name');
+};
+    
+class User extends DataCore
 {
     // Error messages
     //
@@ -9,18 +16,23 @@ class User
     const ERR_DUPLICATE_EMAIL = 1;
     const ERR_ORIG_PASSWORD_MISMATCH = 2;
 
-    protected $database;
-    public $id;
+    static protected $table_name = 'users';
+    static protected $base_fields = array('username', 'name', 'email');
 
-    function __construct($database, $id)
-    {
-        $this->database = $database;
-        $this->id = $id;
-    }
+    public $rights;
 
-    function get_id()
+    protected function fill_complex_fields()
     {
-        return $this->id;
+        $result = $this->database->Query('SELECT right_id FROM user_rights AS ur WHERE ur.user_id = ?',
+                array($this->id));
+
+        assert('$result !== FALSE /* Failed to retrieve user rights. */');
+
+        foreach($result as $k => $row)
+        {
+            $right = new Right($this->global_info, $row['right_id']);
+            $this->rights[$right->short_name] = $right;
+        }
     }
 
     function check_password($password)
@@ -102,6 +114,8 @@ class User
             die("Failed to update data! Exiting!");
         }
         
+        $this->email = $email;
+
         return User::RESULT_SUCCESS;
     }
 
@@ -114,68 +128,39 @@ class User
         }
     }
 
-    function add_right($right_id)
+    function add_right($short_name)
     {
-        $result = $this->database->InsertQuery('INSERT INTO user_rights (user_id, right_id) VALUES (?, ?)',
+        if (isset($this->rights[$short_name]))
+            return TRUE;
+            
+        $result = $this->database->InsertQuery('INSERT INTO user_rights SET user_id = ?, right_id = (SELECT id FROM rights WHERE short_name = ?)',
                 array(
                     $this->id,
-                    $right_id
+                    $short_name
                     ));
+        assert('$result !== FALSE /* Failed to insert user right */');
 
-        if ($result === FALSE)
-            die('Failed to insert right. Exiting!');
+        $this->rights[$short_name] = Right::get_object($this->global_info, array('short_name' => $short_name));
 
-        return $result;
+        return TRUE;
     }
 
-    function delete_right($user_right_id)
+    function delete_right($short_name)
     {
-        $result = $this->database->Query('DELETE FROM user_rights WHERE id = ? AND user_id = ?',
+        if (!isset($this->rights[$short_name]))
+            return TRUE;
+            
+        $result = $this->database->Query('DELETE FROM user_rights WHERE id = (SELECT id FROM rights WHERE short_name = ?) AND user_id = ?',
                 array(
-                    $user_right_id,
+                    $short_name,
                     $this->id
                     ));
 
-        if ($result === FALSE)
-            die('Failed to delete right. Exiting!');
-    }
-};
+        assert('$result !== FALSE /* Failed to delete user right */');
 
-class UserBasic extends User
-{
-    public $username;
-    public $name;
-    public $email;
-    public $verified;
+        unset($this->rights[$short_name]);
 
-    protected $fields = array('username', 'name', 'email', 'verified');
-
-    function __construct($database, $id)
-    {
-        parent::__construct($database, $id);
-
-        $result = $this->database->Query('SELECT username, name, email, verified FROM users WHERE id = ?', array($id));
-	
-        if ($result === FALSE)
-            die('Failed to retrieve information.');
-
-        $row = $result->fields;
-
-        foreach ($this->fields as $name)
-            $this->$name = $row[$name];
-
-        // Aggregate fields
-        //
-    }
-
-    function change_email($email, $require_unique = false)
-    {
-        $result = parent::change_email($email, $require_unique);
-
-        if ($result == User::RESULT_SUCCESS)
-            $this->email = $email;
-
-        return $result;
+        return TRUE;
     }
 
     function generate_verify_code()
@@ -217,92 +202,27 @@ class UserBasic extends User
     }
 }
 
-class UserFull extends UserBasic
+class BaseFactory extends FactoryCore
 {
-    public $permissions = array();
-
-    function __construct($database, $id)
-    {
-        parent::__construct($database, $id);
-
-        // Add permissions
-        //
-        $result = $this->database->Query('SELECT r.short_name FROM rights AS r, user_rights AS ur WHERE r.id = ur.right_id AND ur.user_id = ?',
-                array($id));
-
-        foreach($result as $k => $row)
-            array_push($this->permissions, $row['short_name']);
-    }
-};
-
-class UserLogin extends User
-{
-    public $permissions = array();
-
-    function __construct($database, $id)
-    {
-        parent::__construct($database, $id);
-
-        // Add permissions
-        //
-        $result = $this->database->Query('SELECT r.short_name FROM rights AS r, user_rights AS ur WHERE r.id = ur.right_id AND ur.user_id = ?',
-                array($id));
-
-        foreach($result as $k => $row)
-            array_push($this->permissions, $row['short_name']);
-    }
-};
-
-class BaseFactory
-{
-    protected $database;
-
-    function __construct($database)
-    {
-        $this->database = $database;
-    }
-
     function get_user($user_id, $type = 'User')
     {
         assert('class_exists($type) /* Selected type does not exist */');
         return new $type($this->database, $user_id);
     }
 
-    function get_user_list()
+    function get_users($offset = 0, $results = 100)
     {
-        $result = $this->database->Query('SELECT u.id, u.name FROM users AS u', array());
-
-        if ($result === FALSE)
-            die('Failed to retrieve information.');
-
-        $info = array();
-
-        foreach ($result as $k => $row)
-            array_push($info, array('id' => $row[0], 'name' => $row[1]));
-
-        return $info;
+        return $this->get_core_objects('User', $offset, $results);
     }
 
     function get_user_by_username($username, $type = 'User')
     {
-        $result = $this->database->Query('SELECT id FROM users WHERE username = ?',
-                    array($username));
-
-        if ($result === FALSE || $result->RecordCount() != 1) 
-            return FALSE;
-
-        return $this->get_user($result->fields['id'], $type);
+        return $this->get_core_object($type, array('username' => $username));
     }
 
     function get_user_by_email($email, $type = 'User')
     {
-        $result = $this->database->Query('SELECT id FROM users WHERE email = ?',
-                    array($email));
-
-        if ($result === FALSE || $result->RecordCount() != 1) 
-            return FALSE;
-
-        return $this->get_user($result->fields['id'], $type);
+        return $this->get_core_object($type, array('email' => $email));
     }
 };
 
