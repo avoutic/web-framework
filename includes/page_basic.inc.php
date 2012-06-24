@@ -21,6 +21,16 @@ abstract class PageCore
         return array();
     }
 
+    function get_input_vars()
+    {
+        $fields = array();
+
+        foreach (array_keys($this->get_filter()) as $key)
+            $fields[$key] = $this->state['input'][$key];
+
+        return $fields;
+    }
+
     static function get_permissions()
     {
         return array();
