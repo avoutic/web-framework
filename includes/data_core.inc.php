@@ -120,6 +120,35 @@ abstract class DataCore
             die('Failed to delete item.');
     }
 
+    static function create($global_info, $data)
+    {
+        $query = 'INSERT INTO '.static::$table_name;
+        $query .= ' SET ';
+
+        $first = true;
+        foreach ($data as $key => $value)
+        {
+            if (!$first)
+                $query .= ', ';
+
+            $query .= ' '.$key.' = ? ';
+
+            $first = false;
+        }
+
+        $args = $data;
+
+        print_r($query);
+        print_r($args);
+        $result = $global_info['database']->InsertQuery($query, $args);
+
+        $class = get_called_class();
+
+        assert('$result !== FALSE /* Failed to create object ('.$class.') */');
+
+        return new $class($global_info, $result);
+    }
+        
     static function count_objects($database)
     {
         $result = $database->Query('SELECT COUNT(id) AS cnt FROM '.static::$table_name,
@@ -263,6 +292,13 @@ class FactoryCore
             die("Core Object not known!");
 
         return $type::get_objects($this->global_info, $offset, $results, $filter, $order);
+    }
+
+    protected function create_core_object($type, $data)
+    {
+        assert('class_exists($type) /* Core Object ("'.$type.'") not known */');
+
+        return $type::create($this->global_info, $data);
     }
 };
 ?>
