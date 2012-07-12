@@ -17,6 +17,8 @@ class Database {
 
         if (!$result)
             return FALSE;
+
+        return TRUE;
 	}
 
 	function Query($query_str, $value_array)
