@@ -34,7 +34,7 @@ class PageVerify extends PageBasic
         //
         $user = $factory->get_user_by_username($this->state['input']['username']);
 
-        if ($user->verified == 1)
+        if ($user->is_verified())
         {
             header('Location: /?mtype=success&message='.urlencode('User already verified.'));
             exit();

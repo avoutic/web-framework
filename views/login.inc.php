@@ -52,11 +52,11 @@ class PageLogin extends PageBasic
             return;
         }
 
-        $factory = new BaseFactory($this->database);
+        $factory = new BaseFactory($this->global_info);
 
         // Log in user
         //
-        $user = $factory->get_user_by_username($this->state['input']['username'], 'UserFull');
+        $user = $factory->get_user_by_username($this->state['input']['username']);
 
         $success = false;
         if ($user === FALSE || !$user->check_password($this->state['input']['password'])) {
@@ -66,7 +66,7 @@ class PageLogin extends PageBasic
 
         // Check if verified
         //
-        if ($user->verified == 0) {
+        if (!$user->is_verified()) {
             $this->add_message('error', 'Account not yet verified.', 'Account is not yet verified. Please check your mailbox for the verification e-mail and go to the presented link. If you have not received such a mail, you can <a href="/send_verify?username='.$this->state['input']['username'].'">request a new one</a>.');
             return;
         }
@@ -77,10 +77,10 @@ class PageLogin extends PageBasic
 
         $_SESSION['logged_in'] = true;
         $info = array();
-        $info['user_id'] = $user->get_id();
+        $info['user_id'] = $user->id;
         $info['username'] = $user->username;
         $info['name'] = $user->name;
-        $info['permissions'] = array_merge(array('logged_in'), $user->permissions);
+        $info['permissions'] = array_merge(array('logged_in'), $user->rights);
         $info['email'] = $user->email;
         $_SESSION['auth'] = $info;
 

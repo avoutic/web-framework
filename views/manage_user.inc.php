@@ -8,7 +8,7 @@ class PageManageUser extends PageBasic
         return array(
                 'user_id' => '\d+',
                 'action' => 'delete_right|add_right',
-                'right_id' => '\d+',
+                'right_name' => '\w+',
                 'do' => 'yes'
                 );
     }
@@ -17,7 +17,7 @@ class PageManageUser extends PageBasic
     {
         return array(
                 'logged_in',
-                'user_management'
+                'user_management',
                 );
     }
 
@@ -31,49 +31,49 @@ class PageManageUser extends PageBasic
         if (!strlen($this->state['input']['user_id']))
             die("Invalid input for user_id");
 
-        $factory = new BaseFactory($this->database);
+        $factory = new BaseFactory($this->global_info);
 
         // Retrieve user information
         //
-        $user = $factory->get_user($this->state['input']['user_id'], 'UserBasic');
+        $user = $factory->get_user($this->state['input']['user_id']);
 
         // Check if this is a action attempt
         //
         if (strlen($this->state['input']['do']) && strlen($this->state['input']['action'])) {
             switch($this->state['input']['action']) {
                 case 'delete_right':
-                    $user->delete_right($this->state['input']['right_id']);
+                    $user->delete_right($this->state['input']['right_name']);
                     break;
                 case 'add_right':
-                    $user->add_right($this->state['input']['right_id']);
+                    $user->add_right($this->state['input']['right_name']);
                     break;
             }
         }
 
         // Retrieve user information
         //
-        $this->page_content['user']['user_id'] = $user->get_id();
+        $this->page_content['user']['user_id'] = $user->id;
         $this->page_content['user']['username'] = $user->username;
         $this->page_content['user']['name'] = $user->name;
         $this->page_content['user']['email'] = $user->email;
-        $this->page_content['user']['verified'] = $user->verified;
+        $this->page_content['user']['verified'] = $user->is_verified();
         $this->page_content['user']['rights'] = array();
 
-        $result_r = $this->database->Query('SELECT ur.id, r.name FROM rights AS r, user_rights AS ur WHERE r.id = ur.right_id AND ur.user_id = ?',
+        $result_r = $this->database->Query('SELECT ur.id, r.short_name, r.name FROM rights AS r, user_rights AS ur WHERE r.id = ur.right_id AND ur.user_id = ?',
                 array($this->state['input']['user_id']));
 
         if ($result_r->RecordCount() > 0) {
             foreach ($result_r as $k => $row)
-                array_push($this->page_content['user']['rights'], array('id' => $row[0], 'name' => $row[1]));
+                array_push($this->page_content['user']['rights'], array('id' => $row['id'], 'short_name' => $row['short_name'], 'name' => $row['name']));
         }
 
         $this->page_content['rights'] = array();
 
-        $result_all_r = $this->database->Query('SELECT r.id, r.name FROM rights AS r', array());
+        $result_all_r = $this->database->Query('SELECT r.id, r.short_name, r.name FROM rights AS r', array());
 
         if ($result_all_r->RecordCount() > 0) {
             foreach ($result_all_r as $k => $row)
-                array_push($this->page_content['rights'], array('id' => $row[0], 'name' => $row[1]));
+                array_push($this->page_content['rights'], array('id' => $row['id'], 'short_name' => $row['short_name'], 'name' => $row['name']));
         }
     }
 
@@ -116,7 +116,7 @@ class PageManageUser extends PageBasic
         foreach($this->page_content['user']['rights'] as $right) {
     	    print("<tr>\n");
 	        print("  <td>".$right['name']."</td>\n");
-	        print("  <td><a href=\"/manage_user?user_id=".$this->page_content['user']['user_id']."&amp;action=delete_right&amp;right_id=".$right['id']."&amp;do=yes\">Delete</a></td>\n");
+	        print("  <td><a href=\"/manage_user?user_id=".$this->page_content['user']['user_id']."&amp;action=delete_right&amp;right_name=".$right['short_name']."&amp;do=yes\">Delete</a></td>\n");
     	    print("</tr>\n");
         }
 ?>
@@ -130,11 +130,11 @@ class PageManageUser extends PageBasic
   <input type="hidden" name="do" value="yes" />
   <legend>Add right</legend>
   <p>
-    <label class="left" for="right_id">Right</label>
-    <select name="right_id">
+    <label class="left" for="right_name">Right</label>
+    <select name="right_name">
 <?
         foreach ($this->page_content['rights'] as $right)
-	        print("  <option value=\"".$right['id']."\">".$right['name']."</option>\n");
+	        print("  <option value=\"".$right['short_name']."\">".$right['name']."</option>\n");
 ?>
     </select>
   </p>
