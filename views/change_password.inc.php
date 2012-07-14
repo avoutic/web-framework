@@ -66,7 +66,7 @@ function do_logic()
 		return;
 	}
 
-    $factory = new BaseFactory($this->database);
+    $factory = new BaseFactory($this->global_info);
     $user = $factory->get_user($this->state['user_id']);
     $result = $user->change_password($orig_password, $password);
 

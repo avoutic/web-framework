@@ -28,11 +28,11 @@ class PageVerify extends PageBasic
         if (!strlen($this->state['input']['code']))
             return;
 
-        $factory = new BaseFactory($this->database);
+        $factory = new BaseFactory($this->global_info);
 
         // Check user status
         //
-        $user = $factory->get_user_by_username($this->state['input']['username'], 'UserBasic');
+        $user = $factory->get_user_by_username($this->state['input']['username']);
 
         if ($user->verified == 1)
         {

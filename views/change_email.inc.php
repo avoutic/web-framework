@@ -42,8 +42,8 @@ class PageChangeEmail extends PageBasic
 
         // Change email
         //
-        $factory = new BaseFactory($this->database);
-        $user = $factory->get_user($this->state['user_id'], 'UserBasic');
+        $factory = new BaseFactory($this->global_info);
+        $user = $factory->get_user($this->state['user_id']);
 
         $result = $user->change_email($email);
 

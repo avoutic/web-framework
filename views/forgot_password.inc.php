@@ -30,11 +30,11 @@ class PageForgotPassword extends PageBasic
             return;
         }
 
-        $factory = new BaseFactory($this->database);
+        $factory = new BaseFactory($this->global_info);
 
         // Retrieve email address
         //
-        $user = $factory->get_user_by_username($this->state['input']['username'], 'UserBasic');
+        $user = $factory->get_user_by_username($this->state['input']['username']);
 
         if ($user !== FALSE)
             $user->send_new_password();
