@@ -15,7 +15,7 @@ class PageGrabIdentity extends PageBasic
         return array(
                 'logged_in',
                 'user_management',
-                'grab_identity'
+                'grab_identity',
                 );
     }
 
@@ -31,15 +31,15 @@ class PageGrabIdentity extends PageBasic
         if (!strlen($this->state['input']['user_id']))
             return;
 
-        $factory = new BaseFactory($this->database);
+        $factory = new BaseFactory($this->global_info);
 
         // Log in user
         //
-        $user = $factory->get_user($this->state['input']['user_id'], 'UserFull');
+        $user = $factory->get_user($this->state['input']['user_id']);
 
         // Check if verified
         //
-        if ($user->verified == 0) {
+        if (!$user->is_verified()) {
             $this->add_message('error', 'Account not yet verified.', 'Account is not yet verified. Please check your mailbox for the verification e-mail and go to the presented link. If you have not received such a mail, you can <a href="/send_verify?username='.$user->username.'">request a new one</a>.');
             return;
         }
@@ -49,13 +49,12 @@ class PageGrabIdentity extends PageBasic
         $success = true;
 
         $_SESSION['logged_in'] = true;
-        :w
 
         $info = array();
-        $info['user_id'] = $user->get_id();
+        $info['user_id'] = $user->id;
         $info['username'] = $user->username;
         $info['name'] = $user->name;
-        $info['permissions'] = array_merge(array('logged_in'), $user->permissions);
+        $info['permissions'] = array_merge(array('logged_in'), $user->rights);
         $info['email'] = $user->email;
         $_SESSION['auth'] = $info;
 
