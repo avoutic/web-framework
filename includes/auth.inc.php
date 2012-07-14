@@ -103,19 +103,19 @@ class AuthWwwAuthenticate extends Authenticator
         $username = $_SERVER['PHP_AUTH_USER'];
         $password = sha1($_SERVER['PHP_AUTH_PW']);
 
-        $factory = new BaseFactory($this->database);
+        $factory = new BaseFactory($this->global_info);
 
-        $user = $factory->get_user_by_username($username, 'UserFull');
+        $user = $factory->get_user_by_username($username);
 
         if ($user === FALSE || !$user->check_password($password))
             return FALSE;
 
         $info = array(
-            'user_id' => $user->get_id(),
+            'user_id' => $user->id,
             'username' => $user->username,
             'name' => $user->name,
             'email' => $user->email,
-            'permissions' => array_merge(array('logged_in'), $user->permissions));
+            'permissions' => array_merge(array('logged_in'), $user->rights));
 
         return $info;
     }
