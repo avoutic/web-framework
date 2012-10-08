@@ -119,6 +119,15 @@ class User extends DataCore
         return User::RESULT_SUCCESS;
     }
 
+    function is_verified()
+    {
+        $result = $this->database->Query('SELECT verified FROM users WHERE id = ?', array($this->id));
+        assert('$result !== FALSE /* Failed to retrieve verified status */');
+        assert('$result->RecordCount() == 1 /* Did not get single response */');
+
+        return $result->fields['verified'] == 1;
+    }
+
     function set_verified()
     {
         if (FALSE === $this->database->Query('UPDATE users SET verified=1 WHERE id=?',
@@ -161,6 +170,11 @@ class User extends DataCore
         unset($this->rights[$short_name]);
 
         return TRUE;
+    }
+
+    function has_right($short_name)
+    {
+        return isset($this->rights[$short_name]);
     }
 
     function generate_verify_code()
@@ -207,7 +221,7 @@ class BaseFactory extends FactoryCore
     function get_user($user_id, $type = 'User')
     {
         assert('class_exists($type) /* Selected type does not exist */');
-        return new $type($this->database, $user_id);
+        return new $type($this->global_info, $user_id);
     }
 
     function get_users($offset = 0, $results = 100)
