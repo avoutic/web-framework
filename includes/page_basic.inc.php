@@ -147,6 +147,19 @@ abstract class PageBasic extends PageCore
         include($this->config['document_root'].$name);
     }
 
+    function check_required(&$var, $name)
+    {
+
+        if (!isset($this->state['input'][$name]) ||
+            !strlen($this->state['input'][$name]))
+        {
+            die('Missing input variable \''.$name.'\'.');
+        }
+
+        $var = $this->state['input'][$name];
+        return TRUE;
+    }
+
     function do_logic()
     {
     }
@@ -213,6 +226,8 @@ abstract class PageService extends PageCore
 
     function output_json($success, $output, $direct = false)
     {
+        header('Content-type: application/json');
+
         if ($direct && $success)
         {
             print(json_encode($output));
