@@ -71,7 +71,7 @@ abstract class DataCore
                 ' FROM '.static::$table_name.' WHERE id = ?', array($this->id));
 
         if ($result === FALSE)
-            die('Failed to retrieve information.');
+            die('Failed to retrieve base fields for '.static::$table_name);
 
         if ($result->RecordCount() != 1)
             die('Failed to select single item. ('.$result->RecordCount().' for '.$this->id.' in '.static::$table_name.')');
@@ -149,16 +149,28 @@ abstract class DataCore
         return new $class($global_info, $result);
     }
         
-    static function count_objects($database)
+    static function count_objects($global_info, $filter = array())
     {
-        $result = $database->Query('SELECT COUNT(id) AS cnt FROM '.static::$table_name,
-                    array());
+        $query = 'SELECT COUNT(id) AS cnt FROM '.static::$table_name;
+        if (count($filter))
+        {
+            $query .= ' WHERE ';
+            $first = true;
+            foreach ($filter as $key => $value)
+            {
+                if (!$first)
+                    $query .= ' AND ';
 
-        if ($result === FALSE)
-            die('Failed to count objects.');
+                $query .= ' '.$key.' = ? ';
+                
+                $first = false;
+            }
+        }
 
-        if ($result->RecordCount() != 1)
-            die('Failed to count objects.');
+        $args = $filter;
+        $result = $global_info['database']->Query($query, $args);
+        assert('$result !== FALSE /* Failed to count objects */');
+        assert('$result->RecordCount() == 1 /* Failed to count objects */');
 
         return $result->fields['cnt'];
     }
@@ -283,7 +295,7 @@ class FactoryCore
         if (!class_exists($type))
             die("Core Object not known!");
 
-        return $type::count_objects($this->database);
+        return $type::count_objects($this->global_info);
     }
 
     protected function get_core_objects($type, $offset = 0, $results = 10, $filter = array(), $order = '')
