@@ -121,12 +121,10 @@ class User extends DataCore
 
     function is_verified()
     {
-        $result = $this->database->Query('SELECT verified FROM users WHERE id=?',
-                    array($this->id));
+        $result = $this->database->Query('SELECT verified FROM users WHERE id = ?', array($this->id));
+        assert('$result !== FALSE /* Failed to retrieve verified status */');
+        assert('$result->RecordCount() == 1 /* Did not get single response */');
 
-        assert('$result !== FALSE /* Failed to check verified status for user! */');
-        assert('$result->RecordCount() != 0 /* No record found */');
-       
         return $result->fields['verified'] == 1;
     }
 
@@ -172,6 +170,11 @@ class User extends DataCore
         unset($this->rights[$short_name]);
 
         return TRUE;
+    }
+
+    function has_right($short_name)
+    {
+        return isset($this->rights[$short_name]);
     }
 
     function generate_verify_code()
