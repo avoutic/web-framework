@@ -123,6 +123,7 @@ if ($global_config['database_enabled'] == true)
 #
 require($includes."defines.inc.php");
 require($includes."object_factory.inc.php");
+require($includes."base_logic.inc.php");
 
 if (is_file($site_includes."site_defines.inc.php"))
     include_once($site_includes."site_defines.inc.php");
@@ -190,10 +191,19 @@ function validate_input($filter, $item)
 function user_has_permissions($permissions)
 {
 	global $global_state;
+    
+    if (count($permissions) == 0)
+        return true;
+
+    if ($global_state['logged_in'] == false)
+        return false;
 
 	foreach ($permissions as $permission) {
-		if (!in_array($permission, $global_state['permissions']))
-				return false;
+        if ($permission == 'logged_in')
+            continue;
+
+        if (!$global_state['user']->has_right($permission))
+            return false;
 	}
 
 	return true;
@@ -275,8 +285,18 @@ if (is_file($site_includes."site_logic.inc.php"))
  
 $route_array = array();
 
-if (function_exists('site_modify_route_array'))
-    site_modify_route_array($route_array);
+function register_route($regex, $file, $class_function, $args = array())
+{
+    global $route_array;
+
+    $route_array[$regex] = array(
+                    'include_file' => $file,
+                    'class' => $class_function,
+                    'args' => $args);
+}
+
+if (function_exists('register_routes'))
+    register_routes();
 
 # Create Authenticator
 #
@@ -301,14 +321,11 @@ if ($logged_in !== FALSE)
 
 	# Retrieve id / long name / short name
 	#
+	$global_state['user'] = $global_state['auth']['user'];
 	$global_state['user_id'] = $global_state['auth']['user_id'];
 	$global_state['username'] = $global_state['auth']['username'];
 	$global_state['name'] = $global_state['auth']['name'];
 	$global_state['email'] = $global_state['auth']['email'];
-
-	# Set permissions in state
-	#
-	$global_state['permissions'] = $global_state['auth']['permissions'];
 }
 
 # Check page requested
@@ -374,6 +391,9 @@ if ($target_info != null)
 
     $object_name = $target[0];
     $function_name = $target[1];
+
+    for ($i = 0; $i < count($target_info['args']); $i++)
+        $global_state['raw_post'][$target_info['args'][$i]] = $matches[$i + 1];
 }
 else
 {
