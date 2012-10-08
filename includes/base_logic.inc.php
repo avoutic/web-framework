@@ -19,7 +19,7 @@ class User extends DataCore
     static protected $table_name = 'users';
     static protected $base_fields = array('username', 'name', 'email');
 
-    public $rights;
+    public $rights = array();
 
     protected function fill_complex_fields()
     {
