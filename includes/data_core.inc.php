@@ -92,6 +92,15 @@ abstract class DataCore
     {
     }
 
+    function get_field($field)
+    {
+        $result = $this->database->Query('SELECT '.$field.' FROM '.static::$table_name.
+                                         ' WHERE id = ?', array($this->id));
+        assert('$result !== FALSE /* Failed to retrieve '.$field.' for '.static::$table_name.' */');
+
+        return $result->fields[$field];
+    }
+
     function update_field($field, $value)
     {
         $this->field = $value;
@@ -228,8 +237,10 @@ abstract class DataCore
         if (strlen($order))
             $query .= ' ORDER BY '.$order;
         if($results != -1)
+        {
             $query .= ' LIMIT ?,?';
-        $args = array_merge($args, array((int) $offset, (int) $results));
+            $args = array_merge($args, array((int) $offset, (int) $results));
+        }
 
         $result = $global_info['database']->Query($query, $args);
 
