@@ -289,10 +289,11 @@ function register_route($regex, $file, $class_function, $args = array())
 {
     global $route_array;
 
-    $route_array[$regex] = array(
+    array_push($route_array, array(
+                    'regex' => $regex,
                     'include_file' => $file,
                     'class' => $class_function,
-                    'args' => $args);
+                    'args' => $args));
 }
 
 if (function_exists('register_routes'))
@@ -338,14 +339,12 @@ $global_state['request_uri'] = $request_uri;
 
 $request_uri = $_SERVER['REQUEST_METHOD'].' '.$request_uri;
 
-if (!preg_match("/^\w+ [\w\-_\/]+$/m", $request_uri))
-    send_404();
-
 # Check if there is a route to follow
 #
 $target_info = null;
-foreach ($route_array as $route => $target)
+foreach ($route_array as $target)
 {
+    $route = $target['regex'];
     if (preg_match("!^$route$!", $request_uri, $matches))
     {
         $target_info = $target;
@@ -360,6 +359,9 @@ if ($target_info != null)
 }
 else
 {
+    if (!preg_match("/^\w+ [\w\.\-_\/]+$/m", $request_uri))
+        send_404();
+
     $include_page = $global_state['input']['page'];
     if (!$include_page && isset($_GET['page']) && strlen($_GET['page']))
         send_404();

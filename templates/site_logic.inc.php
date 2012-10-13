@@ -1,8 +1,7 @@
 <?php
 
-$route_array = array(
-    'GET /version' => array(
-                'include_file' => 'view_file',
-                'class' => 'ViewView.get_version' ),
-);
+function register_routes()
+{
+//  register_route('GET /something', 'something_file', 'class.function', array('optional_arg_names_to_map_to'));
+}
 ?>
