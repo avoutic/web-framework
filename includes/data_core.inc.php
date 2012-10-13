@@ -138,8 +138,6 @@ abstract class DataCore
 
         $args = $data;
 
-        print_r($query);
-        print_r($args);
         $result = $global_info['database']->InsertQuery($query, $args);
 
         $class = get_called_class();
@@ -229,7 +227,8 @@ abstract class DataCore
         $args = $filter;
         if (strlen($order))
             $query .= ' ORDER BY '.$order;
-        $query .= ' LIMIT ?,?';
+        if($results != -1)
+            $query .= ' LIMIT ?,?';
         $args = array_merge($args, array((int) $offset, (int) $results));
 
         $result = $global_info['database']->Query($query, $args);
