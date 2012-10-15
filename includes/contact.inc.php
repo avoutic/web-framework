@@ -50,6 +50,7 @@ abstract class PageContactBase extends PageBasic
         $this->page_content['type'] = $this->state['input']['type'];
         $this->page_content['subject'] = $this->state['input']['subject'];
         $this->page_content['message_content'] = $this->state['input']['message_content'];
+        $this->page_content['contact_types'] = static::get_contact_types();
 
         // Check if this is a true attempt
         //
@@ -104,56 +105,7 @@ abstract class PageContactBase extends PageBasic
 
     function display_content()
     {
-?>
-<form method="post" class="contactform" action="/contact" enctype="multipart/form-data">
-<?
-	    if (!$this->page_content['logged_in'])
-    	{
-?>
-	<fieldset class="contact_details">
-		<legend>Contact Details</legend>
-		<p>
-			<label class="left" for="name">Name</label>
-			<input type="text" class="field" id="name" name="name" value="<?=htmlentities($this->page_content['name']);?>"/>
-		</p>
-		<p>
-			<label class="left" for="email">Email</label>
-			<input type="text" class="field" id="email" name="email" value="<?=htmlentities($this->page_content['email']);?>"/>
-		</p>
-	</fieldset>
-<?
-	    }
-?>
-	<fieldset class="message_content">
-        <input type="hidden" name="do" value="yes"/>
-		<legend>Message Details</legend>
-		<p>
-			<label class="left" for="type">Type</label>
-			<select class="select" id="type" name="type">
-<?
-        $contact_types = static::get_contact_types();
-
-        foreach ($contact_types as $key => $text)
-        {
-?>
-			<option value="<?=$key?>" <?if ($this->page_content['type'] == $key) print("selected");?>><?=$text?></option>
-<?
-        }
-?>
-			</select>
-		</p>
-		<p>
-			<label class="left" for="subject">Subject</label> <input type="text" class="field" id="subject" name="subject" value="<?=htmlentities($this->page_content['subject']);?>"/>
-		</p>
-		<p>
-			<label class="left" for="message_content">Message</label> <textarea class="field" id="message_content" name="message_content" rows="20" cols="50"><?=htmlentities($this->page_content['message_content']);?></textarea>
-		</p>
-	</fieldset>
-	<p>
-		<label>&nbsp;</label> <input type="submit" class="button" id="submit" value="Submit" />
-	</p>
-</form>
-<?
+        $this->load_template('contact.tpl', $this->page_content);
     }
 };
 ?>
