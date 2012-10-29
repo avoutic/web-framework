@@ -89,17 +89,43 @@ class Helpers
         // Convert accents (Montréal -> Montreal)
         $str = strtolower(Helpers::remove_Accents($str));
 
-        // Some characters need to be removed
-        $str = str_replace(array("'", "\"", "?", "!", ",", ".", "/", "*", "^", "#", "@", "~"), "", $str);
-
         // Some characters should be replaced by words
         $str = str_replace("\$", " dollar ", $str);
         $str = str_replace("+", " plus ", $str);
-        $str = str_replace("-", " minus ", $str);
         $str = str_replace("%", " percent ", $str);
         $str = str_replace("&", " and ", $str);
+
+        // Some characters need to be removed
+        $str = str_replace(array("'", "\"", "?", "!", "*", "^", "#", "@", "~"), "", $str);
+
+        // Some characters need to be replaced
+        $str = str_replace(array("/", ".", ","), "-", $str);
 
         // Remove other non alphanumeric characters and convert spaces to dashes
         return preg_replace("/\s+/s", "-", trim(preg_replace("/\W/s", " ", $str)));
     }
+
+    public static function mysql_datetime_to_timestamp($time_str)
+    {
+        $ftime = strptime($time_str, '%F %T');
+        return mktime(
+                $ftime['tm_hour'],
+                $ftime['tm_min'],
+                $ftime['tm_sec'],
+                1 ,
+                $ftime['tm_yday'] + 1,
+                $ftime['tm_year'] + 1900);
+    } 
+
+    public static function mysql_date_to_timestamp($time_str)
+    {
+        $ftime = strptime($time_str, '%F');
+        return mktime(
+                $ftime['tm_hour'],
+                $ftime['tm_min'],
+                $ftime['tm_sec'],
+                1 ,
+                $ftime['tm_yday'] + 1,
+                $ftime['tm_year'] + 1900);
+    } 
 };
