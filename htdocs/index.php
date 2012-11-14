@@ -45,6 +45,9 @@ $base_config = array(
             'default_frame_file' => '',
             'mods' => array()               // Should at least contain class, and include_file of mod!
         ),
+        'error_handlers' => array(
+            '404' => '404'
+        ),
 );
 
 assert_options(ASSERT_ACTIVE, 1);
@@ -89,6 +92,23 @@ function http_error($code, $short_message, $message)
 
 function send_404()
 {
+    global $global_info, $site_views;
+
+    if (strlen($global_info['config']['error_handlers']['404']))
+    {
+        $include_page = $global_info['config']['error_handlers']['404'];
+        $include_page_file = $site_views.$include_page.".inc.php";
+
+        require_once($include_page_file);
+
+        $object_name = preg_replace('/(?:^|[_\-])(.?)/e',"strtoupper('$1')", 'page_'.$include_page);
+        $function_name = "html_main";
+
+        header("HTTP/1.0 404 Page not found");
+        call_obj_func($global_info, $object_name, $function_name);
+        exit(0);
+    }
+
     http_error(404, 'Not Found', "<h1>Page not found</h1>\nPage not found. Please return to the <a href=\"/\">main page</a>.");
 }
 
@@ -124,6 +144,7 @@ if ($global_config['database_enabled'] == true)
 require($includes."defines.inc.php");
 require($includes."object_factory.inc.php");
 require($includes."base_logic.inc.php");
+require_once($includes.'page_basic.inc.php');
 
 if (is_file($site_includes."site_defines.inc.php"))
     include_once($site_includes."site_defines.inc.php");
@@ -272,6 +293,12 @@ if ($global_config['cache_enabled'] == true)
     }
 }
 
+$global_info = array(
+    'database' => $global_database,
+    'state' => &$global_state,
+    'config' => $global_config,
+    'cache' => $global_cache);
+
 array_walk($fixed_page_filter, 'validate_input');
 
 if (strlen($global_state['input']['mtype']))
@@ -290,9 +317,22 @@ function register_route($regex, $file, $class_function, $args = array())
     global $route_array;
 
     array_push($route_array, array(
+                    'type' => 'route',
                     'regex' => $regex,
                     'include_file' => $file,
                     'class' => $class_function,
+                    'args' => $args));
+}
+
+function register_redirect($regex, $redirect, $type = '301', $args = array())
+{
+    global $route_array;
+
+    array_push($route_array, array(
+                    'type' => 'redirect',
+                    'regex' => $regex,
+                    'redirect' => $redirect,
+                    'redir_type' => $type,
                     'args' => $args));
 }
 
@@ -355,6 +395,18 @@ foreach ($route_array as $target)
 $include_page = "";
 if ($target_info != null)
 {
+    // Matched in the route array
+    //
+    if ($target_info['type'] ==  'redirect')
+    {
+        $url = $target_info['redirect'];
+        foreach ($target_info['args'] as $name => $match_index)
+            $url = preg_replace("!\{$name\}!", $matches[$match_index], $url);
+
+        header('Location: '.$url, TRUE, $target_info['redir_type']);
+        return;
+    }
+
     $include_page = $target_info['include_file'];
 }
 else
@@ -379,7 +431,6 @@ $include_page_file = $site_views.$include_page.".inc.php";
 if (!is_file($include_page_file))
     send_404();
 
-require_once($includes.'page_basic.inc.php');
 require_once($include_page_file);
 
 $object_name = "";
@@ -411,54 +462,55 @@ if (function_exists('site_get_filter'))
     array_walk($site_filter, 'validate_input');
 }
 
-$include_page_filter = NULL;
-$page_permissions = NULL;
-$page_obj = NULL;
+function call_obj_func($global_info, $object_name, $function_name, $matches = NULL)
+{
+    global $authenticator;
 
-if (!class_exists($object_name))
-    http_error(500, 'Internal Server Error', "<h1>Object not found</h1>\nThe requested object could not be located. Please contact the administrator.");
+    $include_page_filter = NULL;
+    $page_permissions = NULL;
+    $page_obj = NULL;
 
-$include_page_filter = $object_name::get_filter();
-$page_permissions = $object_name::get_permissions();
+    if (!class_exists($object_name))
+        http_error(500, 'Internal Server Error', "<h1>Object not found</h1>\nThe requested object could not be located. Please contact the administrator.");
 
-if (!is_array($include_page_filter))
-    die('Unexpected return value');
+    $include_page_filter = $object_name::get_filter();
+    $page_permissions = $object_name::get_permissions();
 
-array_walk($include_page_filter, 'validate_input');
+    assert('is_array($include_page_filter) /* Filter does not have correct form */');
 
-$has_permissions = user_has_permissions($page_permissions);
+    array_walk($include_page_filter, 'validate_input');
 
-if (!$has_permissions) {
-	if (!$global_state['logged_in']) {
-        $redirect_type = $object_name::redirect_login_type();
-        $authenticator->redirect_login($redirect_type, $_SERVER['REDIRECT_URL']);
-		exit(0);
-	} else {
-        $authenticator->access_denied($global_config['authenticator']['site_login_page']);
-		exit(0);
-	}
+    $has_permissions = user_has_permissions($page_permissions);
+
+    if (!$has_permissions) {
+        if (!$global_info['state']['logged_in']) {
+            $redirect_type = $object_name::redirect_login_type();
+            $authenticator->redirect_login($redirect_type, $_SERVER['REDIRECT_URL']);
+            exit(0);
+        } else {
+            $authenticator->access_denied($global_info['config']['authenticator']['site_login_page']);
+            exit(0);
+        }
+    }
+
+    if (function_exists('site_do_logic'))
+        site_do_logic($global_info);
+
+    $page_obj = new $object_name($global_info);
+    $argument_count = 0;
+    if (is_array($matches))
+        $argument_count = count($matches) - 1;
+
+    if ($argument_count == 0)
+        $page_obj->$function_name();
+    else if ($argument_count == 1)
+        $page_obj->$function_name($matches[1]);
+    else if ($argument_count == 2)
+        $page_obj->$function_name($matches[1], $matches[2]);
+    else
+        echo "No method for $argument_count yet..\n";
 }
 
-$global_info = array(
-    'database' => $global_database,
-    'state' => &$global_state,
-    'config' => $global_config,
-    'cache' => $global_cache);
+call_obj_func($global_info, $object_name, $function_name, $matches);
 
-if (function_exists('site_do_logic'))
-    site_do_logic($global_info);
-
-$page_obj = new $object_name($global_info);
-$argument_count = 0;
-if (is_array($matches))
-    $argument_count = count($matches) - 1;
-
-if ($argument_count == 0)
-    $page_obj->$function_name();
-else if ($argument_count == 1)
-    $page_obj->$function_name($matches[1]);
-else if ($argument_count == 2)
-    $page_obj->$function_name($matches[1], $matches[2]);
-else
-    echo "No method for $argument_count yet..\n";
 ?>
