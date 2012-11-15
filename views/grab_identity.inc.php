@@ -51,10 +51,10 @@ class PageGrabIdentity extends PageBasic
         $_SESSION['logged_in'] = true;
 
         $info = array();
+        $info['user'] = $user;
         $info['user_id'] = $user->id;
         $info['username'] = $user->username;
         $info['name'] = $user->name;
-        $info['permissions'] = array_merge(array('logged_in'), $user->rights);
         $info['email'] = $user->email;
         $_SESSION['auth'] = $info;
 
