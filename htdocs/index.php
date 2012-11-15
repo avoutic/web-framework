@@ -38,7 +38,7 @@ $base_config = array(
         'auth_mode' => 'redirect',            // redirect, www-authenticate
         'authenticator' => array(
             'site_login_page' => 'login',
-            'default_login_return' => 'main',
+            'default_login_return' => '/',
             'auth_required_message' => 'Authentication required. Please login.'
         ),
         'page' => array(
