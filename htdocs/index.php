@@ -46,7 +46,7 @@ $base_config = array(
             'mods' => array()               // Should at least contain class, and include_file of mod!
         ),
         'error_handlers' => array(
-            '404' => '404'
+            '404' => ''
         ),
 );
 
