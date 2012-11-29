@@ -101,21 +101,36 @@ abstract class DataCore
         return $result->fields[$field];
     }
 
+    function update($data)
+    {
+        $query = 'UPDATE '.static::$table_name;
+        $query .= ' SET ';
+
+        $first = true;
+        foreach ($data as $key => $value)
+        {
+            if (!$first)
+                $query .= ', ';
+
+            $query .= ' '.$key.' = ? ';
+
+            $first = false;
+        }
+        $args = $data;
+
+        $query .= 'WHERE id = ?';
+        $args[] = $this->id;
+
+        $result = $this->database->Query($query, $args);
+        $class = get_called_class();
+        assert('$result !== FALSE /* Failed to update object ('.$class.') */');
+
+        return TRUE;
+    }
+
     function update_field($field, $value)
     {
-        $this->field = $value;
-
-        if ($this->cache != null && $this->is_cacheable)
-            $this->cache->replace(static::get_cache_id($this->id), $this);
-
-        // Update single field in existing item
-        //
-        $result = $this->database->Query('UPDATE '.static::$table_name.
-                ' SET '.$field.' = ? WHERE id = ?',
-                array($value, $this->id));
-
-        if ($result === FALSE)
-            die('Failed to update item.');
+        return $this->update(array($field => $value));
     }
 
     function delete()
@@ -127,6 +142,8 @@ abstract class DataCore
                     'DELETE FROM '.static::$table_name.' WHERE id = ?',
                     array($this->id)))
             die('Failed to delete item.');
+
+        return TRUE;
     }
 
     static function create($global_info, $data)
