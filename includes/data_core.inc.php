@@ -130,7 +130,18 @@ abstract class DataCore
 
     function update_field($field, $value)
     {
-        return $this->update(array($field => $value));
+        $query = 'UPDATE '.static::$table_name;
+        $query .= ' SET '.$field.' = ? ';
+        $args[] = $value;
+
+        $query .= 'WHERE id = ?';
+        $args[] = $this->id;
+
+        $result = $this->database->Query($query, $args);
+        $class = get_called_class();
+        assert('$result !== FALSE /* Failed to update object ('.$class.') */');
+
+        return TRUE;
     }
 
     function delete()
