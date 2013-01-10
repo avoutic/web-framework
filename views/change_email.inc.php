@@ -1,5 +1,6 @@
 <?php
 require_once($includes.'base_logic.inc.php');
+require_once($includes.'mailchimp/MCAPI.class.php');
 
 class PageChangeEmail extends PageBasic
 {
@@ -44,6 +45,7 @@ class PageChangeEmail extends PageBasic
         //
         $factory = new BaseFactory($this->global_info);
         $user = $factory->get_user($this->state['user_id']);
+        $old_email = $user->email;
 
         $result = $user->change_email($email);
 
@@ -56,6 +58,22 @@ class PageChangeEmail extends PageBasic
         {
             $this->add_message('error', 'Unknown errorcode: \''.$result."'", "Please inform the administrator.");
             return;
+        }
+
+        if (isset($this->config['mailchimp']) &&
+            isset($this->config['mailchimp']['api_key']) &&
+            isset($this->config['mailchimp']['list_id']))
+        {
+            $list_id = $this->config['mailchimp']['list_id'];
+            $mailchimp = new MCAPI($this->config['mailchimp']['api_key']);
+            $members = $mailchimp->listMemberInfo($list_id, $old_email);
+            if ($members['success'] == 1)
+            {
+                $member = $members['data'][0];
+                $ret = $mailchimp->listUpdateMember($list_id, $old_email, array('EMAIL' => $email), '', false);
+                if ($ret === FALSE)
+                    log_mail('Mailchimp error during change-email:', $old_email." -> ".$email."\n\n".print_r($mailchimp, true));
+            }
         }
 
         // Logout user
