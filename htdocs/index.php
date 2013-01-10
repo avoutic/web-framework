@@ -38,6 +38,7 @@ $base_config = array(
         'auth_mode' => 'redirect',            // redirect, www-authenticate
         'authenticator' => array(
             'site_login_page' => 'login',
+            'after_verify_page' => '/',
             'default_login_return' => '/',
             'auth_required_message' => 'Authentication required. Please login.'
         ),
@@ -54,12 +55,18 @@ assert_options(ASSERT_ACTIVE, 1);
 assert_options(ASSERT_WARNING, 0);
 assert_options(ASSERT_QUIET_EVAL, 1);
 
+function log_mail($title, $content)
+{
+    mail(MAIL_ADDRESS, $title, $content, "From: Log Handler ".SITE_NAME." <".MAIL_ADDRESS.">\n");
+}
+
 // Create a handler function
 function assert_handler($file, $line, $code)
 {
     global $global_config;
 
-    $message = "File '$file'<br />Line '$line'<br />Code '$code'<br />";
+    $debug_message = "File '$file'\nLine '$line'\nCode '$code'\n";
+    $message = "File '$file'<br />Line '$line'<br />";
 
     if (!$global_config['debug'] && defined('DEBUG_KEY'))
     {
@@ -75,8 +82,11 @@ function assert_handler($file, $line, $code)
     echo "<pre>";
     echo $message;
     echo "</pre>";
-    mail(MAIL_ADDRESS, 'Assertion failed',
-        "Failure information:\n\nServer: ".$global_config['server_name']."\nFile: ".$file."\nLine: ".$line."\nCode: ".$code, "From: Assertion Handler ".SITE_NAME." <".MAIL_ADDRESS.">\n");
+
+    $debug_message.= print_r(debug_backtrace(), true);
+
+    log_mail('Assertion failed',
+        "Failure information:\n\nServer: ".$global_config['server_name']."\n".$debug_message);
 
     die('Oops. Something went wrong. Please retry later or contact us with the information above!');
 }
