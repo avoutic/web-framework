@@ -9,6 +9,7 @@ class PageRegister extends Pagebasic
                 'password2' => FORMAT_PASSWORD,
                 'name' => FORMAT_NAME,
                 'email' => FORMAT_EMAIL,
+                'privacy_policy' => '0|1',
                 'do' => 'yes'
                 );
     }
@@ -18,6 +19,11 @@ class PageRegister extends Pagebasic
         return "Register new account";
     }
 
+    function get_onload()
+    {
+        return "$('#username').focus();";
+    }
+
     function do_logic()
     {
         $username = $this->state['input']['username'];
@@ -25,12 +31,14 @@ class PageRegister extends Pagebasic
         $password2 = $this->state['input']['password2'];
         $name = $this->state['input']['name'];
         $email = $this->state['input']['email'];
+        $privacy_policy = $this->state['input']['privacy_policy'];
 
         $this->page_content['username'] = $username;
         $this->page_content['password'] = $password;
         $this->page_content['password2'] = $password2;
         $this->page_content['name'] = $name;
         $this->page_content['email'] = $email;
+        $this->page_content['privacy_policy'] = $privacy_policy;
 
         // Check if already logged in
         //
@@ -82,6 +90,11 @@ class PageRegister extends Pagebasic
             return;
         }
 
+        if ($privacy_policy != 1) {
+            $this->add_message('error', 'Please accept our Privacy Policy.', 'To register for our site you need to accept our Privacy Policy.');
+            return;
+        }
+
         // Check if name already exists
         //
         $result = $this->database->Query('SELECT id FROM users WHERE username = ?',
@@ -97,21 +110,21 @@ class PageRegister extends Pagebasic
 
         // Add account
         //
-        if (FALSE === $this->database->Query('INSERT INTO users (username, password, name, email) VALUES (?,?,?,?)',
+        $result = $this->database->InsertQuery('INSERT INTO users (username, password, name, email) VALUES (?,?,?,?)',
                     array($username,
                         $password,
                         $name,
-                        $email)))
+                        $email));
+        if (FALSE === $result)
         {
             die("Failed to insert data! Exiting!");
         }
 
         // Send mail to administrator
         //
-        mail(MAIL_ADDRESS, SITE_NAME.": User '".$username."' registered.",
+        log_mail(SITE_NAME.": User '".$username."' registered.",
                 "The user with username '".$username."' registered.\n".
-                "Name is '".$name."' and email is '".$email.".",
-                "From: ".MAIL_ADDRESS."\r\n");
+                "Name is '".$name."' and email is '".$email.".");
 
         // Redirect to verification request screen
         //
