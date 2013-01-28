@@ -1,0 +1,23 @@
+INSTALLATION
+Add as submodule to your project:
+git submodule add LOCATION/web_framework
+
+Add minimal links:
+ - mkdir -p htdocs includes views/templates
+ - cd htdocs && ln -s ../web_framework/htdocs/index.php .
+
+Set htaccess for htdocs
+ - mkdir -p data
+ - cp web_framework/templates/htaccess-* data
+ - Edit for content!
+ - cd htdocs && ln -s ../data/htacces-XXX .htaccess
+
+Make config file:
+ - cp web_framework/templates/default_config.php includes/config.php
+ - Edit the config file!
+ 
+Make a default frame if needed:
+ - cp web_framework/templates/default_frame.inc.php includes
+
+Make first hello world page:
+ - 

@@ -1,0 +1,16 @@
+RewriteEngine on
+
+RewriteCond %{QUERY_STRING} !^page
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ /index.php?page=$1 [L,NC,QSA]
+
+# For Beta Site only
+
+order deny,allow
+deny from all
+
+AuthName "beta site"
+AuthuserFile "/var/www/XXXXXX/.htpasswd"
+AuthType Basic
+Require valid-user
