@@ -203,6 +203,14 @@ abstract class PageBasic extends PageCore
     }
 };
 
+function arrayify_datacore(&$item, $key)
+{
+    if (is_object($item) && is_subclass_of($item, 'DataCore'))
+    {
+        $item = get_object_vars($item);
+    }
+}
+
 abstract class PageService extends PageCore
 {
     static function redirect_login_type()
@@ -227,6 +235,9 @@ abstract class PageService extends PageCore
     function output_json($success, $output, $direct = false)
     {
         header('Content-type: application/json');
+
+        if (is_array($output))
+            array_walk_recursive($output, 'arrayify_datacore');
 
         if ($direct && $success)
         {
