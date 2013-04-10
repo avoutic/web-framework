@@ -1,3 +1,7 @@
+PREREQUISITES
+ apt-get install php5-adodb libphp-adodb
+ a2enmod rewrite
+
 INSTALLATION
 Add as submodule to your project:
 git submodule add LOCATION/web_framework
@@ -10,14 +14,25 @@ Set htaccess for htdocs
  - mkdir -p data
  - cp web_framework/templates/htaccess-* data
  - Edit for content!
+ - htpasswd -c -s .htpasswd XXX
  - cd htdocs && ln -s ../data/htacces-XXX .htaccess
 
 Make config file:
  - cp web_framework/templates/default_config.php includes/config.php
  - Edit the config file!
  
+Make DB if needed:
+ - mysql -u root -p mysql
+   grant all on XXXX.* to 'XXXX'@'localhost' identified by 'XXXX';
+
 Make a default frame if needed:
  - cp web_framework/templates/default_frame.inc.php includes
 
 Make first hello world page:
  - 
+
+Add apache config
+ - cp web_framework/templates/apache_site_conf /etc/apache2/sites-available/XXXXX
+ - Edit the file
+ - cd /etc/apache2/sites-enables && ln -s ../sites-available/XXXXX
+ - /etc/init.d/apache2 restart
