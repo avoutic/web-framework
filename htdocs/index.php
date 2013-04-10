@@ -78,15 +78,26 @@ function assert_handler($file, $line, $code)
         $message = implode('<br />', str_split($message, 32));
     }
 
-    echo "Failure information:<br/>";
-    echo "<pre>";
-    echo $message;
-    echo "</pre>";
-
     $debug_message.= print_r(debug_backtrace(), true);
 
-    log_mail('Assertion failed',
-        "Failure information:\n\nServer: ".$global_config['server_name']."\n".$debug_message);
+    if ($global_config['debug'])
+    {
+        echo "Failure information:<br/>";
+        echo "<pre>";
+        echo $debug_message;
+        echo "</pre>";
+    }
+    else
+    {
+        echo "Failure information:<br/>";
+        echo "<pre>";
+        echo $message;
+        echo "</pre>";
+
+
+        log_mail('Assertion failed',
+                "Failure information:\n\nServer: ".$global_config['server_name']."\n".$debug_message);
+    }
 
     die('Oops. Something went wrong. Please retry later or contact us with the information above!');
 }
