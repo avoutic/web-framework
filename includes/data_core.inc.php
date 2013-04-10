@@ -243,6 +243,11 @@ abstract class DataCore
         return new $class($global_info, $result->fields['id']);
     }
 
+    static function get_object_by_id($global_info, $id)
+    {
+        return static::get_object($global_info, array('id' => $id));
+    }
+
     static function get_objects($global_info, $offset = 0, $results = 10, $filter = array(), $order = '')
     {
         $query = 'SELECT id FROM '.static::$table_name;
