@@ -26,7 +26,7 @@ abstract class Authenticator
         {
             $query = $_SERVER['QUERY_STRING'];
 
-            if (substr($query, 0, 5) != 'page=')
+            if (strlen($query) && substr($query, 0, 5) != 'page=')
                 http_error(500, 'Internal Server Error', "<h1>Unauthorized call to authorized page</h1>\nThe call order was wrong. Please contact the administrator.");
 
             $pos = strpos($query, '&');
