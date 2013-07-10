@@ -44,6 +44,13 @@ class PageForgotPassword extends PageBasic
         header("Location: /?mtype=success&message=".urlencode('New password mailed to registered email account.'));
     }
 
+    function display_header()
+    {
+?>
+  <meta name="robots" content="noindex,follow" />
+<?
+    }
+
     function display_content()
     {
         $this->load_template('forgot-password.tpl', $this->page_content);
