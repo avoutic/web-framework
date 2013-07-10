@@ -8,6 +8,36 @@ class Right extends DataCore
     static protected $base_fields = array('short_name', 'name');
 };
     
+function pbkdf2($algorithm, $password, $salt, $count, $key_length, $raw_output = false)
+{
+    $algorithm = strtolower($algorithm);
+    if(!in_array($algorithm, hash_algos(), true))
+        die('PBKDF2 ERROR: Invalid hash algorithm.');
+    if($count <= 0 || $key_length <= 0)
+        die('PBKDF2 ERROR: Invalid parameters.');
+
+    $hash_length = strlen(hash($algorithm, "", true));
+    $block_count = ceil($key_length / $hash_length);
+
+    $output = "";
+    for($i = 1; $i <= $block_count; $i++) {
+        // $i encoded as 4 bytes, big endian.
+        $last = $salt . pack("N", $i);
+        // first iteration
+        $last = $xorsum = hash_hmac($algorithm, $last, $password, true);
+        // perform the other $count - 1 iterations
+        for ($j = 1; $j < $count; $j++) {
+            $xorsum ^= ($last = hash_hmac($algorithm, $last, $password, true));
+        }
+        $output .= $xorsum;
+    }
+
+    if($raw_output)
+        return substr($output, 0, $key_length);
+    else
+        return bin2hex(substr($output, 0, $key_length));
+}
+
 class User extends DataCore
 {
     // Error messages
@@ -35,9 +65,16 @@ class User extends DataCore
         }
     }
 
+    static function new_hash_from_password($password)
+    {
+        $salt = base64_encode(mcrypt_create_iv(24, MCRYPT_DEV_URANDOM));
+        return 'sha256:1000:'.$salt.':'.
+                pbkdf2('sha256', $password, $salt, 1000, 24, false);
+    }
+
     function check_password($password)
     {
-        $result = $this->database->Query('SELECT password FROM users WHERE id = ?',
+        $result = $this->database->Query('SELECT solid_password, password FROM users WHERE id = ?',
                 array($this->id));
 
         if ($result === FALSE)
@@ -46,33 +83,49 @@ class User extends DataCore
         if ($result->RecordCount() != 1)
             return false;
 
-        return ($password == $result->fields['password']);
+        $solid_password = $result->fields['solid_password'];
+        if (!strlen($solid_password))
+        {
+            if ($password !== $result->fields['password'])
+                return FALSE;
+
+            $solid_password = User::new_hash_from_password($password);
+
+            $result = $this->update_field('solid_password', $solid_password);
+            assert('$result !== FALSE /* Failed to update solid_password */');
+
+            $result = $this->update_field('password', '');
+            assert('$result !== FALSE /* Failed to clear password */');
+        }
+
+        $params = explode(":", $solid_password);
+        assert('count($params) == 4 /* Solid password format unknown */');
+
+        $pbkdf2_hash = $params[3];
+        $pbkdf2_calc = pbkdf2('sha256', $password, $params[2], (int) $params[1],
+                              strlen($pbkdf2_hash) / 2, false);
+
+        // Slow compare (time-constant)
+        $diff = strlen($pbkdf2_hash) ^ strlen($pbkdf2_calc);
+        for ($i = 0; $i < strlen($pbkdf2_hash) && $i < strlen($pbkdf2_calc); $i++)
+            $diff |= ord($pbkdf2_hash[$i]) ^ ord($pbkdf2_calc[$i]);
+
+        return $diff === 0;
     }
 
     function change_password($old_password, $new_password)
     {
         // Check if original password is correct
         //
-        $result_check = $this->database->Query('SELECT username FROM users WHERE id=? AND password=?',
-                array(
-                    $this->id,
-                    $old_password
-                    ));
-
-        if ($result_check->RecordCount() != 1)
+        if ($this->check_password($old_password) !== TRUE)
             return User::ERR_ORIG_PASSWORD_MISMATCH;
 
         // Change password
         //
-        if (FALSE === $this->database->Query('UPDATE users SET password=? WHERE id=? AND password=?',
-                    array(
-                        $new_password,
-                        $this->id,
-                        $old_password
-                        )))
-        {
-            die("Failed to update data! Exiting!");
-        }
+        $solid_password = User::new_hash_from_password($new_password);
+
+        $result = $this->update_field('solid_password', $solid_password);
+        assert('$result !== FALSE /* Failed to update solid_password */');
 
         return User::RESULT_SUCCESS;
     }
@@ -81,14 +134,10 @@ class User extends DataCore
     {
         // Change password
         //
-        if (FALSE === $this->database->Query('UPDATE users SET password=? WHERE id=?',
-                    array(
-                        $new_password,
-                        $this->id
-                        )))
-        {
-            die("Failed to update data! Exiting!");
-        }
+        $solid_password = User::new_hash_from_password($new_password);
+
+        $result = $this->update_field('solid_password', $solid_password);
+        assert('$result !== FALSE /* Failed to update solid_password */');
 
         return User::RESULT_SUCCESS;
     }
@@ -197,17 +246,9 @@ class User extends DataCore
     {
         // Generate and store password
         //
-        $new_pw = sha1("SuperSecretHashingKey*".mt_rand(0, mt_getrandmax())."*".$this->username."*".time());
-        $new_pw = substr($new_pw, 0, 10);
+        $new_pw = bin2hex(substr(mcrypt_create_iv(24, MCRYPT_DEV_URANDOM), 0, 10));
 
-        if (FALSE === $this->database->Query('UPDATE users SET password = ? WHERE id = ?',
-                    array(
-                        sha1($new_pw),
-                        $this->id
-                        )))
-        {
-            die("Failed to update data! Exiting!");
-        }
+        $this->update_password(sha1($new_pw));
 
         $mail = new ForgotPasswordMail($this->name, $this->username, $new_pw);
         $mail->add_recipient($this->email);

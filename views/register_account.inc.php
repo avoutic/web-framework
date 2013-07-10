@@ -108,11 +108,13 @@ class PageRegister extends Pagebasic
             return;
         }
 
+        $solid_password = User::new_hash_from_password($password);
+
         // Add account
         //
-        $result = $this->database->InsertQuery('INSERT INTO users (username, password, name, email) VALUES (?,?,?,?)',
+        $result = $this->database->InsertQuery('INSERT INTO users (username, solid_password, name, email) VALUES (?,?,?,?)',
                     array($username,
-                        $password,
+                        $solid_password,
                         $name,
                         $email));
         if (FALSE === $result)

@@ -210,7 +210,7 @@ Your new password is: $new_pw
 We advise you to login and change your password as soon as possible.
 
 To login and change your password. please go to:
-http://".$global_config['server_name']."/change_password
+http://".$global_config['server_name']."/change-password
 
 Best regards,
 ".MAIL_FOOTER;
