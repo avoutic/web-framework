@@ -209,6 +209,34 @@ function validate_csrf_token()
     return ($diff === 0);
 }
 
+function framework_add_bad_ip_hit()
+{
+    global $global_database;
+    $result = $global_database->Query('DELETE FROM ip_list WHERE last_hit < DATE_SUB(NOW(), INTERVAL 4 HOUR)', array());
+    assert('$result !== FALSE /* Failed to clean up hit_list */');
+
+    $result = $global_database->Query('INSERT INTO ip_list VALUES(inet_aton(?), 1, now()) ON DUPLICATE KEY UPDATE hits = hits + 1', array($_SERVER['REMOTE_ADDR']));
+    assert('$result !== FALSE /* Failed to update hit_list */');
+}
+
+function check_blacklisted()
+{
+    global $global_database;
+    $result = $global_database->Query('DELETE FROM ip_list WHERE last_hit < DATE_SUB(NOW(), INTERVAL 4 HOUR)', array());
+    assert('$result !== FALSE /* Failed to clean up hit_list */');
+
+    $result = $global_database->Query('SELECT * FROM ip_list WHERE ip = inet_aton(?) AND hits > ?', array($_SERVER['REMOTE_ADDR'], 25));
+    assert('$result !== FALSE /* Failed to read hit_list */');
+
+    if ($result->RecordCount() != 1)
+        return FALSE;
+
+    return TRUE;
+}
+
+if (check_blacklisted())
+    die('Blacklisted');
+
 $fixed_page_filter = array(
         'page'	=> '[\w\._\-\/]+',
         'msg' => '.*',

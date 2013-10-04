@@ -48,3 +48,9 @@ CREATE TABLE `user_config_values` (
   CONSTRAINT `user_config_values_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+CREATE TABLE `ip_list` (
+  `ip` int unsigned not null,
+  `hits` int unsigned not null,
+  `last_hit` timestamp,
+  PRIMARY KEY (`ip`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

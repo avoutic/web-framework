@@ -60,6 +60,7 @@ class PageLogin extends PageBasic
         $success = false;
         if ($user === FALSE || !$user->check_password($this->state['input']['password'])) {
             $this->add_message('error', 'Username and password do not match.', 'Please check if you entered the username and/or password correctly.');
+            framework_add_bad_ip_hit();
             return;
         }
 
