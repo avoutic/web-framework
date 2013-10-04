@@ -18,6 +18,8 @@ class PageLogoff extends PageBasic
         $_SESSION['logged_in'] = false;
         $_SESSION['auth'] = array();
 
+        session_regenerate_id(true);
+
         session_destroy();
 
         header("Location: /".$this->state['input']['return_page']);

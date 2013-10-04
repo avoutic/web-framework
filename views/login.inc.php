@@ -74,6 +74,8 @@ class PageLogin extends PageBasic
         //
         $success = true;
 
+        session_regenerate_id(true);
+
         $_SESSION['logged_in'] = true;
         $info = array();
         $info['user_id'] = $user->id;
