@@ -113,26 +113,6 @@ function set_message($type, $message, $extra_message)
         'extra_message' => $extra_message));
 }
 
-$fixed_page_filter = array(
-	'page'	=> '[\w\._\-\/]+',
-	'message' => '[\w \(\)\.\-!\?]+',
-	'extra_message' => '[\w \(\)\.\-!\?]+',
-	'mtype' => 'error|info|warning|success'
-);
-
-array_walk($fixed_page_filter, 'validate_input');
-
-if (strlen($global_state['input']['mtype']))
-    set_message($global_state['input']['mtype'], $global_state['input']['message'], $global_state['input']['extra_message']);
-
-# Load route array and site specific logic if available
-#
-
-if (is_file($site_includes."site_logic.inc.php"))
-    include_once($site_includes."site_logic.inc.php");
-
-$route_array = array();
-
 function register_route($regex, $file, $class_function, $args = array())
 {
     global $route_array;
@@ -156,6 +136,26 @@ function register_redirect($regex, $redirect, $type = '301', $args = array())
                     'redir_type' => $type,
                     'args' => $args));
 }
+
+$fixed_page_filter = array(
+	'page'	=> '[\w\._\-\/]+',
+	'message' => '[\w \(\)\.\-!\?]+',
+	'extra_message' => '[\w \(\)\.\-!\?]+',
+	'mtype' => 'error|info|warning|success'
+);
+
+array_walk($fixed_page_filter, 'validate_input');
+
+if (strlen($global_state['input']['mtype']))
+    set_message($global_state['input']['mtype'], $global_state['input']['message'], $global_state['input']['extra_message']);
+
+# Load route array and site specific logic if available
+#
+
+if (is_file($site_includes."site_logic.inc.php"))
+    include_once($site_includes."site_logic.inc.php");
+
+$route_array = array();
 
 if (function_exists('register_routes'))
     register_routes();
