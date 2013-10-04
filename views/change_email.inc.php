@@ -89,7 +89,7 @@ class PageChangeEmail extends PageBasic
 
         // Redirect to verification request screen
         //
-        header('Location: /?mtype=success&message='.urlencode('Verification mail has been sent.').'&extra_message='.urlencode('The verification mail has been sent. Please wait for the e-mail in your inbox and follow the instructions.'));
+        header('Location: /?'.add_message_to_url('success', 'Verification mail has been sent.','The verification mail has been sent. Please wait for the e-mail in your inbox and follow the instructions.'));
         exit();
     }
 

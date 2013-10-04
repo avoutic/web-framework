@@ -36,7 +36,7 @@ class PageVerify extends PageBasic
 
         if ($user->is_verified())
         {
-            header('Location: /?mtype=success&message='.urlencode('User already verified.'));
+            header('Location: /?'.add_message_to_url('success', 'User already verified.'));
             exit();
         }
 
@@ -47,7 +47,7 @@ class PageVerify extends PageBasic
 
             // Redirect to main sceen
             //
-            header("Location: /".$this->config['authenticator']['site_login_page']."?mtype=success&message=".urlencode("Verification succeeded")."&extra_message=".urlencode("Verification succeeded. You can now use your account.")."&return_page=".$this->config['authenticator']['after_verify_page']);
+            header("Location: /".$this->config['authenticator']['site_login_page']."?".add_message_to_url('success', 'Verification succeeded', 'Verification succeeded. You can now use your account.')."&return_page=".$this->config['authenticator']['after_verify_page']);
             exit();
         }
     }

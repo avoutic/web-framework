@@ -58,7 +58,7 @@ class PageGrabIdentity extends PageBasic
         $info['email'] = $user->email;
         $_SESSION['auth'] = $info;
 
-        header("Location: /?mtype=success&message=".urlencode('Login successful.'));
+        header("Location: /?".add_message_to_url('success', 'Login successful.'));
     }
 };
 ?>

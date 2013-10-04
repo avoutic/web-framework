@@ -113,6 +113,52 @@ function set_message($type, $message, $extra_message)
         'extra_message' => $extra_message));
 }
 
+function encode_and_auth_string($str)
+{
+    global $global_config;
+    $str = base64_encode($str);
+    $str_hmac = hash_hmac($global_config['security']['hash'], $str, $global_config['security']['hmac_key']);
+
+    return urlencode($str.":".$str_hmac);
+}
+
+function decode_and_verify_string($str)
+{
+    global $global_config;
+
+    $idx = strpos($str, ":");
+    if ($idx === FALSE)
+        return "";
+
+    $part_msg = substr($str, 0, $idx);
+    $part_hmac = substr($str, $idx + 1);
+
+    $str_hmac = hash_hmac($global_config['security']['hash'], $part_msg, $global_config['security']['hmac_key']);
+
+    if ($str_hmac !== $part_hmac)
+        return "";
+
+    return $part_msg;
+}
+
+function add_message_to_url($mtype, $message, $extra_message = '')
+{
+    $msg = array('mtype' => $mtype, 'message' => $message, 'extra_message' => $extra_message);
+    $msg_str = json_encode($msg);
+    return "msg=".encode_and_auth_string($msg_str);
+}
+
+function add_message_from_url($url_str)
+{
+    $str = decode_and_verify_string($url_str);
+    if (!strlen($str))
+        return;
+
+    $msg = json_decode(base64_decode($str), true);
+
+    set_message($msg['mtype'], $msg['message'], $msg['extra_message']);
+}
+
 function register_route($regex, $file, $class_function, $args = array())
 {
     global $route_array;
@@ -139,15 +185,13 @@ function register_redirect($regex, $redirect, $type = '301', $args = array())
 
 $fixed_page_filter = array(
 	'page'	=> '[\w\._\-\/]+',
-	'message' => '[\w \(\)\.\-!\?]+',
-	'extra_message' => '[\w \(\)\.\-!\?]+',
-	'mtype' => 'error|info|warning|success'
+	'msg' => '[\w:=]+',
 );
 
 array_walk($fixed_page_filter, 'validate_input');
 
-if (strlen($global_state['input']['mtype']))
-    set_message($global_state['input']['mtype'], $global_state['input']['message'], $global_state['input']['extra_message']);
+if (strlen($global_state['input']['msg']))
+    add_message_from_url($global_state['input']['msg']);
 
 # Load route array and site specific logic if available
 #

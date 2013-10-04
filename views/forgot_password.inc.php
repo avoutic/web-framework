@@ -41,7 +41,7 @@ class PageForgotPassword extends PageBasic
 
         // Redirect to main sceen
         //
-        header("Location: /?mtype=success&message=".urlencode('New password mailed to registered email account.'));
+        header("Location: /?".add_message_to_url('success', 'New password mailed to registered email account.'));
     }
 
     function display_header()

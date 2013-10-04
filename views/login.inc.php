@@ -84,7 +84,7 @@ class PageLogin extends PageBasic
         $info['email'] = $user->email;
         $_SESSION['auth'] = $info;
 
-        header("Location: /".$this->page_content['return_page']."?return_query=".$this->page_content['return_query']."&mtype=success&message=".urlencode('Login successful.'));
+        header("Location: /".$this->page_content['return_page']."?return_query=".$this->page_content['return_query']."&".add_message_to_url('success', 'Login successful.'));
     }
 
     function display_header()

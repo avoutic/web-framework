@@ -40,6 +40,10 @@ $base_config = array(
             'default_frame_file' => '',
             'mods' => array()               // Should at least contain class, and include_file of mod!
         ),
+        'security' => array(
+            'hash' => 'sha256',
+            'hmac_key' => 'KDHAS(*&@!(*@!kjhdkjas)(*)(@*HUIHQhiuhqw',
+        ),
         'error_handlers' => array(
             '404' => ''
         ),
