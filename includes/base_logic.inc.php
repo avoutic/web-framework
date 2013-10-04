@@ -208,7 +208,7 @@ class User extends DataCore
         if (!isset($this->rights[$short_name]))
             return TRUE;
             
-        $result = $this->database->Query('DELETE FROM user_rights WHERE id = (SELECT id FROM rights WHERE short_name = ?) AND user_id = ?',
+        $result = $this->database->Query('DELETE FROM user_rights WHERE right_id = (SELECT id FROM rights WHERE short_name = ?) AND user_id = ?',
                 array(
                     $short_name,
                     $this->id
