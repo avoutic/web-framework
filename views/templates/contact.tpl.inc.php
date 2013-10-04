@@ -19,6 +19,7 @@ if (!$args['logged_in'])
 ?>
 	<fieldset class="message_content">
         <input type="hidden" name="do" value="yes"/>
+        <input type="hidden" name="token" value="<?=get_csrf_token()?>"/>
 		<legend>Message Details</legend>
 		<p>
 			<label class="left" for="type">Type</label>

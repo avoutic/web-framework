@@ -8,7 +8,6 @@ class PageChangeEmail extends PageBasic
     {
         return array(
                 'email' => FORMAT_EMAIL,
-                'do' => 'yes'
                 );
     }
 

@@ -23,7 +23,6 @@ abstract class PageContactBase extends PageBasic
                 'email' => FORMAT_EMAIL,
                 'subject' => '.*',
                 'message_content' => '.*',
-                'do' => 'yes'
                 );
     }
 

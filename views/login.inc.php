@@ -10,7 +10,6 @@ class PageLogin extends PageBasic
                 'return_query' => FORMAT_RETURN_QUERY,
                 'username' => FORMAT_USERNAME,
                 'password' => FORMAT_PASSWORD,
-                'do' => 'yes'
                 );
     }
 
@@ -100,6 +99,7 @@ class PageLogin extends PageBasic
 <form method="post" class="login_form" action="/login" enctype="multipart/form-data" onsubmit="password.value = hex_sha1(password_helper.value); return true;">
 	<fieldset class="login">
 		<input type="hidden" name="do" value="yes"/>
+        <input type="hidden" name="token" value="<?=get_csrf_token()?>"/>
         <input type="hidden" id="password" name="password" value=""/>
 		<input type="hidden" name="return_page" value="<?=$this->page_content['return_page']?>"/>
 		<input type="hidden" name="return_query" value="<?=$this->page_content['return_query']?>"/>

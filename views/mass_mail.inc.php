@@ -8,7 +8,6 @@ class PageMassMail extends PageBasic
                 'address' => '.*',
                 'title' => '.*',
                 'text' => '.*',
-                'do' => 'yes|preview'
                 );
     }
 
@@ -77,6 +76,7 @@ class PageMassMail extends PageBasic
 <form class="contactform" action="/mass_mail" method="post">
   <fieldset>
     <input type="hidden" name="do" value="preview"/>
+    <input type="hidden" name="token" value="<?=get_csrf_token()?>"/>
     <legend>Selection</legend>
     <p>
       <label class="left" for="query">Query</label>
@@ -133,6 +133,7 @@ SELECT u.id, u.username, u.name, u.email FROM users AS u <?=$this->page_content[
 <form class="contactform" action="/mass_mail" method="post">
   <fieldset>
     <input type="hidden" name="do" value="yes"/>
+    <input type="hidden" name="token" value="<?=get_csrf_token()?>"/>
     <input type="hidden" name="address" value="<?=$this->page_content['address']?>">
     <input type="hidden" name="title" value="<?=$this->page_content['mail_title']?>">
     <input type="hidden" name="text" value="<?=$this->page_content['text']?>">

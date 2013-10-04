@@ -10,7 +10,6 @@ class PageRegister extends Pagebasic
                 'name' => FORMAT_NAME,
                 'email' => FORMAT_EMAIL,
                 'privacy_policy' => '0|1',
-                'do' => 'yes'
                 );
     }
 

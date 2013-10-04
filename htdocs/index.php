@@ -183,15 +183,52 @@ function register_redirect($regex, $redirect, $type = '301', $args = array())
                     'args' => $args));
 }
 
+function get_csrf_token()
+{
+    if (!isset($_SESSION['csrf_token']) || strlen($_SESSION['csrf_token']) < 32)
+        $_SESSION['csrf_token'] = base64_encode(mcrypt_create_iv(32, MCRYPT_DEV_URANDOM));
+
+    return $_SESSION['csrf_token'];
+}
+
+function validate_csrf_token()
+{
+    global $global_state;
+
+    if(!isset($_SESSION['csrf_token']))
+        return FALSE;
+
+    $token = $global_state['input']['token'];
+    $check = $_SESSION['csrf_token'];
+
+    // Slow compare (time-constant)
+    $diff = strlen($token) ^ strlen($check);
+    for ($i = 0; $i < strlen($token) && $i < strlen($check); $i++)
+        $diff |= ord($token[$i]) ^ ord($check[$i]);
+
+    return ($diff === 0);
+}
+
 $fixed_page_filter = array(
-	'page'	=> '[\w\._\-\/]+',
-	'msg' => '[\w:=]+',
+        'page'	=> '[\w\._\-\/]+',
+        'msg' => '.*',
+        'token' => '.*',
+        'do' => 'yes|preview',
 );
 
 array_walk($fixed_page_filter, 'validate_input');
 
 if (strlen($global_state['input']['msg']))
     add_message_from_url($global_state['input']['msg']);
+
+if (strlen($global_state['input']['do']))
+{
+    if (!validate_csrf_token())
+    {
+        $global_state['input']['do'] = '';
+        set_message('error', 'CSRF token missing, possible attack.', '');
+    }
+}
 
 # Load route array and site specific logic if available
 #

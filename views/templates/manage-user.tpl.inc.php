@@ -34,7 +34,7 @@
         foreach($this->page_content['user']['rights'] as $right) {
     	    print("<tr>\n");
 	        print("  <td>".$right['name']."</td>\n");
-	        print("  <td><a href=\"/manage_user?user_id=".$this->page_content['user']['user_id']."&amp;action=delete_right&amp;right_name=".$right['short_name']."&amp;do=yes\">Delete</a></td>\n");
+	        print("  <td><a href=\"/manage_user?user_id=".$this->page_content['user']['user_id']."&amp;action=delete_right&amp;right_name=".$right['short_name']."&amp;do=yes&amp;token=".urlencode(get_csrf_token())."\">Delete</a></td>\n");
     	    print("</tr>\n");
         }
 ?>
@@ -46,6 +46,7 @@
   <input type="hidden" name="user_id" value="<?=$this->page_content['user']['user_id']?>" />
   <input type="hidden" name="action" value="add_right" />
   <input type="hidden" name="do" value="yes" />
+  <input type="hidden" name="token" value="<?=get_csrf_token()?>"/>
   <legend>Add right</legend>
   <p>
     <label class="left" for="right_name">Right</label>

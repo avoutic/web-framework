@@ -9,7 +9,6 @@ class PageChangePassword extends PageBasic
 		'orig_password' => FORMAT_PASSWORD,
 		'password' => FORMAT_PASSWORD,
 		'password2' => FORMAT_PASSWORD,
-		'do' => 'yes'
 	);
 }
 

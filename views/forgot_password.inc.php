@@ -7,7 +7,6 @@ class PageForgotPassword extends PageBasic
     {
         return array(
                 'username' => FORMAT_USERNAME,
-                'do' => 'yes'
                 );
     }
 

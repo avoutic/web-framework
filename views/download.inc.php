@@ -6,7 +6,6 @@ class PageDownload extends PageBasic
         return array(
                 'name' => FORMAT_FILE_NAME,
                 'file' => FORMAT_FILE_LOCATION,
-                'do'   => 'yes'
                 );
     }
 
