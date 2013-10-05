@@ -58,6 +58,7 @@ abstract class PageContactBase extends PageBasic
 
         $name = $this->state['input']['name'];
         $email = $this->state['input']['email'];
+        $subject = $this->state['input']['subject'];
 
         if ($this->state['logged_in'])
         {
@@ -72,13 +73,23 @@ abstract class PageContactBase extends PageBasic
             return;
         }
 
+        if (strtr($name, CHAR_FILTER, '0000000000000000') != $name) {
+            $this->add_message('error', 'Please enter a correct name.', 'Illegal characters found in name!');
+            return;
+        }
+
         if (!strlen($email)) {
             $this->add_message('error', 'Please enter an email address.', 'Email addresses can contain letters, numbers, dots, underscores and hyphens.');
             return;
         }
 
-        if (!strlen($this->state['input']['subject'])) {
+        if (!strlen($subject)) {
             $this->add_message('error', 'Please enter a subject.', 'Subject can contain any character.');
+            return;
+        }
+
+        if (strtr($subject, CHAR_FILTER, '0000000000000000') != $subject) {
+            $this->add_message('error', 'Please enter a correct subject.', 'Illegal characters found in subject!');
             return;
         }
 
@@ -90,7 +101,7 @@ abstract class PageContactBase extends PageBasic
         // Send mail to administrator
         //
         $result = mail(MAIL_ADDRESS,
-                SITE_NAME.": User '".$name."' contacted you about '".$this->state['input']['type']."' '".$this->state['input']['subject']."'",
+                SITE_NAME.": User '".$name."' contacted you about '".$this->state['input']['type']."' '".$subject."'",
                 $this->state['input']['message_content'],
                 "From: ".$email."\r\n");
 

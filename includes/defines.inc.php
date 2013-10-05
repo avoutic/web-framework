@@ -12,6 +12,8 @@ define("FORMAT_RETURN_QUERY", '[\w\&=_%\(\)\?]+');
 define("FORMAT_FILE_NAME", '[\w_\-\.]+');
 define("FORMAT_FILE_LOCATION", '[\w_\-\.\/]+');
 
+define("CHAR_FILTER", '"*&<>;\'');
+
 # Hash for recognizing empty passwords that are hashed with SHA1
 #
 define("EMPTY_PASSWORD_HASH_SHA1", 'da39a3ee5e6b4b0d3255bfef95601890afd80709');
