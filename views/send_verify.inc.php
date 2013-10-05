@@ -28,17 +28,12 @@ class PageSendVerify extends PageBasic
         //
         $user = $factory->get_user_by_username($this->state['input']['username']);
 
-        if ($user->is_verified())
-        {
-            header('Location: /?'.add_message_to_url('success', 'User already verified.'));
-            exit();
-        }
-
-        $user->send_verify_mail();
+        if ($user !== FALSE && !$user->is_verified())
+            $user->send_verify_mail();
 
         // Redirect to main sceen
         //
-        header("Location: /?".add_message_to_url('success', 'Verification mail sent', 'Verification mail is sent. Please check your mailbox and follow the instructions.'));
+        header("Location: /?".add_message_to_url('success', 'Verification mail sent', 'Verification mail is sent (if not already verified). Please check your mailbox and follow the instructions.'));
     }
 };
 ?>
