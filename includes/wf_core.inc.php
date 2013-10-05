@@ -167,7 +167,6 @@ $data = json_decode($data, true);
 if (is_array($data))
     $global_state['raw_post'] = $data;
 
-session_start();
 $core_factory = new ObjectFactory();
 
 # Start the database connection

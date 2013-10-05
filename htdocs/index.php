@@ -234,6 +234,9 @@ function check_blacklisted()
     return TRUE;
 }
 
+session_set_cookie_params(0, '/', $global_config['server_name'], $global_config['debug'] === FALSE, true);
+session_start();
+
 if (check_blacklisted())
     die('Blacklisted');
 
