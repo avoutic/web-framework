@@ -41,6 +41,7 @@ $base_config = array(
             'mods' => array()               // Should at least contain class, and include_file of mod!
         ),
         'security' => array(
+            'session_timeout' => 900,
             'hash' => 'sha256',
             'hmac_key' => 'KDHAS(*&@!(*@!kjhdkjas)(*)(@*HUIHQhiuhqw',
         ),

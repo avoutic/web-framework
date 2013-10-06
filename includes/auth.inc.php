@@ -11,6 +11,7 @@ abstract class Authenticator
     }
 
     abstract function get_logged_in();
+    abstract function deauthenticate();
 
     function redirect_login($type, $target)
     {
@@ -77,6 +78,14 @@ class AuthRedirect extends Authenticator
 
         return $_SESSION['auth'];
     }
+
+    function deauthenticate()
+    {
+        unset($_SESSION['logged_in']);
+        unset($_SESSION['auth']);
+        session_regenerate_id();
+        session_destroy();
+    }
 };
 
 require_once($includes."base_logic.inc.php");
@@ -119,6 +128,10 @@ class AuthWwwAuthenticate extends Authenticator
             'permissions' => array_merge(array('logged_in'), $user->rights));
 
         return $info;
+    }
+
+    function deauthenticate()
+    {
     }
 };
 ?>
