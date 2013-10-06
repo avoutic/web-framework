@@ -136,7 +136,10 @@ function decode_and_verify_string($str)
     $str_hmac = hash_hmac($global_config['security']['hash'], $part_msg, $global_config['security']['hmac_key']);
 
     if ($str_hmac !== $part_hmac)
+    {
+        framework_add_bad_ip_hit();
         return "";
+    }
 
     return $part_msg;
 }
@@ -257,6 +260,7 @@ if (strlen($global_state['input']['do']))
     if (!validate_csrf_token())
     {
         $global_state['input']['do'] = '';
+        framework_add_bad_ip_hit();
         set_message('error', 'CSRF token missing, possible attack.', '');
     }
 }
