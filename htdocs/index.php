@@ -188,7 +188,7 @@ function register_redirect($regex, $redirect, $type = '301', $args = array())
 
 function get_csrf_token()
 {
-    if (!isset($_SESSION['csrf_token']) || strlen($_SESSION['csrf_token']) < 16)
+    if (!isset($_SESSION['csrf_token']) || strlen($_SESSION['csrf_token']) != 16)
         $_SESSION['csrf_token'] = mcrypt_create_iv(16, MCRYPT_DEV_URANDOM);
 
     $token = $_SESSION['csrf_token'];
