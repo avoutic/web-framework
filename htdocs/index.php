@@ -188,10 +188,15 @@ function register_redirect($regex, $redirect, $type = '301', $args = array())
 
 function get_csrf_token()
 {
-    if (!isset($_SESSION['csrf_token']) || strlen($_SESSION['csrf_token']) < 32)
-        $_SESSION['csrf_token'] = base64_encode(mcrypt_create_iv(32, MCRYPT_DEV_URANDOM));
+    if (!isset($_SESSION['csrf_token']) || strlen($_SESSION['csrf_token']) < 16)
+        $_SESSION['csrf_token'] = mcrypt_create_iv(16, MCRYPT_DEV_URANDOM);
 
-    return $_SESSION['csrf_token'];
+    $token = $_SESSION['csrf_token'];
+    $xor = mcrypt_create_iv(16, MCRYPT_DEV_URANDOM);
+    for ($i = 0; $i < 16; $i++)
+        $token[$i] = chr(ord($xor[$i]) ^ ord($token[$i]));
+
+    return bin2hex($xor).bin2hex($token);
 }
 
 function validate_csrf_token()
@@ -201,13 +206,21 @@ function validate_csrf_token()
     if(!isset($_SESSION['csrf_token']))
         return FALSE;
 
-    $token = $global_state['input']['token'];
     $check = $_SESSION['csrf_token'];
+    $value = $global_state['input']['token'];
+    if (strlen($value) != 16 * 4 || strlen($check) != 16)
+        return;
+
+    $xor = pack("H*" , substr($value, 0, 16 * 2));
+    $token = pack("H*", substr($value, 16 * 2, 16 * 2));
 
     // Slow compare (time-constant)
-    $diff = strlen($token) ^ strlen($check);
-    for ($i = 0; $i < strlen($token) && $i < strlen($check); $i++)
+    $diff = 0;
+    for ($i = 0; $i < 16; $i++)
+    {
+        $token[$i] = chr(ord($xor[$i]) ^ ord($token[$i]));
         $diff |= ord($token[$i]) ^ ord($check[$i]);
+    }
 
     return ($diff === 0);
 }
