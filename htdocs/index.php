@@ -253,8 +253,14 @@ function check_blacklisted()
 session_set_cookie_params(0, '/', $global_config['server_name'], $global_config['debug'] === FALSE, true);
 session_start();
 
+// Check blacklist
+//
 if (check_blacklisted())
     die('Blacklisted');
+
+// Add random header (against BREACH like attacks)
+//
+header('X-Random:'. substr(sha1(time()), 0, rand(1, 40)));
 
 $fixed_page_filter = array(
         'page'	=> '[\w\._\-\/]+',
