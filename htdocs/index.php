@@ -227,7 +227,11 @@ function validate_csrf_token()
 
 function framework_add_bad_ip_hit()
 {
-    global $global_database;
+    global $global_database, $global_config;
+
+    if (!$global_config['security']['blacklisting'])
+        return;
+
     $result = $global_database->Query('DELETE FROM ip_list WHERE last_hit < DATE_SUB(NOW(), INTERVAL 4 HOUR)', array());
     assert('$result !== FALSE /* Failed to clean up hit_list */');
 
@@ -237,11 +241,15 @@ function framework_add_bad_ip_hit()
 
 function check_blacklisted()
 {
-    global $global_database;
+    global $global_database, $global_config;
+
+    if (!$global_config['security']['blacklisting'])
+        return;
+
     $result = $global_database->Query('DELETE FROM ip_list WHERE last_hit < DATE_SUB(NOW(), INTERVAL 4 HOUR)', array());
     assert('$result !== FALSE /* Failed to clean up hit_list */');
 
-    $result = $global_database->Query('SELECT * FROM ip_list WHERE ip = inet_aton(?) AND hits > ?', array($_SERVER['REMOTE_ADDR'], 25));
+    $result = $global_database->Query('SELECT * FROM ip_list WHERE ip = inet_aton(?) AND hits > ?', array($_SERVER['REMOTE_ADDR'], $global_config['security']['blacklist_threshold']));
     assert('$result !== FALSE /* Failed to read hit_list */');
 
     if ($result->RecordCount() != 1)
