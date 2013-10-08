@@ -41,6 +41,8 @@ $base_config = array(
             'mods' => array()               // Should at least contain class, and include_file of mod!
         ),
         'security' => array(
+            'blacklisting' => false,
+            'blacklist_treshold' => 25,
             'session_timeout' => 900,
             'hash' => 'sha256',
             'hmac_key' => 'KDHAS(*&@!(*@!kjhdkjas)(*)(@*HUIHQhiuhqw',
@@ -112,7 +114,7 @@ if (!is_file($site_includes."config.php"))
 #
 $site_config = array();
 require($site_includes."config.php");
-$global_config = array_merge($base_config, $site_config);
+$global_config = array_replace_recursive($base_config, $site_config);
 
 # Enable debugging if requested
 #
