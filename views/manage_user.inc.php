@@ -36,7 +36,6 @@ class PageManageUser extends PageBasic
         //
         $user = $factory->get_user($this->state['input']['user_id']);
 
-        print_r($this->state['input']);
         // Check if this is a action attempt
         //
         if (strlen($this->state['input']['do']) && strlen($this->state['input']['action'])) {
