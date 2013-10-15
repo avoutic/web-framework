@@ -18,6 +18,8 @@ class PageVerify extends PageBasic
 
     function do_logic()
     {
+        framework_add_bad_ip_hit()
+
         // Check if username is present
         //
         if (!strlen($this->state['input']['username']))
