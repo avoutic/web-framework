@@ -64,7 +64,7 @@ function log_mail($title, $content)
 // Create a handler function
 function assert_handler($file, $line, $code)
 {
-    global $global_config;
+    global $global_config, $global_state;
 
     $debug_message = "File '$file'\nLine '$line'\nCode '$code'\n";
     $message = "File '$file'<br />Line '$line'<br />";
@@ -79,6 +79,7 @@ function assert_handler($file, $line, $code)
         $message = implode('<br />', str_split($message, 32));
     }
 
+    $debug_message.= 'State:\n'.print_r($global_state, true);
     $debug_message.= print_r(debug_backtrace(), true);
 
     if ($global_config['debug'])
