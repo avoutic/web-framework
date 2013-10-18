@@ -2,6 +2,26 @@
 define('ERROR_INVALID_EMAIL', -1);
 define('ERROR_INVALID_NAME', -2);
 
+function dispatch_mail_message($msg)
+{
+    global $global_config;
+
+    $include_file = $global_config['dispatch_mail_include'];
+    require_once($include_file);
+
+    return send_mail_message($msg);
+}
+
+function dispatch_mime_mail_message($msg)
+{
+    global $global_config;
+
+    $include_file = $global_config['dispatch_mail_include'];
+    require_once($include_file);
+
+    return send_mime_mail_message($msg);
+}
+
 class MailMessage
 {
     protected $sender_address = MAIL_ADDRESS;
@@ -13,6 +33,41 @@ class MailMessage
 
     function __construct()
     { 
+    }
+
+    function get_sender_address()
+    {
+        return $this->sender_address;
+    }
+
+    function get_sender_name()
+    {
+        return $this->sender_name;
+    }
+
+    function get_recipients()
+    {
+        return $this->recipients;
+    }
+
+    function get_mail_subject()
+    {
+        return $this->mail_subject;
+    }
+
+    function get_mail_message()
+    {
+        return $this->mail_message;
+    }
+
+    function get_mail_headers()
+    {
+        return $this->mail_headers;
+    }
+
+    function add_header($key, $value)
+    {
+        $this->mail_headers .= "$key: $value".PHP_EOL;
     }
 
     function set_sender($address, $name)
@@ -54,7 +109,7 @@ class MailMessage
         if (!preg_match('/^\s*'.FORMAT_EMAIL.'\s*$/m', $address))
             return ERROR_INVALID_EMAIL;
 
-        $this->mail_headers .= "CC: $address".PHP_EOL;
+        $this->add_header('CC', $address);
 
         return TRUE;
     }
@@ -64,7 +119,7 @@ class MailMessage
         if (!preg_match('/^\s*'.FORMAT_EMAIL.'\s*$/m', $address))
             return ERROR_INVALID_EMAIL;
 
-        $this->mail_headers .= "BCC: $address".PHP_EOL;
+        $this->add_header('BCC', $address);
 
         return TRUE;
     }
@@ -83,38 +138,27 @@ class MailMessage
 
     function send()
     {
-        foreach ($this->recipients as $recipient)
-        {
-            mail(
-                $recipient,
-                $this->mail_subject,
-                $this->mail_message,
-                "From: ".$this->sender_name." <".$this->sender_address.">\n".
-                  $this->mail_headers
-            );
-        }
-
-        return TRUE;
+        return dispatch_mail_message($this);
     }
 }
 
 class MimeMailMessage extends MailMessage
 {
     protected $mime_parts = array();
-    protected $mime_random = '';
 
     function __construct()
     { 
-        $this->mime_random = sha1(date('r'));
-        $this->mail_headers .=
-            "MIME-Version: 1.0".PHP_EOL.
-            "Content-Type: multipart/mixed; boundary=\"WFMailMessage-".$this->mime_random."\"".PHP_EOL;
+    }
+
+    function get_mime_parts()
+    {
+        return $this->mime_parts;
     }
 
     function add_mime_part($mime_header, $mime_content)
     {
         $info = array(
-            'header' => $mime_header,
+            'headers' => $mime_header,
             'content' => $mime_content);
 
         array_push($this->mime_parts, $info);
@@ -123,23 +167,26 @@ class MimeMailMessage extends MailMessage
     function add_text_part($content)
     {
         $this->add_mime_part(
-            "Content-Type: text/plain; charset=\"iso-8859-1\"".PHP_EOL."Content-Transfer-Encoding: 7bit".PHP_EOL,
+            array("Content-Type" => "text/plain; charset=\"iso-8859-1\"",
+                  "Content-Transfer-Encoding" => "7bit"),
             $content.PHP_EOL);
     }
 
     function add_html_part($content)
     {
         $this->add_mime_part(
-            "Content-Type: text/html; charset=\"iso-8859-1\"".PHP_EOL."Content-Transfer-Encoding: 7bit".PHP_EOL,
+            array("Content-Type" => "text/html; charset=\"iso-8859-1\"",
+                  "Content-Transfer-Encoding" => "7bit"),
             $content.PHP_EOL);
     }
 
     function add_content_as_attachment($filename, $content)
     {
         $this->add_mime_part(
-            "Content-Type: application/octet-stream; name=\"$filename\"".PHP_EOL.
-            "Content-Transfer-Encoding: base64".PHP_EOL.
-            "Content-Disposition: attachment".PHP_EOL,
+            array(
+                "Content-Type" => "application/octet-stream; name=\"$filename\"",
+                "Content-Transfer-Encoding" => "base64",
+                "Content-Disposition" => "attachment"),
             $content.PHP_EOL);
     }
 
@@ -152,20 +199,7 @@ class MimeMailMessage extends MailMessage
 
     function send()
     {
-        foreach ($this->mime_parts as $part)
-        {
-            $this->mail_message .=
-                "--WFMailMessage-".$this->mime_random.PHP_EOL.
-                $part['header'].
-                PHP_EOL.
-                $part['content'].
-                PHP_EOL;
-        }
-
-        $this->mail_message .=
-            "--WFMailMessage-".$this->mime_random."--".PHP_EOL;
-        
-        return parent::send();
+        return dispatch_mime_mail_message($this);
     }
 }
 

@@ -50,6 +50,7 @@ $base_config = array(
         'error_handlers' => array(
             '404' => ''
         ),
+        'dispatch_mail_include' => $includes.'send_mail.inc.php',
 );
 
 assert_options(ASSERT_ACTIVE, 1);
