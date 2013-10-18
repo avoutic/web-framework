@@ -1,6 +1,11 @@
 <?
 function send_mail_message($msg)
 {
+    $headers = '';
+
+    foreach($msg->get_mail_headers() as $key => $value)
+        $headers .= "$key: $value".PHP_EOL;
+
     foreach ($msg->get_recipients() as $recipient)
     {
         mail(
@@ -8,7 +13,7 @@ function send_mail_message($msg)
             $msg->get_mail_subject(),
             $msg->get_mail_message(),
             "From: ".$msg->get_sender_name()." <".$msg->get_sender_address().">\n".
-            $msg->get_mail_headers()
+            $headers
         );
     }
 

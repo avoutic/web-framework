@@ -4,7 +4,7 @@ define('ERROR_INVALID_NAME', -2);
 
 function dispatch_mail_message($msg)
 {
-    global $global_config;
+    global $global_config, $includes, $site_includes;
 
     $include_file = $global_config['dispatch_mail_include'];
     require_once($include_file);
@@ -14,7 +14,7 @@ function dispatch_mail_message($msg)
 
 function dispatch_mime_mail_message($msg)
 {
-    global $global_config;
+    global $global_config, $includes, $site_includes;
 
     $include_file = $global_config['dispatch_mail_include'];
     require_once($include_file);
@@ -67,7 +67,7 @@ class MailMessage
 
     function add_header($key, $value)
     {
-        $this->mail_headers .= "$key: $value".PHP_EOL;
+        $this->mail_headers[$key] = $value;
     }
 
     function set_sender($address, $name)
@@ -155,9 +155,11 @@ class MimeMailMessage extends MailMessage
         return $this->mime_parts;
     }
 
-    function add_mime_part($mime_header, $mime_content)
+    function add_mime_part($mime_type, $mime_name, $mime_header, $mime_content)
     {
         $info = array(
+            'type' => $mime_type,
+            'name' => $mime_name,
             'headers' => $mime_header,
             'content' => $mime_content);
 
@@ -167,6 +169,8 @@ class MimeMailMessage extends MailMessage
     function add_text_part($content)
     {
         $this->add_mime_part(
+            "text/plain",
+            "",
             array("Content-Type" => "text/plain; charset=\"iso-8859-1\"",
                   "Content-Transfer-Encoding" => "7bit"),
             $content.PHP_EOL);
@@ -175,6 +179,8 @@ class MimeMailMessage extends MailMessage
     function add_html_part($content)
     {
         $this->add_mime_part(
+            "text/html",
+            "",
             array("Content-Type" => "text/html; charset=\"iso-8859-1\"",
                   "Content-Transfer-Encoding" => "7bit"),
             $content.PHP_EOL);
@@ -183,6 +189,8 @@ class MimeMailMessage extends MailMessage
     function add_content_as_attachment($filename, $content)
     {
         $this->add_mime_part(
+            "application/octet-stream",
+            $filename,
             array(
                 "Content-Type" => "application/octet-stream; name=\"$filename\"",
                 "Content-Transfer-Encoding" => "base64",
