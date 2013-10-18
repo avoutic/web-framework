@@ -225,7 +225,7 @@ function validate_csrf_token()
     return ($diff === 0);
 }
 
-function framework_add_bad_ip_hit()
+function framework_add_bad_ip_hit($amount = 1)
 {
     global $global_database, $global_config;
 
@@ -235,7 +235,7 @@ function framework_add_bad_ip_hit()
     $result = $global_database->Query('DELETE FROM ip_list WHERE last_hit < DATE_SUB(NOW(), INTERVAL 4 HOUR)', array());
     assert('$result !== FALSE /* Failed to clean up hit_list */');
 
-    $result = $global_database->Query('INSERT INTO ip_list VALUES(inet_aton(?), 1, now()) ON DUPLICATE KEY UPDATE hits = hits + 1', array($_SERVER['REMOTE_ADDR']));
+    $result = $global_database->Query('INSERT INTO ip_list VALUES(inet_aton(?), 1, now()) ON DUPLICATE KEY UPDATE hits = hits + ?', array($_SERVER['REMOTE_ADDR'], $amount));
     assert('$result !== FALSE /* Failed to update hit_list */');
 }
 

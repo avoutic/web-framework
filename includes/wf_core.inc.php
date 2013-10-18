@@ -42,7 +42,7 @@ $base_config = array(
         ),
         'security' => array(
             'blacklisting' => false,
-            'blacklist_treshold' => 25,
+            'blacklist_threshold' => 25,
             'session_timeout' => 900,
             'hash' => 'sha256',
             'hmac_key' => 'KDHAS(*&@!(*@!kjhdkjas)(*)(@*HUIHQhiuhqw',

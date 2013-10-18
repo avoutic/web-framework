@@ -18,7 +18,7 @@ class PageVerify extends PageBasic
 
     function do_logic()
     {
-        framework_add_bad_ip_hit();
+        framework_add_bad_ip_hit(5);
 
         // Check if username is present
         //
