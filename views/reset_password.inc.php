@@ -1,7 +1,7 @@
 <?php
 require_once($includes.'base_logic.inc.php');
 
-class PageVerify extends PageBasic
+class PageResetPassword extends PageBasic
 {
     static function get_filter()
     {
@@ -13,7 +13,7 @@ class PageVerify extends PageBasic
 
     function get_title()
     {
-        return "Mail address verification";
+        return "Reset password";
     }
 
     function do_logic()
@@ -36,20 +36,20 @@ class PageVerify extends PageBasic
         //
         $user = $factory->get_user_by_username($this->state['input']['username']);
 
-        if ($user->is_verified())
+        if (!$user->is_verified())
         {
-            header('Location: /?'.add_message_to_url('success', 'User already verified.'));
+            header('Location: /?'.add_message_to_url('error', 'User is not verified.'));
             exit();
         }
 
-        $hash = $user->generate_verify_code('verify');
+        $hash = $user->generate_verify_code('reset_password');
 
         if ($this->state['input']['code'] == $hash) {
-            $user->set_verified();
+            $user->send_new_password();
 
             // Redirect to main sceen
             //
-            header("Location: /".$this->config['authenticator']['site_login_page']."?".add_message_to_url('success', 'Verification succeeded', 'Verification succeeded. You can now use your account.')."&return_page=".$this->config['authenticator']['after_verify_page']);
+            header("Location: /?".add_message_to_url('success', 'Password reset', 'You will receive a mail with your new password'));
             exit();
         }
     }

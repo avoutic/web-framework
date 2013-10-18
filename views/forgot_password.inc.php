@@ -38,11 +38,11 @@ class PageForgotPassword extends PageBasic
         $user = $factory->get_user_by_username($this->state['input']['username']);
 
         if ($user !== FALSE)
-            $user->send_new_password();
+            $user->send_password_reset_mail();
 
         // Redirect to main sceen
         //
-        header("Location: /?".add_message_to_url('success', 'New password mailed to registered email account.'));
+        header("Location: /?".add_message_to_url('success', 'Reset link mailed to registered email account.'));
     }
 
     function display_header()

@@ -241,7 +241,7 @@ class ForgotPasswordMail extends MailMessage
 
         parent::__construct();
 
-        $this->mail_subject = SITE_NAME." password reset mail";
+        $this->mail_subject = SITE_NAME." password reset";
         $this->mail_message = "
 Dear $name,
 
@@ -253,6 +253,28 @@ We advise you to login and change your password as soon as possible.
 
 To login and change your password. please go to:
 http://".$global_config['server_name']."/change-password
+
+Best regards,
+".MAIL_FOOTER;
+    }
+};
+
+class ResetPasswordMail extends MailMessage
+{
+    function __construct($name, $username, $hash)
+    {
+        global $global_config;
+
+        parent::__construct();
+
+        $this->mail_subject = SITE_NAME." password reset request";
+        $this->mail_message = "
+Dear $name,
+
+We have received a request to reset the password for your account '$username' for ".SITE_NAME.".
+
+If you want to reset your password, please go to:
+http://".$global_config['server_name']."/reset-password?username=$username&code=$hash
 
 Best regards,
 ".MAIL_FOOTER;
