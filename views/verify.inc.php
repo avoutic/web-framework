@@ -6,8 +6,7 @@ class PageVerify extends PageBasic
     static function get_filter()
     {
         return array(
-                'username' => FORMAT_USERNAME,
-                'code' => FORMAT_VERIFY_CODE
+                'code' => '.*',
                 );
     }
 
@@ -18,23 +17,41 @@ class PageVerify extends PageBasic
 
     function do_logic()
     {
-        framework_add_bad_ip_hit(5);
-
-        // Check if username is present
-        //
-        if (!strlen($this->state['input']['username']))
-            return;
+        framework_add_bad_ip_hit();
 
         // Check if code is present
         //
         if (!strlen($this->state['input']['code']))
+        {
+            framework_add_bad_ip_hit(2);
             return;
+        }
+
+        $str = decode_and_verify_string($this->state['input']['code']);
+        if (!strlen($str))
+        {
+            framework_add_bad_ip_hit(4);
+            return;
+        }
+
+        $msg = json_decode($str, true);
+        if (!is_array($msg))
+            return;
+
+        if ($msg['action'] != 'verify')
+        {
+            framework_add_bad_ip_hit(4);
+            return;
+        }
 
         $factory = new BaseFactory($this->global_info);
 
         // Check user status
         //
-        $user = $factory->get_user_by_username($this->state['input']['username']);
+        $user = $factory->get_user_by_username($msg['username']);
+
+        if ($user === FALSE)
+            return;
 
         if ($user->is_verified())
         {
@@ -42,16 +59,12 @@ class PageVerify extends PageBasic
             exit();
         }
 
-        $hash = $user->generate_verify_code('verify');
+        $user->set_verified();
 
-        if ($this->state['input']['code'] == $hash) {
-            $user->set_verified();
-
-            // Redirect to main sceen
-            //
-            header("Location: /".$this->config['authenticator']['site_login_page']."?".add_message_to_url('success', 'Verification succeeded', 'Verification succeeded. You can now use your account.')."&return_page=".$this->config['authenticator']['after_verify_page']);
-            exit();
-        }
+        // Redirect to main sceen
+        //
+        header("Location: /".$this->config['authenticator']['site_login_page']."?".add_message_to_url('success', 'Verification succeeded', 'Verification succeeded. You can now use your account.')."&return_page=".$this->config['authenticator']['after_verify_page']);
+        exit();
     }
 };
 ?>

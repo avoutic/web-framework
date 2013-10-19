@@ -226,27 +226,29 @@ class User extends DataCore
         return isset($this->rights[$short_name]);
     }
 
-    function generate_verify_code($type = '')
+    function generate_verify_code($action = '')
     {
-        $hash = sha1("SuperSecretHashingKey*".SITE_NAME."*".$this->email."*".$this->username."*".$this->id."*".$type);
-
-        return $hash;
+        $msg = array('id' => $this->id,
+                     'username' => $this->username,
+                     'action' => $action);
+        $msg_str = json_encode($msg);
+        return encode_and_auth_string($msg_str);
     }
 
     function send_verify_mail()
     {
-        $hash = $this->generate_verify_code('verify');
+        $code = $this->generate_verify_code('verify');
 
-        $mail = new VerifyMail($this->name, $this->username, $hash);
+        $mail = new VerifyMail($this->name, $this->username, $code);
         $mail->add_recipient($this->email);
         return $mail->send();
     }
 
     function send_password_reset_mail()
     {
-        $hash = $this->generate_verify_code('reset_password');
+        $code = $this->generate_verify_code('reset_password');
 
-        $mail = new ResetPasswordMail($this->name, $this->username, $hash);
+        $mail = new ResetPasswordMail($this->name, $this->username, $code);
         $mail->add_recipient($this->email);
         return $mail->send();
     }
