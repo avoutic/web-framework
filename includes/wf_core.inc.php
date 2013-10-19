@@ -70,16 +70,6 @@ function assert_handler($file, $line, $code)
     $debug_message = "File '$file'\nLine '$line'\nCode '$code'\n";
     $message = "File '$file'<br />Line '$line'<br />";
 
-    if (!$global_config['debug'] && defined('DEBUG_KEY'))
-    {
-        $message = bin2hex(mcrypt_cbc(MCRYPT_RIJNDAEL_128,
-                    substr(DEBUG_KEY, 0, 32),
-                           $message,
-                           MCRYPT_ENCRYPT,
-                           substr(DEBUG_KEY, 32, 16)));
-        $message = implode('<br />', str_split($message, 32));
-    }
-
     $debug_message.= 'State:\n'.print_r($global_state, true);
     $debug_message.= print_r(debug_backtrace(), true);
 
