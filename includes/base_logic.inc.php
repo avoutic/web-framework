@@ -230,7 +230,8 @@ class User extends DataCore
     {
         $msg = array('id' => $this->id,
                      'username' => $this->username,
-                     'action' => $action);
+                     'action' => $action,
+                     'timestamp' => time());
         $msg_str = json_encode($msg);
         return encode_and_auth_string($msg_str);
     }

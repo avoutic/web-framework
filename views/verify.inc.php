@@ -44,6 +44,13 @@ class PageVerify extends PageBasic
             return;
         }
 
+        if ($msg['timestamp'] + 86400 < time())
+        {
+            // Expired
+            header("Location: /?".add_message_to_url('error', 'Verification mail expired', 'Please <a href="/send_verify?username='.$msg['username'].'">request a new one</a>.'));
+            exit();
+        }
+
         $factory = new BaseFactory($this->global_info);
 
         // Check user status
