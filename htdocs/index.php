@@ -141,7 +141,7 @@ function decode_and_verify_string($str)
         return "";
     }
 
-    return $part_msg;
+    return base64_decode($part_msg);
 }
 
 function add_message_to_url($mtype, $message, $extra_message = '')
@@ -157,7 +157,7 @@ function add_message_from_url($url_str)
     if (!strlen($str))
         return;
 
-    $msg = json_decode(base64_decode($str), true);
+    $msg = json_decode($str, true);
 
     set_message($msg['mtype'], $msg['message'], $msg['extra_message']);
 }
