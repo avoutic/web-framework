@@ -137,7 +137,7 @@ function decode_and_verify_string($str)
 
     if ($str_hmac !== $part_hmac)
     {
-        framework_add_bad_ip_hit();
+        framework_add_bad_ip_hit(5);
         return "";
     }
 
