@@ -7,7 +7,7 @@ class Right extends DataCore
     static protected $table_name = 'rights';
     static protected $base_fields = array('short_name', 'name');
 };
-    
+
 function pbkdf2($algorithm, $password, $salt, $count, $key_length, $raw_output = false)
 {
     $algorithm = strtolower($algorithm);
@@ -47,7 +47,7 @@ class User extends DataCore
     const ERR_ORIG_PASSWORD_MISMATCH = 2;
 
     static protected $table_name = 'users';
-    static protected $base_fields = array('username', 'name', 'email');
+    static protected $base_fields = array('username', 'name', 'email', 'failed_login');
 
     public $rights = array();
 
@@ -110,7 +110,16 @@ class User extends DataCore
         for ($i = 0; $i < strlen($pbkdf2_hash) && $i < strlen($pbkdf2_calc); $i++)
             $diff |= ord($pbkdf2_hash[$i]) ^ ord($pbkdf2_calc[$i]);
 
-        return $diff === 0;
+        $result = ($diff === 0);
+
+        if ($result)
+            $this->failed_login = 0;
+        else
+            $this->failed_login++;
+
+        $this->update_field('failed_login', $this->failed_login);
+
+        return $result;
     }
 
     function change_password($old_password, $new_password)
@@ -162,7 +171,7 @@ class User extends DataCore
         {
             die("Failed to update data! Exiting!");
         }
-        
+
         $this->email = $email;
 
         return User::RESULT_SUCCESS;
@@ -190,7 +199,7 @@ class User extends DataCore
     {
         if (isset($this->rights[$short_name]))
             return TRUE;
-            
+
         $result = $this->database->InsertQuery('INSERT INTO user_rights SET user_id = ?, right_id = (SELECT id FROM rights WHERE short_name = ?)',
                 array(
                     $this->id,
@@ -207,7 +216,7 @@ class User extends DataCore
     {
         if (!isset($this->rights[$short_name]))
             return TRUE;
-            
+
         $result = $this->database->Query('DELETE FROM user_rights WHERE right_id = (SELECT id FROM rights WHERE short_name = ?) AND user_id = ?',
                 array(
                     $short_name,
