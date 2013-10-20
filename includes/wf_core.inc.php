@@ -20,6 +20,7 @@ $base_config = array(
             'database_database' => ''
         ),
         'server_name' => (isset($_SERVER['SERVER_NAME']))?$_SERVER['SERVER_NAME']:'app',
+        'http_mode' => 'http',
         'document_root' => $_SERVER['DOCUMENT_ROOT'],
         'cache_enabled' => false,
         'cache' => array(
