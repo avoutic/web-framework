@@ -115,10 +115,13 @@ class Helpers
                 1 ,
                 $ftime['tm_yday'] + 1,
                 $ftime['tm_year'] + 1900);
-    } 
+    }
 
     public static function mysql_date_to_timestamp($time_str)
     {
+        if ($time_str === null)
+            return "";
+
         $ftime = strptime($time_str, '%F');
         return mktime(
                 $ftime['tm_hour'],
@@ -127,5 +130,5 @@ class Helpers
                 1 ,
                 $ftime['tm_yday'] + 1,
                 $ftime['tm_year'] + 1900);
-    } 
+    }
 };
