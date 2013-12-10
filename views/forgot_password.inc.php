@@ -43,6 +43,7 @@ class PageForgotPassword extends PageBasic
         // Redirect to main sceen
         //
         header("Location: /?".add_message_to_url('success', 'Reset link mailed to registered email account.'));
+        exit();
     }
 
     function display_header()

@@ -84,6 +84,7 @@ function do_logic()
 	// Redirect to main sceen
 	//
 	header("Location: /?".add_message_to_url('success','Password changed successfully.'));
+    exit();
 }
 
 function display_header()

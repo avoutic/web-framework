@@ -59,6 +59,7 @@ class PageGrabIdentity extends PageBasic
         $_SESSION['auth'] = $info;
 
         header("Location: /?".add_message_to_url('success', 'Login successful.'));
+        exit();
     }
 };
 ?>

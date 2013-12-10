@@ -34,6 +34,7 @@ class PageSendVerify extends PageBasic
         // Redirect to main sceen
         //
         header("Location: /?".add_message_to_url('success', 'Verification mail sent', 'Verification mail is sent (if not already verified). Please check your mailbox and follow the instructions.'));
+        exit();
     }
 };
 ?>
