@@ -276,6 +276,53 @@ class User extends DataCore
 
         return $mail->send();
     }
+
+    function get_config_values($module = "")
+    {
+        $result = $this->database->Query('SELECT name, value FROM user_config_values WHERE user_id = ? AND module = ?',
+            array($this->id, $module));
+
+        assert('$result !== FALSE /* Failed to retrieve config values */');
+
+        $info = array();
+
+        foreach ($result as $row)
+            $info[$row['name']] = $row['value'];
+
+        return $info;
+    }
+
+    function get_config_value($name, $default = "", $module = "")
+    {
+        $result = $this->database->Query('SELECT value FROM user_config_values WHERE user_id = ? AND module = ? AND name = ?',
+            array($this->id, $module, $name));
+
+        assert('$result !== FALSE /* Failed to retrieve config value */');
+
+        if ($result->RecordCount() == 0)
+            return $default;
+
+        if ($result->RecordCount() != 1)
+            return "";
+
+        return $result->fields['value'];
+    }
+
+    function set_config_value($name, $value, $module = "")
+    {
+        $result = $this->database->Query('INSERT user_config_values SET user_id = ?, module = ?, name = ?, value = ? ON DUPLICATE KEY UPDATE value = ?',
+            array($this->id, $module, $name, $value, $value));
+
+        assert('$result !== FALSE /* Failed to store config value */');
+    }
+
+    function delete_config_value($name, $module = "")
+    {
+        $result = $this->database->Query('DELETE user_config_values WHERE user_id = ? AND module = ? AND name = ?',
+            array($this->id, $module, $name));
+
+        assert('$result !== FALSE /* Failed to delete config value */');
+    }
 }
 
 class BaseFactory extends FactoryCore
