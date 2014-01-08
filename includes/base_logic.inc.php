@@ -151,7 +151,7 @@ class User extends DataCore
         return User::RESULT_SUCCESS;
     }
 
-    function change_email($email, $require_unique = false)
+    function change_email($email, $require_unique = true)
     {
         if ($require_unique)
         {
