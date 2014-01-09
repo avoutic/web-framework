@@ -129,6 +129,37 @@ function fire_hook($hook_name, $params)
     }
 }
 
+function encode_and_auth_string($str)
+{
+    global $global_config;
+    $str = base64_encode($str);
+    $str_hmac = hash_hmac($global_config['security']['hash'], $str, $global_config['security']['hmac_key']);
+
+    return urlencode($str.":".$str_hmac);
+}
+
+function decode_and_verify_string($str)
+{
+    global $global_config;
+
+    $idx = strpos($str, ":");
+    if ($idx === FALSE)
+        return "";
+
+    $part_msg = substr($str, 0, $idx);
+    $part_hmac = substr($str, $idx + 1);
+
+    $str_hmac = hash_hmac($global_config['security']['hash'], $part_msg, $global_config['security']['hmac_key']);
+
+    if ($str_hmac !== $part_hmac)
+    {
+        framework_add_bad_ip_hit(5);
+        return "";
+    }
+
+    return base64_decode($part_msg);
+}
+
 if (!is_file($site_includes."config.php"))
 {
     http_error(500, 'Internal Server Error', "<h1>Requirement error</h1>\nOne of the required files is not found on the server. Please contact the administrator.");

@@ -113,37 +113,6 @@ function set_message($type, $message, $extra_message)
         'extra_message' => $extra_message));
 }
 
-function encode_and_auth_string($str)
-{
-    global $global_config;
-    $str = base64_encode($str);
-    $str_hmac = hash_hmac($global_config['security']['hash'], $str, $global_config['security']['hmac_key']);
-
-    return urlencode($str.":".$str_hmac);
-}
-
-function decode_and_verify_string($str)
-{
-    global $global_config;
-
-    $idx = strpos($str, ":");
-    if ($idx === FALSE)
-        return "";
-
-    $part_msg = substr($str, 0, $idx);
-    $part_hmac = substr($str, $idx + 1);
-
-    $str_hmac = hash_hmac($global_config['security']['hash'], $part_msg, $global_config['security']['hmac_key']);
-
-    if ($str_hmac !== $part_hmac)
-    {
-        framework_add_bad_ip_hit(5);
-        return "";
-    }
-
-    return base64_decode($part_msg);
-}
-
 function add_message_to_url($mtype, $message, $extra_message = '')
 {
     $msg = array('mtype' => $mtype, 'message' => $message, 'extra_message' => $extra_message);
