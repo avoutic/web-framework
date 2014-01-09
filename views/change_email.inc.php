@@ -45,7 +45,9 @@ class PageChangeEmail extends PageBasic
         $user = $factory->get_user($this->state['user_id']);
         $old_email = $user->email;
 
-        $result = $user->change_email($email);
+        // Send verification mail
+        //
+        $result = $user->send_change_email_verify($email);
 
         if ($result == User::ERR_DUPLICATE_EMAIL)
         {
@@ -58,20 +60,9 @@ class PageChangeEmail extends PageBasic
             return;
         }
 
-        // Logout user
-        //
-        $_SESSION['logged_in'] = false;
-        $_SESSION['auth'] = array();
-
-        session_destroy();
-
-        // Send verification mail
-        //
-        $user->send_verify_mail();
-
         // Redirect to verification request screen
         //
-        header('Location: /?'.add_message_to_url('success', 'Verification mail has been sent.','The verification mail has been sent. Please wait for the e-mail in your inbox and follow the instructions.'));
+        header('Location: /account?'.add_message_to_url('success', 'Verification mail has been sent.','A verification mail has been sent. Please wait for the e-mail in your inbox and follow the instructions.'));
         exit();
     }
 

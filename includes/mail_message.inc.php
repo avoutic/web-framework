@@ -211,6 +211,28 @@ class MimeMailMessage extends MailMessage
     }
 }
 
+class ChangeEmailVerifyMail extends MailMessage
+{
+    function __construct($name, $username, $email, $code)
+    {
+        global $global_config;
+
+        parent::__construct();
+
+        $this->mail_subject = SITE_NAME." E-mail change verification mail";
+        $this->mail_message = "
+Dear $name,
+
+You have requested to change the registered e-mail for your account '$username' to '$email'. In order to verify the change, please go to the following web location by either clicking the link or manually entering the address into your webbrowser.
+
+To verify the e-mail address change go to:
+".$global_config['http_mode']."://".$global_config['server_name']."/change-email-verify?code=$code
+
+Best regards,
+".MAIL_FOOTER;
+    }
+};
+
 class VerifyMail extends MailMessage
 {
     function __construct($name, $username, $code)

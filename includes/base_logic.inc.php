@@ -163,9 +163,9 @@ class User extends DataCore
                 return User::ERR_DUPLICATE_EMAIL;
         }
 
-        // Update and unverify account
+        // Update account
         //
-        if (FALSE === $this->database->Query('UPDATE users SET email = ?, verified = 0 WHERE id = ?',
+        if (FALSE === $this->database->Query('UPDATE users SET email = ? WHERE id = ?',
                     array($email,
                         $this->id)))
         {
@@ -180,6 +180,25 @@ class User extends DataCore
         $this->email = $email;
 
         return User::RESULT_SUCCESS;
+    }
+
+    function send_change_email_verify($email, $require_unique = true)
+    {
+        if ($require_unique)
+        {
+            // Check if unique
+            //
+            $result = $this->database->Query('SELECT id FROM users WHERE email = ?', array($email));
+
+            if ($result->RecordCount() > 0)
+                return User::ERR_DUPLICATE_EMAIL;
+        }
+
+        $code = $this->generate_verify_code('change_email', array('email' => $email));
+
+        $mail = new ChangeEmailVerifyMail($this->name, $this->username, $email, $code);
+        $mail->add_recipient($this->email);
+        $mail->send();
     }
 
     function is_verified()
@@ -240,11 +259,12 @@ class User extends DataCore
         return isset($this->rights[$short_name]);
     }
 
-    function generate_verify_code($action = '')
+    function generate_verify_code($action = '', $params = array())
     {
         $msg = array('id' => $this->id,
                      'username' => $this->username,
                      'action' => $action,
+                     'params' => $params,
                      'timestamp' => time());
         $msg_str = json_encode($msg);
         return encode_and_auth_string($msg_str);
