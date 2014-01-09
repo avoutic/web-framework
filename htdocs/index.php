@@ -292,13 +292,16 @@ if (strlen($global_state['input']['do']))
     }
 }
 
-# Load route array and site specific logic if available
+# Load route and hooks array and site specific logic if available
 #
 
 if (is_file($site_includes."site_logic.inc.php"))
     include_once($site_includes."site_logic.inc.php");
 
 $route_array = array();
+
+if (function_exists('register_hooks'))
+    register_hooks();
 
 if (function_exists('register_routes'))
     register_routes();

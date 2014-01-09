@@ -172,6 +172,11 @@ class User extends DataCore
             die("Failed to update data! Exiting!");
         }
 
+        fire_hook('change_email', array(
+                                    'user_id' => $this->id,
+                                    'old_email' => $this->email,
+                                    'new_email' => $email));
+
         $this->email = $email;
 
         return User::RESULT_SUCCESS;

@@ -98,6 +98,37 @@ function assert_handler($file, $line, $code)
 
 assert_options(ASSERT_CALLBACK, 'assert_handler');
 
+$hook_array = array();
+
+function register_hook($hook_name, $file, $static_function, $args = array())
+{
+    global $hook_array;
+
+    $hook_array[$hook_name][] = array(
+                    'include_file' => $file,
+                    'static_function' => $static_function,
+                    'args' => $args);
+}
+
+function fire_hook($hook_name, $params)
+{
+    global $hook_array, $global_info, $site_includes;
+
+    if (!isset($hook_array[$hook_name]))
+        return;
+
+    $hooks = $hook_array[$hook_name];
+    foreach ($hooks as $hook)
+    {
+        print_r($hook);
+        require_once($site_includes.$hook['include_file'].".inc.php");
+
+        $function = $hook['static_function'];
+
+        $function($global_info, $params);
+    }
+}
+
 if (!is_file($site_includes."config.php"))
 {
     http_error(500, 'Internal Server Error', "<h1>Requirement error</h1>\nOne of the required files is not found on the server. Please contact the administrator.");
