@@ -21,7 +21,7 @@ class ConfigValues
     function get_values($module = "")
     {
         if ($module == "")
-            $module == $this->default_module;
+            $module = $this->default_module;
 
         $result = $this->database->Query('SELECT name, value FROM config_values WHERE module = ?',
             array($module));
@@ -40,7 +40,7 @@ class ConfigValues
     function get_value($name, $default = "", $module = "")
     {
         if ($module == "")
-            $module == $this->default_module;
+            $module = $this->default_module;
 
         $result = $this->database->Query('SELECT value FROM config_values WHERE module = ? AND name = ?',
             array($module, $name));
@@ -60,7 +60,7 @@ class ConfigValues
     function set_value($name, $value, $module = "")
     {
         if ($module == "")
-            $module == $this->default_module;
+            $module = $this->default_module;
 
         $result = $this->database->Query('INSERT INTO config_values SET module = ?, name = ?, value = ? ON DUPLICATE KEY UPDATE value = ?',
             array($module, $name, $value, $value));
@@ -72,7 +72,7 @@ class ConfigValues
     function delete_value($name, $module = "")
     {
         if ($module == "")
-            $module == $this->default_module;
+            $module = $this->default_module;
 
         $result = $this->database->Query('DELETE config_values WHERE module = ? AND name = ?',
             array($module, $name));
