@@ -157,7 +157,7 @@ class User extends DataCore
         {
             // Check if unique
             //
-            $result = $this->database->Query('SELECT id FROM users WHERE email = ?', array($email));
+            $result = $this->database->Query('SELECT id FROM users WHERE LOWER(email) = LOWER(?)', array($email));
 
             if ($result->RecordCount() > 0)
                 return User::ERR_DUPLICATE_EMAIL;
@@ -188,7 +188,7 @@ class User extends DataCore
         {
             // Check if unique
             //
-            $result = $this->database->Query('SELECT id FROM users WHERE email = ?', array($email));
+            $result = $this->database->Query('SELECT id FROM users WHERE LOWER(email) = LOWER(?)', array($email));
 
             if ($result->RecordCount() > 0)
                 return User::ERR_DUPLICATE_EMAIL;
