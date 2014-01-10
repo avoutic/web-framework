@@ -5,6 +5,10 @@ CREATE TABLE `rights` (
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+INSERT INTO rights set short_name='admin', name='Administrator';
+INSERT INTO rights set short_name='user_management', name='User Management';
+INSERT INTO rights set short_name='grab_identity', name='Grab Identity';
+
 CREATE TABLE `users` (
   `id` int(11) NOT NULL auto_increment,
   `username` varchar(255) NOT NULL,
