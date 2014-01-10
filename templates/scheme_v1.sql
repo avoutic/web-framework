@@ -37,6 +37,8 @@ CREATE TABLE `config_values` (
   CONSTRAINT `config_values_unique` UNIQUE (`module`, `name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+INSERT INTO config_values set module='db', name='version', value='1';
+
 CREATE TABLE `user_config_values` (
   `id` int(11) NOT NULL auto_increment,
   `user_id` int(11) NOT NULL,

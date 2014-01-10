@@ -7,13 +7,6 @@ $site_views='../views/';
 
 require_once($includes.'wf_core.inc.php');
 
-function http_error($code, $short_message, $message)
-{
-    header("HTTP/1.0 $code $short_message");
-    print "$message";
-    exit(0);
-}
-
 function send_404()
 {
     global $global_info, $site_views;

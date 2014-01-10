@@ -19,6 +19,7 @@ $base_config = array(
             'database_password' =>'',
             'database_database' => ''
         ),
+        'db_version' => 1,
         'server_name' => (isset($_SERVER['SERVER_NAME']))?$_SERVER['SERVER_NAME']:'app',
         'http_mode' => 'http',
         'document_root' => $_SERVER['DOCUMENT_ROOT'],
@@ -97,6 +98,13 @@ function assert_handler($file, $line, $code)
 }
 
 assert_options(ASSERT_CALLBACK, 'assert_handler');
+
+function http_error($code, $short_message, $message)
+{
+    header("HTTP/1.0 $code $short_message");
+    print "$message";
+    exit(0);
+}
 
 $hook_array = array();
 
@@ -192,6 +200,7 @@ if ($global_config['database_enabled'] == true)
 require($includes."defines.inc.php");
 require($includes."object_factory.inc.php");
 require($includes."base_logic.inc.php");
+require($includes."config_values.inc.php");
 
 if (is_file($site_includes."site_defines.inc.php"))
     include_once($site_includes."site_defines.inc.php");
@@ -236,6 +245,13 @@ if ($global_config['database_enabled'] == true)
     if (FALSE === $global_database->Connect($global_config['database']))
     {
         http_error(500, 'Internal Server Error', "<h1>Database server connection failed</h1>\nThe connection to the database server failed. Please contact the administrator.");
+    }
+
+    $config_values = new ConfigValues($global_database, 'db');
+    $db_version = $config_values->get_value('version', '1');
+    if ($db_version != $global_config['db_version'])
+    {
+        http_error(500, 'Internal Server Error', "<h1>Database version mismatch</h1>\nPlease contact the administrator.");
     }
 }
 
