@@ -64,6 +64,21 @@ function log_mail($title, $content)
     mail(MAIL_ADDRESS, $title, $content, "From: Log Handler ".SITE_NAME." <".MAIL_ADDRESS.">\n");
 }
 
+function scrub_state(&$item)
+{
+    foreach ($item as $key => $value)
+    {
+        if (is_object($value))
+            $value = $item[$key] = get_object_vars($value);
+
+        if (is_array($value))
+            scrub_state($item[$key]);
+
+        if ($key === 'config')
+            $item[$key] = 'scrubbed';
+    }
+}
+
 // Create a handler function
 function assert_handler($file, $line, $code)
 {
@@ -72,8 +87,16 @@ function assert_handler($file, $line, $code)
     $debug_message = "File '$file'\nLine '$line'\nCode '$code'\n";
     $message = "File '$file'<br />Line '$line'<br />";
 
-    $debug_message.= 'State:\n'.print_r($global_state, true);
-    $debug_message.= print_r(debug_backtrace(), true);
+    $state = $global_state;
+    if (is_array($state))
+        scrub_state($state);
+
+    $trace = debug_backtrace();
+    if (is_array($trace))
+        scrub_state($trace);
+
+    $debug_message.= 'State:\n'.print_r($state, true);
+    $debug_message.= print_r($trace, true);
 
     if ($global_config['debug'])
     {
