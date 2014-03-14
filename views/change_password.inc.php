@@ -81,6 +81,10 @@ function do_logic()
         return;
     }
 
+    // Invalidate old sessions
+    //
+    session_regenerate_id(true);
+
 	// Redirect to main sceen
 	//
 	header("Location: /?".add_message_to_url('success','Password changed successfully.'));
