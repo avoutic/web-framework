@@ -96,6 +96,15 @@ function user_has_permissions($permissions)
 	return true;
 }
 
+function user_logoff()
+{
+    $_SESSION['logged_in'] = false;
+    $_SESSION['auth'] = array();
+
+    session_regenerate_id(true);
+    session_destroy();
+}
+
 function set_message($type, $message, $extra_message)
 {
 	global $global_state;

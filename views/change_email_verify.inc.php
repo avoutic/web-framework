@@ -55,6 +55,15 @@ class PageChangeEmailVerify extends PageBasic
         $email = $msg['params']['email'];
         $this->page_content['email'] = $email;
 
+        // Only allow for current user
+        //
+        if ($user_id != $this->state['user_id'])
+        {
+            user_logoff();
+            header('Location: /?'.add_message_to_url('error', 'Other account', 'The link you used is meant for a different account. The current account has been  logged off. Please try the link again.'));
+            exit();
+        }
+
         // Change email
         //
         $factory = new BaseFactory($this->global_info);

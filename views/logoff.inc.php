@@ -15,14 +15,13 @@ class PageLogoff extends PageBasic
 
     function do_logic()
     {
-        $_SESSION['logged_in'] = false;
-        $_SESSION['auth'] = array();
+        user_logoff();
 
-        session_regenerate_id(true);
+        $return_page = $this->state['input']['return_page'];
+        if (!strlen($return_page) || substr($return_page, 0, 2) == '//')
+            $return_page = '/';
 
-        session_destroy();
-
-        header("Location: /".$this->state['input']['return_page']);
+        header("Location: ".$return_page);
         exit();
     }
 
