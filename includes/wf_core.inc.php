@@ -143,7 +143,7 @@ function register_hook($hook_name, $file, $static_function, $args = array())
 
 function fire_hook($hook_name, $params)
 {
-    global $hook_array, $global_info, $site_includes;
+    global $hook_array, $global_info, $site_includes, $includes;
 
     if (!isset($hook_array[$hook_name]))
         return;
@@ -151,7 +151,6 @@ function fire_hook($hook_name, $params)
     $hooks = $hook_array[$hook_name];
     foreach ($hooks as $hook)
     {
-        print_r($hook);
         require_once($site_includes.$hook['include_file'].".inc.php");
 
         $function = $hook['static_function'];
