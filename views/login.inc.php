@@ -20,12 +20,23 @@ class PageLogin extends PageBasic
 
     function do_logic()
     {
-        $this->page_content['username'] = $this->state['input']['username'];
-        $this->page_content['return_page'] = $this->state['input']['return_page'];
-        $this->page_content['return_query'] = $this->state['input']['return_query'];
+        $return_page = $this->state['input']['return_page'];
+        $return_query = $this->state['input']['return_query'];
 
-        if (!strlen($this->page_content['return_page']))
-            $this->page_content['return_page'] = $this->config['authenticator']['default_login_return'];
+        $this->page_content['return_query'] = $return_query;
+        $this->page_content['username'] = $this->state['input']['username'];
+
+        if (!strlen($return_page) || substr($return_page, 0, 2) == '//')
+            $return_page = $this->config['authenticator']['default_login_return'];
+
+        $this->page_content['return_page'] = $return_page;
+
+        // Check if already logged in and redirect immediately
+        if ($this->state['logged_in'])
+        {
+            header("Location: ".$return_page."?return_query=".$return_query);
+            exit();
+        }
 
         // Check if this is a login attempt
         //
@@ -57,8 +68,14 @@ class PageLogin extends PageBasic
         //
         $user = $factory->get_user_by_username($this->state['input']['username']);
 
-        $success = false;
-        if ($user === FALSE || !$user->check_password($this->state['input']['password'])) {
+        if ($user === FALSE)
+        {
+            $this->add_message('error', 'Username and password do not match.', 'Please check if you entered the username and/or password correctly.');
+            framework_add_bad_ip_hit();
+            return;
+        }
+
+        if (!$user->check_password($this->state['input']['password'])) {
             $this->add_message('error', 'Username and password do not match.', 'Please check if you entered the username and/or password correctly.');
             framework_add_bad_ip_hit();
             return;
@@ -73,26 +90,25 @@ class PageLogin extends PageBasic
 
         // Log in user
         //
-        $success = true;
-
         session_regenerate_id(true);
 
         $_SESSION['logged_in'] = true;
         $info = array();
+        $info['user'] = $user;
         $info['user_id'] = $user->id;
         $info['username'] = $user->username;
         $info['name'] = $user->name;
-        $info['permissions'] = array_merge(array('logged_in'), $user->rights);
         $info['email'] = $user->email;
         $_SESSION['auth'] = $info;
 
-        header("Location: /".$this->page_content['return_page']."?return_query=".$this->page_content['return_query']."&".add_message_to_url('success', 'Login successful.'));
+        header("Location: ".$return_page."?return_query=".$return_query."&".add_message_to_url('success', 'Login successful.'));
+        exit();
     }
 
     function display_header()
     {
 ?>
-            <script src="base/sha1.js" type="text/javascript"></script>
+  <script src="base/sha1.js" type="text/javascript"></script>
 <?
     }
 
