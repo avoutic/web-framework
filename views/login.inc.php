@@ -1,5 +1,6 @@
 <?php
 require_once($includes.'base_logic.inc.php');
+require_once($includes.'securimage/securimage.php');
 
 class PageLogin extends PageBasic
 {
@@ -10,12 +11,18 @@ class PageLogin extends PageBasic
                 'return_query' => FORMAT_RETURN_QUERY,
                 'username' => FORMAT_USERNAME,
                 'password' => FORMAT_PASSWORD,
+                'captcha' => '.*',
                 );
     }
 
     function get_title()
     {
         return "Login";
+    }
+
+    function get_onload()
+    {
+        return "$('#inputUsername').focus();";
     }
 
     function do_logic()
@@ -25,6 +32,7 @@ class PageLogin extends PageBasic
 
         $this->page_content['return_query'] = $return_query;
         $this->page_content['username'] = $this->state['input']['username'];
+        $this->page_content['captcha_needed'] = false;
 
         if (!strlen($return_page) || substr($return_page, 0, 2) == '//')
             $return_page = $this->config['authenticator']['default_login_return'];
@@ -75,6 +83,24 @@ class PageLogin extends PageBasic
             return;
         }
 
+        if ($user->failed_login > 5)
+        {
+            $captcha = $this->state['input']['captcha'];
+            $this->page_content['captcha_needed'] = true;
+
+            if (!strlen($captcha))
+            {
+                $this->add_message('error', 'CAPTCHA required', 'Due to possible brute force attacks on this username, filling in a CAPTCHA is required for checking the password!');
+                return;
+            }
+
+            $securimage = new Securimage();
+            if ($securimage->check($captcha) !== TRUE) {
+                $this->add_message('error', 'The CAPTCHA code entered was incorrect.');
+                return;
+            }
+        }
+
         if (!$user->check_password($this->state['input']['password'])) {
             $this->add_message('error', 'Username and password do not match.', 'Please check if you entered the username and/or password correctly.');
             framework_add_bad_ip_hit();
@@ -108,6 +134,8 @@ class PageLogin extends PageBasic
     function display_header()
     {
 ?>
+  <meta name="robots" content="noindex,follow" />
+  <link rel="canonical" href="/login" />
   <script src="base/sha1.js" type="text/javascript"></script>
 <?
     }
