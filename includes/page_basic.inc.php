@@ -144,7 +144,7 @@ abstract class PageBasic extends PageCore
 
     function load_file($name)
     {
-        include($this->config['document_root'].$name);
+        include($this->config['document_root'].'/'.$name);
     }
 
     function check_required(&$var, $name)

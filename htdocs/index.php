@@ -325,8 +325,9 @@ if ($logged_in !== FALSE)
 # Check page requested
 #
 $request_uri = '/';
-if (isset($_SERVER['REDIRECT_URL']))
-    $request_uri = $_SERVER['REDIRECT_URL'];
+
+if (isset($_SERVER['REQUEST_URI']))
+    $request_uri = preg_replace('/\?.*/', '', $_SERVER['REQUEST_URI']);
 
 $global_state['request_uri'] = $request_uri;
 
@@ -438,7 +439,7 @@ function call_obj_func($global_info, $object_name, $function_name, $matches = NU
     if (!$has_permissions) {
         if (!$global_info['state']['logged_in']) {
             $redirect_type = $object_name::redirect_login_type();
-            $authenticator->redirect_login($redirect_type, $_SERVER['REDIRECT_URL']);
+            $authenticator->redirect_login($redirect_type, $_SERVER['REQUEST_URI']);
             exit(0);
         } else {
             $authenticator->access_denied($global_info['config']['authenticator']['site_login_page']);
