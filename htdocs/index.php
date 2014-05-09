@@ -229,7 +229,7 @@ function check_blacklisted()
     return TRUE;
 }
 
-session_set_cookie_params(0, '/', $global_config['server_name'], $global_config['debug'] === FALSE, true);
+session_set_cookie_params(0, '/', $global_config['server_name'], $global_config['http_mode'] === 'https', true);
 session_start();
 
 // Check blacklist
@@ -439,7 +439,8 @@ function call_obj_func($global_info, $object_name, $function_name, $matches = NU
     if (!$has_permissions) {
         if (!$global_info['state']['logged_in']) {
             $redirect_type = $object_name::redirect_login_type();
-            $authenticator->redirect_login($redirect_type, $_SERVER['REQUEST_URI']);
+            $request_uri = preg_replace('/\?.*/', '', $_SERVER['REQUEST_URI']);
+            $authenticator->redirect_login($redirect_type, $request_uri);
             exit(0);
         } else {
             $authenticator->access_denied($global_info['config']['authenticator']['site_login_page']);
