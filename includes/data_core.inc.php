@@ -141,6 +141,8 @@ abstract class DataCore
         $class = get_called_class();
         assert('$result !== FALSE /* Failed to update object ('.$class.') */');
 
+        $this->$field = $value;
+
         return TRUE;
     }
 
