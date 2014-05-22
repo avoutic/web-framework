@@ -291,6 +291,13 @@ abstract class DataCore
 
         return $info;
     }
+
+    function to_string()
+    {
+        $vars = call_user_func('get_object_vars', $this);
+        scrub_state($vars);
+        return $vars;
+    }
 };
 
 class FactoryCore
