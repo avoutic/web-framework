@@ -44,7 +44,7 @@ class PageResetPassword extends PageBasic
             return;
         }
 
-        if ($msg['timestamp'] + 86400 < time())
+        if ($msg['timestamp'] + 600 < time())
         {
             // Expired
             header("Location: /forgot-password?".add_message_to_url('error', 'Password reset link expired'));
