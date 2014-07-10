@@ -96,6 +96,27 @@ function user_has_permissions($permissions)
 	return true;
 }
 
+function enforce_permissions($object_name, $permissions)
+{
+    global $authenticator, $global_info;
+
+    $has_permissions = user_has_permissions($permissions);
+
+    if ($has_permissions)
+        return;
+
+    if (!$global_info['state']['logged_in'])
+    {
+        $redirect_type = $object_name::redirect_login_type();
+        $request_uri = preg_replace('/\?.*/', '', $_SERVER['REQUEST_URI']);
+        $authenticator->redirect_login($redirect_type, $request_uri);
+        exit(0);
+    }
+
+    $authenticator->access_denied($global_info['config']['authenticator']['site_login_page']);
+    exit(0);
+}
+
 function user_logoff()
 {
     $_SESSION['logged_in'] = false;
@@ -434,19 +455,7 @@ function call_obj_func($global_info, $object_name, $function_name, $matches = NU
 
     array_walk($include_page_filter, 'validate_input');
 
-    $has_permissions = user_has_permissions($page_permissions);
-
-    if (!$has_permissions) {
-        if (!$global_info['state']['logged_in']) {
-            $redirect_type = $object_name::redirect_login_type();
-            $request_uri = preg_replace('/\?.*/', '', $_SERVER['REQUEST_URI']);
-            $authenticator->redirect_login($redirect_type, $request_uri);
-            exit(0);
-        } else {
-            $authenticator->access_denied($global_info['config']['authenticator']['site_login_page']);
-            exit(0);
-        }
-    }
+    enforce_permissions($object_name, $page_permissions);
 
     if (function_exists('site_do_logic'))
         site_do_logic($global_info);
