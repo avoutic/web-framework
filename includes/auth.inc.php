@@ -1,13 +1,13 @@
 <?php
 abstract class Authenticator
 {
+    protected $global_info;
     protected $config;
-    protected $database;
 
-    function __construct($database, $config)
+    function __construct($global_info)
     {
-        $this->database = $database;
-        $this->config = $config;
+        $this->global_info = $global_info;
+        $this->config = $global_info['config']['authenticator'];
     }
 
     abstract function set_logged_in($user);
@@ -141,12 +141,12 @@ class AuthWwwAuthenticate extends Authenticator
 {
     protected $realm = 'Unknown realm';
 
-    function __construct($database, $config)
+    function __construct($global_info)
     {
-        parent::__construct($database, $config);
+        parent::__construct($global_info);
 
-        if (isset($config['realm']))
-            $this->realm = $config['realm'];
+        if (isset($this->config['realm']))
+            $this->realm = $this->config['realm'];
     }
 
     function set_logged_in($user)

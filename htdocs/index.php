@@ -296,9 +296,9 @@ require($includes.'auth.inc.php');
 
 $authenticator = null;
 if ($global_config['auth_mode'] == 'redirect')
-    $authenticator = new AuthRedirect($global_database, $global_config['authenticator']);
+    $authenticator = new AuthRedirect($global_info);
 else if ($global_config['auth_mode'] == 'www-authenticate')
-    $authenticator = new AuthWwwAuthenticate($global_database, $global_config['authenticator']);
+    $authenticator = new AuthWwwAuthenticate($global_info);
 else
     die('No valid authenticator found.');
 
