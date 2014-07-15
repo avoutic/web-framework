@@ -59,7 +59,7 @@ class PageChangeEmailVerify extends PageBasic
         //
         if ($user_id != $this->state['user_id'])
         {
-            user_logoff();
+            $this->auth->deauthenticate();
             header('Location: /?'.add_message_to_url('error', 'Other account', 'The link you used is meant for a different account. The current account has been  logged off. Please try the link again.'));
             exit();
         }

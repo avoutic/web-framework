@@ -14,6 +14,7 @@ abstract class PageCore
         $this->cache = $global_info['cache'];
         $this->state = $global_info['state'];
         $this->config = $global_info['config'];
+        $this->auth = $global_info['auth'];
     }
 
     static function get_filter()

@@ -117,15 +117,6 @@ function enforce_permissions($object_name, $permissions)
     exit(0);
 }
 
-function user_logoff()
-{
-    $_SESSION['logged_in'] = false;
-    $_SESSION['auth'] = array();
-
-    session_regenerate_id(true);
-    session_destroy();
-}
-
 function set_message($type, $message, $extra_message)
 {
 	global $global_state;
@@ -310,6 +301,8 @@ else if ($global_config['auth_mode'] == 'www-authenticate')
     $authenticator = new AuthWwwAuthenticate($global_database, $global_config['authenticator']);
 else
     die('No valid authenticator found.');
+
+$global_info['auth'] = $authenticator;
 
 # Check if logged in and populate standard fields.
 #

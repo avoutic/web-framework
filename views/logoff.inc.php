@@ -15,7 +15,7 @@ class PageLogoff extends PageBasic
 
     function do_logic()
     {
-        user_logoff();
+        $this->auth->deauthenticate()
 
         $return_page = $this->state['input']['return_page'];
         if (!strlen($return_page) || substr($return_page, 0, 2) == '//')

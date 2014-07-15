@@ -157,6 +157,7 @@ class AuthWwwAuthenticate extends Authenticator
 
     function deauthenticate()
     {
+        # Cannot deauthenticate from server side on this authentication method
     }
 };
 ?>
