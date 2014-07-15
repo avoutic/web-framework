@@ -87,6 +87,21 @@ abstract class Authenticator
         // Return valid session information
         return $logged_in;
     }
+
+    function get_auth_array($user)
+    {
+        if ($user === FALSE)
+            return FALSE;
+
+        $info = array(
+            'user' => $user,
+            'user_id' => $user->id,
+            'username' => $user->username,
+            'name' => $user->name,
+            'email' => $user->email);
+
+        return $info;
+    }
 }
 
 class AuthRedirect extends Authenticator
@@ -145,12 +160,7 @@ class AuthWwwAuthenticate extends Authenticator
         if ($user === FALSE || !$user->check_password($password))
             return FALSE;
 
-        $info = array(
-            'user_id' => $user->id,
-            'username' => $user->username,
-            'name' => $user->name,
-            'email' => $user->email,
-            'permissions' => array_merge(array('logged_in'), $user->rights));
+        $info = $this->get_auth_array($user);
 
         return $info;
     }
