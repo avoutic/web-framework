@@ -302,6 +302,9 @@ else if ($global_config['auth_mode'] == 'www-authenticate')
 else
     die('No valid authenticator found.');
 
+# Clean stale sessions
+$authenticator->cleanup();
+
 $global_info['auth'] = $authenticator;
 
 # Check if logged in and populate standard fields.

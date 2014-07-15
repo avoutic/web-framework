@@ -61,3 +61,12 @@ CREATE TABLE `ip_list` (
   `last_hit` timestamp,
   PRIMARY KEY (`ip`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE sessions (
+    id INT NOT NULL AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    session_id VARCHAR(255) NOT NULL,
+    last_active DATETIME NOT NULL,
+    PRIMARY KEY(id),
+    CONSTRAINT `sessions_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

@@ -1,4 +1,31 @@
 <?php
+require_once($includes.'helpers.inc.php');
+
+class Session extends DataCore
+{
+    static protected $table_name = 'sessions';
+    static protected $base_fields = array('user_id', 'session_id', 'last_active');
+
+    function is_valid()
+    {
+        // Check for session timeout
+        $current = time();
+        $last_active_timestamp = Helpers::mysql_datetime_to_timestamp($this->last_active);
+
+        if ($current - $last_active_timestamp >
+            $this->global_info['config']['authenticator']['session_timeout'])
+        {
+            return FALSE;
+        }
+
+        $timestamp = date('Y-m-d H:i:s');
+
+        $this->update_field('last_active', $timestamp);
+
+        return TRUE;
+    }
+};
+
 abstract class Authenticator
 {
     protected $global_info;
@@ -13,6 +40,7 @@ abstract class Authenticator
     abstract function set_logged_in($user);
     abstract function get_logged_in();
     abstract function deauthenticate();
+    abstract function cleanup();
 
     function redirect_login($type, $target)
     {
@@ -82,35 +110,71 @@ abstract class Authenticator
 
 class AuthRedirect extends Authenticator
 {
-    function __construct($database, $config)
+    function __construct($global_info)
     {
-        parent::__construct($database, $config);
+        parent::__construct($global_info);
+    }
+
+    function cleanup()
+    {
+        $timeout = $this->global_info['config']['authenticator']['session_timeout'];
+
+        $this->global_info['database']->Query('DELETE FROM sessions WHERE ADDDATE(last_active, INTERVAL ? SECOND) < UTC_TIMESTAMP()', array($timeout));
+    }
+
+    function register_session($user_id, $session_id)
+    {
+        $timestamp = date('Y-m-d H:i:s');
+
+        $session = Session::create($this->global_info, array(
+                                            'user_id' => $user_id,
+                                            'session_id' => $session_id,
+                                            'last_active' => $timestamp));
+
+        assert('$session !== FALSE /* Failed to create Session */');
+
+        return $session;
+    }
+
+    function invalidate_sessions($user_id)
+    {
+        $result = $this->global_info['database']->Query('DELETE FROM sessions WHERE user_id = ?', array($user_id));
+        assert('$result !== FALSE /* Failed to delete all user sessions */');
     }
 
     function set_logged_in($user)
     {
+        // Destroy running session
+        if (!isset($_SESSION['session_id']))
+        {
+            $session = Session::get_object_by_id($this->global_info, $_SESSION['session_id']);
+            if ($session !== FALSE)
+                $session->delete();
+        }
+
         session_regenerate_id(true);
 
         $_SESSION['logged_in'] = true;
         $_SESSION['auth'] = $this->get_auth_array($user);
+        $session = $this->register_session($user->id, session_id());
+        $_SESSION['session_id'] = $session->id;
     }
 
     function is_valid()
     {
-        // Check for session timeout
-        $current = time();
-        $last_active = $current;
-        if (isset($_SESSION['session_last_active']))
-            $last_active = $_SESSION['session_last_active'];
+        if (!isset($_SESSION['session_id']))
+            return FALSE;
 
-        if ($current - $last_active > $this->config['session_timeout'])
+        $session = Session::get_object_by_id($this->global_info, $_SESSION['session_id']);
+        if ($session === FALSE)
+            return FALSE;
+
+        if (!$session->is_valid())
         {
             $this->deauthenticate();
             set_message('info', 'Session timed out', '');
             return FALSE;
         }
-
-        $_SESSION['session_last_active'] = $current;
 
         return TRUE;
     }
@@ -128,8 +192,13 @@ class AuthRedirect extends Authenticator
 
     function deauthenticate()
     {
+        $session = Session::get_object_by_id($this->global_info, $_SESSION['session_id']);
+        $session->delete();
+
         unset($_SESSION['logged_in']);
         unset($_SESSION['auth']);
+        unset($_SESSION['session_id']);
+
         session_regenerate_id();
         session_destroy();
     }
@@ -147,6 +216,11 @@ class AuthWwwAuthenticate extends Authenticator
 
         if (isset($this->config['realm']))
             $this->realm = $this->config['realm'];
+    }
+
+    function cleanup()
+    {
+        # Nothing to cleanup
     }
 
     function set_logged_in($user)

@@ -83,7 +83,8 @@ function do_logic()
 
     // Invalidate old sessions
     //
-    session_regenerate_id(true);
+    $this->auth->invalidate_sessions($user->id);
+    $this->auth->set_logged_in($user);
 
 	// Redirect to main sceen
 	//
