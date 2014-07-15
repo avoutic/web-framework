@@ -83,9 +83,9 @@ class PageChangeEmailVerify extends PageBasic
             return;
         }
 
-        // Change session e-mail
+        // Update session e-mail by updating user
         //
-        $_SESSION['auth']['email'] = $email;
+        $this->auth->set_logged_in($user);
 
         // Redirect to verification request screen
         //
