@@ -46,17 +46,7 @@ class PageGrabIdentity extends PageBasic
 
         // Log in user
         //
-        $success = true;
-
-        $_SESSION['logged_in'] = true;
-
-        $info = array();
-        $info['user'] = $user;
-        $info['user_id'] = $user->id;
-        $info['username'] = $user->username;
-        $info['name'] = $user->name;
-        $info['email'] = $user->email;
-        $_SESSION['auth'] = $info;
+        $this->auth->set_logged_in($user);
 
         header("Location: /?".add_message_to_url('success', 'Login successful.'));
         exit();
