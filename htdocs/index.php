@@ -311,37 +311,22 @@ else if ($global_config['auth_mode'] == 'www-authenticate')
 else
     die('No valid authenticator found.');
 
-# Check if logged in.
+# Check if logged in and populate standard fields.
 #
-$logged_in = $authenticator->get_logged_in();
+$logged_in = $authenticator->valid_session();
 
 if ($logged_in !== FALSE)
 {
-    // Check for session timeout
-    $current = time();
-    $last_active = $current;
-    if (isset($_SESSION['session_last_active']))
-        $last_active = $_SESSION['session_last_active'];
+    $global_state['auth'] = $logged_in;
+    $global_state['logged_in'] = true;
 
-    if ($current - $last_active > $global_config['security']['session_timeout'])
-    {
-        $authenticator->deauthenticate();
-        set_message('info', 'Session timed out', '');
-    }
-    else
-    {
-        $global_state['auth'] = $logged_in;
-        $global_state['logged_in'] = true;
-
-        $_SESSION['session_last_active'] = $current;
-        # Retrieve id / long name / short name
-        #
-        $global_state['user'] = $global_state['auth']['user'];
-        $global_state['user_id'] = $global_state['auth']['user_id'];
-        $global_state['username'] = $global_state['auth']['username'];
-        $global_state['name'] = $global_state['auth']['name'];
-        $global_state['email'] = $global_state['auth']['email'];
-    }
+    # Retrieve id / long name / short name
+    #
+    $global_state['user'] = $global_state['auth']['user'];
+    $global_state['user_id'] = $global_state['auth']['user_id'];
+    $global_state['username'] = $global_state['auth']['username'];
+    $global_state['name'] = $global_state['auth']['name'];
+    $global_state['email'] = $global_state['auth']['email'];
 }
 
 # Check page requested

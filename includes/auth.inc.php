@@ -62,6 +62,31 @@ abstract class Authenticator
         print 'You do not have the authorization to view this page. Please return to the main page or <a href="'.$login_page.'">log in</a>.';
         exit(0);
     }
+
+    function valid_session()
+    {
+        $logged_in = $this->get_logged_in();
+        if ($logged_in === FALSE)
+            return FALSE;
+
+        // Check for session timeout
+        $current = time();
+        $last_active = $current;
+        if (isset($_SESSION['session_last_active']))
+            $last_active = $_SESSION['session_last_active'];
+
+        if ($current - $last_active > $this->config['session_timeout'])
+        {
+            $this->deauthenticate();
+            set_message('info', 'Session timed out', '');
+            return FALSE;
+        }
+
+        $_SESSION['session_last_active'] = $current;
+
+        // Return valid session information
+        return $logged_in;
+    }
 }
 
 class AuthRedirect extends Authenticator

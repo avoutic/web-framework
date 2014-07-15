@@ -36,7 +36,8 @@ $base_config = array(
             'site_login_page' => 'login',
             'after_verify_page' => '/',
             'default_login_return' => '/',
-            'auth_required_message' => 'Authentication required. Please login.'
+            'auth_required_message' => 'Authentication required. Please login.',
+            'session_timeout' => 900,
         ),
         'page' => array(
             'default_frame_file' => '',
@@ -45,7 +46,6 @@ $base_config = array(
         'security' => array(
             'blacklisting' => false,
             'blacklist_threshold' => 25,
-            'session_timeout' => 900,
             'hash' => 'sha256',
             'hmac_key' => 'KDHAS(*&@!(*@!kjhdkjas)(*)(@*HUIHQhiuhqw',
         ),
