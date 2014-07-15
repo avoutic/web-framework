@@ -10,6 +10,7 @@ abstract class Authenticator
         $this->config = $config;
     }
 
+    abstract function set_logged_in($user);
     abstract function get_logged_in();
     abstract function deauthenticate();
 
@@ -111,6 +112,14 @@ class AuthRedirect extends Authenticator
         parent::__construct($database, $config);
     }
 
+    function set_logged_in($user)
+    {
+        session_regenerate_id(true);
+
+        $_SESSION['logged_in'] = true;
+        $_SESSION['auth'] = $this->get_auth_array($user);
+    }
+
     function get_logged_in()
     {
         if (!isset($_SESSION['logged_in']))
@@ -140,6 +149,12 @@ class AuthWwwAuthenticate extends Authenticator
 
         if (isset($config['realm']))
             $this->realm = $config['realm'];
+    }
+
+    function set_logged_in($user)
+    {
+        # Cannot specifically log in on this authentication method
+        # Done every get_logged_in() call
     }
 
     function get_logged_in()

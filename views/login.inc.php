@@ -116,16 +116,7 @@ class PageLogin extends PageBasic
 
         // Log in user
         //
-        session_regenerate_id(true);
-
-        $_SESSION['logged_in'] = true;
-        $info = array();
-        $info['user'] = $user;
-        $info['user_id'] = $user->id;
-        $info['username'] = $user->username;
-        $info['name'] = $user->name;
-        $info['email'] = $user->email;
-        $_SESSION['auth'] = $info;
+        $info = $this->auth->set_logged_in($user);
 
         header("Location: ".$return_page."?return_query=".$return_query."&".add_message_to_url('success', 'Login successful.'));
         exit();
