@@ -64,31 +64,6 @@ abstract class Authenticator
         exit(0);
     }
 
-    function valid_session()
-    {
-        $logged_in = $this->get_logged_in();
-        if ($logged_in === FALSE)
-            return FALSE;
-
-        // Check for session timeout
-        $current = time();
-        $last_active = $current;
-        if (isset($_SESSION['session_last_active']))
-            $last_active = $_SESSION['session_last_active'];
-
-        if ($current - $last_active > $this->config['session_timeout'])
-        {
-            $this->deauthenticate();
-            set_message('info', 'Session timed out', '');
-            return FALSE;
-        }
-
-        $_SESSION['session_last_active'] = $current;
-
-        // Return valid session information
-        return $logged_in;
-    }
-
     function get_auth_array($user)
     {
         if ($user === FALSE)
@@ -120,9 +95,32 @@ class AuthRedirect extends Authenticator
         $_SESSION['auth'] = $this->get_auth_array($user);
     }
 
+    function is_valid()
+    {
+        // Check for session timeout
+        $current = time();
+        $last_active = $current;
+        if (isset($_SESSION['session_last_active']))
+            $last_active = $_SESSION['session_last_active'];
+
+        if ($current - $last_active > $this->config['session_timeout'])
+        {
+            $this->deauthenticate();
+            set_message('info', 'Session timed out', '');
+            return FALSE;
+        }
+
+        $_SESSION['session_last_active'] = $current;
+
+        return TRUE;
+    }
+
     function get_logged_in()
     {
         if (!isset($_SESSION['logged_in']))
+            return FALSE;
+
+        if (!$this->is_valid())
             return FALSE;
 
         return $_SESSION['auth'];

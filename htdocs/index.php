@@ -306,7 +306,7 @@ $global_info['auth'] = $authenticator;
 
 # Check if logged in and populate standard fields.
 #
-$logged_in = $authenticator->valid_session();
+$logged_in = $authenticator->get_logged_in();
 
 if ($logged_in !== FALSE)
 {
