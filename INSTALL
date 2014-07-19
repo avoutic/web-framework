@@ -1,5 +1,5 @@
 PREREQUISITES
- apt-get install php5-adodb libphp-adodb
+ apt-get install php5-adodb php5-mcrypt libphp-adodb
  a2enmod rewrite
 
 INSTALLATION
@@ -16,9 +16,11 @@ Set htaccess for htdocs
  - Edit for content!
  - htpasswd -c -s .htpasswd XXX
  - cd htdocs && ln -s ../data/htacces-XXX .htaccess
+ - Add to .gitignore if needed
 
 Make config file:
  - cp web_framework/templates/default_config.php includes/config.php
+ - Add to .gitignore if needed
  - Edit the config file!
  
 Make DB if needed:
