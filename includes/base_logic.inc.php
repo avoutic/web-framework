@@ -281,7 +281,11 @@ class User extends DataCore
 
     function send_password_reset_mail()
     {
-        $code = $this->generate_verify_code('reset_password');
+        $reset_iterator = (int) $this->get_config_value('reset_iterator', 0, 'account');
+        $reset_iterator += 1;
+        $this->set_config_value('reset_iterator', $reset_iterator, 'account');
+
+        $code = $this->generate_verify_code('reset_password', array('iterator' => $reset_iterator));
 
         $mail = new ResetPasswordMail($this->name, $this->username, $code);
         $mail->add_recipient($this->email);
