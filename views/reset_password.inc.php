@@ -75,6 +75,10 @@ class PageResetPassword extends PageBasic
 
         $user->send_new_password();
 
+        // Invalidate old sessions
+        //
+        $this->auth->invalidate_sessions($user->id);
+
         // Redirect to main sceen
         //
         header("Location: /?".add_message_to_url('success', 'Password reset', 'You will receive a mail with your new password'));
