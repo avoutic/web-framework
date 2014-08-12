@@ -51,6 +51,13 @@ class PageChangeEmailVerify extends PageBasic
             exit();
         }
 
+        if ($msg['timestamp'] + 600 < time())
+        {
+            // Expired
+            header("Location: /change-email?".add_message_to_url('error', 'E-mail verification link expired'));
+            exit();
+        }
+
         $user_id = $msg['id'];
         $email = $msg['params']['email'];
         $this->page_content['email'] = $email;

@@ -197,7 +197,7 @@ class User extends DataCore
         $code = $this->generate_verify_code('change_email', array('email' => $email));
 
         $mail = new ChangeEmailVerifyMail($this->name, $this->username, $email, $code);
-        $mail->add_recipient($this->email);
+        $mail->add_recipient($email);
         $mail->send();
     }
 
