@@ -47,7 +47,8 @@ $base_config = array(
             'blacklisting' => false,
             'blacklist_threshold' => 25,
             'hash' => 'sha256',
-            'hmac_key' => 'KDHAS(*&@!(*@!kjhdkjas)(*)(@*HUIHQhiuhqw',
+            'hmac_key' =>  'KDHAS(*&@!(*@!kjhdkjas)(*)(@*HUIHQhiuhqw',
+            'crypt_key' => 'ONQifn39^&!)DMkiqnfl(!&Ala]d,lqklxoiA>W8kdvuHEWndk&6391#@yFplMaC',
         ),
         'error_handlers' => array(
             '404' => ''
@@ -162,10 +163,18 @@ function fire_hook($hook_name, $params)
 function encode_and_auth_string($str)
 {
     global $global_config;
-    $str = base64_encode($str);
-    $str_hmac = hash_hmac($global_config['security']['hash'], $str, $global_config['security']['hmac_key']);
 
-    return urlencode($str.":".$str_hmac);
+    # First encrypt it
+    $iv = mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_CBC), MCRYPT_RAND);
+    $key = hash('sha256', $global_config['security']['crypt_key'], TRUE);
+    $str = mcrypt_encrypt(MCRYPT_RIJNDAEL_256, $key, $str, MCRYPT_MODE_CBC, $iv);
+
+    $str = base64_encode($str);
+    $iv = base64_encode($iv);
+
+    $str_hmac = hash_hmac($global_config['security']['hash'], $iv.$str, $global_config['security']['hmac_key']);
+
+    return urlencode($iv.":".$str.":".$str_hmac);
 }
 
 function decode_and_verify_string($str)
@@ -176,10 +185,19 @@ function decode_and_verify_string($str)
     if ($idx === FALSE)
         return "";
 
+    $part_iv = substr($str, 0, $idx);
+    $iv = base64_decode($part_iv);
+
+    $str = substr($str, $idx + 1);
+
+    $idx = strpos($str, ":", $idx);
+    if ($idx === FALSE)
+        return "";
+
     $part_msg = substr($str, 0, $idx);
     $part_hmac = substr($str, $idx + 1);
 
-    $str_hmac = hash_hmac($global_config['security']['hash'], $part_msg, $global_config['security']['hmac_key']);
+    $str_hmac = hash_hmac($global_config['security']['hash'], $part_iv.$part_msg, $global_config['security']['hmac_key']);
 
     if ($str_hmac !== $part_hmac)
     {
@@ -187,7 +205,12 @@ function decode_and_verify_string($str)
         return "";
     }
 
-    return base64_decode($part_msg);
+    $key = hash('sha256', $global_config['security']['crypt_key'], TRUE);
+    $part_msg = mcrypt_decrypt(MCRYPT_RIJNDAEL_256, $key, base64_decode($part_msg), MCRYPT_MODE_CBC, $iv);
+
+    $part_msg = rtrim($part_msg. "\0");
+
+    return $part_msg;
 }
 
 if (!is_file($site_includes."config.php"))
