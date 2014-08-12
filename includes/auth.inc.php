@@ -145,7 +145,7 @@ class AuthRedirect extends Authenticator
     function set_logged_in($user)
     {
         // Destroy running session
-        if (!isset($_SESSION['session_id']))
+        if (isset($_SESSION['session_id']))
         {
             $session = Session::get_object_by_id($this->global_info, $_SESSION['session_id']);
             if ($session !== FALSE)
