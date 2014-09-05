@@ -47,7 +47,7 @@ class PageVerify extends PageBasic
         if ($msg['timestamp'] + 86400 < time())
         {
             // Expired
-            header("Location: /?".add_message_to_url('error', 'Verification mail expired', 'Please <a href="/send_verify?username='.$msg['username'].'">request a new one</a>.'));
+            header("Location: /?".add_message_to_url('error', 'Verification mail expired', 'Please <a href="/login">request a new one</a> after logging in.'));
             exit();
         }
 

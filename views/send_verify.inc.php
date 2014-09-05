@@ -6,7 +6,7 @@ class PageSendVerify extends PageBasic
     static function get_filter()
     {
         return array(
-                'username' => FORMAT_USERNAME,
+                'code' => '.*',
                 );
     }
 
@@ -17,16 +17,45 @@ class PageSendVerify extends PageBasic
 
     function do_logic()
     {
-        // Check if username is present
+        framework_add_bad_ip_hit();
+
+        // Check if code is present
         //
-        if (!strlen($this->state['input']['username']))
+        if (!strlen($this->state['input']['code']))
+        {
+            framework_add_bad_ip_hit(2);
             return;
+        }
+
+        $str = decode_and_verify_string($this->state['input']['code']);
+        if (!strlen($str))
+        {
+            framework_add_bad_ip_hit(4);
+            return;
+        }
+
+        $msg = json_decode($str, true);
+        if (!is_array($msg))
+            return;
+
+        if ($msg['action'] != 'send_verify')
+        {
+            framework_add_bad_ip_hit(4);
+            return;
+        }
+
+        if ($msg['timestamp'] + 86400 < time())
+        {
+            // Expired
+            header("Location: /login?".add_message_to_url('error', 'Send verification link expired', 'Please login again to request a new one</a>.'));
+            exit();
+        }
 
         $factory = new BaseFactory($this->global_info);
 
         // Check user status
         //
-        $user = $factory->get_user_by_username($this->state['input']['username']);
+        $user = $factory->get_user_by_username($msg['username']);
 
         if ($user !== FALSE && !$user->is_verified())
             $user->send_verify_mail();
