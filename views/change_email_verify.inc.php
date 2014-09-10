@@ -77,6 +77,13 @@ class PageChangeEmailVerify extends PageBasic
         $user = $factory->get_user($user_id);
         $old_email = $user->email;
 
+        if (!isset($msg['params']) || !isset($msg['params']['iterator']) ||
+            $user->get_security_iterator() != $msg['params']['iterator'])
+        {
+            header("Location: /change-email?".add_message_to_url('error', 'E-mail verification link expired'));
+            exit();
+        }
+
         $result = $user->change_email($email);
 
         if ($result == User::ERR_DUPLICATE_EMAIL)

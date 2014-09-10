@@ -194,7 +194,9 @@ class User extends DataCore
                 return User::ERR_DUPLICATE_EMAIL;
         }
 
-        $code = $this->generate_verify_code('change_email', array('email' => $email));
+        $security_iterator = $this->increase_security_iterator();
+
+        $code = $this->generate_verify_code('change_email', array('email' => $email, 'iterator' => $security_iterator));
 
         $mail = new ChangeEmailVerifyMail($this->name, $this->username, $email, $code);
         $mail->add_recipient($email);
@@ -279,13 +281,25 @@ class User extends DataCore
         return $mail->send();
     }
 
+    function increase_security_iterator()
+    {
+        $security_iterator = (int) $this->get_config_value('security_iterator', 0, 'account');
+        $security_iterator += 1;
+        $this->set_config_value('security_iterator', $security_iterator, 'account');
+
+        return $security_iterator;
+    }
+
+    function get_security_iterator()
+    {
+        return $this->get_config_value('security_iterator', 0, 'account');
+    }
+
     function send_password_reset_mail()
     {
-        $reset_iterator = (int) $this->get_config_value('reset_iterator', 0, 'account');
-        $reset_iterator += 1;
-        $this->set_config_value('reset_iterator', $reset_iterator, 'account');
+        $security_iterator = $this->increase_security_iterator();
 
-        $code = $this->generate_verify_code('reset_password', array('iterator' => $reset_iterator));
+        $code = $this->generate_verify_code('reset_password', array('iterator' => $security_iterator));
 
         $mail = new ResetPasswordMail($this->name, $this->username, $code);
         $mail->add_recipient($this->email);

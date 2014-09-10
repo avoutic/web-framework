@@ -67,7 +67,7 @@ class PageResetPassword extends PageBasic
         }
 
         if (!isset($msg['params']) || !isset($msg['params']['iterator']) ||
-            $user->get_config_value('reset_iterator', 0, 'account') != $msg['params']['iterator'])
+            $user->get_security_iterator() != $msg['params']['iterator'])
         {
             header("Location: /forgot-password?".add_message_to_url('error', 'Password reset link expired'));
             exit();
