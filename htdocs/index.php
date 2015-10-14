@@ -411,7 +411,10 @@ if ($target_info != null)
 }
 else
 {
-    $object_name = preg_replace('/(?:^|[_\-\.])(.?)/e',"strtoupper('$1')", 'page_'.$include_page);
+    $object_name = preg_replace_callback('/(?:^|[_\-\.])(.?)/',
+                    function($m) {
+                        return strtoupper($m[1]);
+                    }, 'page_'.$include_page);
     $function_name = "html_main";
 }
 
