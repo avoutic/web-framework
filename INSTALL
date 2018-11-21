@@ -30,6 +30,10 @@ Make DB if needed:
 Make a default frame if needed:
  - cp web_framework/templates/default_frame.inc.php includes
 
+Install PHP Composer files
+ - cp web_framework/templates/composser.json .
+ - composer install
+
 Make first hello world page:
  - 
 

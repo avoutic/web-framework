@@ -235,10 +235,7 @@ if ($global_config['debug'] == true)
 # Load other prerequisites
 #
 if ($global_config['database_enabled'] == true)
-{
-    require('adodb/adodb.inc.php');
     require($includes.'database.inc.php');
-}
 
 # Load global and site specific defines
 #

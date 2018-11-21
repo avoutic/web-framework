@@ -1,6 +1,4 @@
 <?php
-require('adodb/adodb.inc.php');
-
 class Database {
 	private $database;
 

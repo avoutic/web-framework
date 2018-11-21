@@ -4,6 +4,7 @@
 $includes='../web_framework/includes/';
 $site_includes='../includes/';
 $site_views='../views/';
+require_once(__DIR__ . '/../../vendor/autoload.php');
 
 require_once($includes.'wf_core.inc.php');
 
