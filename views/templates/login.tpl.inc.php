@@ -1,4 +1,4 @@
-<form method="post" class="login_form" action="/login" enctype="multipart/form-data" onsubmit="password.value = hex_sha1(password_helper.value); return true;">
+<form method="post" class="login_form" action="/<?=$args['login_page']?>" enctype="multipart/form-data" onsubmit="password.value = hex_sha1(password_helper.value); return true;">
 	<fieldset class="login">
 		<input type="hidden" name="do" value="yes"/>
         <input type="hidden" name="token" value="<?=get_csrf_token()?>"/>

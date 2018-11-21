@@ -38,6 +38,7 @@ class PageLogin extends PageBasic
             $return_page = $this->config['authenticator']['default_login_return'];
 
         $this->page_content['return_page'] = $return_page;
+        $this->page_content['login_page'] = $this->config['authenticator']['site_login_page'];
 
         // Check if already logged in and redirect immediately
         if ($this->state['logged_in'])
