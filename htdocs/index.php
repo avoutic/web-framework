@@ -304,6 +304,13 @@ if ($global_config['auth_mode'] == 'redirect')
     $authenticator = new AuthRedirect($global_info);
 else if ($global_config['auth_mode'] == 'www-authenticate')
     $authenticator = new AuthWwwAuthenticate($global_info);
+else if ($global_config['auth_mode'] == 'custom' &&
+         strlen($global_config['auth_module']))
+{
+   require_once($site_includes.$global_config['auth_module']);
+
+   $authenticator = new AuthCustom($global_info);
+}
 else
     die('No valid authenticator found.');
 

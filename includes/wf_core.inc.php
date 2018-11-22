@@ -31,7 +31,8 @@ $base_config = array(
             'cache_user' => '',
             'cache_password' => ''
         ),
-        'auth_mode' => 'redirect',            // redirect, www-authenticate
+        'auth_mode' => 'redirect',            // redirect, www-authenticate, custom (requires auth_module)
+        'auth_module' => '',
         'authenticator' => array(
             'site_login_page' => 'login',
             'after_verify_page' => '/',
