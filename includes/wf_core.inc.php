@@ -282,6 +282,8 @@ $core_factory = new ObjectFactory();
 # Start the database connection
 #
 $global_database = NULL;
+$global_databases = array();
+
 if ($global_config['database_enabled'] == true)
 {
     $global_database = new Database();
@@ -295,6 +297,18 @@ if ($global_config['database_enabled'] == true)
     if ($db_version != $global_config['db_version'])
     {
         http_error(500, 'Internal Server Error', "<h1>Database version mismatch</h1>\nPlease contact the administrator.");
+    }
+
+    # Open auxilary database connections
+    #
+    foreach ($global_config['databases'] as $key => $value)
+    {
+        $global_databases[$key] = new Database();
+
+        if (FALSE === $global_databases[$key]->Connect($value))
+        {
+            http_error(500, 'Internal Server Error', "<h1>Databases server connection failed</h1>\nThe connection to the database server failed. Please contact the administrator.");
+        }
     }
 }
 
@@ -314,8 +328,20 @@ if ($global_config['cache_enabled'] == true)
     }
 }
 
+function get_db($tag)
+{
+    global $global_info;
+
+    if (!strlen($tag))
+        return $global_info['database'];
+
+    assert('array_key_exists($tag, $global_info["databases"]) /* Database not registered */');
+    return $global_info['databases'][$tag];
+}
+
 $global_info = array(
     'database' => $global_database,
+    'databases' => $global_databases,
     'state' => &$global_state,
     'config' => $global_config,
     'cache' => $global_cache);
