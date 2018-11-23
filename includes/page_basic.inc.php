@@ -128,6 +128,11 @@ abstract class PageBasic extends PageCore
         return "";
     }
 
+    function get_frame_file()
+    {
+        return $this->frame_file;
+    }
+
     function add_message($type, $message, $extra_message = "")
     {
         array_push($this->state['messages'], array(
@@ -182,8 +187,8 @@ abstract class PageBasic extends PageCore
 
         ob_start();
 
-        if (strlen($this->frame_file))
-            require($site_includes.$this->frame_file);
+        if (strlen($this->get_frame_file()))
+            require($site_includes.$this->get_frame_file());
         else
             $this->display_content();
 
