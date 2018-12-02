@@ -9,6 +9,7 @@ date_default_timezone_set('UTC');
 #
 $base_config = array(
         'debug' => false,
+        'timezone' => 'UTC',
         'disabled_pages' => array(),
         'allow_registration' => true,
         'database_enabled' => false,
@@ -232,6 +233,10 @@ if ($global_config['debug'] == true)
     error_reporting(E_ALL | E_STRICT);
     ini_set("display_errors", 1);
 }
+
+# Set default timezone
+#
+date_default_timezone_set($global_config['timezone']);
 
 # Load other prerequisites
 #
