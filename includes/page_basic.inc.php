@@ -175,6 +175,11 @@ abstract class PageBasic extends PageCore
         return "";
     }
 
+    function display_footer()
+    {
+        return "";
+    }
+
     function display_content()
     {
         return "No content.";
