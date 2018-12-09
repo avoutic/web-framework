@@ -9,6 +9,7 @@ date_default_timezone_set('UTC');
 #
 $base_config = array(
         'debug' => false,
+        'preload' => false,
         'timezone' => 'UTC',
         'disabled_pages' => array(),
         'allow_registration' => true,
@@ -238,17 +239,22 @@ if ($global_config['debug'] == true)
 #
 date_default_timezone_set($global_config['timezone']);
 
+# Check for special loads before anything else
+#
+if ($global_config['preload'] == true)
+    require_once($site_includes.'preload.inc.php');
+
 # Load other prerequisites
 #
 if ($global_config['database_enabled'] == true)
-    require($includes.'database.inc.php');
+    require_once($includes.'database.inc.php');
 
 # Load global and site specific defines
 #
-require($includes."defines.inc.php");
-require($includes."object_factory.inc.php");
-require($includes."base_logic.inc.php");
-require($includes."config_values.inc.php");
+require_once($includes."defines.inc.php");
+require_once($includes."object_factory.inc.php");
+require_once($includes."base_logic.inc.php");
+require_once($includes."config_values.inc.php");
 
 if (is_file($site_includes."site_defines.inc.php"))
     include_once($site_includes."site_defines.inc.php");
