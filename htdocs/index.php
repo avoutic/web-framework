@@ -1,9 +1,9 @@
 <?php
 # Global configuration
 #
-$includes='../web_framework/includes/';
-$site_includes='../includes/';
-$site_views='../views/';
+$includes=__DIR__.'/../includes/';
+$site_includes=__DIR__.'/../../includes/';
+$site_views=__DIR__.'/../../views/';
 require_once(__DIR__ . '/../../vendor/autoload.php');
 
 require_once($includes.'wf_core.inc.php');
