@@ -30,7 +30,7 @@ abstract class DataCore
         if ($global_info['cache'] != null && static::$is_cacheable)
             if (FALSE !== $global_info->cache->get(static::get_cache_id($id)))
                 return TRUE;
-        
+
         $result = $global_info['database']->Query('SELECT id FROM '.static::$table_name.
                                    ' WHERE id = ?', array($id));
 
@@ -67,8 +67,8 @@ abstract class DataCore
     private function fill_base_fields_from_db()
     {
         $result = $this->database->Query(
-                'SELECT '.implode(',', static::$base_fields).
-                ' FROM '.static::$table_name.' WHERE id = ?', array($this->id));
+                'SELECT `'.implode('`, `', static::$base_fields).'` '.
+                'FROM '.static::$table_name.' WHERE id = ?', array($this->id));
 
         if ($result === FALSE)
             die('Failed to retrieve base fields for '.static::$table_name);
@@ -94,7 +94,7 @@ abstract class DataCore
 
     function get_field($field)
     {
-        $result = $this->database->Query('SELECT '.$field.' FROM '.static::$table_name.
+        $result = $this->database->Query('SELECT `'.$field.'` FROM '.static::$table_name.
                                          ' WHERE id = ?', array($this->id));
         assert('$result !== FALSE /* Failed to retrieve '.$field.' for '.static::$table_name.' */');
 
@@ -112,7 +112,7 @@ abstract class DataCore
             if (!$first)
                 $query .= ', ';
 
-            $query .= ' '.$key.' = ? ';
+            $query .= ' `'.$key.'` = ? ';
 
             $first = false;
         }
@@ -131,7 +131,7 @@ abstract class DataCore
     function update_field($field, $value)
     {
         $query = 'UPDATE '.static::$table_name;
-        $query .= ' SET '.$field.' = ? ';
+        $query .= ' SET `'.$field.'` = ? ';
         $args[] = $value;
 
         $query .= 'WHERE id = ?';
@@ -170,7 +170,7 @@ abstract class DataCore
             if (!$first)
                 $query .= ', ';
 
-            $query .= ' '.$key.' = ? ';
+            $query .= ' `'.$key.'` = ? ';
 
             $first = false;
         }
@@ -198,7 +198,7 @@ abstract class DataCore
                 if (!$first)
                     $query .= ' AND ';
 
-                $query .= ' '.$key.' = ? ';
+                $query .= ' `'.$key.'` = ? ';
                 
                 $first = false;
             }
@@ -224,7 +224,7 @@ abstract class DataCore
                 if (!$first)
                     $query .= ' AND ';
 
-                $query .= ' '.$key.' = ? ';
+                $query .= ' `'.$key.'` = ? ';
                 
                 $first = false;
             }
@@ -262,7 +262,7 @@ abstract class DataCore
                 if (!$first)
                     $query .= ' AND ';
 
-                $query .= ' '.$key.' = ? ';
+                $query .= ' `'.$key.'` = ? ';
                 
                 $first = false;
             }
