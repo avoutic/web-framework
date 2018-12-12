@@ -146,6 +146,52 @@ abstract class DataCore
         return TRUE;
     }
 
+    function decrease_field($field, $value = 1, $minimum = false)
+    {
+        $query = 'UPDATE '.static::$table_name;
+
+        if ($minimum === false)
+        {
+            $query .= ' SET `'.$field.'` = `'.$field.'` - ? ';
+            $args[] = $value;
+        }
+        else
+        {
+            $query .= ' SET `'.$field.'` = GREATEST(?, `'.$field.'` - ?) ';
+            $args[] = $minimum;
+            $args[] = $value;
+        }
+
+        $query .= 'WHERE id = ?';
+        $args[] = $this->id;
+
+        $result = $this->database->Query($query, $args);
+        $class = get_called_class();
+        assert('$result !== FALSE /* Failed to decrease field of object ('.$class.') */');
+
+        $this->$field = $this->get_field($field);
+
+        return TRUE;
+    }
+
+    function increase_field($field, $value = 1)
+    {
+        $query = 'UPDATE '.static::$table_name;
+        $query .= ' SET `'.$field.'` = `'.$field.'` + ? ';
+        $args[] = $value;
+
+        $query .= 'WHERE id = ?';
+        $args[] = $this->id;
+
+        $result = $this->database->Query($query, $args);
+        $class = get_called_class();
+        assert('$result !== FALSE /* Failed to increase field of object ('.$class.') */');
+
+        $this->$field = $this->get_field($field);
+
+        return TRUE;
+    }
+
     function delete()
     {
         if ($this->cache != null && $this->is_cacheable)
