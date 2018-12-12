@@ -118,8 +118,9 @@ class AuthRedirect extends Authenticator
     function cleanup()
     {
         $timeout = $this->global_info['config']['authenticator']['session_timeout'];
+        $timestamp = date('Y-m-d H:i:s');
 
-        $this->global_info['database']->Query('DELETE FROM sessions WHERE ADDDATE(last_active, INTERVAL ? SECOND) < UTC_TIMESTAMP()', array($timeout));
+        $this->global_info['database']->Query('DELETE FROM sessions WHERE ADDDATE(last_active, INTERVAL ? SECOND) < ?', array($timeout, $timestamp));
     }
 
     function register_session($user_id, $session_id)
