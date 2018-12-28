@@ -143,9 +143,9 @@ abstract class PageBasic extends PageCore
 
     function load_template($name, $args = array())
     {
-        global $site_views;
+        global $site_templates;
 
-        include($site_views.'templates/'.$name.'.inc.php');
+        include($site_templates.$name.'.inc.php');
     }
 
     function load_file($name)
@@ -187,13 +187,13 @@ abstract class PageBasic extends PageCore
 
     function display_frame()
     {
-        global $site_includes;
+        global $site_frames;
         unset($this->state['input']);
 
         ob_start();
 
         if (strlen($this->get_frame_file()))
-            require($site_includes.$this->get_frame_file());
+            require($site_frames.$this->get_frame_file());
         else
             $this->display_content();
 
