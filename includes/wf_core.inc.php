@@ -21,6 +21,7 @@ $base_config = array(
             'database_password' =>'',
             'database_database' => ''
         ),
+        'databases' => array(),
         'db_version' => 1,
         'server_name' => (isset($_SERVER['SERVER_NAME']))?$_SERVER['SERVER_NAME']:'app',
         'http_mode' => 'http',
