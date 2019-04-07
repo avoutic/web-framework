@@ -125,6 +125,9 @@ abstract class DataCore
         $class = get_called_class();
         assert('$result !== FALSE /* Failed to update object ('.$class.') */');
 
+        foreach ($data as $key => $value)
+            $this->$key = $value;
+
         return TRUE;
     }
 
@@ -231,7 +234,7 @@ abstract class DataCore
 
         return new $class($global_info, $result);
     }
-        
+
     static function count_objects($global_info, $filter = array())
     {
         $query = 'SELECT COUNT(id) AS cnt FROM '.static::$table_name;
@@ -245,7 +248,7 @@ abstract class DataCore
                     $query .= ' AND ';
 
                 $query .= ' `'.$key.'` = ? ';
-                
+
                 $first = false;
             }
         }
@@ -271,7 +274,7 @@ abstract class DataCore
                     $query .= ' AND ';
 
                 $query .= ' `'.$key.'` = ? ';
-                
+
                 $first = false;
             }
         }
@@ -309,7 +312,7 @@ abstract class DataCore
                     $query .= ' AND ';
 
                 $query .= ' `'.$key.'` = ? ';
-                
+
                 $first = false;
             }
         }
@@ -388,12 +391,12 @@ class FactoryCore
         return $type::exists($this->global_info, $id);
     }
 
-    protected function get_core_object_count($type)
+    protected function get_core_object_count($type, $filter = array())
     {
         if (!class_exists($type))
             die("Core Object not known!");
 
-        return $type::count_objects($this->global_info);
+        return $type::count_objects($this->global_info, $filter);
     }
 
     protected function get_core_objects($type, $offset = 0, $results = 10, $filter = array(), $order = '')
