@@ -7,7 +7,7 @@
 		<input type="hidden" name="return_query" value="<?=PageCore::encode($args['return_query'])?>"/>
 		<legend>Login form</legend>
 		<p>
-			<label class="left" for="username">Username</label> <input type="text" class="field" id="username" name="username" value="<?=$args['username']?>"/>
+			<label class="left" for="username">Username</label> <input type="text" class="field" id="username" name="username" value="<?=$args['username']?>" autocomplete="off"/>
 		</p>
 		<p>
 			<label class="left" for="password_helper">Password</label> <input type="password" class="field" id="password_helper" name="password_helper"/>
