@@ -259,7 +259,7 @@ header('X-Random:'. substr(sha1(time()), 0, rand(1, 40)));
 
 // Add Clickjack prevention header
 //
-header('X-Frame-Options: DENY');
+header('X-Frame-Options: SAMEORIGIN');
 
 $fixed_page_filter = array(
         'page'	=> '[\w\._\-\/]+',
