@@ -281,6 +281,7 @@ abstract class DataCore
 
         $args = $filter;
 
+        assert('is_object($global_info["database"]) /* No database to query */');
         $result = $global_info['database']->Query($query, $args);
 
         $class = get_called_class();
