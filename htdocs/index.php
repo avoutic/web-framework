@@ -54,6 +54,8 @@ function validate_input($filter, $item)
             $info = $global_state['raw_post'][$item];
     	else if (isset($_POST[$item]))
 	    	$info = $_POST[$item];
+        else if (isset($_PUT[$item]))
+            $info = $_PUT[$item];
     	else if (isset($_GET[$item]))
 	    	$info = $_GET[$item];
 
@@ -70,6 +72,8 @@ function validate_input($filter, $item)
             $str = $global_state['raw_post'][$item];
     	else if (isset($_POST[$item]))
 	    	$str = $_POST[$item];
+        else if (isset($_PUT[$item]))
+            $str = $_PUT[$item];
     	else if (isset($_GET[$item]))
 	    	$str = $_GET[$item];
 
