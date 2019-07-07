@@ -68,7 +68,11 @@ abstract class Authenticator
 
             header('Location: /'.$this->config['site_login_page'].'?return_page='.urlencode($target).'&return_query='.urlencode($query).'&'.add_message_to_url('info', $this->config['auth_required_message']));
         }
-
+        else if ($type == '403')
+        {
+            header("HTTP/1.0 403 Forbidden");
+            print "<h1>Page requires authentication</h1>\n";
+        }
         else
             die('Not a known redirect type.');
 
