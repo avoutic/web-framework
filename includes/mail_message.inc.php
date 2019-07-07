@@ -29,10 +29,10 @@ class MailMessage
     protected $recipients = array();
     protected $mail_subject = '';
     protected $mail_message = '';
-    protected $mail_headers = '';
+    protected $mail_headers = array();
 
     function __construct()
-    { 
+    {
     }
 
     function get_sender_address()
