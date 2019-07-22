@@ -125,6 +125,23 @@ class UserConfigValues
         return $info;
     }
 
+    function value_exists($name, $module = "")
+    {
+        if ($module == "")
+            $module == $this->default_module;
+
+        $result = $this->database->Query('SELECT value FROM user_config_values WHERE user_id = ? AND module = ? AND name = ?',
+            array($this->user_id, $module, $name));
+
+        if ($result === FALSE)
+            die('Failed to retrieve config value.');
+
+        if ($result->RecordCount() == 0)
+            return false;
+
+        return true;
+    }
+
     function get_value($name, $default = "", $module = "")
     {
         if ($module == "")
