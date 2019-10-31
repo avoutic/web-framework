@@ -3,7 +3,7 @@
 $site_config = array(
     'database_enabled' => true,
     'database' => array(
-        'database_type' => 'mysql',
+        'database_type' => 'mysqli',
         'database_host' => 'localhost',
         'database_user' => 'USER',
         'database_password' => 'PASSWORD',
