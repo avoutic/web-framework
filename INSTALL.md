@@ -32,7 +32,7 @@ Now that all prerequisites are in place, we can setup our default directory stru
 
 ```
 mkdir -p data htdocs frames includes templates views
-cd htdocs && ln -s ../web-framework/htdocs/index.php .
+(cd htdocs && ln -s ../web-framework/htdocs/index.php .)
 ```
 
 If you now browse to the website's URL, you should see a 'Requirements Error'. This means the framework is in place, but you have not yet provided it with your configuration, etc.
