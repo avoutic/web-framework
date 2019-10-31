@@ -60,7 +60,7 @@ To set up the base database structure you can use the example template provided.
 Assuming you are using MySQL/MariaDB:
 
 ```
-mysql -u USER -p DB < web-framework/examples/scheme_v1.sql
+mysql -u USER -p DB < web-framework/bootstrap/scheme_v1.sql
 ```
 
 Then we use the example hello_world files to set up your first configuration file, frame file, view file, template file and routing logic.
