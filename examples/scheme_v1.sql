@@ -8,6 +8,7 @@ CREATE TABLE `rights` (
 INSERT INTO rights set short_name='admin', name='Administrator';
 INSERT INTO rights set short_name='user_management', name='User Management';
 INSERT INTO rights set short_name='grab_identity', name='Grab Identity';
+INSERT INTO rights set short_name='debug', name='Debug information';
 
 CREATE TABLE `users` (
   `id` int(11) NOT NULL auto_increment,
