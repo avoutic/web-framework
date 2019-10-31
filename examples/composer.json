@@ -1,6 +1,0 @@
-{
-    "require": {
-        "adodb/adodb-php": "^5.20",
-        "defuse/php-encryption": "^2.2"
-    }
-}
