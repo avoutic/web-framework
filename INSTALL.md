@@ -37,6 +37,19 @@ cd htdocs && ln -s ../web-framework/htdocs/index.php .
 
 If you now browse to the website's URL, you should see a 'Requirements Error'. This means the framework is in place, but you have not yet provided it with your configuration, etc.
 
+If you are using Apache, you should make sure that the following rewrite rules are either in the site configuration file or in _htdocs/.htaccess_:
+
+```
+RewriteEngine on
+
+RewriteCond %{QUERY_STRING} !^page
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ /index.php?page=$1 [L,NC,QSA]
+```
+
+These rewrite conditions and rule make sure that Apache will call web-framework for any and all files and directories that do not exist as a static file in _htdocs/_.
+
 ## Setting up an example site
 
 Let's set up a simple hello world page.
