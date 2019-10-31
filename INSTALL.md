@@ -50,15 +50,11 @@ Assuming you are using MySQL/MariaDB:
 mysql -u USER -p DB < web-framework/examples/scheme_v1.sql
 ~~~
 
-Then we use the example files to set up your first configuration file, frame file, view file, template file and routing logic.
+Then we use the example hello_world files to set up your first configuration file, frame file, view file, template file and routing logic.
 
-~~~
-cp web-framework/examples/default_config.php includes/config.php
-cp web-framework/examples/default_frame.inc.php frames
-cp web-framework/examples/main.inc.php views
-cp web-framework/examples/main.tpl.inc.php templates
-cp web-framework/examples/site_logic.inc.php includes
-~~~
+```
+cp -a web-framework/hello_world_example/* .
+```
 
 Make sure you adjust the configuration file (_includes/config.php_) with the right credentials for your database.
 
