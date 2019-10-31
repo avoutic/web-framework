@@ -10,20 +10,24 @@
   <meta name="distribution" content="global" />
   <link rel="icon" type="image/x-icon" href="/favicon.ico" />
   <title><?=$this->get_title()?></title>
-<?
+<?php
 $this->display_header();
 ?>
 </head>
 <body>
-<?
+<?php
 $this->display_content();
-?>
-<?
-if (user_has_permissions(array('debug'))) {
-    print('<hr/>');
-    print('<pre>');
-    print_r($this->state);
-    print('</pre>');
+
+if (user_has_permissions(array('debug')))
+{
+    $state = print_r($this->state, TRUE);
+
+    echo <<<HTML
+<hr/>
+<pre>
+{$state}
+</pre>
+HTML;
 }
 ?>
 </body>
