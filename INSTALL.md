@@ -7,7 +7,7 @@ The installation of web-framework as your PHP framework of choice for your proje
 If there's enough interest, I'll make a composer package available as well. For now you can add web-framework as a git submodule.
 
 ```
-git submodule add https://github.com/avoutic/web-framework
+git submodule add https://github.com/avoutic/web-framework.git
 ```
 
 ## Installing prerequisites
