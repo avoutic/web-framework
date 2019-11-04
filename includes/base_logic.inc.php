@@ -86,6 +86,10 @@ class User extends DataCore
         $solid_password = $result->fields['solid_password'];
         if (!strlen($solid_password))
         {
+            // Auto upgrade to solid password if not yet present
+            // and delete old SHA1 hashed password.
+            //
+            $password = sha1($password);
             if ($password !== $result->fields['password'])
                 return FALSE;
 
@@ -312,7 +316,7 @@ class User extends DataCore
         //
         $new_pw = bin2hex(substr(openssl_random_pseudo_bytes(24), 0, 10));
 
-        $this->update_password(sha1($new_pw));
+        $this->update_password($new_pw);
 
         $mail = new ForgotPasswordMail($this->name, $this->username, $new_pw);
         $mail->add_recipient($this->email);

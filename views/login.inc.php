@@ -130,7 +130,6 @@ class PageLogin extends PageBasic
 ?>
   <meta name="robots" content="noindex,follow" />
   <link rel="canonical" href="/login" />
-  <script src="base/sha1.js" type="text/javascript"></script>
 <?
     }
 
