@@ -27,11 +27,11 @@ class PageLogoff extends PageBasic
 
     function display_content()
     {
-?>
+        echo <<<HTML
 <div>
   Logging off.
 </div>
-<?
+HTML;
     }
 };
 ?>
