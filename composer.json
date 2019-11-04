@@ -1,0 +1,14 @@
+{
+    "name": "avoutic/web-framework",
+    "description": "web-framework is a secure-by-default PHP framework for quickly making PHP sites and APIs",
+    "require": {
+        "adodb/adodb-php": "^5.20"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Avoutic",
+            "email": "avoutic@gmail.com"
+        }
+    ]
+}
