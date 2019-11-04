@@ -127,10 +127,10 @@ class PageLogin extends PageBasic
 
     function display_header()
     {
-?>
+        echo <<<HTML
   <meta name="robots" content="noindex,follow" />
   <link rel="canonical" href="/login" />
-<?
+HTML;
     }
 
     function display_content()
