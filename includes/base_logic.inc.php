@@ -89,8 +89,7 @@ class User extends DataCore
             // Auto upgrade to solid password if not yet present
             // and delete old SHA1 hashed password.
             //
-            $password = sha1($password);
-            if ($password !== $result->fields['password'])
+            if (sha1($password) !== $result->fields['password'])
                 return FALSE;
 
             $solid_password = User::new_hash_from_password($password);
