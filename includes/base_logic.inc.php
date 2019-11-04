@@ -67,7 +67,7 @@ class User extends DataCore
 
     static function new_hash_from_password($password)
     {
-        $salt = base64_encode(mcrypt_create_iv(24, MCRYPT_DEV_URANDOM));
+        $salt = base64_encode(openssl_random_pseudo_bytes(24));
         return 'sha256:1000:'.$salt.':'.
                 pbkdf2('sha256', $password, $salt, 1000, 24, false);
     }
@@ -310,7 +310,7 @@ class User extends DataCore
     {
         // Generate and store password
         //
-        $new_pw = bin2hex(substr(mcrypt_create_iv(24, MCRYPT_DEV_URANDOM), 0, 10));
+        $new_pw = bin2hex(substr(openssl_random_pseudo_bytes(24), 0, 10));
 
         $this->update_password(sha1($new_pw));
 

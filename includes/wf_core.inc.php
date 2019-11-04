@@ -169,9 +169,11 @@ function encode_and_auth_string($str)
     global $global_config;
 
     # First encrypt it
-    $iv = mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_CBC), MCRYPT_RAND);
+    $cipher = 'AES-256-CBC';
+    $iv_len = openssl_cipher_iv_length($cipher);
+    $iv = openssl_random_pseudo_bytes($iv_len);
     $key = hash('sha256', $global_config['security']['crypt_key'], TRUE);
-    $str = mcrypt_encrypt(MCRYPT_RIJNDAEL_256, $key, $str, MCRYPT_MODE_CBC, $iv);
+    $str = openssl_encrypt($str, $cipher, $key, 0, $iv);
 
     $str = base64_encode($str);
     $iv = base64_encode($iv);
@@ -210,7 +212,8 @@ function decode_and_verify_string($str)
     }
 
     $key = hash('sha256', $global_config['security']['crypt_key'], TRUE);
-    $part_msg = mcrypt_decrypt(MCRYPT_RIJNDAEL_256, $key, base64_decode($part_msg), MCRYPT_MODE_CBC, $iv);
+    $cipher = 'AES-256-CBC';
+    $part_msg = openssl_decrypt(base64_decode($part_msg), $cipher, $key, 0, $iv);
 
     $part_msg = rtrim($part_msg. "\0");
 

@@ -179,10 +179,10 @@ function register_redirect($regex, $redirect, $type = '301', $args = array())
 function get_csrf_token()
 {
     if (!isset($_SESSION['csrf_token']) || strlen($_SESSION['csrf_token']) != 16)
-        $_SESSION['csrf_token'] = mcrypt_create_iv(16, MCRYPT_DEV_URANDOM);
+        $_SESSION['csrf_token'] = openssl_random_pseudo_bytes(16);
 
     $token = $_SESSION['csrf_token'];
-    $xor = mcrypt_create_iv(16, MCRYPT_DEV_URANDOM);
+    $xor = openssl_random_pseudo_bytes(16);
     for ($i = 0; $i < 16; $i++)
         $token[$i] = chr(ord($xor[$i]) ^ ord($token[$i]));
 
