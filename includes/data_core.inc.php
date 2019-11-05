@@ -96,7 +96,7 @@ abstract class DataCore
     {
         $result = $this->database->Query('SELECT `'.$field.'` FROM '.static::$table_name.
                                          ' WHERE id = ?', array($this->id));
-        assert('$result !== FALSE /* Failed to retrieve '.$field.' for '.static::$table_name.' */');
+        verify($result !== FALSE, 'Failed to retrieve '.$field.' for '.static::$table_name);
 
         return $result->fields[$field];
     }
@@ -123,7 +123,7 @@ abstract class DataCore
 
         $result = $this->database->Query($query, $args);
         $class = get_called_class();
-        assert('$result !== FALSE /* Failed to update object ('.$class.') */');
+        verify($result !== FALSE, 'Failed to update object ('.$class.')');
 
         foreach ($data as $key => $value)
             $this->$key = $value;
@@ -142,7 +142,7 @@ abstract class DataCore
 
         $result = $this->database->Query($query, $args);
         $class = get_called_class();
-        assert('$result !== FALSE /* Failed to update object ('.$class.') */');
+        verify($result !== FALSE, 'Failed to update object ('.$class.')');
 
         $this->$field = $value;
 
@@ -170,7 +170,7 @@ abstract class DataCore
 
         $result = $this->database->Query($query, $args);
         $class = get_called_class();
-        assert('$result !== FALSE /* Failed to decrease field of object ('.$class.') */');
+        verify($result !== FALSE, 'Failed to decrease field of object ('.$class.')');
 
         $this->$field = $this->get_field($field);
 
@@ -188,7 +188,7 @@ abstract class DataCore
 
         $result = $this->database->Query($query, $args);
         $class = get_called_class();
-        assert('$result !== FALSE /* Failed to increase field of object ('.$class.') */');
+        verify($result !== FALSE, 'Failed to increase field of object ('.$class.')');
 
         $this->$field = $this->get_field($field);
 
@@ -230,7 +230,7 @@ abstract class DataCore
 
         $class = get_called_class();
 
-        assert('$result !== FALSE /* Failed to create object ('.$class.') */');
+        verify($result !== FALSE, 'Failed to create object ('.$class.')');
 
         return new $class($global_info, $result);
     }
@@ -255,8 +255,8 @@ abstract class DataCore
 
         $args = $filter;
         $result = $global_info['database']->Query($query, $args);
-        assert('$result !== FALSE /* Failed to count objects */');
-        assert('$result->RecordCount() == 1 /* Failed to count objects */');
+        verify($result !== FALSE, 'Failed to count objects');
+        verify($result->RecordCount() == 1, 'Failed to count objects');
 
         return $result->fields['cnt'];
     }
@@ -281,13 +281,13 @@ abstract class DataCore
 
         $args = $filter;
 
-        assert('is_object($global_info["database"]) /* No database to query */');
+        verify(is_object($global_info["database"]), 'No database to query');
         $result = $global_info['database']->Query($query, $args);
 
         $class = get_called_class();
 
-        assert('$result !== FALSE /* Failed to retrieve object ('.$class.') */');
-        assert('$result->RecordCount() <= 1 /* Non-unique object request ('.$class.') */');
+        verify($result !== FALSE, 'Failed to retrieve object ('.$class.')');
+        verify($result->RecordCount() <= 1, 'Non-unique object request ('.$class.')');
 
         if ($result->RecordCount() == 0)
             return FALSE;
@@ -331,7 +331,7 @@ abstract class DataCore
 
         $class = get_called_class();
 
-        assert('$result !== FALSE /* Failed to retrieve objects ('.$class.') */');
+        verify($result !== FALSE, 'Failed to retrieve objects ('.$class.')');
 
         $info = array();
         foreach($result as $k => $row)
@@ -367,8 +367,7 @@ class FactoryCore
 
     protected function get_core_object_by_id($type, $id)
     {
-        if (!class_exists($type))
-            die("Core Object not known!");
+        verify(class_exists($type), 'Core Object ("'.$type.'") not known');
 
         if (FALSE === $type::exists($this->global_info, $id))
             return FALSE;
@@ -378,39 +377,35 @@ class FactoryCore
 
     protected function get_core_object($type, $filter = array())
     {
-        if (!class_exists($type))
-            die("Core Object not known!");
+        verify(class_exists($type), 'Core Object ("'.$type.'") not known');
 
         return $type::get_object($this->global_info, $filter);
     }
 
     protected function core_object_exists($type, $id)
     {
-        if (!class_exists($type))
-            die("Core Object not known!");
+        verify(class_exists($type), 'Core Object ("'.$type.'") not known');
 
         return $type::exists($this->global_info, $id);
     }
 
     protected function get_core_object_count($type, $filter = array())
     {
-        if (!class_exists($type))
-            die("Core Object not known!");
+        verify(class_exists($type), 'Core Object ("'.$type.'") not known');
 
         return $type::count_objects($this->global_info, $filter);
     }
 
     protected function get_core_objects($type, $offset = 0, $results = 10, $filter = array(), $order = '')
     {
-        if (!class_exists($type))
-            die("Core Object not known!");
+        verify(class_exists($type), 'Core Object ("'.$type.'") not known');
 
         return $type::get_objects($this->global_info, $offset, $results, $filter, $order);
     }
 
     protected function create_core_object($type, $data)
     {
-        assert('class_exists($type) /* Core Object ("'.$type.'") not known */');
+        verify(class_exists($type), 'Core Object ("'.$type.'") not known');
 
         return $type::create($this->global_info, $data);
     }

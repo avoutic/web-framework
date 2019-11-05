@@ -80,7 +80,7 @@ class Translator implements iPageModule
         $result = $this->database->Query('SELECT value FROM translations WHERE `key` = ? AND lang = ?',
                 array($tag, $this->state['lang']));
 
-        assert('$result !== FALSE /* Failed to get translation */');
+        verify($result !== FALSE, 'Failed to get translation');
 
         $msg = $tag;
 

@@ -13,7 +13,7 @@ class TranslationFactory
         $result = $this->database->Query('SELECT tt.key, t.value FROM translation_tags AS tt LEFT JOIN translations AS t ON t.key = tt.key AND t.lang = ?',
                 array($lang));
 
-        assert('$result !== FALSE /* Failed to get translations */');
+        verify($result !== FALSE, 'Failed to get translations');
 
         $info = array();
 
@@ -28,7 +28,7 @@ class TranslationFactory
         $result = $this->database->Query('SELECT value FROM translations WHERE lang = ? AND `key` = ?',
                 array($lang, $key));
 
-        assert('$result !== FALSE /* Failed to get translation */');
+        verify($result !== FALSE, 'Failed to get translation');
 
         if ($result->RecordCount() == 0)
             return $key;
@@ -41,7 +41,7 @@ class TranslationFactory
         $result = $this->database->Query('REPLACE INTO translations SET `key` = ?, lang = ?, value = ?',
                 array($key, $lang, $value));
 
-        assert('$result !== FALSE /* Failed to update translation */');
+        verify($result !== FALSE, 'Failed to update translation');
 
         return TRUE;
     }

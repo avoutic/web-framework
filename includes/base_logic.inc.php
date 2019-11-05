@@ -56,7 +56,7 @@ class User extends DataCore
         $result = $this->database->Query('SELECT right_id FROM user_rights AS ur WHERE ur.user_id = ?',
                 array($this->id));
 
-        assert('$result !== FALSE /* Failed to retrieve user rights. */');
+        verify($result !== FALSE, 'Failed to retrieve user rights.');
 
         foreach($result as $k => $row)
         {
@@ -95,14 +95,14 @@ class User extends DataCore
             $solid_password = User::new_hash_from_password($password);
 
             $result = $this->update_field('solid_password', $solid_password);
-            assert('$result !== FALSE /* Failed to update solid_password */');
+            verify($result !== FALSE, 'Failed to update solid_password');
 
             $result = $this->update_field('password', '');
-            assert('$result !== FALSE /* Failed to clear password */');
+            verify($result !== FALSE, 'Failed to clear password');
         }
 
         $params = explode(":", $solid_password);
-        assert('count($params) == 4 /* Solid password format unknown */');
+        verify(count($params) == 4, 'Solid password format unknown');
 
         $pbkdf2_hash = $params[3];
         $pbkdf2_calc = pbkdf2('sha256', $password, $params[2], (int) $params[1],
@@ -137,7 +137,7 @@ class User extends DataCore
         $solid_password = User::new_hash_from_password($new_password);
 
         $result = $this->update_field('solid_password', $solid_password);
-        assert('$result !== FALSE /* Failed to update solid_password */');
+        verify($result !== FALSE, 'Failed to update solid_password');
 
         return User::RESULT_SUCCESS;
     }
@@ -149,7 +149,7 @@ class User extends DataCore
         $solid_password = User::new_hash_from_password($new_password);
 
         $result = $this->update_field('solid_password', $solid_password);
-        assert('$result !== FALSE /* Failed to update solid_password */');
+        verify($result !== FALSE, 'Failed to update solid_password');
 
         return User::RESULT_SUCCESS;
     }
@@ -209,8 +209,8 @@ class User extends DataCore
     function is_verified()
     {
         $result = $this->database->Query('SELECT verified FROM users WHERE id = ?', array($this->id));
-        assert('$result !== FALSE /* Failed to retrieve verified status */');
-        assert('$result->RecordCount() == 1 /* Did not get single response */');
+        verify($result !== FALSE, 'Failed to retrieve verified status');
+        verify($result->RecordCount() == 1, 'Did not get single response');
 
         return $result->fields['verified'] == 1;
     }
@@ -234,7 +234,7 @@ class User extends DataCore
                     $this->id,
                     $short_name
                     ));
-        assert('$result !== FALSE /* Failed to insert user right */');
+        verify($result !== FALSE, 'Failed to insert user right');
 
         $this->rights[$short_name] = Right::get_object($this->global_info, array('short_name' => $short_name));
 
@@ -252,7 +252,7 @@ class User extends DataCore
                     $this->id
                     ));
 
-        assert('$result !== FALSE /* Failed to delete user right */');
+        verify($result !== FALSE, 'Failed to delete user right');
 
         unset($this->rights[$short_name]);
 
@@ -328,7 +328,7 @@ class User extends DataCore
         $result = $this->database->Query('SELECT name, value FROM user_config_values WHERE user_id = ? AND module = ?',
             array($this->id, $module));
 
-        assert('$result !== FALSE /* Failed to retrieve config values */');
+        verify($result !== FALSE, 'Failed to retrieve config values');
 
         $info = array();
 
@@ -343,7 +343,7 @@ class User extends DataCore
         $result = $this->database->Query('SELECT value FROM user_config_values WHERE user_id = ? AND module = ? AND name = ?',
             array($this->id, $module, $name));
 
-        assert('$result !== FALSE /* Failed to retrieve config value */');
+        verify($result !== FALSE, 'Failed to retrieve config value');
 
         if ($result->RecordCount() == 0)
             return $default;
@@ -359,7 +359,7 @@ class User extends DataCore
         $result = $this->database->Query('INSERT user_config_values SET user_id = ?, module = ?, name = ?, value = ? ON DUPLICATE KEY UPDATE value = ?',
             array($this->id, $module, $name, $value, $value));
 
-        assert('$result !== FALSE /* Failed to store config value */');
+        verify($result !== FALSE, 'Failed to store config value');
     }
 
     function delete_config_value($name, $module = "")
@@ -367,7 +367,7 @@ class User extends DataCore
         $result = $this->database->Query('DELETE user_config_values WHERE user_id = ? AND module = ? AND name = ?',
             array($this->id, $module, $name));
 
-        assert('$result !== FALSE /* Failed to delete config value */');
+        verify($result !== FALSE, 'Failed to delete config value');
     }
 }
 
@@ -375,7 +375,7 @@ class BaseFactory extends FactoryCore
 {
     function get_user($user_id, $type = 'User')
     {
-        assert('class_exists($type) /* Selected type does not exist */');
+        verify(class_exists($type), 'Selected type does not exist');
         return new $type($this->global_info, $user_id);
     }
 

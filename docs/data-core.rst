@@ -42,8 +42,12 @@ Our Person object now has basic capabilities. So if we instantiate a Person (usi
 
     // Update this Person's country
     $result = $person->update(array('country' => 'Belgium'));
-    assert('$result !== false /* Failed to update person */');
+    verify($result !== false, 'Failed to update person');
     ?>
+
+.. note::
+
+   What is `verify()`? `verify()` is like `assert()`. It is used to guard code paths that should never occur, unless something is really wrong. But unlike `assert()` our `verify()` cannot be silently ignored due to PHP settings. For a secure-by-default platform, we want to make sure those guards are always there.
 
 Complex objects
 ***************

@@ -136,7 +136,7 @@ class AuthRedirect extends Authenticator
                                             'session_id' => $session_id,
                                             'last_active' => $timestamp));
 
-        assert('$session !== FALSE /* Failed to create Session */');
+        verify($session !== FALSE, 'Failed to create Session');
 
         return $session;
     }
@@ -144,7 +144,7 @@ class AuthRedirect extends Authenticator
     function invalidate_sessions($user_id)
     {
         $result = $this->global_info['database']->Query('DELETE FROM sessions WHERE user_id = ?', array($user_id));
-        assert('$result !== FALSE /* Failed to delete all user sessions */');
+        verify($result !== FALSE, 'Failed to delete all user\'s sessions');
     }
 
     function set_logged_in($user)

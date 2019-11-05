@@ -44,7 +44,7 @@ abstract class PageCore
 
     static function encode($input, $double_encode = true)
     {
-        assert('( is_string($input) || is_bool($input) || is_int($input) || is_float($input) || is_null($input)) && is_bool($double_encode)');
+        verify(( is_string($input) || is_bool($input) || is_int($input) || is_float($input) || is_null($input)) && is_bool($double_encode), 'Not valid for encoding');
 
         $str = htmlentities((string)$input, ENT_QUOTES, 'UTF-8', $double_encode);
         if (!strlen($str))

@@ -8,7 +8,7 @@ class LocaleFactory
     function __construct($global_info, $default_lang = 'en',
                          $default_locale = "['en-US','eng','en']")
     {
-        assert('$global_info != null');
+        verify($global_info != null, 'Global info cannot be null');
 
         $this->database = $global_info['database'];
         $this->default_lang = $default_lang;
@@ -19,7 +19,7 @@ class LocaleFactory
     {
         $result = $this->database->Query('SELECT language, name FROM languages', array());
 
-        assert('$result !== FALSE /* Failed to select languages */');
+        verify($result !== FALSE, 'Failed to select languages');
 
         $info = array();
 
@@ -40,7 +40,7 @@ class LocaleFactory
     function update_available_languages()
     {
         $result = $this->database->Query('SELECT language, name FROM languages', array());
-        assert('$result !== FALSE /* Failed to retrieve languages */');
+        verify($result !== FALSE, 'Failed to retrieve languages');
 
         $info = array();
         foreach ($result as $row)
@@ -54,7 +54,7 @@ class LocaleFactory
         $result = $this->database->Query('SELECT id FROM languages WHERE language = ?',
                 array($lang));
 
-        assert('$result !== FALSE /* Failed to check language */');
+        verify($result !== FALSE, 'Failed to check language');
 
         if ($result->RecordCount() == 0)
             return FALSE;
@@ -92,7 +92,7 @@ class LocaleFactory
         $result = $this->database->Query('SELECT locale_string FROM languages WHERE language = ?',
                 array($code));
 
-        assert('$result !== FALSE /* Failed to select locale */');
+        verify($result !== FALSE, 'Failed to select locale');
 
         if ($result->RecordCount())
             return $result->fields['locale_string'];
@@ -135,7 +135,7 @@ class CountryLocaleFactory extends LocaleFactory
         $result = $this->database->Query('SELECT l.language, l.name FROM languages AS l, country_languages AS cl, countries AS c WHERE c.code = ? AND cl.country_id = c.id AND l.language = cl.language',
                 array($current_country));
 
-        assert('$result !== FALSE /* Failed to retrieve country languages */');
+        verify($result !== FALSE, 'Failed to retrieve country languages');
 
         $info = array();
         foreach ($result as $row)
@@ -164,7 +164,7 @@ class CountryLocaleFactory extends LocaleFactory
         $result = $this->database->Query('SELECT cl.language FROM country_languages AS cl, countries AS c WHERE c.code = ? AND cl.country_id = c.id AND country_default = 1 LIMIT 1',
                 array($country_code));
 
-        assert('$result !== FALSE /* Failed to select default language for country */');
+        verify($result !== FALSE, 'Failed to select default language for country');
         if ($result->RecordCount())
             return $result->fields['language'];
 
@@ -176,7 +176,7 @@ class CountryLocaleFactory extends LocaleFactory
         $result = $this->database->Query('SELECT cl.id FROM country_languages AS cl, countries AS c WHERE c.code = ? AND cl.country_id = c.id AND cl.language = ? LIMIT 1',
                 array($country_code, $lang));
 
-        assert('$result !== FALSE /* Failed to check if language supported */');
+        verify($result !== FALSE, 'Failed to check if language supported');
 
         if ($result->RecordCount())
             return TRUE;

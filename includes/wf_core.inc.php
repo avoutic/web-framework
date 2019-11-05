@@ -60,10 +60,6 @@ $base_config = array(
         'dispatch_mail_include' => $includes.'send_mail.inc.php',
 );
 
-assert_options(ASSERT_ACTIVE, 1);
-assert_options(ASSERT_WARNING, 0);
-assert_options(ASSERT_QUIET_EVAL, 1);
-
 function log_mail($title, $content)
 {
     mail(MAIL_ADDRESS, $title, $content, "From: Log Handler ".SITE_NAME." <".MAIL_ADDRESS.">\n");
@@ -85,11 +81,13 @@ function scrub_state(&$item)
 }
 
 // Create a handler function
-function assert_handler($file, $line, $code)
+function assert_handler($file, $line, $message)
 {
     global $global_config, $global_state;
 
-    $debug_message = "File '$file'\nLine '$line'\nCode '$code'\n";
+    $file = basename($file);
+
+    $debug_message = "File '$file'\nLine '$line'\nMessage '$message'\n";
     $message = "File '$file'<br />Line '$line'<br />";
 
     $state = $global_state;
@@ -125,7 +123,17 @@ function assert_handler($file, $line, $code)
     die('Oops. Something went wrong. Please retry later or contact us with the information above!');
 }
 
-assert_options(ASSERT_CALLBACK, 'assert_handler');
+function verify($bool, $message)
+{
+    if ($bool)
+        return true;
+
+    $bt = debug_backtrace();
+    $caller = array_shift($bt);
+
+    assert_handler($caller['file'], $caller['line'], $message);
+    die();
+}
 
 function http_error($code, $short_message, $message)
 {
@@ -350,7 +358,7 @@ function get_db($tag)
     if (!strlen($tag))
         return $global_info['database'];
 
-    assert('array_key_exists($tag, $global_info["databases"]) /* Database not registered */');
+    verify(array_key_exists($tag, $global_info["databases"]), 'Database not registered');
     return $global_info['databases'][$tag];
 }
 

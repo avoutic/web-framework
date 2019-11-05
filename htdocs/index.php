@@ -223,10 +223,10 @@ function framework_add_bad_ip_hit($amount = 1)
         return;
 
     $result = $global_database->Query('DELETE FROM ip_list WHERE last_hit < DATE_SUB(NOW(), INTERVAL 4 HOUR)', array());
-    assert('$result !== FALSE /* Failed to clean up hit_list */');
+    verify($result !== FALSE, 'Failed to clean up hit_list');
 
     $result = $global_database->Query('INSERT INTO ip_list VALUES(inet_aton(?), 1, NOW()) ON DUPLICATE KEY UPDATE hits = hits + ?', array($_SERVER['REMOTE_ADDR'], $amount));
-    assert('$result !== FALSE /* Failed to update hit_list */');
+    verify($result !== FALSE, 'Failed to update hit_list');
 }
 
 function check_blacklisted()
@@ -237,10 +237,10 @@ function check_blacklisted()
         return;
 
     $result = $global_database->Query('DELETE FROM ip_list WHERE last_hit < DATE_SUB(NOW(), INTERVAL 4 HOUR)', array());
-    assert('$result !== FALSE /* Failed to clean up hit_list */');
+    verify($result !== FALSE, 'Failed to clean up hit_list');
 
     $result = $global_database->Query('SELECT * FROM ip_list WHERE ip = inet_aton(?) AND hits > ?', array($_SERVER['REMOTE_ADDR'], $global_config['security']['blacklist_threshold']));
-    assert('$result !== FALSE /* Failed to read hit_list */');
+    verify($result !== FALSE, 'Failed to read hit_list');
 
     if ($result->RecordCount() != 1)
         return FALSE;
@@ -454,7 +454,7 @@ function call_obj_func($global_info, $object_name, $function_name, $matches = NU
     $include_page_filter = $object_name::get_filter();
     $page_permissions = $object_name::get_permissions();
 
-    assert('is_array($include_page_filter) /* Filter does not have correct form */');
+    verify(is_array($include_page_filter), 'Filter does not have correct form');
 
     array_walk($include_page_filter, 'validate_input');
 
