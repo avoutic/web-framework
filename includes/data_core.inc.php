@@ -48,6 +48,16 @@ abstract class DataCore
        return static::$table_name.'{'.$id.'}';
     }
 
+    function get_base_fields()
+    {
+        $info = array();
+
+        foreach (static::$base_fields as $name)
+            $info[$name] = $this->$name;
+
+        return $info;
+    }
+
     function fill_fields($fill_complex, $obj)
     {
         if ($obj === FALSE)
