@@ -22,6 +22,13 @@ abstract class PageCore
         return array();
     }
 
+    function get_input_var($name)
+    {
+        verify(isset($this->state['input'][$name]), 'Missing input variable: '.$name);
+
+        return $this->state['input'][$name];
+    }
+
     function get_input_vars()
     {
         $fields = array();
