@@ -39,6 +39,13 @@ abstract class PageCore
         return $fields;
     }
 
+    function get_raw_input_var($name)
+    {
+        verify(isset($this->state['raw_input'][$name]), 'Missing input variable: '.$name);
+
+        return $this->state['raw_input'][$name];
+    }
+
     static function get_permissions()
     {
         return array();

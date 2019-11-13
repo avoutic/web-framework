@@ -49,6 +49,7 @@ function validate_input($filter, $item)
         //
     	$info = array();
 	    $global_state['input'][$item] = array();
+	    $global_state['raw_input'][$item] = array();
 
         if (isset($global_state['raw_post'][$item]))
             $info = $global_state['raw_post'][$item];
@@ -60,8 +61,11 @@ function validate_input($filter, $item)
 	    	$info = $_GET[$item];
 
         foreach ($info as $k => $val)
+        {
+            $global_state['raw_input'][$item][$k] = $val;
             if (preg_match("/^\s*$filter\s*$/m", $val))
                 $global_state['input'][$item][$k] = trim($val);
+        }
     }
     else
     {
@@ -76,6 +80,8 @@ function validate_input($filter, $item)
             $str = $_PUT[$item];
     	else if (isset($_GET[$item]))
 	    	$str = $_GET[$item];
+
+	    $global_state['raw_input'][$item] = $str;
 
     	if (preg_match("/^\s*$filter\s*$/m", $str))
 	    	$global_state['input'][$item] = trim($str);

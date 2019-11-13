@@ -292,6 +292,7 @@ $global_state['debug'] = false;
 $global_state['logged_in'] = false;
 $global_state['permissions'] = array();
 $global_state['input'] = array();
+$global_state['raw_input'] = array();
 $global_state['messages'] = array();
 
 $global_state['raw_post'] = array();
