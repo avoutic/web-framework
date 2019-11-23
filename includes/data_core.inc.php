@@ -50,7 +50,9 @@ abstract class DataCore
 
     function get_base_fields()
     {
-        $info = array();
+        $info = array(
+            'id' => $this->id,
+        );
 
         foreach (static::$base_fields as $name)
             $info[$name] = $this->$name;
