@@ -47,7 +47,7 @@ class User extends DataCore
     const ERR_ORIG_PASSWORD_MISMATCH = 2;
 
     static protected $table_name = 'users';
-    static protected $base_fields = array('username', 'name', 'email', 'verified', 'last_login', 'failed_login');
+    static protected $base_fields = array('username', 'email', 'terms_accepted', 'verified', 'last_login', 'failed_login');
 
     public $rights = array();
 
@@ -364,6 +364,22 @@ class BaseFactory extends FactoryCore
     function get_user_by_email($email, $type = 'User')
     {
         return $this->get_core_object($type, array('email' => $email));
+    }
+
+    function create_user($username, $password, $email, $terms_accepted, $type = 'User')
+    {
+        $solid_password = User::new_hash_from_password($password);
+
+        $user = $this->create_core_object($type, array(
+                            'username' => $username,
+                            'solid_password' => $solid_password,
+                            'email' => $email,
+                            'terms_accepted' => $terms_accepted,
+                            'registered' => time(),
+                ));
+        verify($user !== false, 'Failed to create new user');
+
+        return $user;
     }
 };
 

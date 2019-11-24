@@ -1,16 +1,23 @@
 <?php
 class PageRegister extends Pagebasic
 {
+    static function custom_get_filter()
+    {
+    }
+
     static function get_filter()
     {
-        return array(
+        $custom_filter = static::custom_get_filter();
+
+        $base_filter = array(
                 'username' => FORMAT_USERNAME,
                 'password' => FORMAT_PASSWORD,
                 'password2' => FORMAT_PASSWORD,
-                'name' => FORMAT_NAME,
                 'email' => FORMAT_EMAIL,
-                'privacy_policy' => '0|1',
+                'accept_terms' => '0|1',
                 );
+
+        return array_merge($base_filter, $custom_filter);
     }
 
     function get_title()
@@ -23,21 +30,40 @@ class PageRegister extends Pagebasic
         return "$('#username').focus();";
     }
 
+    function custom_prepare_page_content()
+    {
+    }
+
+    function custom_value_check()
+    {
+    }
+
+    function custom_finalize_create($user)
+    {
+    }
+
     function do_logic()
     {
-        $username = $this->state['input']['username'];
+        $email_is_username = $this->config['registration']['email_is_username'];
+
+        $email = $this->state['input']['email'];
         $password = $this->state['input']['password'];
         $password2 = $this->state['input']['password2'];
-        $name = $this->state['input']['name'];
-        $email = $this->state['input']['email'];
-        $privacy_policy = $this->state['input']['privacy_policy'];
 
-        $this->page_content['username'] = $username;
+        if ($email_is_username)
+            $username = $email;
+        else
+            $username = $this->state['input']['username'];
+
+        $accept_terms = $this->state['input']['accept_terms'];
+
+        $this->page_content['username'] = $this->get_raw_input_var('username');
         $this->page_content['password'] = $password;
         $this->page_content['password2'] = $password2;
-        $this->page_content['name'] = $name;
-        $this->page_content['email'] = $email;
-        $this->page_content['privacy_policy'] = $privacy_policy;
+        $this->page_content['email'] = $this->get_raw_input_var('email');
+        $this->page_content['accept_terms'] = $accept_terms;
+
+        $this->custom_prepare_page_content();
 
         // Check if already logged in
         //
@@ -49,99 +75,89 @@ class PageRegister extends Pagebasic
         if (!strlen($this->state['input']['do']))
             return;
 
-        // Check if javascript is enabled
-        //
-        if (!strlen($password))
-        {
-            $this->add_message('error', 'Javascript is disabled.', 'Javascript is disabled or is not allowed. It is not possible to continue without Javascript.');
-            return;
-        }
+        $success = true;
 
-        // Check if username and password are present
+        // Check if required values are present
         //
-        if (!strlen($username)) {
+        if (!$email_is_username && !strlen($username)) {
             $this->add_message('error', 'Please enter a correct username.', 'Usernames can contain letters, digits and underscores.');
-            return;
+            $success = false;
         }
 
-        if (!strlen($password) || $password == EMPTY_PASSWORD_HASH_SHA1) {
+        if (!strlen($password)) {
             $this->add_message('error', 'Please enter a password.', 'Passwords can contain any printable character.');
-            return;
+            $success = false;
         }
 
-        if (!strlen($password2) || $password2 == EMPTY_PASSWORD_HASH_SHA1) {
+        if (!strlen($password2)) {
             $this->add_message('error', 'Please enter the password verification.', 'Password verification should match password.');
-            return;
+            $success = false;
         }
 
-        if ($password != $password2) {
+        if (strlen($password) && strlen($password2) && $password != $password2) {
             $this->add_message('error', 'Passwords don\'t match.', 'Password and password verification should be the same.');
-            return;
-        }
-
-        if (!strlen($name)) {
-            $this->add_message('error', 'Please enter a correct name.', 'Names can contain letters, digits, hyphens, spaces and underscores.');
-            return;
+            $success = false;
         }
 
         if (!strlen($email)) {
-            $this->add_message('error', 'Please enter a correct Email address.', 'Email addresses can contain letters, digits, hyphens, underscores, dots and at\'s.');
-            return;
+            $this->add_message('error', 'Please enter a correct e-mmail address.', 'E-mail addresses can contain letters, digits, hyphens, underscores, dots and at\'s.');
+            $success = false;
         }
 
-        if ($privacy_policy != 1) {
-            $this->add_message('error', 'Please accept our Privacy Policy.', 'To register for our site you need to accept our Privacy Policy.');
-            return;
+        if ($accept_terms != 1) {
+            $this->add_message('error', 'Please accept our Terms.', 'To register for our site you need to accept our Privacy Policy and our Terms of Service.');
+            $success = false;
         }
+
+        if ($this->custom_value_check() !== true)
+            $success = false;
+
+        if (!$success)
+            return;
 
         // Check if name already exists
         //
         $result = $this->database->Query('SELECT id FROM users WHERE username = ?',
                 array($username));
 
-        if ($result->RecordCount() > 1)
-            die("Too many results for username $username! Exiting!");
+        verify($result->RecordCount() <= 1, 'Too many results for username: '.$username);
 
-        if ($result->RecordCount() == 1) {
-            $this->add_message('error', 'Username already exists.', 'Please enter a unique username.');
+        if ($result->RecordCount() == 1)
+        {
+            if ($email_is_username)
+                $this->add_message('error', 'E-mail already registered.', 'An account has already been registerd with this e-mail address. <a href="/forgot-password">Forgot your password?</a>');
+            else
+                $this->add_message('error', 'Username already exists.', 'This username has already been taken. Please enter another username.');
+
             return;
         }
 
-        $solid_password = User::new_hash_from_password($password);
-
         // Add account
         //
-        $result = $this->database->InsertQuery('INSERT INTO users (username, solid_password, name, email) VALUES (?,?,?,?)',
-                    array($username,
-                        $solid_password,
-                        $name,
-                        $email));
-        if (FALSE === $result)
-        {
-            die("Failed to insert data! Exiting!");
-        }
+        $base_factory = new BaseFactory($this->global_info);
+        $result = $base_factory->create_user($username, $password, $email, time());
+        verify($result !== false, 'Failed to create user');
 
+        $this->custom_finalize_create($result);
+        $this->post_create_actions($result);
+    }
+
+    function post_create_actions($user)
+    {
         // Send mail to administrator
         //
-        log_mail(SITE_NAME.": User '".$username."' registered.",
-                "The user with username '".$username."' registered.\n".
-                "Name is '".$name."' and email is '".$email.".");
+        log_mail(SITE_NAME.": User '".$user->username."' registered.",
+                "The user with username '".$user->username."' registered.\n".
+                "E-mail is: '".$user->email.".");
 
         // Redirect to verification request screen
         //
-        header("Location: /send_verify?username=".$username);
-    }
-
-    function display_header()
-    {
-?>
-<script src="base/sha1.js" type="text/javascript"></script>
-<?
+        header("Location: /send-verify?username=".$user->username);
     }
 
     function display_content()
     {
-        $this->load_template('register.tpl', $this->page_content);
+        $this->load_template('register_account.tpl', $this->page_content);
     }
 };
 ?>

@@ -14,6 +14,7 @@ $base_config = array(
         'disabled_pages' => array(),
         'registration' => array(
             'allow_registration' => true,
+            'email_is_username' => false,
         ),
         'database_enabled' => false,
         'database' => array(
