@@ -12,7 +12,9 @@ $base_config = array(
         'preload' => false,
         'timezone' => 'UTC',
         'disabled_pages' => array(),
-        'allow_registration' => true,
+        'registration' => array(
+            'allow_registration' => true,
+        ),
         'database_enabled' => false,
         'database' => array(
             'database_type' => '',

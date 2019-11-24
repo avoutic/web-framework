@@ -17,4 +17,4 @@
 		</div>
 	</fieldset>
 </form>
-<span class="login_form_links"><a class="login_forgot_password_link" href="/forgot_password">Forgot your password?</a><? if ($this->config['allow_registration']) echo "| <a class=\"login_register_link\" href=\"/register_account\">No account yet?</a>";?></span>
+<span class="login_form_links"><a class="login_forgot_password_link" href="/forgot_password">Forgot your password?</a><? if ($this->config['registration']['allow_registration']) echo "| <a class=\"login_register_link\" href=\"/register_account\">No account yet?</a>";?></span>
