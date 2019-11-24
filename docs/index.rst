@@ -12,6 +12,7 @@ web-framework: Simple Secure PHP Framework
    :caption: Concepts:
 
    data-core
+   accounts
    tasks
    routing
 
