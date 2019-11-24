@@ -47,7 +47,7 @@ class User extends DataCore
     const ERR_ORIG_PASSWORD_MISMATCH = 2;
 
     static protected $table_name = 'users';
-    static protected $base_fields = array('username', 'name', 'email', 'last_login', 'failed_login');
+    static protected $base_fields = array('username', 'name', 'email', 'verified', 'last_login', 'failed_login');
 
     public $rights = array();
 
@@ -153,19 +153,13 @@ class User extends DataCore
 
         // Update account
         //
-        if (FALSE === $this->database->Query('UPDATE users SET email = ? WHERE id = ?',
-                    array($email,
-                        $this->id)))
-        {
-            die("Failed to update data! Exiting!");
-        }
+        $result = $this->update_field('email', $email);
+        verify($result !== false, 'Failed to change email');
 
         fire_hook('change_email', array(
                                     'user_id' => $this->id,
                                     'old_email' => $this->email,
                                     'new_email' => $email));
-
-        $this->email = $email;
 
         return User::RESULT_SUCCESS;
     }
@@ -193,20 +187,13 @@ class User extends DataCore
 
     function is_verified()
     {
-        $result = $this->database->Query('SELECT verified FROM users WHERE id = ?', array($this->id));
-        verify($result !== FALSE, 'Failed to retrieve verified status');
-        verify($result->RecordCount() == 1, 'Did not get single response');
-
-        return $result->fields['verified'] == 1;
+        return $this->verified == 1;
     }
 
     function set_verified()
     {
-        if (FALSE === $this->database->Query('UPDATE users SET verified=1 WHERE id=?',
-                    array($this->id)))
-        {
-            die('Failed to update verified status for user! Exiting!');
-        }
+        $result = $this->update_field('verified', 1);
+        verify($result !== false, 'Failed to update verified status');
     }
 
     function add_right($short_name)
