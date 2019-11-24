@@ -2,6 +2,7 @@
 # Global configuration
 #
 $includes=__DIR__.'/../includes/';
+$views=__DIR__.'/../views/';
 $site_includes=__DIR__.'/../../includes/';
 $site_views=__DIR__.'/../../views/';
 $site_frames=__DIR__.'/../../frames/';
