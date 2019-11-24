@@ -74,33 +74,15 @@ class User extends DataCore
 
     function check_password($password)
     {
-        $result = $this->database->Query('SELECT solid_password, password FROM users WHERE id = ?',
+        $result = $this->database->Query('SELECT solid_password FROM users WHERE id = ?',
                 array($this->id));
 
-        if ($result === FALSE)
-            die('Failed to select data. Exiting!');
+        verify($result === FALSE, 'Failed to retrieve password data');
 
         if ($result->RecordCount() != 1)
             return false;
 
         $solid_password = $result->fields['solid_password'];
-        if (!strlen($solid_password))
-        {
-            // Auto upgrade to solid password if not yet present
-            // and delete old SHA1 hashed password.
-            //
-            if (sha1($password) !== $result->fields['password'])
-                return FALSE;
-
-            $solid_password = User::new_hash_from_password($password);
-
-            $result = $this->update_field('solid_password', $solid_password);
-            verify($result !== FALSE, 'Failed to update solid_password');
-
-            $result = $this->update_field('password', '');
-            verify($result !== FALSE, 'Failed to clear password');
-        }
-
         $params = explode(":", $solid_password);
         verify(count($params) == 4, 'Solid password format unknown');
 
