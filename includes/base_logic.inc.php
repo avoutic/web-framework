@@ -47,7 +47,7 @@ class User extends DataCore
     const ERR_ORIG_PASSWORD_MISMATCH = 2;
 
     static protected $table_name = 'users';
-    static protected $base_fields = array('username', 'name', 'email', 'failed_login');
+    static protected $base_fields = array('username', 'name', 'email', 'last_login', 'failed_login');
 
     public $rights = array();
 
@@ -98,11 +98,14 @@ class User extends DataCore
         $result = ($diff === 0);
 
         if ($result)
-            $this->failed_login = 0;
+        {
+            $this->update(array(
+                    'failed_login' => 0,
+                    'last_login' => time(),
+            ));
+        }
         else
-            $this->failed_login++;
-
-        $this->update_field('failed_login', $this->failed_login);
+            $this->increase_field('failed_login');
 
         return $result;
     }
