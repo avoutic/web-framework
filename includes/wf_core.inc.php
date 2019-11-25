@@ -87,8 +87,47 @@ function scrub_state(&$item)
     }
 }
 
+function get_error_type_string($type)
+{
+    switch($type)
+    {
+        case E_ERROR: // 1 //
+            return 'E_ERROR';
+        case E_WARNING: // 2 //
+            return 'E_WARNING';
+        case E_PARSE: // 4 //
+            return 'E_PARSE';
+        case E_NOTICE: // 8 //
+            return 'E_NOTICE';
+        case E_CORE_ERROR: // 16 //
+            return 'E_CORE_ERROR';
+        case E_CORE_WARNING: // 32 //
+            return 'E_CORE_WARNING';
+        case E_COMPILE_ERROR: // 64 //
+            return 'E_COMPILE_ERROR';
+        case E_COMPILE_WARNING: // 128 //
+            return 'E_COMPILE_WARNING';
+        case E_USER_ERROR: // 256 //
+            return 'E_USER_ERROR';
+        case E_USER_WARNING: // 512 //
+            return 'E_USER_WARNING';
+        case E_USER_NOTICE: // 1024 //
+            return 'E_USER_NOTICE';
+        case E_STRICT: // 2048 //
+            return 'E_STRICT';
+        case E_RECOVERABLE_ERROR: // 4096 //
+            return 'E_RECOVERABLE_ERROR';
+        case E_DEPRECATED: // 8192 //
+            return 'E_DEPRECATED';
+        case E_USER_DEPRECATED: // 16384 //
+            return 'E_USER_DEPRECATED';
+    }
+
+    return $type;
+}
+
 // Create a handler function
-function assert_handler($file, $line, $message)
+function assert_handler($file, $line, $message, $error_type, $silent = false)
 {
     global $global_config, $global_state;
 
@@ -96,6 +135,7 @@ function assert_handler($file, $line, $message)
 
     $debug_message = "File '$file'\nLine '$line'\nMessage '$message'\n";
     $message = "File '$file'<br />Line '$line'<br />";
+    $error_type = get_error_type_string($error_type);
 
     $state = $global_state;
     if (is_array($state))
@@ -110,24 +150,28 @@ function assert_handler($file, $line, $message)
 
     if ($global_config['debug'])
     {
-        echo "Failure information:<br/>";
+        echo "Failure information: $error_type<br/>";
         echo "<pre>";
         echo $debug_message;
         echo "</pre>";
     }
     else
     {
-        echo "Failure information:<br/>";
-        echo "<pre>";
-        echo $message;
-        echo "</pre>";
+        if (!$silent) {
+            echo "Failure information: $error_type<br/>";
+            echo "<pre>";
+            echo $message;
+            echo "</pre>";
+        }
 
-
-        log_mail('Assertion failed',
-                "Failure information:\n\nServer: ".$global_config['server_name']."\n".$debug_message);
+        SenderCore::send_raw(SITE_ADMIN, 'Assertion failed',
+                "Failure information: $error_type\n\nServer: ".$global_config['server_name']."\n<pre>".$debug_message.'</pre>');
     }
 
-    die('Oops. Something went wrong. Please retry later or contact us with the information above!');
+    if ($silent)
+        exit();
+    else
+        die('Oops. Something went wrong. Please retry later or contact us with the information above!');
 }
 
 function verify($bool, $message)
@@ -138,8 +182,30 @@ function verify($bool, $message)
     $bt = debug_backtrace();
     $caller = array_shift($bt);
 
-    assert_handler($caller['file'], $caller['line'], $message);
+    assert_handler($caller['file'], $caller['line'], $message, 'verify');
     die();
+}
+
+function shutdown_handler()
+{
+    $last_error = error_get_last();
+    if (!$last_error)
+        return;
+
+    switch($last_error['type'])
+    {
+        case E_ERROR:
+        case E_PARSE:
+        case E_CORE_ERROR:
+        case E_CORE_WARNING:
+        case E_COMPILE_ERROR:
+        case E_COMPILE_WARNING:
+            assert_handler($last_error['file'], $last_error['line'], $last_error['message'], $last_error['type']);
+            break;
+        default:
+            assert_handler($last_error['file'], $last_error['line'], $last_error['message'], $last_error['type'], true);
+    }
+
 }
 
 function http_error($code, $short_message, $message)
@@ -252,6 +318,10 @@ if ($global_config['debug'] == true)
 {
     error_reporting(E_ALL | E_STRICT);
     ini_set("display_errors", 1);
+}
+else
+{
+    register_shutdown_function('shutdown_handler');
 }
 
 # Set default timezone
