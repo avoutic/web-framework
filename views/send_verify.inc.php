@@ -66,6 +66,8 @@ class PageSendVerify extends PageBasic
         if ($user !== false && !$user->is_verified())
             $user->send_verify_mail();
 
+        $this->page_content['email'] = $user->email;
+
         // Redirect to main sceen
         //
         $after_verify_page = $this->config['registration']['after_verify_page'];
@@ -74,6 +76,11 @@ class PageSendVerify extends PageBasic
             header("Location: ${after_verify_page}?".add_message_to_url('success', 'Verification mail sent', 'Verification mail is sent (if not already verified). Please check your mailbox and follow the instructions.'));
             exit();
         }
+    }
+
+    function display_content()
+    {
+        $this->load_template('send_verify.tpl', $this->page_content);
     }
 };
 ?>
