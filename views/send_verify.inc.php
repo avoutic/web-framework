@@ -17,6 +17,9 @@ class PageSendVerify extends PageBasic
 
     function do_logic()
     {
+        // Continued calling of this page might result in lots of transactional e-mails
+        // Until another limiting mechanism is in place, add a bad IP hit
+        //
         framework_add_bad_ip_hit();
 
         // Check if code is present
