@@ -250,10 +250,13 @@ class User extends DataCore
     function send_verify_mail()
     {
         $code = $this->generate_verify_code('verify');
+        $verify_url = 'https://'.$this->global_info['config']['server_name'].'/verify?code='.$code;
 
-        $mail = new VerifyMail($this->name, $this->username, $code);
-        $mail->add_recipient($this->email);
-        return $mail->send();
+        return SenderCore::send('email_verification_link', $this->email,
+                                array(
+                                    'user' => $this,
+                                    'verify_url' => $verify_url,
+                                ));
     }
 
     function increase_security_iterator()

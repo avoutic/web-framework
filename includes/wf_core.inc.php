@@ -61,6 +61,10 @@ $base_config = array(
             '404' => ''
         ),
         'dispatch_mail_include' => $includes.'send_mail.inc.php',
+        'sender_core' => array(
+            'handler_class' => 'SenderCore',
+            'default_sender' => '',
+        ),
 );
 
 function log_mail($title, $content)
@@ -267,6 +271,7 @@ if ($global_config['database_enabled'] == true)
 # Load global and site specific defines
 #
 require_once($includes."defines.inc.php");
+require_once($includes."sender_core.inc.php");
 require_once($includes."object_factory.inc.php");
 require_once($includes."base_logic.inc.php");
 require_once($includes."config_values.inc.php");
