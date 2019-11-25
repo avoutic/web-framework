@@ -77,7 +77,7 @@ class User extends DataCore
         $result = $this->database->Query('SELECT solid_password FROM users WHERE id = ?',
                 array($this->id));
 
-        verify($result === FALSE, 'Failed to retrieve password data');
+        verify($result !== false, 'Failed to retrieve password data');
 
         if ($result->RecordCount() != 1)
             return false;
