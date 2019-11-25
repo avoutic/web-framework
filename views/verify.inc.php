@@ -1,6 +1,4 @@
 <?php
-require_once($includes.'base_logic.inc.php');
-
 class PageVerify extends PageBasic
 {
     static function get_filter()
@@ -17,8 +15,6 @@ class PageVerify extends PageBasic
 
     function do_logic()
     {
-        framework_add_bad_ip_hit();
-
         // Check if code is present
         //
         $code = $this->get_input_var('code');
