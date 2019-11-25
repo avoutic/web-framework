@@ -44,7 +44,8 @@ class PageVerify extends PageBasic
         if ($msg['timestamp'] + 86400 < time())
         {
             // Expired
-            header("Location: /?".add_message_to_url('error', 'Verification mail expired', 'Please <a href="/login">request a new one</a> after logging in.'));
+            $login_page = $this->config['authenticator']['site_login_page'];
+            header("Location: ${login_page}?".add_message_to_url('error', 'Verification mail expired', 'Please <a href="/login">request a new one</a> after logging in.'));
             exit();
         }
 
@@ -59,7 +60,8 @@ class PageVerify extends PageBasic
 
         if ($user->is_verified())
         {
-            header('Location: /?'.add_message_to_url('success', 'User already verified.'));
+            $after_verify_page = $this->config['registration']['after_verify_page'];
+            header("Location: ${after_verify_page}?".add_message_to_url('success', 'User already verified.'));
             exit();
         }
 
@@ -67,7 +69,8 @@ class PageVerify extends PageBasic
 
         // Redirect to main sceen
         //
-        header("Location: /".$this->config['authenticator']['site_login_page']."?".add_message_to_url('success', 'Verification succeeded', 'Verification succeeded. You can now use your account.')."&return_page=".$this->config['authenticator']['after_verify_page']);
+        $login_page = $this->config['authenticator']['site_login_page'];
+        header("Location: ${login_page}?".add_message_to_url('success', 'Verification succeeded', 'Verification succeeded. You can now use your account.')."&return_page=".$this->config['registration']['after_verify_page']);
         exit();
     }
 };

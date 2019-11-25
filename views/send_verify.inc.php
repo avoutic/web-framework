@@ -50,8 +50,10 @@ class PageSendVerify extends PageBasic
 
         if ($msg['timestamp'] + 86400 < time())
         {
+            $login_page = $this->config['authenticator']['site_login_page'];
+
             // Expired
-            header("Location: /login?".add_message_to_url('error', 'Send verification link expired', 'Please login again to request a new one</a>.'));
+            header("Location: ${login_page}?".add_message_to_url('error', 'Send verification link expired', 'Please login again to request a new one.'));
             exit();
         }
 
@@ -66,8 +68,12 @@ class PageSendVerify extends PageBasic
 
         // Redirect to main sceen
         //
-        header("Location: /?".add_message_to_url('success', 'Verification mail sent', 'Verification mail is sent (if not already verified). Please check your mailbox and follow the instructions.'));
-        exit();
+        $after_verify_page = $this->config['registration']['after_verify_page'];
+        if (strlen($after_verify_page))
+        {
+            header("Location: ${after_verify_page}?".add_message_to_url('success', 'Verification mail sent', 'Verification mail is sent (if not already verified). Please check your mailbox and follow the instructions.'));
+            exit();
+        }
     }
 };
 ?>

@@ -66,7 +66,7 @@ abstract class Authenticator
                 $query = "";
 
 
-            header('Location: /'.$this->config['site_login_page'].'?return_page='.urlencode($target).'&return_query='.urlencode($query).'&'.add_message_to_url('info', $this->config['auth_required_message']));
+            header('Location: '.$this->config['site_login_page'].'?return_page='.urlencode($target).'&return_query='.urlencode($query).'&'.add_message_to_url('info', $this->config['auth_required_message']));
         }
         else if ($type == '403')
         {

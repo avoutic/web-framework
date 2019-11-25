@@ -43,6 +43,9 @@ class PageLogin extends PageBasic
         if (!strlen($return_page) || substr($return_page, 0, 2) == '//')
             $return_page = $this->config['authenticator']['default_login_return'];
 
+        if (substr($return_page, 0, 1) != '/')
+            $return_page = '/'.$return_page;
+
         $this->page_content['return_page'] = $return_page;
         $this->page_content['login_page'] = $this->config['authenticator']['site_login_page'];
 
