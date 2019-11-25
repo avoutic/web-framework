@@ -150,9 +150,18 @@ class PageRegister extends Pagebasic
                 "The user with username '".$user->username."' registered.\n".
                 "E-mail is: '".$user->email.".");
 
+        $msg = array(
+            'action' => 'send_verify',
+            'username' => $user->username,
+            'timestamp' => time(),
+        );
+        $code = encode_and_auth_string(json_encode($msg));
+        $send_verify_url = '/send-verify?code='.$code;
+
         // Redirect to verification request screen
         //
-        header("Location: /send-verify?username=".$user->username);
+        header("Location: ".$send_verify_url);
+        exit();
     }
 
     function display_content()
