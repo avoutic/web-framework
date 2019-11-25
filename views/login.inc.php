@@ -69,11 +69,11 @@ class PageLogin extends PageBasic
         // Check if username and password are present
         //
         if (!strlen($this->state['input']['username'])) {
-            $this->add_message('error', 'Please enter a correct username.', 'Usernames can contain letters, digits, dots, hyphens and underscores.');
+            $this->add_message('error', 'Please enter a valid username.');
             return;
         }
         if (!strlen($this->state['input']['password'])) {
-            $this->add_message('error', 'Please enter a password.', 'Passwords can contain any printable character.');
+            $this->add_message('error', 'Please enter your password.');
             return;
         }
 
