@@ -6,10 +6,16 @@ class PageLogin extends PageBasic
 {
     static function get_filter()
     {
+        global $global_info;
+
+        $username_format = FORMAT_USERNAME;
+        if ($global_info['config']['registration']['email_is_username'])
+            $username_format = FORMAT_EMAIL;
+
         return array(
                 'return_page' => FORMAT_RETURN_PAGE,
                 'return_query' => FORMAT_RETURN_QUERY,
-                'username' => FORMAT_USERNAME,
+                'username' => $username_format,
                 'password' => FORMAT_PASSWORD,
                 'captcha' => '.*',
                 );
