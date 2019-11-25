@@ -17,9 +17,13 @@ class PageLogoff extends PageBasic
     {
         $this->auth->deauthenticate();
 
-        $return_page = $this->state['input']['return_page'];
+        $return_page = $this->get_input_var('return_page');
+
         if (!strlen($return_page) || substr($return_page, 0, 2) == '//')
             $return_page = '/';
+
+        if (substr($return_page, 0, 1) != '/')
+            $return_page = '/'.$return_page;
 
         header("Location: ".$return_page);
         exit();

@@ -27,24 +27,26 @@ class PageManageUser extends PageBasic
 
     function do_logic()
     {
-        if (!strlen($this->state['input']['user_id']))
-            die("Invalid input for user_id");
+        $this->check_required($user_id, 'user_id');
 
-        $factory = new BaseFactory($this->global_info);
+        $base_factory = new BaseFactory($this->global_info);
 
         // Retrieve user information
         //
-        $user = $factory->get_user($this->state['input']['user_id']);
+        $user = $base_factory->get_user($user_id);
 
         // Check if this is a action attempt
         //
-        if (strlen($this->state['input']['do']) && strlen($this->state['input']['action'])) {
-            switch($this->state['input']['action']) {
+        $action = $this->get_input_var('action');
+        if (strlen($this->get_input_var('do')) && strlen($action))
+        {
+            switch($action)
+            {
                 case 'delete_right':
-                    $user->delete_right($this->state['input']['right_name']);
+                    $user->delete_right($this->get_input_var('right_name'));
                     break;
                 case 'add_right':
-                    $user->add_right($this->state['input']['right_name']);
+                    $user->add_right($this->get_input_var('right_name'));
                     break;
             }
         }
@@ -59,7 +61,7 @@ class PageManageUser extends PageBasic
         $this->page_content['user']['rights'] = array();
 
         $result_r = $this->database->Query('SELECT ur.id, r.short_name, r.name FROM rights AS r, user_rights AS ur WHERE r.id = ur.right_id AND ur.user_id = ?',
-                array($this->state['input']['user_id']));
+                array($user_id));
 
         if ($result_r->RecordCount() > 0) {
             foreach ($result_r as $k => $row)

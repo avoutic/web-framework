@@ -58,24 +58,18 @@ class PageLogin extends PageBasic
 
         // Check if this is a login attempt
         //
-        if (!strlen($this->state['input']['do']))
+        if (!strlen($this->get_input_var('do')))
             return;
-
-        // Check if javascript is enabled
-        //
-        if (!strlen($this->state['input']['password']))
-        {
-            $this->add_message('error', 'Javascript is disabled.', 'Javascript is disabled or is not allowed. It is not possible to continue without Javascript.');
-            return;
-        }
 
         // Check if username and password are present
         //
-        if (!strlen($this->state['input']['username'])) {
+        if (!strlen($this->get_input_var('username')))
+        {
             $this->add_message('error', 'Please enter a valid username.');
             return;
         }
-        if (!strlen($this->state['input']['password'])) {
+        if (!strlen($this->get_input_var('password')))
+        {
             $this->add_message('error', 'Please enter your password.');
             return;
         }
@@ -84,7 +78,7 @@ class PageLogin extends PageBasic
 
         // Log in user
         //
-        $user = $factory->get_user_by_username($this->state['input']['username']);
+        $user = $factory->get_user_by_username($this->get_input_var('username'));
 
         if ($user === FALSE)
         {
@@ -95,7 +89,7 @@ class PageLogin extends PageBasic
 
         if ($user->failed_login > 5)
         {
-            $captcha = $this->state['input']['captcha'];
+            $captcha = $this->get_input_var('captcha');
             $this->page_content['captcha_needed'] = true;
 
             if (!strlen($captcha))
@@ -105,13 +99,15 @@ class PageLogin extends PageBasic
             }
 
             $securimage = new Securimage();
-            if ($securimage->check($captcha) !== TRUE) {
+            if ($securimage->check($captcha) !== TRUE)
+            {
                 $this->add_message('error', 'The CAPTCHA code entered was incorrect.');
                 return;
             }
         }
 
-        if (!$user->check_password($this->state['input']['password'])) {
+        if (!$user->check_password($this->get_input_var('password')))
+        {
             $this->add_message('error', 'Username and password do not match.', 'Please check if you entered the username and/or password correctly.');
             framework_add_bad_ip_hit();
             return;
@@ -119,10 +115,11 @@ class PageLogin extends PageBasic
 
         // Check if verified
         //
-        if (!$user->is_verified()) {
+        if (!$user->is_verified())
+        {
             $code = $user->generate_verify_code('send_verify');
 
-            $this->add_message('error', 'Account not yet verified.', 'Account is not yet verified. Please check your mailbox for the verification e-mail and go to the presented link. If you have not received such a mail, you can <a href="/send_verify?code='.$code.'">request a new one</a>.');
+            $this->add_message('error', 'Account not yet verified.', 'Account is not yet verified. Please check your mailbox for the verification e-mail and go to the presented link. If you have not received such a mail, you can <a href="/send-verify?code='.$code.'">request a new one</a>.');
             return;
         }
 

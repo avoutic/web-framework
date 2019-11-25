@@ -46,16 +46,16 @@ class PageRegister extends Pagebasic
     {
         $email_is_username = $this->config['registration']['email_is_username'];
 
-        $email = $this->state['input']['email'];
-        $password = $this->state['input']['password'];
-        $password2 = $this->state['input']['password2'];
+        $email = $this->get_input_var('email');
+        $password = $this->get_input_var('password');
+        $password2 = $this->get_input_var('password2');
 
         if ($email_is_username)
             $username = $email;
         else
-            $username = $this->state['input']['username'];
+            $username = $this->get_input_var('username');
 
-        $accept_terms = $this->state['input']['accept_terms'];
+        $accept_terms = $this->get_input_var('accept_terms');
 
         $this->page_content['username'] = $this->get_raw_input_var('username');
         $this->page_content['password'] = $password;
@@ -72,7 +72,7 @@ class PageRegister extends Pagebasic
 
         // Check if this is a true attempt
         //
-        if (!strlen($this->state['input']['do']))
+        if (!strlen($this->get_input_var('do')))
             return;
 
         $success = true;

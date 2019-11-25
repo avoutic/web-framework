@@ -24,12 +24,12 @@ class PageChangeEmail extends PageBasic
 
     function do_logic()
     {
-        $email = $this->state['input']['email'];
+        $email = $this->get_input_var('email');
         $this->page_content['email'] = $email;
 
         // Check if this is a true attempt
         //
-        if (!strlen($this->state['input']['do']))
+        if (!strlen($this->get_input_var('do')))
             return;
 
         // Check if email address is present

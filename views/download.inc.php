@@ -16,12 +16,13 @@ class PageDownload extends PageBasic
 
     function do_logic()
     {
-        $this->page_content['name'] = $this->state['input']['name'];
-        $this->page_content['file'] = $this->state['input']['file'];
+        $this->page_content['name'] = $this->get_input_var('name');
+        $this->page_content['file'] = $this->get_input_var('file');
 
-        if ($this->state['input']['do'] == 'yes')
+        if ($this->get_input_var('do') == 'yes')
         {
-            header('Location: '.$this->state['input']['file']);
+            header('Location: '.$this->get_input_var('file'));
+            exit();
         }
     }
 

@@ -19,23 +19,25 @@ class PageForgotPassword extends PageBasic
     {
         // Check if this is a true attempt
         //
-        if (!strlen($this->state['input']['do']))
+        if (!strlen($this->get_input_var('do')))
             return;
 
         framework_add_bad_ip_hit();
 
         // Check if user present
         //
-        if (!strlen($this->state['input']['username'])) {
+        $username = $this->get_input_var('username');
+        if (!strlen($username))
+        {
             $this->add_message('error', 'Please enter a username.', '');
             return;
         }
 
-        $factory = new BaseFactory($this->global_info);
+        $base_factory = new BaseFactory($this->global_info);
 
         // Retrieve email address
         //
-        $user = $factory->get_user_by_username($this->state['input']['username']);
+        $user = $base_factory->get_user_by_username($username);
 
         if ($user !== FALSE)
             $user->send_password_reset_mail();

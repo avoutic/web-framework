@@ -28,14 +28,15 @@ class PageGrabIdentity extends PageBasic
     {
         // Check if this is a login attempt
         //
-        if (!strlen($this->state['input']['user_id']))
+        $user_id = $this->get_input_var('user_id');
+        if (!strlen($user_id))
             return;
 
         $factory = new BaseFactory($this->global_info);
 
         // Log in user
         //
-        $user = $factory->get_user($this->state['input']['user_id']);
+        $user = $factory->get_user($user_id);
 
         // Check if verified
         //

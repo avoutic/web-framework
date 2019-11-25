@@ -28,45 +28,41 @@ function do_logic()
 {
 	// Check if this is a true attempt
 	//
-	if (!strlen($this->state['input']['do']))
+	if (!strlen($this->get_input_var('do')))
 		return;
 
-    $orig_password = $this->state['input']['orig_password'];
-    $password = $this->state['input']['password'];
-    $password2 = $this->state['input']['password2'];
-
-    // Check if javascript is enabled
-    //
-    if (!strlen($password))
-    {
-        $this->add_message('error', 'Javascript is disabled.', 'Javascript is disabled or is not allowed. It is not possible to continue without Javascript.');
-        return;
-    }
+    $orig_password = $this->get_input_var('orig_password');
+    $password = $this->get_input_var('password');
+    $password2 = $this->get_input_var('password2');
 
 	// Check if passwords are present
 	//
-	if (!strlen($orig_password) || $orig_password == EMPTY_PASSWORD_HASH_SHA1) {
+	if (!strlen($orig_password))
+    {
 		$this->add_message('error', 'Please enter original password.', 'Passwords can contain any printable character.');
 		return;
 	}
 
-	if (!strlen($password) || $password == EMPTY_PASSWORD_HASH_SHA1) {
+	if (!strlen($password))
+    {
 		$this->add_message('error', 'Please enter a password.', 'Passwords can contain any printable character.');
 		return;
 	}
 
-	if (!strlen($password2) || $password2 == EMPTY_PASSWORD_HASH_SHA1) {
+	if (!strlen($password2))
+    {
 		$this->add_message('error', 'Please enter the password verification.', 'Password verification should match password.');
 		return;
 	}
 
-	if ($password != $password2) {
+	if ($password != $password2)
+    {
 		$this->add_message('error', 'Passwords don\'t match.', 'Password and password verification should be the same.');
 		return;
 	}
 
-    $factory = new BaseFactory($this->global_info);
-    $user = $factory->get_user($this->state['user_id']);
+    $base_factory = new BaseFactory($this->global_info);
+    $user = $base_factory->get_user($this->state['user_id']);
     $result = $user->change_password($orig_password, $password);
 
     if ($result == User::ERR_ORIG_PASSWORD_MISMATCH)
@@ -90,13 +86,6 @@ function do_logic()
 	//
 	header("Location: /?".add_message_to_url('success','Password changed successfully.'));
     exit();
-}
-
-function display_header()
-{
-?>
-<script src="base/sha1.js" type="text/javascript"></script>
-<?
 }
 
 function display_content()
