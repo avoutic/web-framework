@@ -241,7 +241,7 @@ function fire_hook($hook_name, $params)
 
         $function = $hook['static_function'];
 
-        $function($global_info, $params);
+        $function($global_info, $hook['args'], $params);
     }
 }
 
