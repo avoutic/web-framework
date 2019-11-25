@@ -470,10 +470,14 @@ function call_obj_func($global_info, $object_name, $function_name, $matches = NU
     if (function_exists('site_do_logic'))
         site_do_logic($global_info);
 
+    verify(class_exists($object_name), 'Registered route class does not exist');
+
     $page_obj = new $object_name($global_info);
     $argument_count = 0;
     if (is_array($matches))
         $argument_count = count($matches) - 1;
+
+    verify(method_exists($page_obj, $function_name), 'Registered route function does not exist');
 
     if ($argument_count == 0)
         $page_obj->$function_name();
