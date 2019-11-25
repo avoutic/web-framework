@@ -52,11 +52,11 @@ class PageVerify extends PageBasic
             exit();
         }
 
-        $factory = new BaseFactory($this->global_info);
+        $base_factory = new BaseFactory($this->global_info);
 
         // Check user status
         //
-        $user = $factory->get_user_by_username($msg['username']);
+        $user = $base_factory->get_user_by_username($msg['username']);
 
         if ($user === FALSE)
             return;

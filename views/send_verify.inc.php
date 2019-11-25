@@ -52,13 +52,13 @@ class PageSendVerify extends PageBasic
             exit();
         }
 
-        $factory = new BaseFactory($this->global_info);
+        $base_factory = new BaseFactory($this->global_info);
 
         // Check user status
         //
-        $user = $factory->get_user_by_username($msg['username']);
+        $user = $base_factory->get_user_by_username($msg['username']);
 
-        if ($user !== FALSE && !$user->is_verified())
+        if ($user !== false && !$user->is_verified())
             $user->send_verify_mail();
 
         // Redirect to main sceen
