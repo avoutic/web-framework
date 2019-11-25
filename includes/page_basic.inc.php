@@ -159,6 +159,7 @@ abstract class PageBasic extends PageCore
     {
         global $site_templates;
 
+        verify(file_exists($site_templates.$name.'.inc.php'), 'Requested template not present');
         include($site_templates.$name.'.inc.php');
     }
 
@@ -207,7 +208,11 @@ abstract class PageBasic extends PageCore
         ob_start();
 
         if (strlen($this->get_frame_file()))
-            require($site_frames.$this->get_frame_file());
+        {
+            $frame_file = $site_frames.$this->get_frame_file();
+            verify(file_exists($frame_file), 'Requested frame file not present');
+            require($frame_file);
+        }
         else
             $this->display_content();
 
