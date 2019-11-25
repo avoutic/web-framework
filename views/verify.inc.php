@@ -21,13 +21,14 @@ class PageVerify extends PageBasic
 
         // Check if code is present
         //
-        if (!strlen($this->state['input']['code']))
+        $code = $this->get_input_var('code');
+        if (!strlen($code))
         {
             framework_add_bad_ip_hit(2);
             return;
         }
 
-        $str = decode_and_verify_string($this->state['input']['code']);
+        $str = decode_and_verify_string($code);
         if (!strlen($str))
         {
             framework_add_bad_ip_hit(4);

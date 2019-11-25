@@ -33,11 +33,11 @@ class PageLogin extends PageBasic
 
     function do_logic()
     {
-        $return_page = $this->state['input']['return_page'];
-        $return_query = $this->state['input']['return_query'];
+        $return_page = $this->get_input_var('return_page');
+        $return_query = $this->get_input_var('return_query');
 
         $this->page_content['return_query'] = $return_query;
-        $this->page_content['username'] = $this->state['input']['username'];
+        $this->page_content['username'] = $this->get_raw_input_var('username');
         $this->page_content['captcha_needed'] = false;
 
         if (!strlen($return_page) || substr($return_page, 0, 2) == '//')
