@@ -164,7 +164,7 @@ function assert_handler($file, $line, $message, $error_type, $silent = false)
             echo "</pre>";
         }
 
-        SenderCore::send_raw(SITE_ADMIN, 'Assertion failed',
+        SenderCore::send_raw(MAIL_ADDRESS, 'Assertion failed',
                 "Failure information: $error_type\n\nServer: ".$global_config['server_name']."\n<pre>".$debug_message.'</pre>');
     }
 
