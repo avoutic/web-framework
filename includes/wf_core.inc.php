@@ -245,6 +245,34 @@ function fire_hook($hook_name, $params)
     }
 }
 
+function urlencode_and_auth_array($array)
+{
+    global $global_config;
+
+    return urlencode(encode_and_auth_array($array));
+}
+
+function encode_and_auth_array($array)
+{
+    global $global_config;
+
+    $str = json_encode($array);
+
+    # First encrypt it
+    $cipher = 'AES-256-CBC';
+    $iv_len = openssl_cipher_iv_length($cipher);
+    $iv = openssl_random_pseudo_bytes($iv_len);
+    $key = hash('sha256', $global_config['security']['crypt_key'], TRUE);
+    $str = openssl_encrypt($str, $cipher, $key, 0, $iv);
+
+    $str = base64_encode($str);
+    $iv = base64_encode($iv);
+
+    $str_hmac = hash_hmac($global_config['security']['hash'], $iv.$str, $global_config['security']['hmac_key']);
+
+    return $iv.":".$str.":".$str_hmac;
+}
+
 function encode_and_auth_string($str)
 {
     global $global_config;
@@ -262,6 +290,26 @@ function encode_and_auth_string($str)
     $str_hmac = hash_hmac($global_config['security']['hash'], $iv.$str, $global_config['security']['hmac_key']);
 
     return urlencode($iv.":".$str.":".$str_hmac);
+}
+
+function urldecode_and_verify_string($str)
+{
+    $urldecoded = urldecode($str);
+
+    return decode_and_verify_array($urldecoded);
+}
+
+function decode_and_verify_array($str)
+{
+    $json_encoded = decode_and_verify_string($str);
+    if (!strlen($json_encoded))
+        return false;
+
+    $array = json_decode($json_encoded, true);
+    if (!is_array($array))
+        return false;
+
+    return $array;
 }
 
 function decode_and_verify_string($str)
