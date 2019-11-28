@@ -8,7 +8,7 @@ Core support
 
 The core support is defined in *includes/base_logic.inc.php*. This file defines the base `User` and `Right` classes and the `BaseFactory` for creating and retrieving users. Logically, the `User` class extends the `DataCore` as it represents a row in the user table, and ithe `BaseFactory` extends `FactoryCore`.
 
-.. info::
+.. note::
 
        If you have not yet read up on `DataCore` and `FactoryCore`, now would be a good
        moment.
