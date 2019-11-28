@@ -53,6 +53,12 @@ abstract class SenderCore
 
     // In User::send_verify_mail()
     abstract function email_verification_link($to, $params);
+
+    // In User::send_password_reset_mail()
+    abstract function password_reset($to, $params);
+
+    // In User::send_new_password()
+    abstract function new_password($to, $params);
 };
 
 require_once($site_includes.'sender_handler.inc.php');

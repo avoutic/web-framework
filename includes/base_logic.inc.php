@@ -136,6 +136,8 @@ class User extends DataCore
         $result = $this->update_field('solid_password', $solid_password);
         verify($result !== FALSE, 'Failed to update solid_password');
 
+        $security_iterator = $this->increase_security_iterator();
+
         return User::RESULT_SUCCESS;
     }
 
@@ -279,9 +281,13 @@ class User extends DataCore
 
         $code = $this->generate_verify_code('reset_password', array('iterator' => $security_iterator));
 
-        $mail = new ResetPasswordMail($this->name, $this->username, $code);
-        $mail->add_recipient($this->email);
-        return $mail->send();
+        $reset_url = 'https://'.$this->global_info['config']['server_name'].'/reset-password?code='.$code;
+
+        return SenderCore::send('password_reset', $this->email,
+                                array(
+                                    'user' => $this,
+                                    'reset_url' => $reset_url,
+                                ));
     }
 
     function send_new_password()
@@ -292,10 +298,11 @@ class User extends DataCore
 
         $this->update_password($new_pw);
 
-        $mail = new ForgotPasswordMail($this->name, $this->username, $new_pw);
-        $mail->add_recipient($this->email);
-
-        return $mail->send();
+        return SenderCore::send('new_password', $this->email,
+                                array(
+                                    'user' => $this,
+                                    'password' => $new_pw,
+                                ));
     }
 
     function get_config_values($module = "")

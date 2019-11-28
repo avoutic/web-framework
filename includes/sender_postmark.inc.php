@@ -72,5 +72,30 @@ class PostmarkSender extends SenderCore
 
         return $this->send_template_email($template_id, $from, $to, $vars);
     }
+
+    function password_reset($to, $params)
+    {
+        $template_id = $this->get_template_id('password_reset');
+        $from = $this->get_sender_email();
+        $reset_url = $params['reset_url'];
+
+        $vars = array(
+            'action_url' => $reset_url,
+        );
+
+        return $this->send_template_email($template_id, $from, $to, $vars);
+    }
+
+    function new_password($to, $params)
+    {
+        $template_id = $this->get_template_id('new_password');
+        $from = $this->get_sender_email();
+
+        $vars = array(
+            'password' => $params['password'],
+        );
+
+        return $this->send_template_email($template_id, $from, $to, $vars);
+    }
 };
 ?>
