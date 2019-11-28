@@ -346,7 +346,6 @@ if ($logged_in !== FALSE)
     $global_state['user'] = $global_state['auth']['user'];
     $global_state['user_id'] = $global_state['auth']['user_id'];
     $global_state['username'] = $global_state['auth']['username'];
-    $global_state['name'] = $global_state['auth']['name'];
     $global_state['email'] = $global_state['auth']['email'];
 }
 
