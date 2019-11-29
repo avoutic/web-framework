@@ -29,7 +29,7 @@ class PageUserOverview extends PageBasic
 
     function display_content()
     {
-        $this->load_template('user-overview.tpl', $this->page_content);
+        $this->load_template('user_overview.tpl', $this->page_content);
     }
 };
 ?>

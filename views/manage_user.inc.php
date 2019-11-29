@@ -80,7 +80,7 @@ class PageManageUser extends PageBasic
 
     function display_content()
     {
-        $this->load_template('manage-user.tpl', $this->page_content);
+        $this->load_template('manage_user.tpl', $this->page_content);
     }
 };
 ?>

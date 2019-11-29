@@ -68,7 +68,7 @@ class PageChangeEmail extends PageBasic
 
     function display_content()
     {
-        $this->load_template('change-email.tpl', $this->page_content);
+        $this->load_template('change_email.tpl', $this->page_content);
     }
 };
 ?>
