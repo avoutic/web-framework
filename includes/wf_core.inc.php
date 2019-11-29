@@ -18,14 +18,9 @@ $base_config = array(
             'after_verify_page' => '/',
         ),
         'database_enabled' => false,
-        'database' => array(
-            'database_type' => '',
-            'database_host' => '',
-            'database_user' => '',
-            'database_password' =>'',
-            'database_database' => ''
-        ),
-        'databases' => array(),
+        'database_config' => 'main',        // main database tag.
+        'databases' => array(),             // list of extra database tags to load.
+                                            // files will be retrieved from 'includes/db_config.{TAG}.php'
         'db_version' => 1,
         'server_name' => (isset($_SERVER['SERVER_NAME']))?$_SERVER['SERVER_NAME']:'app',
         'http_mode' => 'https',
@@ -442,7 +437,10 @@ $global_databases = array();
 if ($global_config['database_enabled'] == true)
 {
     $global_database = new Database();
-    if (FALSE === $global_database->Connect($global_config['database']))
+    $main_db_tag = $global_config['database_config'];
+    $main_config = require($site_includes."db_config.".$main_db_tag.".php");
+
+    if (FALSE === $global_database->Connect($main_config))
     {
         http_error(500, 'Internal Server Error', "<h1>Database server connection failed</h1>\nThe connection to the database server failed. Please contact the administrator.");
     }
@@ -456,11 +454,12 @@ if ($global_config['database_enabled'] == true)
 
     # Open auxilary database connections
     #
-    foreach ($global_config['databases'] as $key => $value)
+    foreach ($global_config['databases'] as $tag)
     {
-        $global_databases[$key] = new Database();
+        $global_databases[$tag] = new Database();
+        $tag_config = require($site_includes."db_config.".$tag.".php");
 
-        if (FALSE === $global_databases[$key]->Connect($value))
+        if (FALSE === $global_databases[$tag]->Connect($tag_config))
         {
             http_error(500, 'Internal Server Error', "<h1>Databases server connection failed</h1>\nThe connection to the database server failed. Please contact the administrator.");
         }
