@@ -73,6 +73,19 @@ class PostmarkSender extends SenderCore
         return $this->send_template_email($template_id, $from, $to, $vars);
     }
 
+    function change_email_verification_link($to, $params)
+    {
+        $template_id = $this->get_template_id('change_email_verification_link');
+        $from = $this->get_sender_email();
+        $verify_url = $params['verify_url'];
+
+        $vars = array(
+            'action_url' => $verify_url,
+        );
+
+        return $this->send_template_email($template_id, $from, $to, $vars);
+    }
+
     function password_reset($to, $params)
     {
         $template_id = $this->get_template_id('password_reset');

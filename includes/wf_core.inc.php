@@ -59,6 +59,9 @@ $base_config = array(
             'change_password' => array(
                 'return_page' => '/',
             ),
+            'change_email' => array(
+                'return_page' => '/',
+            ),
         ),
         'dispatch_mail_include' => $includes.'send_mail.inc.php',
         'sender_core' => array(

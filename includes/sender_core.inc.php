@@ -54,6 +54,9 @@ abstract class SenderCore
     // In User::send_verify_mail()
     abstract function email_verification_link($to, $params);
 
+    // In User::send_change_verify_mail()
+    abstract function change_email_verification_link($to, $params);
+
     // In User::send_password_reset_mail()
     abstract function password_reset($to, $params);
 

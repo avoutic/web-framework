@@ -181,10 +181,17 @@ class User extends DataCore
         $security_iterator = $this->increase_security_iterator();
 
         $code = $this->generate_verify_code('change_email', array('email' => $email, 'iterator' => $security_iterator));
+        $verify_url = 'https://'.$this->global_info['config']['server_name'].'/change-email-verify?code='.$code;
 
-        $mail = new ChangeEmailVerifyMail($this->name, $this->username, $email, $code);
-        $mail->add_recipient($email);
-        $mail->send();
+        $result = SenderCore::send('change_email_verification_link', $email,
+                                array(
+                                    'user' => $this,
+                                    'verify_url' => $verify_url,
+                                ));
+        if ($result == true)
+            return USER::RESULT_SUCCESS;
+
+        return false;
     }
 
     function is_verified()
