@@ -1,6 +1,4 @@
 <?php
-require_once($includes.'base_logic.inc.php');
-
 class PageChangePassword extends PageBasic
 {
     static function get_filter()
@@ -39,7 +37,7 @@ function do_logic()
 	//
 	if (!strlen($orig_password))
     {
-		$this->add_message('error', 'Please enter original password.', 'Passwords can contain any printable character.');
+		$this->add_message('error', 'Please enter your current password.');
 		return;
 	}
 
@@ -51,7 +49,7 @@ function do_logic()
 
 	if (!strlen($password2))
     {
-		$this->add_message('error', 'Please enter the password verification.', 'Password verification should match password.');
+		$this->add_message('error', 'Please enter the password verification.', 'Password verification should match your password.');
 		return;
 	}
 
@@ -67,7 +65,7 @@ function do_logic()
 
     if ($result == User::ERR_ORIG_PASSWORD_MISMATCH)
     {
-		$this->add_message('error', 'Original password is incorrect.', 'Please re-enter correct password.');
+		$this->add_message('error', 'Original password is incorrect.', 'Please re-enter your password.');
 		return;
 	}
 
@@ -84,13 +82,14 @@ function do_logic()
 
 	// Redirect to main sceen
 	//
-	header("Location: /?".add_message_to_url('success','Password changed successfully.'));
+    $return_page = $this->config['pages']['change_password']['return_page'];
+	header("Location: ${return_page}?".add_message_to_url('success', 'Password changed successfully.'));
     exit();
 }
 
 function display_content()
 {
-    $this->load_template('change-password.tpl', $this->page_content);
+    $this->load_template('change_password.tpl', $this->page_content);
 }
 };
 ?>

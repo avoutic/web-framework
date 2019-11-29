@@ -60,6 +60,11 @@ $base_config = array(
         'error_handlers' => array(
             '404' => ''
         ),
+        'pages' => array(
+            'change_password' => array(
+                'return_page' => '/',
+            ),
+        ),
         'dispatch_mail_include' => $includes.'send_mail.inc.php',
         'sender_core' => array(
             'handler_class' => 'SenderCore',
