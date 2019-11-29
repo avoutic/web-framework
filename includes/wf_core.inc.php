@@ -445,11 +445,22 @@ $core_factory = new ObjectFactory();
 $global_database = NULL;
 $global_databases = array();
 
+function get_auth_config($name)
+{
+    global $site_includes;
+
+    $auth_config_file = $site_includes.'/auth/'.$name.'.php';
+    $auth_config = require($auth_config_file);
+    verify(is_array($auth_config) || strlen($auth_config), 'Auth Config '.$name.' invalid');
+
+    return $auth_config;
+}
+
 if ($global_config['database_enabled'] == true)
 {
     $global_database = new Database();
     $main_db_tag = $global_config['database_config'];
-    $main_config = require($site_includes."db_config.".$main_db_tag.".php");
+    $main_config = get_auth_config('db_config.'.$main_db_tag);
 
     if (FALSE === $global_database->Connect($main_config))
     {
@@ -468,7 +479,7 @@ if ($global_config['database_enabled'] == true)
     foreach ($global_config['databases'] as $tag)
     {
         $global_databases[$tag] = new Database();
-        $tag_config = require($site_includes."db_config.".$tag.".php");
+        $tag_config = get_auth_config('db_config.'.$tag);
 
         if (FALSE === $global_databases[$tag]->Connect($tag_config))
         {

@@ -4,14 +4,27 @@ use Postmark\PostmarkClient;
 
 class PostmarkSender extends SenderCore
 {
+    function get_api_key()
+    {
+        verify(isset($this->config['postmark']['api_key_file']), 'No Postmark API key defined');
+        $api_key = get_auth_config($this->config['postmark']['api_key_file']);
+
+        return $api_key;
+    }
+
+    function get_client()
+    {
+        $api_key = $this->get_api_key();
+
+        $client = new PostmarkClient($api_key);
+
+        return $client;
+    }
+
     function send_raw_email($to, $subject, $message)
     {
-        global $global_info;
         $from = $this->get_sender_email();
-
-        verify(isset($global_info['config']['postmark']['api_key']), 'No Postmark API key defined');
-
-        $client = new PostmarkClient($global_info['config']['postmark']['api_key']);
+        $client = $this->get_client();
 
         try
         {
@@ -31,11 +44,7 @@ class PostmarkSender extends SenderCore
 
     protected function send_template_email($template_id, $from, $to, $template_variables)
     {
-        global $global_info;
-
-        verify(isset($global_info['config']['postmark']['api_key']), 'No Postmark API key defined');
-
-        $client = new PostmarkClient($global_info['config']['postmark']['api_key']);
+        $client = $this->get_client();
 
         try
         {
