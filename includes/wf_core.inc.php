@@ -174,16 +174,24 @@ function assert_handler($file, $line, $message, $error_type, $silent = false)
         die('Oops. Something went wrong. Please retry later or contact us with the information above!');
 }
 
+// Only go into assert_handler once
+$in_verify = false;
+
 function verify($bool, $message)
 {
     if ($bool)
         return true;
 
+    global $in_verify;
+    if ($in_verify)
+        exit();
+
+    $in_verify = true;
     $bt = debug_backtrace();
     $caller = array_shift($bt);
 
     assert_handler($caller['file'], $caller['line'], $message, 'verify');
-    die();
+    exit();
 }
 
 function shutdown_handler()
