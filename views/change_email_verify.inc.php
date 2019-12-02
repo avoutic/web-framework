@@ -1,6 +1,4 @@
 <?php
-require_once($includes.'base_logic.inc.php');
-
 class PageChangeEmailVerify extends PageBasic
 {
     static function get_filter()
@@ -68,7 +66,8 @@ class PageChangeEmailVerify extends PageBasic
         if ($user_id != $this->state['user_id'])
         {
             $this->auth->deauthenticate();
-            header('Location: /?'.add_message_to_url('error', 'Other account', 'The link you used is meant for a different account. The current account has been  logged off. Please try the link again.'));
+            $login_page = $this->config['authenticator']['site_login_page'];
+            header("Location: {$login_page}?".add_message_to_url('error', 'Other account', 'The link you used is meant for a different account. The current account has been  logged off. Please try the link again.'));
             exit();
         }
 
@@ -105,7 +104,8 @@ class PageChangeEmailVerify extends PageBasic
 
         // Redirect to verification request screen
         //
-        header('Location: /account?'.add_message_to_url('success', 'E-mail address changed successfully'));
+        $return_page = $this->config['pages']['change_email']['return_page'];
+        header("Location: ${return_page}?".add_message_to_url('success', 'E-mail address changed successfully'));
         exit();
     }
 };
