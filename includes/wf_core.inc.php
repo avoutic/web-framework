@@ -134,7 +134,8 @@ function assert_handler($file, $line, $message, $error_type, $silent = false)
 {
     global $global_config, $global_state;
 
-    $file = basename($file);
+    $path_parts = pathinfo($file);
+    $file = $path_parts['filename'];
 
     $debug_message = "File '$file'\nLine '$line'\nMessage '$message'\n";
     $message = "File '$file'<br />Line '$line'<br />";
