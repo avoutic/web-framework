@@ -22,7 +22,10 @@ function send_404()
 
         require_once($include_page_file);
 
-        $object_name = preg_replace('/(?:^|[_\-])(.?)/e',"strtoupper('$1')", 'page_'.$include_page);
+        $object_name = preg_replace_callback('/(?:^|[_\-\.])(.?)/',
+                    function($m) {
+                        return strtoupper($m[1]);
+                    }, 'page_'.$include_page);
         $function_name = "html_main";
 
         header("HTTP/1.0 404 Page not found");
