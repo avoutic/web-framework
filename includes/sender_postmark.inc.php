@@ -42,7 +42,7 @@ class PostmarkSender extends SenderCore
         return true;
     }
 
-    protected function send_template_email($template_id, $from, $to, $template_variables)
+    function send_template_email($template_id, $from, $to, $template_variables)
     {
         $client = $this->get_client();
 
@@ -56,8 +56,11 @@ class PostmarkSender extends SenderCore
         }
         catch (Exception $e)
         {
+            if ($e->postmarkApiErrorCode == 406)
+                return 'inactive_address';
+
             verify($e->postmarkApiErrorCode != 1101, 'Template ID not correct');
-            verify(false, 'Unknown Postmark error: '.$e->postmarkApiErrorCode.' - '.$e->message);
+            verify(false, 'Unknown Postmark error: '.$e->postmarkApiErrorCode.' - '.$e->getMessage());
         }
 
         return true;
