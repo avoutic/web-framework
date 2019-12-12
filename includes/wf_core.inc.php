@@ -304,7 +304,7 @@ function encode_and_auth_string($str)
     return urlencode($iv.":".$str.":".$str_hmac);
 }
 
-function urldecode_and_verify_string($str)
+function urldecode_and_verify_array($str)
 {
     $urldecoded = urldecode($str);
 
