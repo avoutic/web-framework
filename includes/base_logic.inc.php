@@ -83,17 +83,26 @@ class User extends DataCore
             return false;
 
         $solid_password = $result->fields['solid_password'];
-        $params = explode(":", $solid_password);
-        verify(count($params) == 4, 'Solid password format unknown');
+        $stored_hash = 'stored';
+        $calculated_hash = 'calculated';
 
-        $pbkdf2_hash = $params[3];
-        $pbkdf2_calc = pbkdf2('sha256', $password, $params[2], (int) $params[1],
-                              strlen($pbkdf2_hash) / 2, false);
+        $params = explode(":", $solid_password);
+
+        if ($params[0] == 'sha256')
+        {
+            verify(count($params) == 4, 'Solid password format unknown');
+
+            $stored_hash = $params[3];
+            $calculated_hash = pbkdf2('sha256', $password, $params[2], (int) $params[1],
+                                 strlen($stored_hash) / 2, false);
+        }
+        else
+            assert('false /* Unknown solid password format */');
 
         // Slow compare (time-constant)
-        $diff = strlen($pbkdf2_hash) ^ strlen($pbkdf2_calc);
-        for ($i = 0; $i < strlen($pbkdf2_hash) && $i < strlen($pbkdf2_calc); $i++)
-            $diff |= ord($pbkdf2_hash[$i]) ^ ord($pbkdf2_calc[$i]);
+        $diff = strlen($stored_hash) ^ strlen($calculated_hash);
+        for ($i = 0; $i < strlen($stored_hash) && $i < strlen($calculated_hash); $i++)
+            $diff |= ord($stored_hash[$i]) ^ ord($calculated_hash[$i]);
 
         $result = ($diff === 0);
 
