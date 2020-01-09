@@ -96,6 +96,13 @@ class User extends DataCore
             $calculated_hash = pbkdf2('sha256', $password, $params[2], (int) $params[1],
                                  strlen($stored_hash) / 2, false);
         }
+        else if ($params[0] == 'dolphin')
+        {
+            verify(count($params) == 3, 'Solid password format unknown');
+
+            $stored_hash = $params[2];
+            $calculated_hash = sha1(md5($password) . $params[1]);
+        }
         else
             assert('false /* Unknown solid password format */');
 
