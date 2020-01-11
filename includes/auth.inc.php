@@ -196,8 +196,11 @@ class AuthRedirect extends Authenticator
 
     function deauthenticate()
     {
-        $session = Session::get_object_by_id($this->global_info, $_SESSION['session_id']);
-        $session->delete();
+        if (isset($_SESSION['session_id']))
+        {
+            $session = Session::get_object_by_id($this->global_info, $_SESSION['session_id']);
+            $session->delete();
+        }
 
         unset($_SESSION['logged_in']);
         unset($_SESSION['auth']);
