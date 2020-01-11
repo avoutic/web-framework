@@ -31,6 +31,16 @@ class PageLogin extends PageBasic
         return "$('#inputUsername').focus();";
     }
 
+    // Can be overriden for project specific user factories and user classes
+    //
+    function get_user($username)
+    {
+        $factory = new BaseFactory($this->global_info);
+        $user = $factory->get_user_by_username($username);
+
+        return $user;
+    }
+
     function do_logic()
     {
         $return_page = $this->get_input_var('return_page');
@@ -74,11 +84,9 @@ class PageLogin extends PageBasic
             return;
         }
 
-        $factory = new BaseFactory($this->global_info);
-
         // Log in user
         //
-        $user = $factory->get_user_by_username($this->get_input_var('username'));
+        $user = $this->get_user($this->get_input_var('username'));
 
         if ($user === FALSE)
         {
