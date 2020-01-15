@@ -80,15 +80,18 @@ function log_mail($title, $content)
 
 function scrub_state(&$item)
 {
+    global $global_info;
+
     foreach ($item as $key => $value)
     {
         if (is_object($value))
             $value = $item[$key] = get_object_vars($value);
 
-        if (is_array($value))
+        if ($key === 0 && $value == $global_info)
+            $item[$key] = 'omitted';
+        else if (is_array($value))
             scrub_state($item[$key]);
-
-        if ($key === 'config')
+        else if ($key === 'config')
             $item[$key] = 'scrubbed';
     }
 }
@@ -135,7 +138,7 @@ function get_error_type_string($type)
 // Create a handler function
 function assert_handler($file, $line, $message, $error_type, $silent = false)
 {
-    global $global_config, $global_state;
+    global $global_config, $global_state, $global_database;
 
     $path_parts = pathinfo($file);
     $file = $path_parts['filename'];
@@ -152,8 +155,9 @@ function assert_handler($file, $line, $message, $error_type, $silent = false)
     if (is_array($trace))
         scrub_state($trace);
 
+    $debug_message.= 'Last Database error: '.$global_database->GetLastError().'\n';
+    $debug_message.= 'Backtrace:\n'.print_r($trace, true);
     $debug_message.= 'State:\n'.print_r($state, true);
-    $debug_message.= print_r($trace, true);
 
     if ($global_config['debug'])
     {

@@ -38,6 +38,11 @@ class Database {
 			return $this->database->Insert_ID();
 
 		return FALSE;
-	}	
+	}
+
+    function GetLastError()
+    {
+        return $this->database->errorMsg();
+    }
 }
 ?>
