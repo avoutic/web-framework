@@ -103,9 +103,11 @@ class PostmarkSender extends SenderCore
         $template_id = $this->get_template_id('password_reset');
         $from = $this->get_sender_email();
         $reset_url = $params['reset_url'];
+        $username = $params['user']->username;
 
         $vars = array(
             'action_url' => $reset_url,
+            'username' => $username,
         );
 
         return $this->send_template_email($template_id, $from, $to, $vars);
@@ -115,9 +117,11 @@ class PostmarkSender extends SenderCore
     {
         $template_id = $this->get_template_id('new_password');
         $from = $this->get_sender_email();
+        $username = $params['user']->username;
 
         $vars = array(
             'password' => $params['password'],
+            'username' => $username,
         );
 
         return $this->send_template_email($template_id, $from, $to, $vars);
