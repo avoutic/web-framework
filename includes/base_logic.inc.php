@@ -303,8 +303,10 @@ class User extends DataCore
         $security_iterator = $this->increase_security_iterator();
 
         $code = $this->generate_verify_code('reset_password', array('iterator' => $security_iterator));
-
-        $reset_url = 'https://'.$this->global_info['config']['server_name'].'/reset-password?code='.$code;
+        $config = $this->global_info['config'];
+        $reset_url = 'https://'.$config['server_name'].
+                     $config['pages']['forgot_password']['reset_password_page'].
+                     '?code='.$code;
 
         return SenderCore::send('password_reset', $this->email,
                                 array(

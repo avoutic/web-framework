@@ -56,6 +56,9 @@ $base_config = array(
             '404' => ''
         ),
         'pages' => array(
+            'forgot_password' => array(
+                'reset_password_page' => '/reset-password',
+            ),
             'change_password' => array(
                 'return_page' => '/',
             ),
