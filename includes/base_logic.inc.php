@@ -104,7 +104,7 @@ class User extends DataCore
             $calculated_hash = sha1(md5($password) . $params[1]);
         }
         else
-            assert('false /* Unknown solid password format */');
+            verify(false, 'Unknown solid password format');
 
         // Slow compare (time-constant)
         $diff = strlen($stored_hash) ^ strlen($calculated_hash);

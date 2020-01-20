@@ -144,7 +144,7 @@ function assert_handler($file, $line, $message, $error_type, $silent = false)
     $file = $path_parts['filename'];
 
     $debug_message = "File '$file'\nLine '$line'\nMessage '$message'\n";
-    $message = "File '$file'<br />Line '$line'<br />";
+    $message = "File '$file'\nLine '$line'\n";
     $error_type = get_error_type_string($error_type);
 
     $state = $global_state;
@@ -155,9 +155,13 @@ function assert_handler($file, $line, $message, $error_type, $silent = false)
     if (is_array($trace))
         scrub_state($trace);
 
-    $debug_message.= 'Last Database error: '.$global_database->GetLastError().'\n';
-    $debug_message.= 'Backtrace:\n'.print_r($trace, true);
-    $debug_message.= 'State:\n'.print_r($state, true);
+    $db_error = $global_database->GetLastError();
+    if ($db_error === false || $db_error === '')
+	    $db_error = 'None';
+
+    $debug_message.= "Last Database error: ".$db_error."\n";
+    $debug_message.= "Backtrace:\n".print_r($trace, true);
+    $debug_message.= "State:\n".print_r($state, true);
 
     if ($global_config['debug'])
     {
@@ -169,10 +173,10 @@ function assert_handler($file, $line, $message, $error_type, $silent = false)
     else
     {
         if (!$silent) {
-            echo "Failure information: $error_type<br/>";
-            echo "<pre>";
+            echo "Failure information: $error_type\n";
+            echo "<pre>\n";
             echo $message;
-            echo "</pre>";
+            echo "</pre>\n";
         }
 
         SenderCore::send_raw(MAIL_ADDRESS, 'Assertion failed',
@@ -182,7 +186,7 @@ function assert_handler($file, $line, $message, $error_type, $silent = false)
     if ($silent)
         exit();
     else
-        die('Oops. Something went wrong. Please retry later or contact us with the information above!');
+        die("Oops. Something went wrong. Please retry later or contact us with the information above!\n");
 }
 
 // Only go into assert_handler once
