@@ -1,5 +1,5 @@
 <form method="post" class="contactform" action="/contact" enctype="multipart/form-data">
-<?
+<?php
 if (!$args['logged_in'])
 {
 ?>
@@ -14,7 +14,7 @@ if (!$args['logged_in'])
 			<input type="text" class="field" id="email" name="email" value="<?=htmlentities($args['email']);?>"/>
 		</p>
 	</fieldset>
-<?
+<?php
 }
 ?>
 	<fieldset class="message_content">
@@ -24,12 +24,12 @@ if (!$args['logged_in'])
 		<p>
 			<label class="left" for="type">Type</label>
 			<select class="select" id="type" name="type">
-<?
+<?php
 foreach ($args['contact_types'] as $key => $text)
 {
 ?>
 			<option value="<?=$key?>"<?=($args['type'] == $key)?" selected":""?>><?=$text?></option>
-<?
+<?php
 }
 ?>
 			</select>

@@ -114,7 +114,7 @@ SELECT u.id, u.username, u.name, u.email FROM users AS u <?=$this->page_content[
     </tr>
   </thead>
   <tbody>
-<?
+<?php
         if (count($this->page_content['user_info']) == 0) {
         	print("<tr><td colspan=\"4\">No selection</td></tr>\n");
         }
@@ -145,7 +145,7 @@ SELECT u.id, u.username, u.name, u.email FROM users AS u <?=$this->page_content[
     </div>
   </fieldset>
 </form>
-<?
+<?php
     }
 };
 ?>

@@ -1,4 +1,4 @@
-<?
+<?php
 function send_mail_message($msg)
 {
     $headers = '';

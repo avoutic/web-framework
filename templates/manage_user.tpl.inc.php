@@ -30,7 +30,7 @@
     </tr>
   </thead>
   <tbody>
-<?
+<?php
         foreach($this->page_content['user']['rights'] as $right) {
     	    print("<tr>\n");
 	        print("  <td>".$right['name']."</td>\n");
@@ -51,7 +51,7 @@
   <p>
     <label class="left" for="right_name">Right</label>
     <select name="right_name">
-<?
+<?php
         foreach ($this->page_content['rights'] as $right)
 	        print("  <option value=\"".$right['short_name']."\">".$right['name']."</option>\n");
 ?>

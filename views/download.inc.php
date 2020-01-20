@@ -32,7 +32,7 @@ class PageDownload extends PageBasic
             return;
         ?>
             <meta http-equiv="refresh" content="3; /download?do=yes&file=<?=$this->page_content['file']?>">
-            <?
+            <?php
     }
 
     function display_content()
@@ -46,7 +46,7 @@ class PageDownload extends PageBasic
     <p>No file selected for download.</p>
   </div>
 </div>
-<?
+<?php
         } else {
 ?>
 <div class="source_item">
@@ -56,7 +56,7 @@ class PageDownload extends PageBasic
     <p>If the downloading does not start within 10 seconds, you can manually start the download by clicking on the following link: <a href="<?=$this->page_content['file']?>"><?=$this->page_content['name']?></a>.</p>
   </div>
 </div>
-<?
+<?php
         }
     }
 };

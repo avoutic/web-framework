@@ -8,7 +8,7 @@
     </tr>
   </thead>
   <tbody>
-<?
+<?php
         foreach ($args['user_info'] as $users) {
         	print("<tr>\n");
             print("  <td><a href=\"/manage_user?user_id=".$users['id']."\">".$users['username']."</a></td>\n");
