@@ -22,6 +22,16 @@ function get_title()
 	return "Change password";
 }
 
+    // Can be overriden for project specific user factories and user classes
+    //
+    function get_user($username)
+    {
+        $factory = new BaseFactory($this->global_info);
+        $user = $factory->get_user_by_username($username);
+
+        return $user;
+    }
+
 function do_logic()
 {
 	// Check if this is a true attempt
@@ -59,8 +69,7 @@ function do_logic()
 		return;
 	}
 
-    $base_factory = new BaseFactory($this->global_info);
-    $user = $base_factory->get_user($this->state['user_id']);
+    $user = $this->get_user($this->state['username']);
     $result = $user->change_password($orig_password, $password);
 
     if ($result == User::ERR_ORIG_PASSWORD_MISMATCH)
