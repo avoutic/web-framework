@@ -51,13 +51,14 @@ class PageLogin extends PageBasic
         $this->page_content['captcha_needed'] = false;
 
         if (!strlen($return_page) || substr($return_page, 0, 2) == '//')
-            $return_page = $this->config['authenticator']['default_login_return'];
+            $return_page = $this->config['pages']['login']['default_return_page'];
 
         if (substr($return_page, 0, 1) != '/')
             $return_page = '/'.$return_page;
 
         $this->page_content['return_page'] = $return_page;
         $this->page_content['login_page'] = $this->config['authenticator']['site_login_page'];
+        $send_verify_page = $this->config['pages']['login']['send_verify_page'];
 
         // Check if already logged in and redirect immediately
         if ($this->state['logged_in'])
@@ -127,7 +128,7 @@ class PageLogin extends PageBasic
         {
             $code = $user->generate_verify_code('send_verify');
 
-            $this->add_message('error', 'Account not yet verified.', 'Account is not yet verified. Please check your mailbox for the verification e-mail and go to the presented link. If you have not received such a mail, you can <a href="/send-verify?code='.$code.'">request a new one</a>.');
+            $this->add_message('error', 'Account not yet verified.', 'Account is not yet verified. Please check your mailbox for the verification e-mail and go to the presented link. If you have not received such a mail, you can <a href="'.$send_verify_page.'?code='.$code.'">request a new one</a>.');
             return;
         }
 

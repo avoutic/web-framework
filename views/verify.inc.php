@@ -64,7 +64,7 @@ class PageVerify extends PageBasic
 
         if ($user->is_verified())
         {
-            $after_verify_page = $this->config['registration']['after_verify_page'];
+            $after_verify_page = $this->config['pages']['login']['after_verify_page'];
             header("Location: ${after_verify_page}?".add_message_to_url('success', 'User already verified.'));
             exit();
         }

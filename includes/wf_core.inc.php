@@ -56,6 +56,12 @@ $base_config = array(
             '404' => ''
         ),
         'pages' => array(
+            'login' => array(
+                'send_verify_page' => '/send-verify',
+                'verify_page' => '/verify',
+                'after_verify_page' => '/',
+                'default_return_page' => '/',
+            ),
             'forgot_password' => array(
                 'reset_password_page' => '/reset-password',
             ),
