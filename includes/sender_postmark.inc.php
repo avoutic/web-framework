@@ -86,9 +86,11 @@ class PostmarkSender extends SenderCore
         $template_id = $this->get_template_id('email_verification_link');
         $from = $this->get_sender_email();
         $verify_url = $params['verify_url'];
+        $username = $params['user']->username;
 
         $vars = array(
             'action_url' => $verify_url,
+            'username' => $username,
         );
 
         return $this->send_template_email($template_id, $from, $to, $vars);
@@ -99,9 +101,11 @@ class PostmarkSender extends SenderCore
         $template_id = $this->get_template_id('change_email_verification_link');
         $from = $this->get_sender_email();
         $verify_url = $params['verify_url'];
+        $username = $params['user']->username;
 
         $vars = array(
             'action_url' => $verify_url,
+            'username' => $username,
         );
 
         return $this->send_template_email($template_id, $from, $to, $vars);

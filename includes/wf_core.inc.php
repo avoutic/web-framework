@@ -63,6 +63,7 @@ $base_config = array(
                 'return_page' => '/',
             ),
             'change_email' => array(
+                'verify_page' => '/change-email-verify',
                 'return_page' => '/',
             ),
         ),

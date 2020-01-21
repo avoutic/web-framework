@@ -20,6 +20,16 @@ class PageChangeEmailVerify extends PageBasic
         return "Change email address verification";
     }
 
+    // Can be overriden for project specific user factories and user classes
+    //
+    function get_user($username)
+    {
+        $factory = new BaseFactory($this->global_info);
+        $user = $factory->get_user_by_username($username);
+
+        return $user;
+    }
+
     function do_logic()
     {
         framework_add_bad_ip_hit();
@@ -73,8 +83,7 @@ class PageChangeEmailVerify extends PageBasic
 
         // Change email
         //
-        $factory = new BaseFactory($this->global_info);
-        $user = $factory->get_user($user_id);
+        $user = $this->get_user($this->state['username']);
         $old_email = $user->email;
 
         if (!isset($msg['params']) || !isset($msg['params']['iterator']) ||
