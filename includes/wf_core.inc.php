@@ -348,7 +348,7 @@ function decode_and_verify_string($str)
 
     $str = substr($str, $idx + 1);
 
-    $idx = strpos($str, ":", $idx);
+    $idx = strpos($str, ":");
     if ($idx === FALSE)
         return "";
 
