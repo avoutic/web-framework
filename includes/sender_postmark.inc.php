@@ -45,6 +45,10 @@ class PostmarkSender extends SenderCore
     function send_template_email($template_id, $from, $to, $template_variables)
     {
         $client = $this->get_client();
+        $reply_to = NULL;
+
+        if (isset($template_variables['reply_to']))
+            $reply_to = $template_variables['reply_to'];
 
         try
         {
@@ -52,7 +56,12 @@ class PostmarkSender extends SenderCore
                 $from,
                 $to,
                 $template_id,
-                $template_variables);
+                $template_variables,
+                true,               // inlineCSS
+                NULL,               // tag
+                true,               // trackOpens
+                $reply_to           // replyTo
+            );
         }
         catch (Exception $e)
         {
