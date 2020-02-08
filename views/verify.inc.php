@@ -13,6 +13,10 @@ class PageVerify extends PageBasic
         return "Mail address verification";
     }
 
+    function custom_after_verify_actions($user, $data)
+    {
+    }
+
     function do_logic()
     {
         // Check if code is present
@@ -66,6 +70,7 @@ class PageVerify extends PageBasic
         }
 
         $user->set_verified();
+        $this->custom_after_verify_actions($user, $msg['params']);
 
         // Redirect to main sceen
         //

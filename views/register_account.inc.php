@@ -30,6 +30,11 @@ class PageRegister extends Pagebasic
         return "$('#username').focus();";
     }
 
+    function get_after_verify_data()
+    {
+        return array();
+    }
+
     function custom_prepare_page_content()
     {
     }
@@ -154,6 +159,7 @@ class PageRegister extends Pagebasic
             'action' => 'send_verify',
             'username' => $user->username,
             'timestamp' => time(),
+            'after_verify_data' => $this->get_after_verify_data(),
         );
         $code = encode_and_auth_string(json_encode($msg));
         $send_verify_url = '/send-verify?code='.$code;
