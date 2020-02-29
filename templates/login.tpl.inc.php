@@ -1,3 +1,7 @@
+<?php
+if ($args['recaptcha_needed'])
+    verify(strlen($args['recaptcha_site_key']), 'Missing reCAPTCHA Site Key');
+?>
 <form method="post" class="login_form" action="/<?=$args['login_page']?>" enctype="multipart/form-data" onsubmit="password.value = hex_sha1(password_helper.value); return true;">
 	<fieldset class="login">
 		<input type="hidden" name="do" value="yes"/>
@@ -12,6 +16,17 @@
 		<p>
 			<label class="left" for="password_helper">Password</label> <input type="password" class="field" id="password_helper" name="password_helper"/>
 		</p>
+<?php
+if ($args['recaptcha_needed'])
+{
+    echo <<<HTML
+        <div>
+          <div class="g-recaptcha" data-sitekey="{$args['recaptcha_site_key']}"></div>
+        </div>
+HTML;
+}
+?>
+
 		<div>
 			<label class="left">&nbsp;</label> <input type="submit" class="button" id="submit" value="Submit" />
 		</div>

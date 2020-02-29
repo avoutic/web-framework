@@ -1,6 +1,5 @@
 <?php
 require_once($includes.'base_logic.inc.php');
-require_once($includes.'securimage/securimage.php');
 
 class PageLogin extends PageBasic
 {
@@ -17,7 +16,7 @@ class PageLogin extends PageBasic
                 'return_query' => FORMAT_RETURN_QUERY,
                 'username' => $username_format,
                 'password' => FORMAT_PASSWORD,
-                'captcha' => '.*',
+                'g-recaptcha-response' => '.*',
                 );
     }
 
@@ -48,7 +47,8 @@ class PageLogin extends PageBasic
 
         $this->page_content['return_query'] = $return_query;
         $this->page_content['username'] = $this->get_raw_input_var('username');
-        $this->page_content['captcha_needed'] = false;
+        $this->page_content['recaptcha_needed'] = false;
+        $this->page_content['recaptcha_site_key'] = $this->config['pages']['login']['recaptcha_site_key'];
 
         if (!strlen($return_page) || substr($return_page, 0, 2) == '//')
             $return_page = $this->config['pages']['login']['default_return_page'];
@@ -96,19 +96,40 @@ class PageLogin extends PageBasic
             return;
         }
 
-        if ($user->failed_login > 5)
+        $bruteforce_protection = $this->config['pages']['login']['bruteforce_protection'];
+        if ($user->failed_login > 5 && $bruteforce_protection)
         {
-            $captcha = $this->get_input_var('captcha');
-            $this->page_content['captcha_needed'] = true;
+            $recaptcha_response = $this->get_input_var('g-recaptcha-response');
+            $this->page_content['recaptcha_needed'] = true;
 
-            if (!strlen($captcha))
+            if (!strlen($recaptcha_response))
             {
                 $this->add_message('error', 'CAPTCHA required', 'Due to possible brute force attacks on this username, filling in a CAPTCHA is required for checking the password!');
                 return;
             }
 
-            $securimage = new Securimage();
-            if ($securimage->check($captcha) !== TRUE)
+            $recaptcha_secret = $this->config['pages']['login']['recaptcha_secret_key'];
+
+            $recaptcha_data = array(
+                'secret' => $recaptcha_secret,
+                'response' => $recaptcha_response,
+            );
+
+            $verify = curl_init();
+            curl_setopt($verify, CURLOPT_URL, "https://www.google.com/recaptcha/api/siteverify");
+            curl_setopt($verify, CURLOPT_POST, true);
+            curl_setopt($verify, CURLOPT_POSTFIELDS, http_build_query($recaptcha_data));
+            curl_setopt($verify, CURLOPT_RETURNTRANSFER, true);
+            $response = curl_exec($verify);
+            curl_close($verify);
+
+            $response = json_decode($response, true);
+
+            verify(!in_array('invalid-input-secret', $response['error-codes']), 'Invalid reCAPTCHA input secret used');
+            verify(!in_array('invalid-keys-secret', $response['error-codes']), 'Invalid reCAPTCHA key used');
+
+            var_dump($response);
+            if ($response['success'] != true)
             {
                 $this->add_message('error', 'The CAPTCHA code entered was incorrect.');
                 return;
@@ -145,6 +166,7 @@ class PageLogin extends PageBasic
         echo <<<HTML
   <meta name="robots" content="noindex,follow" />
   <link rel="canonical" href="/login" />
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 HTML;
     }
 

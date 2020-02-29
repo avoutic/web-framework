@@ -61,6 +61,9 @@ $base_config = array(
                 'verify_page' => '/verify',
                 'after_verify_page' => '/',
                 'default_return_page' => '/',
+                'bruteforce_protection' => true,
+                'recaptcha_site_key' => '',
+                'recaptcha_secret_key' => '',
             ),
             'forgot_password' => array(
                 'reset_password_page' => '/reset-password',
