@@ -2,7 +2,8 @@
     "name": "avoutic/web-framework",
     "description": "web-framework is a secure-by-default PHP framework for quickly making PHP sites and APIs",
     "require": {
-        "adodb/adodb-php": "^5.20"
+        "adodb/adodb-php": "^5.20",
+        "defuse/php-encryption": "^2.2"
     },
     "license": "MIT",
     "authors": [
