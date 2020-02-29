@@ -1,7 +1,3 @@
-<?php
-if ($args['recaptcha_needed'])
-    verify(strlen($args['recaptcha_site_key']), 'Missing reCAPTCHA Site Key');
-?>
 <form method="post" class="login_form" action="/<?=$args['login_page']?>" enctype="multipart/form-data" onsubmit="password.value = hex_sha1(password_helper.value); return true;">
 	<fieldset class="login">
 		<input type="hidden" name="do" value="yes"/>

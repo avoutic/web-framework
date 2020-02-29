@@ -72,7 +72,7 @@ abstract class PageBasic extends PageCore
     protected $frame_file;
     protected $page_content = array();
     private $mods = array();
-    
+
     function __construct($global_info)
     {
         parent::__construct($global_info);
@@ -181,6 +181,10 @@ abstract class PageBasic extends PageCore
         return TRUE;
     }
 
+    function check_sanity()
+    {
+    }
+
     function do_logic()
     {
     }
@@ -228,6 +232,7 @@ abstract class PageBasic extends PageCore
 
     function html_main()
     {
+        $this->check_sanity();
         $this->do_logic();
         $this->display_frame();
     }

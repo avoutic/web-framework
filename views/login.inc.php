@@ -20,6 +20,18 @@ class PageLogin extends PageBasic
                 );
     }
 
+    function check_sanity()
+    {
+        $login_config = $this->config['pages']['login'];
+        $bruteforce_protection = $login_config['bruteforce_protection'];
+
+        if ($bruteforce_protection)
+        {
+            verify(strlen($login_config['recaptcha_site_key']), 'Missing reCAPTCHA Site Key');
+            verify(strlen($login_config['recaptcha_secret_key']), 'Missing reCAPTCHA Secret Key');
+        }
+    }
+
     function get_title()
     {
         return "Login";
