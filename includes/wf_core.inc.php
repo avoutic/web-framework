@@ -49,8 +49,8 @@ $base_config = array(
             'blacklisting' => false,
             'blacklist_threshold' => 25,
             'hash' => 'sha256',
-            'hmac_key' =>  'KDHAS(*&@!(*@!kjhdkjas)(*)(@*HUIHQhiuhqw',
-            'crypt_key' => 'ONQifn39^&!)DMkiqnfl(!&Ala]d,lqklxoiA>W8kdvuHEWndk&6391#@yFplMaC',
+            'hmac_key' =>  '',
+            'crypt_key' => '',
         ),
         'error_handlers' => array(
             '404' => ''
@@ -165,9 +165,13 @@ function assert_handler($file, $line, $message, $error_type, $silent = false)
     if (is_array($trace))
         scrub_state($trace);
 
-    $db_error = $global_database->GetLastError();
-    if ($db_error === false || $db_error === '')
-	    $db_error = 'None';
+    $db_error = 'Not initialized yet';
+    if (isset($global_database))
+    {
+        $db_error = $global_database->GetLastError();
+        if ($db_error === false || $db_error === '')
+            $db_error = 'None';
+    }
 
     $debug_message.= "Last Database error: ".$db_error."\n";
     $debug_message.= "Backtrace:\n".print_r($trace, true);
@@ -443,6 +447,11 @@ if (!defined('SITE_NAME'))
 
 if (!defined('SITE_DEFAULT_PAGE'))
 	define('SITE_DEFAULT_PAGE', 'main');
+
+# Check for required values
+#
+verify(strlen($global_config['security']['hmac_key']) > 20, 'No or too short HMAC Key provided (Minimum 20 chars)');
+verify(strlen($global_config['security']['crypt_key']) > 20, 'No or too short Crypt Key provided (Minimum 20 chars)');
 
 # Start with a clean slate
 #
