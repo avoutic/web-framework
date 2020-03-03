@@ -1,5 +1,6 @@
 <?php
 require_once($includes.'base_logic.inc.php');
+require_once($includes.'recaptcha.inc.php');
 
 class PageLogin extends PageBasic
 {
@@ -27,8 +28,9 @@ class PageLogin extends PageBasic
 
         if ($bruteforce_protection)
         {
-            verify(strlen($login_config['recaptcha_site_key']), 'Missing reCAPTCHA Site Key');
-            verify(strlen($login_config['recaptcha_secret_key']), 'Missing reCAPTCHA Secret Key');
+            $recaptcha_config = $this->config['security']['recaptcha'];
+            verify(strlen($recaptcha_config['site_key']), 'Missing reCAPTCHA Site Key');
+            verify(strlen($recaptcha_config['secret_key']), 'Missing reCAPTCHA Secret Key');
         }
     }
 
@@ -60,7 +62,7 @@ class PageLogin extends PageBasic
         $this->page_content['return_query'] = $return_query;
         $this->page_content['username'] = $this->get_raw_input_var('username');
         $this->page_content['recaptcha_needed'] = false;
-        $this->page_content['recaptcha_site_key'] = $this->config['pages']['login']['recaptcha_site_key'];
+        $this->page_content['recaptcha_site_key'] = $this->config['security']['recaptcha']['site_key'];
 
         if (!strlen($return_page) || substr($return_page, 0, 2) == '//')
             $return_page = $this->config['pages']['login']['default_return_page'];
@@ -120,28 +122,10 @@ class PageLogin extends PageBasic
                 return;
             }
 
-            $recaptcha_secret = $this->config['pages']['login']['recaptcha_secret_key'];
+            $recaptcha = new Recaptcha($this->global_info);
+            $result = $recaptcha->verify($recaptcha_response);
 
-            $recaptcha_data = array(
-                'secret' => $recaptcha_secret,
-                'response' => $recaptcha_response,
-            );
-
-            $verify = curl_init();
-            curl_setopt($verify, CURLOPT_URL, "https://www.google.com/recaptcha/api/siteverify");
-            curl_setopt($verify, CURLOPT_POST, true);
-            curl_setopt($verify, CURLOPT_POSTFIELDS, http_build_query($recaptcha_data));
-            curl_setopt($verify, CURLOPT_RETURNTRANSFER, true);
-            $response = curl_exec($verify);
-            curl_close($verify);
-
-            $response = json_decode($response, true);
-
-            verify(!in_array('invalid-input-secret', $response['error-codes']), 'Invalid reCAPTCHA input secret used');
-            verify(!in_array('invalid-keys-secret', $response['error-codes']), 'Invalid reCAPTCHA key used');
-
-            var_dump($response);
-            if ($response['success'] != true)
+            if ($result != true)
             {
                 $this->add_message('error', 'The CAPTCHA code entered was incorrect.');
                 return;

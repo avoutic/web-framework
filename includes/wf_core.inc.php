@@ -51,6 +51,10 @@ $base_config = array(
             'hash' => 'sha256',
             'hmac_key' =>  '',
             'crypt_key' => '',
+            'recaptcha' => array(
+                'site_key' => '',
+                'secret_key' => '',
+            ),
         ),
         'error_handlers' => array(
             '404' => ''
@@ -62,8 +66,6 @@ $base_config = array(
                 'after_verify_page' => '/',
                 'default_return_page' => '/',
                 'bruteforce_protection' => true,
-                'recaptcha_site_key' => '',
-                'recaptcha_secret_key' => '',
             ),
             'forgot_password' => array(
                 'reset_password_page' => '/reset-password',
