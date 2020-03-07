@@ -1,4 +1,6 @@
 <?php
+require_once($includes.'recaptcha.inc.php');
+
 class PageRegister extends Pagebasic
 {
     static function custom_get_filter()
@@ -15,9 +17,17 @@ class PageRegister extends Pagebasic
                 'password2' => FORMAT_PASSWORD,
                 'email' => FORMAT_EMAIL,
                 'accept_terms' => '0|1',
+                'g-recaptcha-response' => '.*',
                 );
 
         return array_merge($base_filter, $custom_filter);
+    }
+
+    function check_sanity()
+    {
+        $recaptcha_config = $this->config['security']['recaptcha'];
+        verify(strlen($recaptcha_config['site_key']), 'Missing reCAPTCHA Site Key');
+        verify(strlen($recaptcha_config['secret_key']), 'Missing reCAPTCHA Secret Key');
     }
 
     function get_title()
@@ -67,6 +77,7 @@ class PageRegister extends Pagebasic
         $this->page_content['password2'] = $password2;
         $this->page_content['email'] = $this->get_raw_input_var('email');
         $this->page_content['accept_terms'] = $accept_terms;
+        $this->page_content['recaptcha_site_key'] = $this->config['security']['recaptcha']['site_key'];
 
         $this->custom_prepare_page_content();
 
@@ -116,6 +127,27 @@ class PageRegister extends Pagebasic
 
         if ($this->custom_value_check() !== true)
             $success = false;
+
+        $recaptcha_response = $this->get_input_var('g-recaptcha-response');
+
+        if (!strlen($recaptcha_response))
+        {
+            $this->add_message('error', 'CAPTCHA required', 'Due to possible brute force attacks on this username, filling in a CAPTCHA is required for checking the password!');
+            $success = false;
+            return;
+        }
+        else
+        {
+            $recaptcha = new Recaptcha($this->global_info);
+            $result = $recaptcha->verify($recaptcha_response);
+
+            if ($result != true)
+            {
+                $this->add_message('error', 'The CAPTCHA code entered was incorrect.');
+                $success = false;
+                return;
+            }
+        }
 
         if (!$success)
             return;
@@ -168,6 +200,13 @@ class PageRegister extends Pagebasic
         //
         header("Location: ".$send_verify_url);
         exit();
+    }
+
+    function display_header()
+    {
+        echo <<<HTML
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+HTML;
     }
 
     function display_content()
