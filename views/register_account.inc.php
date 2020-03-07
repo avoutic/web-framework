@@ -194,7 +194,8 @@ class PageRegister extends Pagebasic
             'after_verify_data' => $this->get_after_verify_data(),
         );
         $code = encode_and_auth_string(json_encode($msg));
-        $send_verify_url = '/send-verify?code='.$code;
+        $send_verify_page = $this->config['pages']['login']['send_verify_page'];
+        $send_verify_url = $send_verify_page.'?code='.$code;
 
         // Redirect to verification request screen
         //
