@@ -116,7 +116,7 @@ class PageRegister extends Pagebasic
         }
 
         if (!strlen($email)) {
-            $this->add_message('error', 'Please enter a correct e-mmail address.', 'E-mail addresses can contain letters, digits, hyphens, underscores, dots and at\'s.');
+            $this->add_message('error', 'Please enter a correct e-mail address.', 'E-mail addresses can contain letters, digits, hyphens, underscores, dots and at\'s.');
             $success = false;
         }
 
