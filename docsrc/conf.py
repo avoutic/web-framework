@@ -19,7 +19,7 @@ import os
 # -- Project information -----------------------------------------------------
 
 project = 'web-framework'
-copyright = '2019, Avoutic'
+copyright = '2020, Avoutic'
 author = 'Avoutic'
 
 
