@@ -1,0 +1,423 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Data Core &mdash; web-framework  documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="web-framework  documentation" href="index.html"/>
+        <link rel="next" title="Sender Core" href="sender-core.html"/>
+        <link rel="prev" title="web-framework: Simple Secure PHP Framework" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> web-framework
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <p class="caption"><span class="caption-text">Concepts:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Data Core</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#datacore">DataCore</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#complex-objects">Complex objects</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#object-documentation">Object Documentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#datacore-object">DataCore Object</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="sender-core.html">Sender Core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accounts.html">Accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tasks.html">Tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="routing.html">Routing</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">web-framework</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Data Core</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/data-core.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="data-core">
+<h1>Data Core<a class="headerlink" href="#data-core" title="Permalink to this headline">¶</a></h1>
+<p>Within web-framework data is abstracted where possible. With a little bit of code you can make simple and more complex object types by just providing an ID or another identifier.</p>
+<p>The core library has two base classes to build from:</p>
+<ul class="simple">
+<li><p>DataCore, an object abstraction that represents a row from a table</p></li>
+<li><p>FactoryCore, a factory abstraction that understands how to work with DataCore objects</p></li>
+</ul>
+<div class="section" id="datacore">
+<h2>DataCore<a class="headerlink" href="#datacore" title="Permalink to this headline">¶</a></h2>
+<p>The base data abstraction is done with <em>DataCore</em>. By just specifying the <cite>table_name</cite> and <cite>base_fields</cite> you can already easily instantiate objects based on data in the database.</p>
+<p>If we have a table <em>persons</em> in our database, with fields like name, address and country, we can easily encapsulate this table with a DataCore abstraction. Let’s create <em>includes/persons.inc.php</em> to construct the Person class.</p>
+<div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;?</span><span class="nx">php</span>
+<span class="k">class</span> <span class="nc">Person</span> <span class="k">extends</span> <span class="nx">DataCore</span>
+<span class="p">{</span>
+    <span class="k">static</span> <span class="k">protected</span> <span class="nv">$table_name</span> <span class="o">=</span> <span class="s1">&#39;persons&#39;</span><span class="p">;</span>
+    <span class="k">static</span> <span class="k">protected</span> <span class="nv">$base_fields</span> <span class="o">=</span> <span class="k">array</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;email&#39;</span><span class="p">,</span> <span class="s1">&#39;country&#39;</span><span class="p">);</span>
+<span class="p">};</span>
+<span class="cp">?&gt;</span><span class="x"></span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For encapsulation with DataCore, each table needs a column named <cite>id</cite> with unique, as primary key values.</p>
+</div>
+<p>Our Person object now has basic capabilities. So if we instantiate a Person (using our global database information), we can take actions, like these:</p>
+<div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;?</span><span class="nx">php</span>
+<span class="c1">// Retrieve person with id 5</span>
+<span class="nv">$person</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Person</span><span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">global_info</span><span class="p">,</span> <span class="mi">5</span><span class="p">);</span>
+
+<span class="c1">// Retrieve base fields as object parameters</span>
+<span class="k">echo</span> <span class="s1">&#39;Name: &#39;</span><span class="o">.</span><span class="nv">$person</span><span class="o">-&gt;</span><span class="na">name</span><span class="o">.</span><span class="nx">PHP_EOL</span><span class="p">;</span>
+
+<span class="c1">// Update this Person&#39;s country</span>
+<span class="nv">$result</span> <span class="o">=</span> <span class="nv">$person</span><span class="o">-&gt;</span><span class="na">update</span><span class="p">(</span><span class="k">array</span><span class="p">(</span><span class="s1">&#39;country&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;Belgium&#39;</span><span class="p">));</span>
+<span class="nx">verify</span><span class="p">(</span><span class="nv">$result</span> <span class="o">!==</span> <span class="k">false</span><span class="p">,</span> <span class="s1">&#39;Failed to update person&#39;</span><span class="p">);</span>
+<span class="cp">?&gt;</span><span class="x"></span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>What is <cite>verify()</cite>? <cite>verify()</cite> is like <cite>assert()</cite>. It is used to guard code paths that should never occur, unless something is really wrong. But unlike <cite>assert()</cite> our <cite>verify()</cite> cannot be silently ignored due to PHP settings. For a secure-by-default platform, we want to make sure those guards are always there.</p>
+</div>
+<div class="section" id="complex-objects">
+<h3>Complex objects<a class="headerlink" href="#complex-objects" title="Permalink to this headline">¶</a></h3>
+<p>There are a lot of cases where you don’t just need to encapsulate a single table, but data from other tables is required as well. Let’s consider that our Person can also own one or more vehicles. We can easily make sure that those vehicles are populated directly at instantiation of a Person.</p>
+<p>Let’s first create our Vehicle class in <em>includes/vehicles.inc.php</em>:</p>
+<div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;?</span><span class="nx">php</span>
+<span class="k">class</span> <span class="nc">Vehicle</span> <span class="k">extends</span> <span class="nx">DataCore</span>
+<span class="p">{</span>
+    <span class="k">static</span> <span class="k">protected</span> <span class="nv">$table_name</span> <span class="o">=</span> <span class="s1">&#39;vehicles&#39;</span><span class="p">;</span>
+    <span class="k">static</span> <span class="k">protected</span> <span class="nv">$base_fields</span> <span class="o">=</span> <span class="k">array</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="s1">&#39;brand&#39;</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">);</span>
+<span class="p">};</span>
+<span class="cp">?&gt;</span><span class="x"></span>
+</pre></div>
+</div>
+<p>Now we include this file at the top of <em>includes/persons.inc.php</em>:</p>
+<div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="k">require_once</span><span class="p">(</span><span class="nv">$site_includes</span><span class="o">.</span><span class="s1">&#39;vehicles.inc.php&#39;</span><span class="p">);</span>
+
+<span class="k">class</span> <span class="nc">Person</span> <span class="k">extends</span> <span class="nx">DataCore</span>
+<span class="o">&lt;</span><span class="nx">snip</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>And we’ll add a method called <cite>fill_complex_fields()</cite> in our Person class:</p>
+<div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="k">function</span> <span class="nf">fill_complex_fields</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">vehicles</span> <span class="o">=</span> <span class="nx">Vehicles</span><span class="o">::</span><span class="na">get_objects</span><span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">global_info</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+                                            <span class="k">array</span><span class="p">(</span><span class="s1">&#39;owner_id&#39;</span> <span class="o">=&gt;</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">id</span><span class="p">));</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><cite>fill_complex_fields()</cite> is immediately called in the constructor after all base fields have been loaded.</p>
+</div>
+</div>
+<div class="section" id="object-documentation">
+<h2>Object Documentation<a class="headerlink" href="#object-documentation" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="datacore-object">
+<h3>DataCore Object<a class="headerlink" href="#datacore-object" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="DataCore">
+<em class="property">class </em><code class="sig-name descname">DataCore</code><a class="headerlink" href="#DataCore" title="Permalink to this definition">¶</a></dt>
+<dd><p>An object abstration that represents a single row from a table.</p>
+<dl class="attr">
+<dt id="DataCore::$$table_name">
+<em class="property">protected </em><em class="property">static </em><em class="property">property </em><code class="sig-name descname">$table_name</code><a class="headerlink" href="#DataCore::$$table_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the table in your database</p>
+</dd></dl>
+
+<dl class="attr">
+<dt id="DataCore::$$base_fields">
+<em class="property">protected </em><em class="property">static </em><em class="property">property </em><code class="sig-name descname">$base_fields</code><a class="headerlink" href="#DataCore::$$base_fields" title="Permalink to this definition">¶</a></dt>
+<dd><p>An array with fields that should always be loaded into the object</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="DataCore::exists">
+<em class="property">static </em><code class="sig-name descname">exists</code><span class="sig-paren">(</span><em class="sig-param">$global_info</em>, <em class="sig-param">$id</em><span class="sig-paren">)</span><a class="headerlink" href="#DataCore::exists" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if an object with that id exists.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>$global_info</strong> (<em>array</em>) – The global_info to use</p></li>
+<li><p><strong>$id</strong> (<em>int</em>) – ID of the object to check</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="DataCore::get_field">
+<code class="sig-name descname">get_field</code><span class="sig-paren">(</span><em class="sig-param">$field</em><span class="sig-paren">)</span><a class="headerlink" href="#DataCore::get_field" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve a non-base-field for the object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>$field</strong> (<em>string</em>) – The field name in the table</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="DataCore::update">
+<code class="sig-name descname">update</code><span class="sig-paren">(</span><em class="sig-param">$data</em><span class="sig-paren">)</span><a class="headerlink" href="#DataCore::update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update fields in the database</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>$data</strong> (<em>array</em>) – Array with field names and values to store</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="DataCore::update_field">
+<code class="sig-name descname">update_field</code><span class="sig-paren">(</span><em class="sig-param">$field</em>, <em class="sig-param">$value</em><span class="sig-paren">)</span><a class="headerlink" href="#DataCore::update_field" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update a single field</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>$field</strong> (<em>string</em>) – Field to update</p></li>
+<li><p><strong>$value</strong> – Value to store</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="DataCore::decrease_field">
+<code class="sig-name descname">decrease_field</code><span class="sig-paren">(</span><em class="sig-param">$field</em>, <em class="sig-param">$value = 1</em>, <em class="sig-param">$minimum = false</em><span class="sig-paren">)</span><a class="headerlink" href="#DataCore::decrease_field" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decrease the value of a field</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>$field</strong> (<em>string</em>) – Field to update</p></li>
+<li><p><strong>$value</strong> – Decrease by this value</p></li>
+<li><p><strong>$minimum</strong> – If set, value will not reduce below this minimu,</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="DataCore::increase_field">
+<code class="sig-name descname">increase_field</code><span class="sig-paren">(</span><em class="sig-param">$field</em>, <em class="sig-param">$value = 1</em><span class="sig-paren">)</span><a class="headerlink" href="#DataCore::increase_field" title="Permalink to this definition">¶</a></dt>
+<dd><p>Increase the value of a field</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>$field</strong> (<em>string</em>) – Field to update</p></li>
+<li><p><strong>$value</strong> – Increase by this value</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="DataCore::delete">
+<code class="sig-name descname">delete</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#DataCore::delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete this item</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="sender-core.html" class="btn btn-neutral float-right" title="Sender Core" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="web-framework: Simple Secure PHP Framework" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Avoutic.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> and ❤️  using a custom <a href="https://github.com/LinxiFan/Sphinx-theme">theme</a> based on <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="_static/language_data.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

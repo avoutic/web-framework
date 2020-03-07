@@ -1,0 +1,308 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Accounts &mdash; web-framework  documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="web-framework  documentation" href="index.html"/>
+        <link rel="next" title="Tasks" href="tasks.html"/>
+        <link rel="prev" title="Sender Core" href="sender-core.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> web-framework
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <p class="caption"><span class="caption-text">Concepts:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="data-core.html">Data Core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sender-core.html">Sender Core</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Accounts</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#core-support">Core support</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#user-registration">User Registration</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tasks.html">Tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="routing.html">Routing</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">web-framework</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Accounts</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/accounts.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="accounts">
+<h1>Accounts<a class="headerlink" href="#accounts" title="Permalink to this headline">¶</a></h1>
+<p>Web-framework implements all the base elements for users and user management. Including support for individual rights, account registration, account verification, changing passwords, changing e-mails, etc.</p>
+<div class="section" id="core-support">
+<h2>Core support<a class="headerlink" href="#core-support" title="Permalink to this headline">¶</a></h2>
+<p>The core support is defined in <em>includes/base_logic.inc.php</em>. This file defines the base <cite>User</cite> and <cite>Right</cite> classes and the <cite>BaseFactory</cite> for creating and retrieving users. Logically, the <cite>User</cite> class extends the <cite>DataCore</cite> as it represents a row in the user table, and ithe <cite>BaseFactory</cite> extends <cite>FactoryCore</cite>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you have not yet read up on <cite>DataCore</cite> and <cite>FactoryCore</cite>, now would be a good
+moment.</p>
+</div>
+</div>
+<div class="section" id="user-registration">
+<h2>User Registration<a class="headerlink" href="#user-registration" title="Permalink to this headline">¶</a></h2>
+<p>The base implementation of user registration is implemented in <em>views/register_account.inc.php</em> in the class <cite>PageRegister</cite>. This view supports the core user registration for the required fields:</p>
+<ul class="simple">
+<li><p><cite>email</cite>, which by default will also function as the username</p></li>
+<li><p><cite>password</cite></p></li>
+<li><p><cite>accept_terms</cite></p></li>
+<li><p><cite>username</cite>, but only if the configuration option in <cite>$config[‘registration’][‘email_is_username’]</cite> is set to false.</p></li>
+</ul>
+<p>The core flow will verify that all relevant values from the registration form are present, then check validity of those fields and register error messages where needed, and if all is correct create a new user account.</p>
+<p>If you want to accept and handle other fields, in addition to the fields above, or want to add a handler for things like subscribing to a newsletter, you can extend the core <cite>PageRegister</cite> class and implement one or all of the following functions:</p>
+<ul class="simple">
+<li><p><cite>custom_get_filter()</cite></p></li>
+<li><p><cite>custom_prepare_page_content()</cite></p></li>
+<li><p><cite>custom_value_check()</cite>, should return <cite>true</cite> or <cite>false</cite> to indicate if the performing the actual action is still possible. Returns <cite>true</cite> by default.</p></li>
+<li><p><cite>customer_finalize_create($user)</cite></p></li>
+</ul>
+<p>For example, an extension that would also handle a newsletter subscription checkbox would look like this:</p>
+<div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;?</span><span class="nx">php</span>
+<span class="k">require_once</span><span class="p">(</span><span class="nv">$views</span><span class="o">.</span><span class="s1">&#39;register_account.inc.php&#39;</span><span class="p">);</span>
+
+<span class="k">class</span> <span class="nc">PageRegisterExtra</span> <span class="k">extends</span> <span class="nx">PageRegister</span>
+<span class="p">{</span>
+    <span class="k">static</span> <span class="k">function</span> <span class="nf">custom_get_filter</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="k">return</span> <span class="k">array</span><span class="p">(</span>
+            <span class="s1">&#39;subscribe&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;0|1&#39;</span><span class="p">,</span>
+        <span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">function</span> <span class="nf">custom_prepare_page_content</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">page_content</span><span class="p">[</span><span class="s1">&#39;subscribe&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">get_input_var</span><span class="p">(</span><span class="s1">&#39;subscribe&#39;</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">function</span> <span class="nf">custom_finalize_create</span><span class="p">(</span><span class="nv">$user</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="nv">$subscribe</span> <span class="o">=</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">get_input_var</span><span class="p">(</span><span class="s1">&#39;subscribe&#39;</span><span class="p">);</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nv">$subscribe</span><span class="p">)</span>
+            <span class="k">return</span><span class="p">;</span>
+
+        <span class="c1">// Add subscription logic here</span>
+        <span class="c1">//</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+<span class="cp">?&gt;</span><span class="x"></span>
+</pre></div>
+</div>
+<p>We don’t need to implement <cite>custom_value_check</cite>, because the subscription is not mandatory. But if we wanted it would look something like this:</p>
+<div class="highlight-php notranslate"><div class="highlight"><pre><span></span> <span class="k">function</span> <span class="nf">custom_value_check</span><span class="p">()</span>
+ <span class="p">{</span>
+     <span class="nv">$success</span> <span class="o">=</span> <span class="k">true</span><span class="p">;</span>
+     <span class="nv">$subscribe</span> <span class="o">=</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">get_input_var</span><span class="p">(</span><span class="s1">&#39;subscribe&#39;</span><span class="p">);</span>
+
+     <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nv">$subscribe</span><span class="p">)</span>
+     <span class="p">{</span>
+         <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">add_message</span><span class="p">(</span><span class="s1">&#39;error&#39;</span><span class="p">,</span> <span class="s1">&#39;Not subscribed&#39;</span><span class="p">,</span> <span class="s1">&#39;You have to subscribe to our newsletter.&#39;</span><span class="p">);</span>
+         <span class="nv">$success</span> <span class="o">=</span> <span class="k">false</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="nv">$success</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="tasks.html" class="btn btn-neutral float-right" title="Tasks" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="sender-core.html" class="btn btn-neutral" title="Sender Core" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Avoutic.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> and ❤️  using a custom <a href="https://github.com/LinxiFan/Sphinx-theme">theme</a> based on <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="_static/language_data.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
