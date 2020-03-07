@@ -185,7 +185,7 @@ class PageRegister extends Pagebasic
         //
         SenderCore::send_raw(MAIL_ADDRESS, SITE_NAME.": User '".$user->username."' registered.",
                 "The user with username '".$user->username."' registered.\n".
-                "E-mail is: '".$user->email.".");
+                "E-mail is: '".$user->email."'.");
 
         $msg = array(
             'action' => 'send_verify',
