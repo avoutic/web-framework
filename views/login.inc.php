@@ -77,7 +77,7 @@ class PageLogin extends PageBasic
         // Check if already logged in and redirect immediately
         if ($this->state['logged_in'])
         {
-            header("Location: ".$return_page."?return_query=".$return_query);
+            header("Location: ".$return_page."?".$return_query);
             exit();
         }
 
@@ -153,7 +153,7 @@ class PageLogin extends PageBasic
         //
         $info = $this->auth->set_logged_in($user);
 
-        header("Location: ".$return_page."?return_query=".$return_query."&".add_message_to_url('success', 'Login successful.'));
+        header("Location: ".$return_page."?".$return_query."&".add_message_to_url('success', 'Login successful.'));
         exit();
     }
 
