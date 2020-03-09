@@ -35,8 +35,11 @@ class Recaptcha
 
         $response = json_decode($response, true);
 
-        verify(!in_array('invalid-input-secret', $response['error-codes']), 'Invalid reCAPTCHA input secret used');
-        verify(!in_array('invalid-keys-secret', $response['error-codes']), 'Invalid reCAPTCHA key used');
+        if (isset($response['error_codes']))
+        {
+            verify(!in_array('invalid-input-secret', $response['error-codes']), 'Invalid reCAPTCHA input secret used');
+            verify(!in_array('invalid-keys-secret', $response['error-codes']), 'Invalid reCAPTCHA key used');
+        }
 
         return $response['success'];
     }
