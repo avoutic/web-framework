@@ -243,7 +243,7 @@ function shutdown_handler()
             break;
         case E_NOTICE:
             if ($last_error['file'] == 'adodb-mysqli.inc')
-                break;
+                return;
         default:
             assert_handler($last_error['file'], $last_error['line'], $last_error['message'], $last_error['type'], true);
     }
