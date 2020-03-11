@@ -231,6 +231,9 @@ function shutdown_handler()
     if (!$last_error)
         return;
 
+    if ($last_error['type'] == E_NOTICE && $last_error['file'] == 'adodb-mysqli.inc')
+        return;
+
     switch($last_error['type'])
     {
         case E_ERROR:
@@ -241,9 +244,6 @@ function shutdown_handler()
         case E_COMPILE_WARNING:
             assert_handler($last_error['file'], $last_error['line'], $last_error['message'], $last_error['type']);
             break;
-        case E_NOTICE:
-            if ($last_error['file'] == 'adodb-mysqli.inc')
-                return;
         default:
             assert_handler($last_error['file'], $last_error['line'], $last_error['message'], $last_error['type'], true);
     }
