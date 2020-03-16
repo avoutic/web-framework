@@ -32,6 +32,7 @@ class PostmarkSender extends SenderCore
                 $from,
                 $to,
                 $subject,
+                NULL,
                 $message);
         }
         catch (Exception $e)
