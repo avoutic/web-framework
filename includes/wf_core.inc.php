@@ -199,9 +199,7 @@ function assert_handler($file, $line, $message, $error_type, $silent = false)
                 "Failure information: $error_type\n\nServer: ".$global_config['server_name']."\n<pre>".$debug_message.'</pre>');
     }
 
-    if ($silent)
-        exit();
-    else
+    if (!$silent)
         die("Oops. Something went wrong. Please retry later or contact us with the information above!\n");
 }
 
@@ -246,6 +244,7 @@ function shutdown_handler()
             break;
         default:
             assert_handler($last_error['file'], $last_error['line'], $last_error['message'], $last_error['type'], true);
+            exit();
     }
 
 }
