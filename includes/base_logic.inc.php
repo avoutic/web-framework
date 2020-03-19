@@ -1,6 +1,7 @@
 <?php
 require_once('mail_message.inc.php');
 require_once('data_core.inc.php');
+require_once('config_values.inc.php');
 
 class Right extends DataCore
 {
@@ -50,6 +51,7 @@ class User extends DataCore
     static protected $base_fields = array('username', 'email', 'terms_accepted', 'verified', 'last_login', 'failed_login');
 
     public $rights = array();
+    protected $user_config = null;
 
     protected function fill_complex_fields()
     {
@@ -292,16 +294,16 @@ class User extends DataCore
 
     function increase_security_iterator()
     {
-        $security_iterator = (int) $this->get_config_value('security_iterator', 0, 'account');
+        $security_iterator = (int) $this->get_config_value('account', 'security_iterator', 0);
         $security_iterator += 1;
-        $this->set_config_value('security_iterator', $security_iterator, 'account');
+        $this->set_config_value('account', 'security_iterator', $security_iterator);
 
         return $security_iterator;
     }
 
     function get_security_iterator()
     {
-        return $this->get_config_value('security_iterator', 0, 'account');
+        return $this->get_config_value('account', 'security_iterator', 0);
     }
 
     function send_password_reset_mail()
@@ -336,51 +338,40 @@ class User extends DataCore
                                 ));
     }
 
+    protected function get_config_store()
+    {
+        if ($this->user_config == null)
+            $this->user_config = new userConfigValues($this->database, $this->id);
+
+        return $this->user_config;
+    }
+
     function get_config_values($module = "")
     {
-        $result = $this->database->Query('SELECT name, value FROM user_config_values WHERE user_id = ? AND module = ?',
-            array($this->id, $module));
+        $config = $this->get_config_store();
 
-        verify($result !== FALSE, 'Failed to retrieve config values');
-
-        $info = array();
-
-        foreach ($result as $row)
-            $info[$row['name']] = $row['value'];
-
-        return $info;
+        return $config->get_values($module);
     }
 
-    function get_config_value($name, $default = "", $module = "")
+    function get_config_value($module, $name, $default = '')
     {
-        $result = $this->database->Query('SELECT value FROM user_config_values WHERE user_id = ? AND module = ? AND name = ?',
-            array($this->id, $module, $name));
+        $config = $this->get_config_store();
 
-        verify($result !== FALSE, 'Failed to retrieve config value');
-
-        if ($result->RecordCount() == 0)
-            return $default;
-
-        if ($result->RecordCount() != 1)
-            return "";
-
-        return $result->fields['value'];
+        return $config->get_value($name, $default, $module);
     }
 
-    function set_config_value($name, $value, $module = "")
+    function set_config_value($module, $name, $value)
     {
-        $result = $this->database->Query('INSERT user_config_values SET user_id = ?, module = ?, name = ?, value = ? ON DUPLICATE KEY UPDATE value = ?',
-            array($this->id, $module, $name, $value, $value));
+        $config = $this->get_config_store();
 
-        verify($result !== FALSE, 'Failed to store config value');
+        return $config->set_value($name, $value, $module);
     }
 
-    function delete_config_value($name, $module = "")
+    function delete_config_value($module, $name)
     {
-        $result = $this->database->Query('DELETE user_config_values WHERE user_id = ? AND module = ? AND name = ?',
-            array($this->id, $module, $name));
+        $config = $this->get_config_store();
 
-        verify($result !== FALSE, 'Failed to delete config value');
+        return $config->delete_value($name, $module);
     }
 }
 
