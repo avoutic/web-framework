@@ -261,7 +261,7 @@ function check_blacklisted()
 }
 
 session_name(preg_replace('/\./', '_', $global_config['server_name']));
-session_set_cookie_params(0, '/', $global_config['server_name'], $global_config['http_mode'] === 'https', true);
+session_set_cookie_params(60 * 60 * 24, '/', $global_config['server_name'], $global_config['http_mode'] === 'https', true);
 session_start();
 
 // Check blacklist
