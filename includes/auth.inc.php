@@ -4,7 +4,7 @@ require_once($includes.'helpers.inc.php');
 class Session extends DataCore
 {
     static protected $table_name = 'sessions';
-    static protected $base_fields = array('user_id', 'session_id', 'last_active');
+    static protected $base_fields = array('user_id', 'session_id', 'start', 'last_active');
 
     function is_valid()
     {
@@ -20,7 +20,14 @@ class Session extends DataCore
 
         $timestamp = date('Y-m-d H:i:s');
 
-        $this->update_field('last_active', $timestamp);
+        // Restart session every 4 hours
+        //
+        $start_timestamp = Helpers::mysql_datetime_to_timestamp($this->start);
+        if ($current - $start_timestamp > 4 * 60 * 60)
+        {
+            session_regenerate_id(true);
+            $this->update_field('start', $timestamp);
+        }
 
         return TRUE;
     }
