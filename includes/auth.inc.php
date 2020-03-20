@@ -20,6 +20,11 @@ class Session extends DataCore
 
         $timestamp = date('Y-m-d H:i:s');
 
+        // Update timestamp every 5 minutes
+        //
+        if ($current - $last_active_timestamp > 60 * 5)
+            $this->update_field('last_active', $timestamp);
+
         // Restart session every 4 hours
         //
         $start_timestamp = Helpers::mysql_datetime_to_timestamp($this->start);
