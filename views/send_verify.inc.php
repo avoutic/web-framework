@@ -64,7 +64,7 @@ class PageSendVerify extends PageBasic
         $user = $base_factory->get_user_by_username($msg['username']);
 
         if ($user !== false && !$user->is_verified())
-            $user->send_verify_mail($msg['after_verify_data']);
+            $user->send_verify_mail($msg['params']);
 
         $this->page_content['email'] = $user->email;
 

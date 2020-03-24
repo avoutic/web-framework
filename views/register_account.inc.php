@@ -187,13 +187,7 @@ class PageRegister extends Pagebasic
                 "The user with username '".$user->username."' registered.\n".
                 "E-mail is: '".$user->email."'.");
 
-        $msg = array(
-            'action' => 'send_verify',
-            'username' => $user->username,
-            'timestamp' => time(),
-            'after_verify_data' => $this->get_after_verify_data(),
-        );
-        $code = encode_and_auth_string(json_encode($msg));
+        $code = $user->generate_verify_code('send_verify', $this->get_after_verify_data());
         $send_verify_page = $this->config['pages']['login']['send_verify_page'];
         $send_verify_url = $send_verify_page.'?code='.$code;
 
