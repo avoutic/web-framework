@@ -395,6 +395,11 @@ if (!is_file($site_includes."config.php"))
     http_error(500, 'Internal Server Error', "<h1>Requirement error</h1>\nOne of the required files is not found on the server. Please contact the administrator.");
 }
 
+if (!is_file($site_includes."sender_handler.inc.php"))
+{
+    http_error(500, 'Internal Server Error', "<h1>Sender Handler missing</h1>\nOne of the required files is not found on the server. Please contact the administrator.");
+}
+
 # Merge configurations
 #
 $site_config = array();
@@ -485,6 +490,9 @@ function get_auth_config($name)
     global $site_includes;
 
     $auth_config_file = $site_includes.'/auth/'.$name.'.php';
+    if (!file_exists($auth_config_file))
+        die("Auth Config {$name} does not exist");
+
     $auth_config = require($auth_config_file);
     verify(is_array($auth_config) || strlen($auth_config), 'Auth Config '.$name.' invalid');
 
