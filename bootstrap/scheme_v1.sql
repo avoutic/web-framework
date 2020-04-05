@@ -13,13 +13,17 @@ INSERT INTO rights set short_name='debug', name='Debug information';
 CREATE TABLE `users` (
   `id` int(11) NOT NULL auto_increment,
   `username` varchar(255) NOT NULL,
-  `password` varchar(255) NOT NULL,
+  `password` varchar(255) NOT NULL DEFAULT '',
   `solid_password` varchar(255) NOT NULL,
-  `name` varchar(255) NOT NULL,
+  `name` varchar(255) NOT NULL DEFAULT '',
   `email` varchar(255) NOT NULL,
+  `registered` INT(11) NOT NULL,
   `verified` tinyint(1) NOT NULL,
-  `failed_login` INT(11) NOT NULL,
-  PRIMARY KEY  (`id`)
+  `failed_login` INT(11) NOT NULL DEFAULT '0',
+  `terms_accepted` INT(11) NOT NULL DEFAULT '0',
+  `last_login` INT(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY  (`id`),
+  CONSTRAINT `username_unique` UNIQUE(`username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `user_rights` (
