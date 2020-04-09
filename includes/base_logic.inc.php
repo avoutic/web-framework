@@ -94,6 +94,7 @@ class User extends DataCore
         $calculated_hash = 'calculated';
 
         $params = explode(":", $solid_password);
+        $migrate_password = false;
 
         if ($params[0] == 'sha256')
         {
@@ -109,6 +110,7 @@ class User extends DataCore
 
             $stored_hash = $params[2];
             $calculated_hash = sha1(md5($password) . $params[1]);
+            $migrate_password = true;
         }
         else
         {
@@ -119,6 +121,7 @@ class User extends DataCore
 
             $stored_hash = $result['stored_hash'];
             $calculated_hash = $result['calculated_hash'];
+            $migrate_password = true;
         }
 
         // Slow compare (time-constant)
@@ -130,6 +133,13 @@ class User extends DataCore
 
         if ($result)
         {
+            if ($migrate_password)
+            {
+                $solid_password = User::new_hash_from_password($password);
+                $result = $this->update_field('solid_password', $solid_password);
+                verify($result !== FALSE, 'Failed to update solid_password');
+            }
+
             $this->update(array(
                     'failed_login' => 0,
                     'last_login' => time(),
