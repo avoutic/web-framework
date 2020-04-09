@@ -74,6 +74,11 @@ class User extends DataCore
                 pbkdf2('sha256', $password, $salt, 1000, 24, false);
     }
 
+    protected function get_custom_hash($params, $password)
+    {
+        return false;
+    }
+
     function check_password($password)
     {
         $result = $this->database->Query('SELECT solid_password FROM users WHERE id = ?',
@@ -106,7 +111,15 @@ class User extends DataCore
             $calculated_hash = sha1(md5($password) . $params[1]);
         }
         else
-            verify(false, 'Unknown solid password format');
+        {
+            $result = $this->get_custom_hash($params, $password);
+            verify($result !== false, 'Unknown solid password format');
+            verify(isset($result['stored_hash']), 'Invalid result from get_custom_hash');
+            verify(isset($result['calculated_hash']), 'Invalid result from get_custom_hash');
+
+            $stored_hash = $result['stored_hash'];
+            $calculated_hash = $result['calculated_hash'];
+        }
 
         // Slow compare (time-constant)
         $diff = strlen($stored_hash) ^ strlen($calculated_hash);
