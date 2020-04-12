@@ -134,7 +134,7 @@ class PageRegister extends Pagebasic
 
         if (!strlen($recaptcha_response))
         {
-            $this->add_message('error', 'CAPTCHA required', 'Due to possible brute force attacks on this username, filling in a CAPTCHA is required for checking the password!');
+            $this->add_message('error', 'CAPTCHA required', 'To prevent bots registering account en masse, filling in a CAPTCHA is required!');
             $success = false;
             return;
         }
