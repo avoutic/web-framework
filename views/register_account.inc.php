@@ -5,6 +5,7 @@ class PageRegister extends Pagebasic
 {
     static function custom_get_filter()
     {
+        return array();
     }
 
     static function get_filter()
@@ -51,6 +52,7 @@ class PageRegister extends Pagebasic
 
     function custom_value_check()
     {
+        return true;
     }
 
     function custom_finalize_create($user)
