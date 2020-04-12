@@ -13,29 +13,40 @@ require_once(__DIR__ . '/../../vendor/autoload.php');
 
 require_once($includes.'wf_core.inc.php');
 
-function send_404()
+function send_404($type = 'generic')
 {
     global $global_info, $site_views;
 
-    if (strlen($global_info['config']['error_handlers']['404']))
+    $mapping = $global_info['config']['error_handlers']['404'];
+    $include_page = '';
+
+    if (is_array($mapping))
     {
-        $include_page = $global_info['config']['error_handlers']['404'];
-        $include_page_file = $site_views.$include_page.".inc.php";
+        if (isset($mapping[$type]))
+            $include_page = $mapping[$type];
+    }
+    else if (strlen($mapping))
+        $include_page = $mapping;
 
-        require_once($include_page_file);
+    if (!strlen($include_page))
+    {
+        http_error(404, 'Not Found', "<h1>Page not found</h1>\nPage not found. Please return to the <a href=\"/\">main page</a>.");
+        exit();
+    }
 
-        $object_name = preg_replace_callback('/(?:^|[_\-\.])(.?)/',
+    $include_page_file = $site_views.$include_page.".inc.php";
+
+    require_once($include_page_file);
+
+    $object_name = preg_replace_callback('/(?:^|[_\-\.])(.?)/',
                     function($m) {
                         return strtoupper($m[1]);
                     }, 'page_'.$include_page);
-        $function_name = "html_main";
+    $function_name = "html_main";
 
-        header("HTTP/1.0 404 Page not found");
-        call_obj_func($global_info, $object_name, $function_name);
-        exit(0);
-    }
-
-    http_error(404, 'Not Found', "<h1>Page not found</h1>\nPage not found. Please return to the <a href=\"/\">main page</a>.");
+    header("HTTP/1.0 404 Page not found");
+    call_obj_func($global_info, $object_name, $function_name);
+    exit(0);
 }
 
 require_once($includes.'page_basic.inc.php');
