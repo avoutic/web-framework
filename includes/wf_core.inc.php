@@ -36,6 +36,7 @@ $base_config = array(
         'auth_mode' => 'redirect',            // redirect, www-authenticate, custom (requires auth_module)
         'auth_module' => '',
         'authenticator' => array(
+            'login_with_email' => 'false',
             'site_login_page' => '/login',
             'default_login_return' => '/',
             'auth_required_message' => 'Authentication required. Please login.',

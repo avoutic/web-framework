@@ -9,7 +9,7 @@ class PageLogin extends PageBasic
         global $global_info;
 
         $username_format = FORMAT_USERNAME;
-        if ($global_info['config']['registration']['email_is_username'])
+        if ($global_info['config']['authenticator']['login_with_email'])
             $username_format = FORMAT_EMAIL;
 
         return array(
@@ -49,7 +49,11 @@ class PageLogin extends PageBasic
     function get_user($username)
     {
         $factory = new BaseFactory($this->global_info);
-        $user = $factory->get_user_by_username($username);
+
+        if ($this['config']['authenticator']['login_with_email'])
+            $user = $factory->get_user_by_email($username);
+        else
+            $user = $factory->get_user_by_username($username);
 
         return $user;
     }
