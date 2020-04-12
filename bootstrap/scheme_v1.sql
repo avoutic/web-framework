@@ -18,7 +18,7 @@ CREATE TABLE `users` (
   `name` varchar(255) NOT NULL DEFAULT '',
   `email` varchar(255) NOT NULL,
   `registered` INT(11) NOT NULL,
-  `verified` tinyint(1) NOT NULL,
+  `verified` tinyint(1) NOT NULL DEFAULT '0',
   `failed_login` INT(11) NOT NULL DEFAULT '0',
   `terms_accepted` INT(11) NOT NULL DEFAULT '0',
   `last_login` INT(11) NOT NULL DEFAULT '0',
