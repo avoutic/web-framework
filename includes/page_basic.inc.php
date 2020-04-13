@@ -181,6 +181,11 @@ abstract class PageBasic extends PageCore
         return TRUE;
     }
 
+    function is_blocked($name)
+    {
+        return $this->state['input'][$name] != $this->state['raw_input'][$name];
+    }
+
     function check_sanity()
     {
     }
