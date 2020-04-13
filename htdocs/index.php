@@ -500,6 +500,8 @@ function call_obj_func($global_info, $object_name, $function_name, $matches = NU
         $page_obj->$function_name($matches[1]);
     else if ($argument_count == 2)
         $page_obj->$function_name($matches[1], $matches[2]);
+    else if ($argument_count == 3)
+        $page_obj->$function_name($matches[1], $matches[2], $matches[3]);
     else
         echo "No method for $argument_count yet..\n";
 }
