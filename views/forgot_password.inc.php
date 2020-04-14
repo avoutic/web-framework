@@ -6,7 +6,7 @@ class PageForgotPassword extends PageBasic
         global $global_info;
 
         $username_format = FORMAT_USERNAME;
-        if ($global_info['config']['registration']['email_is_username'])
+        if ($global_info['config']['authenticator']['login_with_email'])
             $username_format = FORMAT_EMAIL;
 
         return array(
@@ -39,9 +39,12 @@ class PageForgotPassword extends PageBasic
 
         $base_factory = new BaseFactory($this->global_info);
 
-        // Retrieve email address
+        // Retrieve user
         //
-        $user = $base_factory->get_user_by_username($username);
+        if ($this->config['authenticator']['login_with_email'])
+            $user = $base_factory->get_user_by_email($username);
+        else
+            $user = $base_factory->get_user_by_username($username);
 
         if ($user !== FALSE)
             $user->send_password_reset_mail();
