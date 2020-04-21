@@ -426,7 +426,12 @@ date_default_timezone_set($global_config['timezone']);
 # Check for special loads before anything else
 #
 if ($global_config['preload'] == true)
+{
+    if (!file_exists($site_includes.'preload.inc.php'))
+        die('preload.inc.php indicated but not present');
+
     require_once($site_includes.'preload.inc.php');
+}
 
 # Load other prerequisites
 #
