@@ -9,6 +9,7 @@ date_default_timezone_set('UTC');
 #
 $base_config = array(
         'debug' => false,
+        'debug_mail' => true,
         'preload' => false,
         'timezone' => 'UTC',
         'disabled_pages' => array(),
@@ -156,8 +157,6 @@ function assert_handler($file, $line, $message, $error_type, $silent = false)
     $path_parts = pathinfo($file);
     $file = $path_parts['filename'];
 
-    $debug_message = "File '$file'\nLine '$line'\nMessage '$message'\n";
-    $message = "File '$file'\nLine '$line'\n";
     $error_type = get_error_type_string($error_type);
 
     $state = $global_state;
@@ -176,6 +175,9 @@ function assert_handler($file, $line, $message, $error_type, $silent = false)
             $db_error = 'None';
     }
 
+    $low_info_message = "File '$file'\nLine '$line'\n";
+
+    $debug_message = "File '$file'\nLine '$line'\nMessage '$message'\n";
     $debug_message.= "Last Database error: ".$db_error."\n";
     $debug_message.= "Backtrace:\n".print_r($trace, true);
     $debug_message.= "State:\n".print_r($state, true);
@@ -187,14 +189,17 @@ function assert_handler($file, $line, $message, $error_type, $silent = false)
         echo $debug_message;
         echo "</pre>";
     }
-    else
+    else if (!$silent) {
+        echo "Failure information: $error_type\n";
+        echo "<pre>\n";
+        echo $low_info_message;
+        echo "</pre>\n";
+    }
+
+    if ($global_config['debug_mail'] == true)
     {
-        if (!$silent) {
-            echo "Failure information: $error_type\n";
-            echo "<pre>\n";
-            echo $message;
-            echo "</pre>\n";
-        }
+        $debug_message.= "\n----------------------------\n\n";
+        $debug_message.= "Server variables:\n".print_r($_SERVER, true);
 
         SenderCore::send_raw(MAIL_ADDRESS, 'Assertion failed',
                 "Failure information: $error_type\n\nServer: ".$global_config['server_name']."\n<pre>".$debug_message.'</pre>');
