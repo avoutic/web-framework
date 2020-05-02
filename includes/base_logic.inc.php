@@ -196,7 +196,15 @@ class User extends DataCore
 
         // Update account
         //
-        $result = $this->update_field('email', $email);
+        $updates = array(
+            'email' => $email,
+        );
+
+        if ($this->global_info['config']['authenticator']['unique_identifier'] == 'email')
+            $updates['username'] = $email;
+
+        $result = $this->update($updates);
+
         verify($result !== false, 'Failed to change email');
 
         fire_hook('change_email', array(

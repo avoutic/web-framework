@@ -61,13 +61,13 @@ class PageRegister extends Pagebasic
 
     function do_logic()
     {
-        $email_is_username = $this->config['registration']['email_is_username'];
+        $identifier = $this->config['authenticator']['unique_identifier'];
 
         $email = $this->get_input_var('email');
         $password = $this->get_input_var('password');
         $password2 = $this->get_input_var('password2');
 
-        if ($email_is_username)
+        if ($identifier == 'email')
             $username = $email;
         else
             $username = $this->get_input_var('username');
@@ -97,7 +97,7 @@ class PageRegister extends Pagebasic
 
         // Check if required values are present
         //
-        if (!$email_is_username && !strlen($username)) {
+        if ($identifier == 'username' && !strlen($username)) {
             $this->add_message('error', 'Please enter a correct username.', 'Usernames can contain letters, digits and underscores.');
             $success = false;
         }
@@ -154,21 +154,35 @@ class PageRegister extends Pagebasic
         if (!$success)
             return;
 
-        // Check if name already exists
+        // Check if identifier already exists
         //
-        $result = $this->database->Query('SELECT id FROM users WHERE username = ?',
-                array($username));
-
-        verify($result->RecordCount() <= 1, 'Too many results for username: '.$username);
-
-        if ($result->RecordCount() == 1)
+        if ($identifier == 'email')
         {
-            if ($email_is_username)
-                $this->add_message('error', 'E-mail already registered.', 'An account has already been registerd with this e-mail address. <a href="/forgot-password">Forgot your password?</a>');
-            else
+            $result = $this->database->Query('SELECT id FROM users WHERE email = ?',
+                    array($email));
+
+            verify($result->RecordCount() <= 1, 'Too many results for email: '.$email);
+
+            if ($result->RecordCount() == 1)
+            {
+                $this->add_message('error', 'E-mail already registered.', 'An account has already been registered with this e-mail address. <a href="/forgot-password">Forgot your password?</a>');
+
+                return;
+            }
+        }
+        else
+        {
+            $result = $this->database->Query('SELECT id FROM users WHERE username = ?',
+                    array($username));
+
+            verify($result->RecordCount() <= 1, 'Too many results for username: '.$username);
+
+            if ($result->RecordCount() == 1)
+            {
                 $this->add_message('error', 'Username already exists.', 'This username has already been taken. Please enter another username.');
 
-            return;
+                return;
+            }
         }
 
         // Add account
