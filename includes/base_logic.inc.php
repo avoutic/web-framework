@@ -46,6 +46,7 @@ class User extends DataCore
     const RESULT_SUCCESS = 0;
     const ERR_DUPLICATE_EMAIL = 1;
     const ERR_ORIG_PASSWORD_MISMATCH = 2;
+    const ERR_NEW_PASSWORD_TOO_WEAK = 3;
 
     static protected $table_name = 'users';
     static protected $base_fields = array('username', 'email', 'terms_accepted', 'verified', 'last_login', 'failed_login');
@@ -157,6 +158,9 @@ class User extends DataCore
         //
         if ($this->check_password($old_password) !== TRUE)
             return User::ERR_ORIG_PASSWORD_MISMATCH;
+
+        if (strlen($new_password) < 8)
+            return User::ERR_NEW_PASSWORD_TOO_WEAK;
 
         // Change password
         //

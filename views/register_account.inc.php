@@ -117,6 +117,12 @@ class PageRegister extends Pagebasic
             $success = false;
         }
 
+        if (strlen($password) < 8)
+        {
+            $this->add_message('error', 'Password is too weak.', 'Use at least 8 characters.');
+            $success = false;
+        }
+
         if (!strlen($email)) {
             $this->add_message('error', 'Please enter a correct e-mail address.', 'E-mail addresses can contain letters, digits, hyphens, underscores, dots and at\'s.');
             $success = false;

@@ -78,6 +78,12 @@ class PageChangePassword extends PageBasic
             return;
         }
 
+        if ($result == User::ERR_NEW_PASSWORD_TOO_WEAK)
+        {
+            $this->add_message('error', 'New password is too weak.', 'Use at least 8 characters.');
+            return;
+        }
+
         if ($result != User::RESULT_SUCCESS)
         {
             $this->add_message('error', 'Unknown errorcode: \''.$result."'", "Please inform the administrator.");
