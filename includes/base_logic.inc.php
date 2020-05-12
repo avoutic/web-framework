@@ -429,6 +429,33 @@ class BaseFactory extends FactoryCore
         return $this->get_core_object($type, array('email' => $email));
     }
 
+    function search_users($string, $type = 'User')
+    {
+        $query = <<<SQL
+        SELECT id
+        FROM users
+        WHERE id = ? OR
+              username LIKE ? OR
+              email LIKE ?
+SQL;
+
+        $result = $this->database->Query($query, array(
+                        $string,
+                        "%{$string}%",
+                        "%{$string}%",
+                    ));
+        verify($result !== false, 'Failed to search users');
+
+        $data = array();
+        foreach ($result as $row)
+        {
+            $user = $this->get_user($row['id'], $type);
+            array_push($data, $user);
+        }
+
+        return $data;
+    }
+
     function create_user($username, $password, $email, $terms_accepted, $type = 'User')
     {
         $solid_password = User::new_hash_from_password($password);
