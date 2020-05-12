@@ -60,6 +60,16 @@ abstract class DataCore
         return $info;
     }
 
+    function get_info()
+    {
+        return $this->get_base_fields();
+    }
+
+    function get_admin_info()
+    {
+        return $this->get_info();
+    }
+
     function fill_fields($fill_complex, $obj)
     {
         if ($obj === FALSE)
