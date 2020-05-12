@@ -92,11 +92,8 @@ abstract class DataCore
                 'SELECT `'.implode('`, `', static::$base_fields).'` '.
                 'FROM '.static::$table_name.' WHERE id = ?', array($this->id));
 
-        if ($result === FALSE)
-            die('Failed to retrieve base fields for '.static::$table_name);
-
-        if ($result->RecordCount() != 1)
-            die('Failed to select single item. ('.$result->RecordCount().' for '.$this->id.' in '.static::$table_name.')');
+        verify($result !== false, 'Failed to retrieve base fields for '.static::$table_name);
+        verify($result->RecordCount() == 1, 'Failed to select single item. ('.$result->RecordCount().' for '.$this->id.' in '.static::$table_name.')');
 
         $row = $result->fields;
 
@@ -222,10 +219,10 @@ abstract class DataCore
         if ($this->cache != null && $this->is_cacheable)
             $this->cache->delete(static::get_cache_id($this->id));
 
-        if (FALSE === $this->database->Query(
+        $result = $this->database->Query(
                     'DELETE FROM '.static::$table_name.' WHERE id = ?',
-                    array($this->id)))
-            die('Failed to delete item.');
+                    array($this->id));
+        verify($result !== false, 'Failed to delete item');
 
         return TRUE;
     }
