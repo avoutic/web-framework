@@ -412,6 +412,12 @@ $site_config = array();
 require($site_includes."config.php");
 $global_config = array_replace_recursive($base_config, $site_config);
 
+if (file_exists($site_includes."config_local.php"))
+{
+    require($site_includes."config_local.php");
+    $global_config = array_replace_recursive($global_config, $local_config);
+}
+
 # Enable debugging if requested
 #
 if ($global_config['debug'] == true)
