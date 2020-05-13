@@ -74,5 +74,5 @@ CREATE TABLE sessions (
     `start` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     last_active DATETIME NOT NULL,
     PRIMARY KEY(id),
-    CONSTRAINT `sessions_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+    CONSTRAINT `sessions_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
