@@ -39,6 +39,11 @@ class PageLogin extends PageBasic
         return "Login";
     }
 
+    function get_canonical()
+    {
+        return $this->page_content['login_page'];
+    }
+
     function get_onload()
     {
         return "$('#inputUsername').focus();";

@@ -127,6 +127,11 @@ abstract class PageBasic extends PageCore
         return $this->get_title();
     }
 
+    function get_canonical()
+    {
+        return "";
+    }
+
     function get_onload()
     {
         return "";
