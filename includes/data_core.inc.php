@@ -401,6 +401,15 @@ class FactoryCore
         return $type::get_object($this->global_info, $filter);
     }
 
+    protected function get_core_object_info($type, $filter = array())
+    {
+        verify(class_exists($type), 'Core Object ("'.$type.'") not known');
+
+        $obj = $type::get_object($this->global_info, $filter);
+
+        return $obj->get_info();
+    }
+
     protected function core_object_exists($type, $id)
     {
         verify(class_exists($type), 'Core Object ("'.$type.'") not known');
@@ -420,6 +429,19 @@ class FactoryCore
         verify(class_exists($type), 'Core Object ("'.$type.'") not known');
 
         return $type::get_objects($this->global_info, $offset, $results, $filter, $order);
+    }
+
+    protected function get_core_objects_info($type, $offset = 0, $results = 10, $filter = array(), $order = '')
+    {
+        verify(class_exists($type), 'Core Object ("'.$type.'") not known');
+
+        $objs = $type::get_objects($this->global_info, $offset, $results, $filter, $order);
+
+        $data = array();
+        foreach ($objs as $obj)
+            array_push($data, $obj->get_info());
+
+        return $data;
     }
 
     protected function create_core_object($type, $data)
