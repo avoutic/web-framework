@@ -314,9 +314,29 @@ abstract class DataCore
         return new $class($global_info, $result->fields['id']);
     }
 
+    static function get_object_info($global_info, $filter = array())
+    {
+        $obj = static::get_object($global_info, $filter);
+
+        if ($obj === false)
+            return false;
+
+        return $obj->get_info();
+    }
+
     static function get_object_by_id($global_info, $id)
     {
         return static::get_object($global_info, array('id' => $id));
+    }
+
+    static function get_object_info_by_id($global_info, $id)
+    {
+        $obj = static::get_object($global_info, array('id' => $id));
+
+        if ($obj === false)
+            return false;
+
+        return $obj->get_info();
     }
 
     static function get_objects($global_info, $offset = 0, $results = 10, $filter = array(), $order = '')
@@ -359,6 +379,17 @@ abstract class DataCore
         }
 
         return $info;
+    }
+
+    static function get_objects_info($global_info, $offset = 0, $results = 10, $filter = array(), $order = '')
+    {
+        $objs = static::get_objects($global_info, $offset, $results, $filter, $order);
+
+        $data = array();
+        foreach ($objs as $obj)
+            array_push($data, $obj->get_info());
+
+        return $data;
     }
 
     function to_string()
