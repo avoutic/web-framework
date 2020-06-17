@@ -437,6 +437,8 @@ class FactoryCore
         verify(class_exists($type), 'Core Object ("'.$type.'") not known');
 
         $obj = $type::get_object($this->global_info, $filter);
+        if ($obj === false)
+            return false;
 
         return $obj->get_info();
     }
