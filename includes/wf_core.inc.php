@@ -74,6 +74,7 @@ $base_config = array(
                 'return_page' => '/',
             ),
             'change_email' => array(
+                'location' => '/change-email',
                 'verify_page' => '/change-email-verify',
                 'return_page' => '/',
             ),
