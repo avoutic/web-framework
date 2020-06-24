@@ -32,6 +32,8 @@ class PageChangeEmailVerify extends PageBasic
 
     function do_logic()
     {
+        $change_page = $this->config['pages']['change_email']['location'];
+
         framework_add_bad_ip_hit();
 
         // Check if code is present
@@ -63,7 +65,7 @@ class PageChangeEmailVerify extends PageBasic
         if ($msg['timestamp'] + 600 < time())
         {
             // Expired
-            header("Location: /change-email?".add_message_to_url('error', 'E-mail verification link expired'));
+            header("Location: {$change_page}?".add_message_to_url('error', 'E-mail verification link expired'));
             exit();
         }
 
@@ -77,7 +79,7 @@ class PageChangeEmailVerify extends PageBasic
         {
             $this->auth->deauthenticate();
             $login_page = $this->config['authenticator']['site_login_page'];
-            header("Location: {$login_page}?".add_message_to_url('error', 'Other account', 'The link you used is meant for a different account. The current account has been  logged off. Please try the link again.'));
+            header("Location: {$login_page}?".add_message_to_url('error', 'Other account', 'The link you used is meant for a different account. The current account has been logged off. Please try the link again.'));
             exit();
         }
 
@@ -89,7 +91,7 @@ class PageChangeEmailVerify extends PageBasic
         if (!isset($msg['params']) || !isset($msg['params']['iterator']) ||
             $user->get_security_iterator() != $msg['params']['iterator'])
         {
-            header("Location: /change-email?".add_message_to_url('error', 'E-mail verification link expired'));
+            header("Location: {$change_page}?".add_message_to_url('error', 'E-mail verification link expired'));
             exit();
         }
 
