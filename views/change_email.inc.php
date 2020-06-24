@@ -22,6 +22,16 @@ class PageChangeEmail extends PageBasic
         return "Change email address";
     }
 
+    // Can be overriden for project specific user factories and user classes
+    //
+    function get_user($username)
+    {
+        $factory = new BaseFactory($this->global_info);
+        $user = $factory->get_user_by_username($username);
+
+        return $user;
+    }
+
     function do_logic()
     {
         $email = $this->get_input_var('email');
@@ -41,8 +51,7 @@ class PageChangeEmail extends PageBasic
 
         // Change email
         //
-        $factory = new BaseFactory($this->global_info);
-        $user = $factory->get_user($this->state['user_id']);
+        $user = $this->get_user($this->state['user_id']);
         $old_email = $user->email;
 
         // Send verification mail
