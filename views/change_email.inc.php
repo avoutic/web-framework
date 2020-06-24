@@ -51,7 +51,7 @@ class PageChangeEmail extends PageBasic
 
         // Change email
         //
-        $user = $this->get_user($this->state['user_id']);
+        $user = $this->get_user($this->state['username']);
         $old_email = $user->email;
 
         // Send verification mail
