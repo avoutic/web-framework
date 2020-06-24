@@ -45,15 +45,8 @@ class PageChangeEmailVerify extends PageBasic
             exit();
         }
 
-        $str = decode_and_verify_string($code);
-        if (!strlen($str))
-        {
-            framework_add_bad_ip_hit(4);
-            exit();
-        }
-
-        $msg = json_decode($str, true);
-        if (!is_array($msg))
+        $msg = decode_and_verify_array($code);
+        if (!$msg)
             exit();
 
         if ($msg['action'] != 'change_email')
