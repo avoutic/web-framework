@@ -92,14 +92,10 @@ class PageChangeEmailVerify extends PageBasic
 
         if ($result == User::ERR_DUPLICATE_EMAIL)
         {
-            $this->add_message('error', 'E-mail address is already in use in another account.', 'The e-mail address is already in use and cannot be re-used in this account. Please choose another address.');
-            return;
+            header("Location: {$change_page}?".add_message_to_url('error', 'E-mail address is already in use in another account.', 'The e-mail address is already in use and cannot be re-used in this account. Please choose another address.'));
+            exit();
         }
-        if ($result != User::RESULT_SUCCESS)
-        {
-            $this->add_message('error', 'Unknown errorcode: \''.$result."'", "Please inform the administrator.");
-            return;
-        }
+        verify($result == User::RESULT_SUCCESS, 'Unknown change email error');
 
         // Invalidate old sessions
         //
