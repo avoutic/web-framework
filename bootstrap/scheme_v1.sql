@@ -13,7 +13,6 @@ INSERT INTO rights set short_name='debug', name='Debug information';
 CREATE TABLE `users` (
   `id` int(11) NOT NULL auto_increment,
   `username` varchar(255) NOT NULL,
-  `password` varchar(255) NOT NULL DEFAULT '',
   `solid_password` varchar(255) NOT NULL,
   `name` varchar(255) NOT NULL DEFAULT '',
   `email` varchar(255) NOT NULL,
