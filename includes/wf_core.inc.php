@@ -15,7 +15,6 @@ $base_config = array(
         'disabled_pages' => array(),
         'registration' => array(
             'allow_registration' => true,
-            'email_is_username' => false,
             'after_verify_page' => '/',
         ),
         'database_enabled' => false,
@@ -37,9 +36,8 @@ $base_config = array(
         'auth_mode' => 'redirect',            // redirect, www-authenticate, custom (requires auth_module)
         'auth_module' => '',
         'authenticator' => array(
-            'login_with_email' => 'false',
+            'unique_identifier' => 'email',
             'site_login_page' => '/login',
-            'default_login_return' => '/',
             'auth_required_message' => 'Authentication required. Please login.',
             'session_timeout' => 900,
         ),
