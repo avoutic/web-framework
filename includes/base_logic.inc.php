@@ -1,5 +1,4 @@
 <?php
-require_once('mail_message.inc.php');
 require_once('data_core.inc.php');
 require_once('config_values.inc.php');
 
