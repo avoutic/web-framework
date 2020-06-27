@@ -61,7 +61,7 @@ class User extends DataCore
         WHERE ur.user_id = ?
 SQL;
 
-        $result = $this->database->Query($query, array($this->id));
+        $result = $this->query($query, array($this->id));
         verify($result !== false, 'Failed to retrieve user rights.');
 
         foreach($result as $k => $row)
@@ -199,7 +199,7 @@ SQL;
             WHERE LOWER(email) = LOWER(?)
 SQL;
 
-            $result = $this->database->Query($query, array($email));
+            $result = $this->query($query, array($email));
 
             if ($result->RecordCount() > 0)
                 return User::ERR_DUPLICATE_EMAIL;
@@ -230,7 +230,7 @@ SQL;
         {
             // Check if unique
             //
-            $result = $this->database->Query('SELECT id FROM users WHERE LOWER(email) = LOWER(?)', array($email));
+            $result = $this->query('SELECT id FROM users WHERE LOWER(email) = LOWER(?)', array($email));
 
             if ($result->RecordCount() > 0)
                 return User::ERR_DUPLICATE_EMAIL;
@@ -278,7 +278,7 @@ SQL;
                        )
 SQL;
 
-        $result = $this->database->InsertQuery($query,
+        $result = $this->insert_query($query,
                 array(
                     $this->id,
                     $short_name
@@ -305,7 +305,7 @@ SQL;
 SQL;
 
 
-        $result = $this->database->Query($query,
+        $result = $this->query($query,
                 array(
                     $short_name,
                     $this->id
@@ -463,7 +463,7 @@ class BaseFactory extends FactoryCore
               email LIKE ?
 SQL;
 
-        $result = $this->database->Query($query, array(
+        $result = $this->query($query, array(
                         $string,
                         "%{$string}%",
                         "%{$string}%",

@@ -13,7 +13,7 @@ class LocaleFactory extends FrameworkCore
 
     function get_all_languages()
     {
-        $result = $this->database->Query('SELECT language, name FROM languages', array());
+        $result = $this->query('SELECT language, name FROM languages', array());
 
         verify($result !== FALSE, 'Failed to select languages');
 
@@ -35,7 +35,7 @@ class LocaleFactory extends FrameworkCore
 
     function update_available_languages()
     {
-        $result = $this->database->Query('SELECT language, name FROM languages', array());
+        $result = $this->query('SELECT language, name FROM languages', array());
         verify($result !== FALSE, 'Failed to retrieve languages');
 
         $info = array();
@@ -47,7 +47,7 @@ class LocaleFactory extends FrameworkCore
 
     function set_current_language($lang, $update_locale = true)
     {
-        $result = $this->database->Query('SELECT id FROM languages WHERE language = ?',
+        $result = $this->query('SELECT id FROM languages WHERE language = ?',
                 array($lang));
 
         verify($result !== FALSE, 'Failed to check language');
@@ -85,7 +85,7 @@ class LocaleFactory extends FrameworkCore
 
     function get_locale_by_lang($code)
     {
-        $result = $this->database->Query('SELECT locale_string FROM languages WHERE language = ?',
+        $result = $this->query('SELECT locale_string FROM languages WHERE language = ?',
                 array($code));
 
         verify($result !== FALSE, 'Failed to select locale');
@@ -128,7 +128,7 @@ class CountryLocaleFactory extends LocaleFactory
     {
         $current_country = $this->get_current_country();
 
-        $result = $this->database->Query('SELECT l.language, l.name FROM languages AS l, country_languages AS cl, countries AS c WHERE c.code = ? AND cl.country_id = c.id AND l.language = cl.language',
+        $result = $this->query('SELECT l.language, l.name FROM languages AS l, country_languages AS cl, countries AS c WHERE c.code = ? AND cl.country_id = c.id AND l.language = cl.language',
                 array($current_country));
 
         verify($result !== FALSE, 'Failed to retrieve country languages');
@@ -157,7 +157,7 @@ class CountryLocaleFactory extends LocaleFactory
 
     function get_country_default_language($country_code)
     {
-        $result = $this->database->Query('SELECT cl.language FROM country_languages AS cl, countries AS c WHERE c.code = ? AND cl.country_id = c.id AND country_default = 1 LIMIT 1',
+        $result = $this->query('SELECT cl.language FROM country_languages AS cl, countries AS c WHERE c.code = ? AND cl.country_id = c.id AND country_default = 1 LIMIT 1',
                 array($country_code));
 
         verify($result !== FALSE, 'Failed to select default language for country');
@@ -169,7 +169,7 @@ class CountryLocaleFactory extends LocaleFactory
 
     function language_supported_for_country($lang, $country_code)
     {
-        $result = $this->database->Query('SELECT cl.id FROM country_languages AS cl, countries AS c WHERE c.code = ? AND cl.country_id = c.id AND cl.language = ? LIMIT 1',
+        $result = $this->query('SELECT cl.id FROM country_languages AS cl, countries AS c WHERE c.code = ? AND cl.country_id = c.id AND cl.language = ? LIMIT 1',
                 array($country_code, $lang));
 
         verify($result !== FALSE, 'Failed to check if language supported');

@@ -60,7 +60,7 @@ class PageManageUser extends PageBasic
         $this->page_content['user']['verified'] = $user->is_verified();
         $this->page_content['user']['rights'] = array();
 
-        $result_r = $this->database->Query('SELECT ur.id, r.short_name, r.name FROM rights AS r, user_rights AS ur WHERE r.id = ur.right_id AND ur.user_id = ?',
+        $result_r = $this->query('SELECT ur.id, r.short_name, r.name FROM rights AS r, user_rights AS ur WHERE r.id = ur.right_id AND ur.user_id = ?',
                 array($user_id));
 
         if ($result_r->RecordCount() > 0) {
@@ -70,7 +70,7 @@ class PageManageUser extends PageBasic
 
         $this->page_content['rights'] = array();
 
-        $result_all_r = $this->database->Query('SELECT r.id, r.short_name, r.name FROM rights AS r', array());
+        $result_all_r = $this->query('SELECT r.id, r.short_name, r.name FROM rights AS r', array());
 
         if ($result_all_r->RecordCount() > 0) {
             foreach ($result_all_r as $k => $row)

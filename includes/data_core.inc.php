@@ -85,7 +85,7 @@ abstract class DataCore extends FrameworkCore
 
     private function fill_base_fields_from_db()
     {
-        $result = $this->database->Query(
+        $result = $this->query(
                 'SELECT `'.implode('`, `', static::$base_fields).'` '.
                 'FROM '.static::$table_name.' WHERE id = ?', array($this->id));
 
@@ -110,7 +110,7 @@ abstract class DataCore extends FrameworkCore
 
     function get_field($field)
     {
-        $result = $this->database->Query('SELECT `'.$field.'` FROM '.static::$table_name.
+        $result = $this->query('SELECT `'.$field.'` FROM '.static::$table_name.
                                          ' WHERE id = ?', array($this->id));
         verify($result !== false, 'Failed to retrieve '.$field.' for '.static::$table_name);
 
@@ -137,7 +137,7 @@ abstract class DataCore extends FrameworkCore
         $query .= 'WHERE id = ?';
         $args[] = $this->id;
 
-        $result = $this->database->Query($query, $args);
+        $result = $this->query($query, $args);
         $class = get_called_class();
         verify($result !== false, 'Failed to update object ('.$class.')');
 
@@ -154,7 +154,7 @@ abstract class DataCore extends FrameworkCore
         $query .= 'WHERE id = ?';
         $args[] = $this->id;
 
-        $result = $this->database->Query($query, $args);
+        $result = $this->query($query, $args);
         $class = get_called_class();
         verify($result !== false, 'Failed to update object ('.$class.')');
 
@@ -180,7 +180,7 @@ abstract class DataCore extends FrameworkCore
         $query .= 'WHERE id = ?';
         $args[] = $this->id;
 
-        $result = $this->database->Query($query, $args);
+        $result = $this->query($query, $args);
         $class = get_called_class();
         verify($result !== false, 'Failed to decrease field of object ('.$class.')');
 
@@ -196,7 +196,7 @@ abstract class DataCore extends FrameworkCore
         $query .= 'WHERE id = ?';
         $args[] = $this->id;
 
-        $result = $this->database->Query($query, $args);
+        $result = $this->query($query, $args);
         $class = get_called_class();
         verify($result !== false, 'Failed to increase field of object ('.$class.')');
 
@@ -208,7 +208,7 @@ abstract class DataCore extends FrameworkCore
         if ($this->cache != null && $this->is_cacheable)
             $this->cache->delete(static::get_cache_id($this->id));
 
-        $result = $this->database->Query(
+        $result = $this->query(
                     'DELETE FROM '.static::$table_name.' WHERE id = ?',
                     array($this->id));
         verify($result !== false, 'Failed to delete item');

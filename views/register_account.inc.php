@@ -164,7 +164,7 @@ class PageRegister extends Pagebasic
         //
         if ($identifier == 'email')
         {
-            $result = $this->database->Query('SELECT id FROM users WHERE email = ?',
+            $result = $this->query('SELECT id FROM users WHERE email = ?',
                     array($email));
 
             verify($result->RecordCount() <= 1, 'Too many results for email: '.$email);
@@ -178,7 +178,7 @@ class PageRegister extends Pagebasic
         }
         else
         {
-            $result = $this->database->Query('SELECT id FROM users WHERE username = ?',
+            $result = $this->query('SELECT id FROM users WHERE username = ?',
                     array($username));
 
             verify($result->RecordCount() <= 1, 'Too many results for username: '.$username);

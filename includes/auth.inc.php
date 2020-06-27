@@ -111,7 +111,7 @@ class AuthRedirect extends Authenticator
         $timeout = $this->config['authenticator']['session_timeout'];
         $timestamp = date('Y-m-d H:i:s');
 
-        $this->get_db()->Query('DELETE FROM sessions WHERE ADDDATE(last_active, INTERVAL ? SECOND) < ?', array($timeout, $timestamp));
+        $this->query('DELETE FROM sessions WHERE ADDDATE(last_active, INTERVAL ? SECOND) < ?', array($timeout, $timestamp));
     }
 
     function register_session($user_id, $session_id)
@@ -130,7 +130,7 @@ class AuthRedirect extends Authenticator
 
     function invalidate_sessions($user_id)
     {
-        $result = $this->get_db()->Query('DELETE FROM sessions WHERE user_id = ?', array($user_id));
+        $result = $this->query('DELETE FROM sessions WHERE user_id = ?', array($user_id));
         verify($result !== FALSE, 'Failed to delete all user\'s sessions');
     }
 

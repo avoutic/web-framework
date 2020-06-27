@@ -18,7 +18,7 @@ class PageUserOverview extends PageBasic
     {
         // Retrieve users
         //
-        $result = $this->database->Query('SELECT id, username, name, email FROM users ORDER BY username', array());
+        $result = $this->query('SELECT id, username, name, email FROM users ORDER BY username', array());
 
         $this->page_content['user_info'] = array();
 

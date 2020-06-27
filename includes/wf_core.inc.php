@@ -567,7 +567,7 @@ if ($global_config['cache_enabled'] == true)
 
 class FrameworkCore
 {
-    protected $database;
+    private $database;
     private $databases;
     protected $cache;
     protected $config;
@@ -590,6 +590,16 @@ class FrameworkCore
 
         verify(array_key_exists($tag, $this->databases), 'Database not registered');
         return $this->databases[$tag];
+    }
+
+    protected function query($query, $params)
+    {
+        return $this->database->Query($query, $params);
+    }
+
+    protected function insert_query($query, $params)
+    {
+        return $this->database->InsertQuery($query, $params);
     }
 }
 
