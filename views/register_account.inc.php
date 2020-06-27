@@ -205,7 +205,7 @@ class PageRegister extends Pagebasic
     {
         // Send mail to administrator
         //
-        SenderCore::send_raw(MAIL_ADDRESS, SITE_NAME.": User '".$user->username."' registered.",
+        SenderCore::send_raw($this->config['sender_core']['default_sender'], SITE_NAME.": User '".$user->username."' registered.",
                 "The user with username '".$user->username."' registered.\n".
                 "E-mail is: '".$user->email."'.");
 

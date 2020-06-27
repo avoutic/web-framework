@@ -89,11 +89,6 @@ $base_config = array(
         ),
 );
 
-function log_mail($title, $content)
-{
-    mail(MAIL_ADDRESS, $title, $content, "From: Log Handler ".SITE_NAME." <".MAIL_ADDRESS.">\n");
-}
-
 function scrub_state(&$item)
 {
     global $global_info;
@@ -218,7 +213,7 @@ function assert_handler($file, $line, $message, $error_type, $silent = false)
         $debug_message.= "\n----------------------------\n\n";
         $debug_message.= "Server variables:\n".print_r($_SERVER, true);
 
-        SenderCore::send_raw(MAIL_ADDRESS, 'Assertion failed',
+        SenderCore::send_raw($global_config['sender_core']['default_sender'], 'Assertion failed',
                 "Failure information: $error_type\n\nServer: ".$global_config['server_name']."\n<pre>".$debug_message.'</pre>');
     }
 
@@ -486,9 +481,6 @@ if (is_file($site_includes."site_defines.inc.php"))
 
 # Check if needed site defines are entered
 #
-if (!defined('MAIL_ADDRESS'))
-	define('MAIL_ADDRESS', 'unknown@unknown.com');
-
 if (!defined('MAIL_FOOTER'))
 	define('MAIL_FOOTER', '');
 
@@ -500,6 +492,7 @@ if (!defined('SITE_DEFAULT_PAGE'))
 
 # Check for required values
 #
+verify(strlen($global_config['sender_core']['default_sender']), 'No default_sender specified. Required for mailing verify information');
 verify(strlen($global_config['security']['hmac_key']) > 20, 'No or too short HMAC Key provided (Minimum 20 chars)');
 verify(strlen($global_config['security']['crypt_key']) > 20, 'No or too short Crypt Key provided (Minimum 20 chars)');
 
