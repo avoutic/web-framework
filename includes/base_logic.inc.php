@@ -434,23 +434,30 @@ class BaseFactory extends FactoryCore
 {
     function get_user($user_id, $type = 'User')
     {
-        verify(class_exists($type), 'Selected type does not exist');
-        return new $type($user_id);
+        verify(class_exists($type), 'Class does not exist');
+
+        return $type::get_object_by_id($user_id);
     }
 
     function get_users($offset = 0, $results = 10, $type = 'User')
     {
-        return $this->get_core_objects($type, $offset, $results);
+        verify(class_exists($type), 'Class does not exist');
+
+        return $type::get_objects($offset, $results);
     }
 
     function get_user_by_username($username, $type = 'User')
     {
-        return $this->get_core_object($type, array('username' => $username));
+        verify(class_exists($type), 'Class does not exist');
+
+        return $type::get_object(array('username' => $username));
     }
 
     function get_user_by_email($email, $type = 'User')
     {
-        return $this->get_core_object($type, array('email' => $email));
+        verify(class_exists($type), 'Class does not exist');
+
+        return $type::get_object(array('email' => $email));
     }
 
     function search_users($string, $type = 'User')
@@ -482,9 +489,11 @@ SQL;
 
     function create_user($username, $password, $email, $terms_accepted, $type = 'User')
     {
+        verify(class_exists($type), 'Class does not exist');
+
         $solid_password = User::new_hash_from_password($password);
 
-        $user = $this->create_core_object($type, array(
+        $user = $type::create(array(
                             'username' => $username,
                             'solid_password' => $solid_password,
                             'email' => $email,

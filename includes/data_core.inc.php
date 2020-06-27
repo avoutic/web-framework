@@ -394,75 +394,13 @@ abstract class DataCore extends FrameworkCore
     }
 };
 
+// Can be used to register factories centrally
+//
 class FactoryCore extends FrameworkCore
 {
-    protected function get_core_object_by_id($type, $id)
+    function __construct()
     {
-        verify(class_exists($type), 'Core Object ("'.$type.'") not known');
-
-        if (false === $type::exists($id))
-            return false;
-
-        return new $type($id);
-    }
-
-    protected function get_core_object($type, $filter = array())
-    {
-        verify(class_exists($type), 'Core Object ("'.$type.'") not known');
-
-        return $type::get_object($filter);
-    }
-
-    protected function get_core_object_info($type, $filter = array())
-    {
-        verify(class_exists($type), 'Core Object ("'.$type.'") not known');
-
-        $obj = $type::get_object($filter);
-        if ($obj === false)
-            return false;
-
-        return $obj->get_info();
-    }
-
-    protected function core_object_exists($type, $id)
-    {
-        verify(class_exists($type), 'Core Object ("'.$type.'") not known');
-
-        return $type::exists($id);
-    }
-
-    protected function get_core_object_count($type, $filter = array())
-    {
-        verify(class_exists($type), 'Core Object ("'.$type.'") not known');
-
-        return $type::count_objects($filter);
-    }
-
-    protected function get_core_objects($type, $offset = 0, $results = 10, $filter = array(), $order = '')
-    {
-        verify(class_exists($type), 'Core Object ("'.$type.'") not known');
-
-        return $type::get_objects($offset, $results, $filter, $order);
-    }
-
-    protected function get_core_objects_info($type, $offset = 0, $results = 10, $filter = array(), $order = '')
-    {
-        verify(class_exists($type), 'Core Object ("'.$type.'") not known');
-
-        $objs = $type::get_objects($offset, $results, $filter, $order);
-
-        $data = array();
-        foreach ($objs as $obj)
-            array_push($data, $obj->get_info());
-
-        return $data;
-    }
-
-    protected function create_core_object($type, $data)
-    {
-        verify(class_exists($type), 'Core Object ("'.$type.'") not known');
-
-        return $type::create($data);
+        parent::__construct();
     }
 };
 ?>
