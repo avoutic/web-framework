@@ -17,7 +17,7 @@ abstract class DataCore
         $this->cache = $global_info['cache'];
         $this->id = $id;
 
-        $obj = FALSE;
+        $obj = false;
 
         if ($this->cache != null && $this->is_cacheable)
             $obj = $this->cache->get(static::get_cache_id($id));
@@ -28,19 +28,19 @@ abstract class DataCore
     static function exists($global_info, $id)
     {
         if ($global_info['cache'] != null && static::$is_cacheable)
-            if (FALSE !== $global_info->cache->get(static::get_cache_id($id)))
-                return TRUE;
+            if (false !== $global_info->cache->exists(static::get_cache_id($id)))
+                return true;
 
         $result = $global_info['database']->Query('SELECT id FROM '.static::$table_name.
                                    ' WHERE id = ?', array($id));
 
-        if ($result === FALSE)
-            return FALSE;
+        if ($result === false)
+            return false;
 
         if ($result->RecordCount() != 1)
-            return FALSE;
+            return false;
 
-        return TRUE;
+        return true;
     }
 
     static function get_cache_id($id)
@@ -70,9 +70,9 @@ abstract class DataCore
         return $this->get_info();
     }
 
-    function fill_fields($fill_complex, $obj)
+    function fill_fields($fill_complex, $obj = false)
     {
-        if ($obj === FALSE)
+        if ($obj === false)
         {
             $this->fill_base_fields_from_db();
 
@@ -115,7 +115,7 @@ abstract class DataCore
     {
         $result = $this->database->Query('SELECT `'.$field.'` FROM '.static::$table_name.
                                          ' WHERE id = ?', array($this->id));
-        verify($result !== FALSE, 'Failed to retrieve '.$field.' for '.static::$table_name);
+        verify($result !== false, 'Failed to retrieve '.$field.' for '.static::$table_name);
 
         return $result->fields[$field];
     }
@@ -142,12 +142,10 @@ abstract class DataCore
 
         $result = $this->database->Query($query, $args);
         $class = get_called_class();
-        verify($result !== FALSE, 'Failed to update object ('.$class.')');
+        verify($result !== false, 'Failed to update object ('.$class.')');
 
         foreach ($data as $key => $value)
             $this->$key = $value;
-
-        return TRUE;
     }
 
     function update_field($field, $value)
@@ -161,11 +159,9 @@ abstract class DataCore
 
         $result = $this->database->Query($query, $args);
         $class = get_called_class();
-        verify($result !== FALSE, 'Failed to update object ('.$class.')');
+        verify($result !== false, 'Failed to update object ('.$class.')');
 
         $this->$field = $value;
-
-        return TRUE;
     }
 
     function decrease_field($field, $value = 1, $minimum = false)
@@ -189,11 +185,9 @@ abstract class DataCore
 
         $result = $this->database->Query($query, $args);
         $class = get_called_class();
-        verify($result !== FALSE, 'Failed to decrease field of object ('.$class.')');
+        verify($result !== false, 'Failed to decrease field of object ('.$class.')');
 
         $this->$field = $this->get_field($field);
-
-        return TRUE;
     }
 
     function increase_field($field, $value = 1)
@@ -207,11 +201,9 @@ abstract class DataCore
 
         $result = $this->database->Query($query, $args);
         $class = get_called_class();
-        verify($result !== FALSE, 'Failed to increase field of object ('.$class.')');
+        verify($result !== false, 'Failed to increase field of object ('.$class.')');
 
         $this->$field = $this->get_field($field);
-
-        return TRUE;
     }
 
     function delete()
@@ -223,8 +215,6 @@ abstract class DataCore
                     'DELETE FROM '.static::$table_name.' WHERE id = ?',
                     array($this->id));
         verify($result !== false, 'Failed to delete item');
-
-        return TRUE;
     }
 
     static function create($global_info, $data)
@@ -249,7 +239,7 @@ abstract class DataCore
 
         $class = get_called_class();
 
-        verify($result !== FALSE, 'Failed to create object ('.$class.')');
+        verify($result !== false, 'Failed to create object ('.$class.')');
 
         return new $class($global_info, $result);
     }
@@ -274,7 +264,7 @@ abstract class DataCore
 
         $args = $filter;
         $result = $global_info['database']->Query($query, $args);
-        verify($result !== FALSE, 'Failed to count objects');
+        verify($result !== false, 'Failed to count objects');
         verify($result->RecordCount() == 1, 'Failed to count objects');
 
         return $result->fields['cnt'];
@@ -305,11 +295,11 @@ abstract class DataCore
 
         $class = get_called_class();
 
-        verify($result !== FALSE, 'Failed to retrieve object ('.$class.')');
+        verify($result !== false, 'Failed to retrieve object ('.$class.')');
         verify($result->RecordCount() <= 1, 'Non-unique object request ('.$class.')');
 
         if ($result->RecordCount() == 0)
-            return FALSE;
+            return false;
 
         return new $class($global_info, $result->fields['id']);
     }
@@ -370,7 +360,7 @@ abstract class DataCore
 
         $class = get_called_class();
 
-        verify($result !== FALSE, 'Failed to retrieve objects ('.$class.')');
+        verify($result !== false, 'Failed to retrieve objects ('.$class.')');
 
         $info = array();
         foreach($result as $k => $row)
@@ -419,8 +409,8 @@ class FactoryCore
     {
         verify(class_exists($type), 'Core Object ("'.$type.'") not known');
 
-        if (FALSE === $type::exists($this->global_info, $id))
-            return FALSE;
+        if (false === $type::exists($this->global_info, $id))
+            return false;
 
         return new $type($this->global_info, $id);
     }
