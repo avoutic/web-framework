@@ -42,7 +42,7 @@ $base_config = array(
             'session_timeout' => 900,
         ),
         'page' => array(
-            'default_frame_file' => '',
+            'default_frame_file' => 'default_frame.inc.php',
             'mods' => array()               // Should at least contain class, and include_file of mod!
         ),
         'security' => array(
