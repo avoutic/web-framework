@@ -20,6 +20,7 @@ class PageVerify extends PageBasic
     function do_logic()
     {
         $login_page = $this->config['pages']['login']['location'];
+        $after_verify_page = $this->config['pages']['login']['after_verify_page'];
 
         // Check if code is present
         //
@@ -56,19 +57,15 @@ class PageVerify extends PageBasic
         if ($user === FALSE)
             return;
 
-        if ($user->is_verified())
+        if (!$user->is_verified())
         {
-            $after_verify_page = $this->config['pages']['login']['after_verify_page'];
-            header("Location: ${after_verify_page}?".add_message_to_url('success', 'User already verified.'));
-            exit();
+            $user->set_verified();
+            $this->custom_after_verify_actions($user, $msg['params']);
         }
-
-        $user->set_verified();
-        $this->custom_after_verify_actions($user, $msg['params']);
 
         // Redirect to main sceen
         //
-        header("Location: ${login_page}?".add_message_to_url('success', 'Verification succeeded', 'Verification succeeded. You can now use your account.')."&return_page=".$this->config['registration']['after_verify_page']);
+        header("Location: ${login_page}?".add_message_to_url('success', 'Verification succeeded', 'Verification succeeded. You can now use your account.')."&return_page=".urlencode($after_verify_page));
         exit();
     }
 };
