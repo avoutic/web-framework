@@ -414,7 +414,7 @@ else
     $matches = null;
 }
 
-if (!$include_page) $include_page = SITE_DEFAULT_PAGE;
+if (!$include_page) $include_page = $global_config['page']['default_page'];
 
 # Check if page is allowed
 #

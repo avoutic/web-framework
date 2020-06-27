@@ -22,6 +22,7 @@ $base_config = array(
         'databases' => array(),             // list of extra database tags to load.
                                             // files will be retrieved from 'includes/db_config.{TAG}.php'
         'db_version' => 1,
+        'site_name' => 'Unknown',
         'server_name' => (isset($_SERVER['SERVER_NAME']))?$_SERVER['SERVER_NAME']:'app',
         'http_mode' => 'https',
         'document_root' => $_SERVER['DOCUMENT_ROOT'],
@@ -42,6 +43,7 @@ $base_config = array(
         ),
         'page' => array(
             'default_frame_file' => 'default_frame.inc.php',
+            'default_page' => 'main',
             'mods' => array()               // Should at least contain class, and include_file of mod!
         ),
         'security' => array(
@@ -478,17 +480,6 @@ require_once($includes."config_values.inc.php");
 
 if (is_file($site_includes."site_defines.inc.php"))
     include_once($site_includes."site_defines.inc.php");
-
-# Check if needed site defines are entered
-#
-if (!defined('MAIL_FOOTER'))
-	define('MAIL_FOOTER', '');
-
-if (!defined('SITE_NAME'))
-	define('SITE_NAME', 'Unknown');
-
-if (!defined('SITE_DEFAULT_PAGE'))
-	define('SITE_DEFAULT_PAGE', 'main');
 
 # Check for required values
 #
