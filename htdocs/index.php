@@ -286,7 +286,6 @@ header('X-Random:'. substr(sha1(time()), 0, rand(1, 40)));
 header('X-Frame-Options: SAMEORIGIN');
 
 $fixed_page_filter = array(
-        'page'	=> '[\w\._\-\/]+',
         'msg' => '.*',
         'token' => '.*',
         'do' => 'yes|preview',
@@ -375,7 +374,9 @@ $request_uri = $_SERVER['REQUEST_METHOD'].' '.$request_uri;
 
 # Check if there is a route to follow
 #
+$include_page = '';
 $target_info = null;
+
 foreach ($route_array as $target)
 {
     $route = $target['regex'];
@@ -386,7 +387,6 @@ foreach ($route_array as $target)
     }
 }
 
-$include_page = "";
 if ($target_info != null)
 {
     // Matched in the route array
@@ -403,18 +403,11 @@ if ($target_info != null)
 
     $include_page = $target_info['include_file'];
 }
-else
-{
-    if (!preg_match("/^\w+ [\w\.\-_\/]+$/m", $request_uri))
-        send_404();
+else if ($request_uri == 'GET /')
+    $include_page = $global_config['page']['default_page'];
 
-    $include_page = $global_state['input']['page'];
-    if (!$include_page && isset($_GET['page']) && strlen($_GET['page']))
-        send_404();
-    $matches = null;
-}
-
-if (!$include_page) $include_page = $global_config['page']['default_page'];
+if (!strlen($include_page))
+    send_404();
 
 # Check if page is allowed
 #
@@ -459,7 +452,7 @@ if (function_exists('site_get_filter'))
     array_walk($site_filter, 'validate_input');
 }
 
-function call_obj_func($global_info, $object_name, $function_name, $matches = NULL)
+function call_obj_func($global_info, $object_name, $function_name)
 {
     global $authenticator;
 
@@ -483,26 +476,12 @@ function call_obj_func($global_info, $object_name, $function_name, $matches = NU
         site_do_logic($global_info);
 
     verify(class_exists($object_name), 'Registered route class does not exist');
-
     $page_obj = new $object_name($global_info);
-    $argument_count = 0;
-    if (is_array($matches))
-        $argument_count = count($matches) - 1;
 
     verify(method_exists($page_obj, $function_name), 'Registered route function does not exist');
-
-    if ($argument_count == 0)
-        $page_obj->$function_name();
-    else if ($argument_count == 1)
-        $page_obj->$function_name($matches[1]);
-    else if ($argument_count == 2)
-        $page_obj->$function_name($matches[1], $matches[2]);
-    else if ($argument_count == 3)
-        $page_obj->$function_name($matches[1], $matches[2], $matches[3]);
-    else
-        echo "No method for $argument_count yet..\n";
+    $page_obj->$function_name();
 }
 
-call_obj_func($global_info, $object_name, $function_name, $matches);
+call_obj_func($global_info, $object_name, $function_name);
 
 ?>

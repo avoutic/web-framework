@@ -1,6 +1,5 @@
 RewriteEngine on
 
-RewriteCond %{QUERY_STRING} !^page
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ /index.php?page=$1 [L,NC,QSA]
+RewriteRule ^.*$ /index.php [L,NC,QSA]
