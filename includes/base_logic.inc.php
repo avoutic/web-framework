@@ -55,14 +55,20 @@ class User extends DataCore
 
     protected function fill_complex_fields()
     {
-        $result = $this->database->Query('SELECT right_id FROM user_rights AS ur WHERE ur.user_id = ?',
-                array($this->id));
+        $query = <<<SQL
+        SELECT right_id
+        FROM user_rights AS ur
+        WHERE ur.user_id = ?
+SQL;
 
-        verify($result !== FALSE, 'Failed to retrieve user rights.');
+        $result = $this->database->Query($query, array($this->id));
+        verify($result !== false, 'Failed to retrieve user rights.');
 
         foreach($result as $k => $row)
         {
-            $right = new Right($this->global_info, $row['right_id']);
+            $right = Right::get_object_by_id($this->global_info, $row['right_id']);
+            verify($right !== false, 'Failed to retrieve right');
+
             $this->rights[$right->short_name] = $right;
         }
     }
@@ -81,15 +87,7 @@ class User extends DataCore
 
     function check_password($password)
     {
-        $result = $this->database->Query('SELECT solid_password FROM users WHERE id = ?',
-                array($this->id));
-
-        verify($result !== false, 'Failed to retrieve password data');
-
-        if ($result->RecordCount() != 1)
-            return false;
-
-        $solid_password = $result->fields['solid_password'];
+        $solid_password = $this->get_field('solid_password');
         $stored_hash = 'stored';
         $calculated_hash = 'calculated';
 
@@ -144,8 +142,7 @@ class User extends DataCore
             if ($migrate_password)
             {
                 $solid_password = User::new_hash_from_password($password);
-                $result = $this->update_field('solid_password', $solid_password);
-                verify($result !== FALSE, 'Failed to update solid_password');
+                $this->update_field('solid_password', $solid_password);
             }
 
             $this->update(array(
@@ -163,7 +160,7 @@ class User extends DataCore
     {
         // Check if original password is correct
         //
-        if ($this->check_password($old_password) !== TRUE)
+        if ($this->check_password($old_password) !== true)
             return User::ERR_ORIG_PASSWORD_MISMATCH;
 
         if (strlen($new_password) < 8)
@@ -172,9 +169,7 @@ class User extends DataCore
         // Change password
         //
         $solid_password = User::new_hash_from_password($new_password);
-
-        $result = $this->update_field('solid_password', $solid_password);
-        verify($result !== FALSE, 'Failed to update solid_password');
+        $this->update_field('solid_password', $solid_password);
 
         return User::RESULT_SUCCESS;
     }
@@ -185,8 +180,7 @@ class User extends DataCore
         //
         $solid_password = User::new_hash_from_password($new_password);
 
-        $result = $this->update_field('solid_password', $solid_password);
-        verify($result !== FALSE, 'Failed to update solid_password');
+        $this->update_field('solid_password', $solid_password);
 
         $security_iterator = $this->increase_security_iterator();
 
@@ -199,7 +193,13 @@ class User extends DataCore
         {
             // Check if unique
             //
-            $result = $this->database->Query('SELECT id FROM users WHERE LOWER(email) = LOWER(?)', array($email));
+            $query = <<<SQL
+            SELECT id
+            FROM users
+            WHERE LOWER(email) = LOWER(?)
+SQL;
+
+            $result = $this->database->Query($query, array($email));
 
             if ($result->RecordCount() > 0)
                 return User::ERR_DUPLICATE_EMAIL;
@@ -214,9 +214,7 @@ class User extends DataCore
         if ($this->global_info['config']['authenticator']['unique_identifier'] == 'email')
             $updates['username'] = $email;
 
-        $result = $this->update($updates);
-
-        verify($result !== false, 'Failed to change email');
+        $this->update($updates);
 
         fire_hook('change_email', array(
                                     'user_id' => $this->id,
@@ -264,43 +262,62 @@ class User extends DataCore
 
     function set_verified()
     {
-        $result = $this->update_field('verified', 1);
-        verify($result !== false, 'Failed to update verified status');
+        $this->update_field('verified', 1);
     }
 
     function add_right($short_name)
     {
         if (isset($this->rights[$short_name]))
-            return TRUE;
+            return true;
 
-        $result = $this->database->InsertQuery('INSERT INTO user_rights SET user_id = ?, right_id = (SELECT id FROM rights WHERE short_name = ?)',
+        $query = <<<SQL
+        INSERT INTO user_rights
+        SET user_id = ?,
+            right_id = ( SELECT id
+                         FROM rights
+                         WHERE short_name = ?
+                       )
+SQL;
+
+        $result = $this->database->InsertQuery($query,
                 array(
                     $this->id,
                     $short_name
                     ));
-        verify($result !== FALSE, 'Failed to insert user right');
+        verify($result !== false, 'Failed to insert user right');
 
-        $this->rights[$short_name] = Right::get_object($this->global_info, array('short_name' => $short_name));
+        $this->rights[$short_name] = Right::get_object($this->global_info,
+                                            array('short_name' => $short_name));
 
-        return TRUE;
+        return true;
     }
 
     function delete_right($short_name)
     {
         if (!isset($this->rights[$short_name]))
-            return TRUE;
+            return true;
 
-        $result = $this->database->Query('DELETE FROM user_rights WHERE right_id = (SELECT id FROM rights WHERE short_name = ?) AND user_id = ?',
+        $query = <<<SQL
+        DELETE FROM user_rights
+        WHERE right_id = ( SELECT id
+                           FROM rights
+                           WHERE short_name = ?
+                         ) AND
+              user_id = ?
+SQL;
+
+
+        $result = $this->database->Query($query,
                 array(
                     $short_name,
                     $this->id
                     ));
 
-        verify($result !== FALSE, 'Failed to delete user right');
+        verify($result !== false, 'Failed to delete user right');
 
         unset($this->rights[$short_name]);
 
-        return TRUE;
+        return true;
     }
 
     function has_right($short_name)
@@ -425,9 +442,9 @@ class BaseFactory extends FactoryCore
         return new $type($this->global_info, $user_id);
     }
 
-    function get_users($offset = 0, $results = 100)
+    function get_users($offset = 0, $results = 10, $type = 'User')
     {
-        return $this->get_core_objects('User', $offset, $results);
+        return $this->get_core_objects($type, $offset, $results);
     }
 
     function get_user_by_username($username, $type = 'User')
