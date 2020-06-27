@@ -500,39 +500,4 @@ SQL;
         return $user;
     }
 };
-
-class ItemStore
-{
-    protected $data = array();
-    protected $id;
-
-    function __construct($id)
-    {
-        $this->id = $id;
-    }
-
-    function get_id()
-    {
-        return $this->id;
-    }
-
-    function invalidate()
-    {
-        $this->data = array();
-    }
-
-    function get_value($tag)
-    {
-        if (isset($this->data[$tag]))
-            return $this->data[$tag];
-
-        return FALSE;
-    }
-
-    function set_value($tag, $value)
-    {
-        $this->data[$tag] = $value;
-    }
-};
-
 ?>
