@@ -28,15 +28,8 @@ class PageResetPassword extends PageBasic
             return;
         }
 
-        $str = decode_and_verify_string($code);
-        if (!strlen($str))
-        {
-            framework_add_bad_ip_hit(4);
-            return;
-        }
-
-        $msg = json_decode($str, true);
-        if (!is_array($msg))
+        $msg = decode_and_verify_array($code);
+        if (!$msg)
             return;
 
         if ($msg['action'] != 'reset_password')

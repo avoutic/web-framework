@@ -166,11 +166,8 @@ function add_message_to_url($mtype, $message, $extra_message = '')
 
 function add_message_from_url($url_str)
 {
-    $str = decode_and_verify_string($url_str);
-    if (!strlen($str))
-        return;
-
-    $msg = json_decode($str, true);
+    $msg = decode_and_verify_array($url_str);
+    verify($msg !== false, 'Illegal message in url');
 
     set_message($msg['mtype'], $msg['message'], $msg['extra_message']);
 }
