@@ -165,7 +165,22 @@ function assert_handler($file, $line, $message, $error_type, $silent = false)
 
     $trace = debug_backtrace();
     if (is_array($trace))
+    {
+        $i = 0;
+        while(count($trace))
+        {
+            if (in_array($trace[$i]['function'],
+                array('assert_handler', 'verify', 'silent_verify')))
+            {
+                unset($trace[$i]);
+                $i++;
+                continue;
+            }
+            break;
+        }
+
         scrub_state($trace);
+    }
 
     $db_error = 'Not initialized yet';
     if (isset($global_database))
@@ -212,7 +227,12 @@ function assert_handler($file, $line, $message, $error_type, $silent = false)
 // Only go into assert_handler once
 $in_verify = false;
 
-function verify($bool, $message)
+function silent_verify($bool, $message)
+{
+    verify($bool, $message, true);
+}
+
+function verify($bool, $message, $silent = false)
 {
     if ($bool)
         return true;
@@ -224,8 +244,10 @@ function verify($bool, $message)
     $in_verify = true;
     $bt = debug_backtrace();
     $caller = array_shift($bt);
+    if ($caller['function'] == 'verify')
+        $caller = array_shift($bt);
 
-    assert_handler($caller['file'], $caller['line'], $message, 'verify');
+    assert_handler($caller['file'], $caller['line'], $message, 'verify', $silent);
     exit();
 }
 
