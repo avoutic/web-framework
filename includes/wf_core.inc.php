@@ -84,7 +84,6 @@ $base_config = array(
                 'after_verify_page' => '/',
             ),
         ),
-        'dispatch_mail_include' => $includes.'send_mail.inc.php',
         'sender_core' => array(
             'handler_class' => 'SenderCore',
             'default_sender' => '',
@@ -490,14 +489,13 @@ verify(strlen($global_config['security']['crypt_key']) > 20, 'No or too short Cr
 # Start with a clean slate
 #
 unset($global_state);
-$global_state['debug'] = false;
 $global_state['logged_in'] = false;
 $global_state['permissions'] = array();
 $global_state['input'] = array();
 $global_state['raw_input'] = array();
 $global_state['messages'] = array();
-
 $global_state['raw_post'] = array();
+
 $data = file_get_contents("php://input");
 $data = json_decode($data, true);
 if (is_array($data))
