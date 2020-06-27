@@ -19,6 +19,8 @@ class PageVerify extends PageBasic
 
     function do_logic()
     {
+        $login_page = $this->config['pages']['login']['location'];
+
         // Check if code is present
         //
         $code = $this->get_input_var('code');
@@ -48,7 +50,6 @@ class PageVerify extends PageBasic
         if ($msg['timestamp'] + 86400 < time())
         {
             // Expired
-            $login_page = $this->config['authenticator']['site_login_page'];
             header("Location: ${login_page}?".add_message_to_url('error', 'Verification mail expired', 'Please <a href="/login">request a new one</a> after logging in.'));
             exit();
         }
@@ -74,7 +75,6 @@ class PageVerify extends PageBasic
 
         // Redirect to main sceen
         //
-        $login_page = $this->config['authenticator']['site_login_page'];
         header("Location: ${login_page}?".add_message_to_url('success', 'Verification succeeded', 'Verification succeeded. You can now use your account.')."&return_page=".$this->config['registration']['after_verify_page']);
         exit();
     }

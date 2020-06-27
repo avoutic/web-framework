@@ -37,7 +37,6 @@ $base_config = array(
         'auth_module' => '',
         'authenticator' => array(
             'unique_identifier' => 'email',
-            'site_login_page' => '/login',
             'auth_required_message' => 'Authentication required. Please login.',
             'session_timeout' => 900,
         ),
@@ -61,6 +60,7 @@ $base_config = array(
         ),
         'pages' => array(
             'login' => array(
+                'location' => '/login',
                 'send_verify_page' => '/send-verify',
                 'verify_page' => '/verify',
                 'after_verify_page' => '/',
@@ -77,6 +77,9 @@ $base_config = array(
                 'location' => '/change-email',
                 'verify_page' => '/change-email-verify',
                 'return_page' => '/',
+            ),
+            'send_verify' => array(
+                'after_verify_page' => '/',
             ),
         ),
         'dispatch_mail_include' => $includes.'send_mail.inc.php',

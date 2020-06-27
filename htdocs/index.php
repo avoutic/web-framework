@@ -143,7 +143,7 @@ function enforce_permissions($object_name, $permissions)
         exit(0);
     }
 
-    $authenticator->access_denied($global_info['config']['authenticator']['site_login_page']);
+    $authenticator->access_denied($global_info['config']['pages']['login']['location']);
     exit(0);
 }
 

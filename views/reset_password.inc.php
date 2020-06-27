@@ -57,13 +57,13 @@ class PageResetPassword extends PageBasic
         // Check user status
         //
         $user = $factory->get_user_by_username($msg['username']);
+        $login_page = $this->config['pages']['login']['location'];
 
         if ($user === FALSE)
             return;
 
         if (!$user->is_verified())
         {
-            $login_page = $this->config['authenticator']['site_login_page'];
             header("Location: ${login_page}?".add_message_to_url('error', 'User is not verified.'));
             exit();
         }
@@ -83,7 +83,6 @@ class PageResetPassword extends PageBasic
 
         // Redirect to main sceen
         //
-        $login_page = $this->config['authenticator']['site_login_page'];
         header("Location: {$login_page}?".add_message_to_url('success', 'Password reset', 'You will receive a mail with your new password'));
         exit();
     }

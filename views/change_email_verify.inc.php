@@ -71,7 +71,7 @@ class PageChangeEmailVerify extends PageBasic
         if ($user_id != $this->state['user_id'])
         {
             $this->auth->deauthenticate();
-            $login_page = $this->config['authenticator']['site_login_page'];
+            $login_page = $this->config['pages']['login']['location'];
             header("Location: {$login_page}?".add_message_to_url('error', 'Other account', 'The link you used is meant for a different account. The current account has been logged off. Please try the link again.'));
             exit();
         }
