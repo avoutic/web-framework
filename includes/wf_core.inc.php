@@ -27,13 +27,7 @@ $base_config = array(
         'http_mode' => 'https',
         'document_root' => $_SERVER['DOCUMENT_ROOT'],
         'cache_enabled' => false,
-        'cache' => array(
-            'cache_type' => 'memcache',       // memcache, memcached, redis
-            'cache_host' => 'localhost',
-            'cache_port' => '11211',
-            'cache_user' => '',
-            'cache_password' => ''
-        ),
+        'cache_config' => 'main',
         'auth_mode' => 'redirect',            // redirect, www-authenticate, custom (requires auth_module)
         'auth_module' => '',
         'authenticator' => array(
@@ -474,7 +468,6 @@ if ($global_config['database_enabled'] == true)
 #
 require_once($includes."defines.inc.php");
 require_once($includes."sender_core.inc.php");
-require_once($includes."object_factory.inc.php");
 require_once($includes."base_logic.inc.php");
 require_once($includes."config_values.inc.php");
 
@@ -501,8 +494,6 @@ $data = file_get_contents("php://input");
 $data = json_decode($data, true);
 if (is_array($data))
     $global_state['raw_post'] = $data;
-
-$core_factory = new ObjectFactory();
 
 # Start the database connection
 #
@@ -557,18 +548,16 @@ if ($global_config['database_enabled'] == true)
 
 # Start the cache connection
 #
-$global_cache = NULL;
+$global_cache = null;
 if ($global_config['cache_enabled'] == true)
 {
-    $cache_type = $global_config['cache']['cache_type'];
-    require_once($includes.'cache_'.$cache_type.'.inc.php');
+    require_once($includes.'cache_core.inc.php');
+    require_once($site_includes.'cache_handler.inc.php');
 
-    $global_cache = $core_factory->create('cache', $cache_type);
+    $cache_tag = $global_config['cache_config'];
+    $cache_config = get_auth_config('cache_config.'.$cache_tag);
 
-    if (FALSE === $global_cache->connect($global_config['cache']['cache_host']))
-    {
-        http_error(500, 'Internal Server Error', "<h1>Cache service connection failed</h1>\nThe connection to the cache service failed. Please contact the administrator.");
-    }
+    $global_cache = new Cache($cache_config);
 }
 
 function get_db($tag)
