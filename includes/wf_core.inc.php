@@ -195,6 +195,7 @@ function assert_handler($file, $line, $message, $error_type, $silent = false)
     $debug_message.= "Backtrace:\n".print_r($trace, true);
     $debug_message.= "State:\n".print_r($state, true);
 
+    header("HTTP/1.0 500 Internal Server Error");
     if ($global_config['debug'])
     {
         echo "Failure information: $error_type<br/>";
