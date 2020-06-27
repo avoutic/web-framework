@@ -1,16 +1,12 @@
 <?php
-class LocaleFactory
+class LocaleFactory extends FrameworkCore
 {
-    protected $database;
     protected $default_lang;
     protected $default_locale;
 
-    function __construct($global_info, $default_lang = 'en',
+    function __construct($default_lang = 'en',
                          $default_locale = "['en-US','eng','en']")
     {
-        verify($global_info != null, 'Global info cannot be null');
-
-        $this->database = $global_info['database'];
         $this->default_lang = $default_lang;
         $this->default_locale = $default_locale;
     }

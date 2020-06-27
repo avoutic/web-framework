@@ -43,7 +43,7 @@ class PageResetPassword extends PageBasic
             exit();
         }
 
-        $factory = new BaseFactory($this->global_info);
+        $factory = new BaseFactory();
 
         // Check user status
         //

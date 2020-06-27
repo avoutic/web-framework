@@ -146,7 +146,7 @@ class PageRegister extends Pagebasic
         }
         else
         {
-            $recaptcha = new Recaptcha($this->global_info);
+            $recaptcha = new Recaptcha();
             $result = $recaptcha->verify($recaptcha_response);
 
             if ($result != true)
@@ -193,7 +193,7 @@ class PageRegister extends Pagebasic
 
         // Add account
         //
-        $base_factory = new BaseFactory($this->global_info);
+        $base_factory = new BaseFactory();
         $result = $base_factory->create_user($username, $password, $email, time());
         verify($result !== false, 'Failed to create user');
 

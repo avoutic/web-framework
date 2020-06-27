@@ -1,22 +1,17 @@
 <?php
-abstract class DataCore
+abstract class DataCore extends FrameworkCore
 {
-    protected $global_info;
-    protected $database;
-    protected $cache;
     public $id;
 
     static protected $table_name;
     static protected $base_fields;
     static protected $is_cacheable = true;
 
-    function __construct($global_info, $id, $fill_complex = true)
+    function __construct($id, $fill_complex = true)
     {
-        $this->global_info = $global_info;
-        $this->database = $global_info['database'];
-        $this->cache = $global_info['cache'];
-        $this->id = $id;
+        parent::__construct();
 
+        $this->id = $id;
         $obj = false;
 
         if ($this->cache != null && $this->is_cacheable)
@@ -25,13 +20,15 @@ abstract class DataCore
         $this->fill_fields($fill_complex, $obj);
     }
 
-    static function exists($global_info, $id)
+    static function exists($id)
     {
-        if ($global_info['cache'] != null && static::$is_cacheable)
-            if (false !== $global_info->cache->exists(static::get_cache_id($id)))
+        global $global_cache, $global_database;
+
+        if ($global_cache != null && static::$is_cacheable)
+            if (false !== $global_cache->exists(static::get_cache_id($id)))
                 return true;
 
-        $result = $global_info['database']->Query('SELECT id FROM '.static::$table_name.
+        $result = $global_database->Query('SELECT id FROM '.static::$table_name.
                                    ' WHERE id = ?', array($id));
 
         if ($result === false)
@@ -217,8 +214,10 @@ abstract class DataCore
         verify($result !== false, 'Failed to delete item');
     }
 
-    static function create($global_info, $data)
+    static function create($data)
     {
+        global $global_database;
+
         $query = 'INSERT INTO '.static::$table_name;
         $query .= ' SET ';
 
@@ -235,17 +234,19 @@ abstract class DataCore
 
         $args = $data;
 
-        $result = $global_info['database']->InsertQuery($query, $args);
+        $result = $global_database->InsertQuery($query, $args);
 
         $class = get_called_class();
 
         verify($result !== false, 'Failed to create object ('.$class.')');
 
-        return new $class($global_info, $result);
+        return new $class($result);
     }
 
-    static function count_objects($global_info, $filter = array())
+    static function count_objects($filter = array())
     {
+        global $global_database;
+
         $query = 'SELECT COUNT(id) AS cnt FROM '.static::$table_name;
         if (count($filter))
         {
@@ -263,15 +264,17 @@ abstract class DataCore
         }
 
         $args = $filter;
-        $result = $global_info['database']->Query($query, $args);
+        $result = $global_database->Query($query, $args);
         verify($result !== false, 'Failed to count objects');
         verify($result->RecordCount() == 1, 'Failed to count objects');
 
         return $result->fields['cnt'];
     }
 
-    static function get_object($global_info, $filter = array())
+    static function get_object($filter = array())
     {
+        global $global_database;
+
         $query = 'SELECT id FROM '.static::$table_name;
         if (count($filter))
         {
@@ -290,8 +293,7 @@ abstract class DataCore
 
         $args = $filter;
 
-        verify(is_object($global_info["database"]), 'No database to query');
-        $result = $global_info['database']->Query($query, $args);
+        $result = $global_database->Query($query, $args);
 
         $class = get_called_class();
 
@@ -301,12 +303,12 @@ abstract class DataCore
         if ($result->RecordCount() == 0)
             return false;
 
-        return new $class($global_info, $result->fields['id']);
+        return new $class($result->fields['id']);
     }
 
-    static function get_object_info($global_info, $filter = array())
+    static function get_object_info($filter = array())
     {
-        $obj = static::get_object($global_info, $filter);
+        $obj = static::get_object($filter);
 
         if ($obj === false)
             return false;
@@ -314,14 +316,14 @@ abstract class DataCore
         return $obj->get_info();
     }
 
-    static function get_object_by_id($global_info, $id)
+    static function get_object_by_id($id)
     {
-        return static::get_object($global_info, array('id' => $id));
+        return static::get_object(array('id' => $id));
     }
 
-    static function get_object_info_by_id($global_info, $id)
+    static function get_object_info_by_id($id)
     {
-        $obj = static::get_object($global_info, array('id' => $id));
+        $obj = static::get_object(array('id' => $id));
 
         if ($obj === false)
             return false;
@@ -329,8 +331,10 @@ abstract class DataCore
         return $obj->get_info();
     }
 
-    static function get_objects($global_info, $offset = 0, $results = 10, $filter = array(), $order = '')
+    static function get_objects($offset = 0, $results = 10, $filter = array(), $order = '')
     {
+        global $global_database;
+
         $query = 'SELECT id FROM '.static::$table_name;
         if (count($filter))
         {
@@ -356,7 +360,7 @@ abstract class DataCore
             $args = array_merge($args, array((int) $offset, (int) $results));
         }
 
-        $result = $global_info['database']->Query($query, $args);
+        $result = $global_database->Query($query, $args);
 
         $class = get_called_class();
 
@@ -365,15 +369,15 @@ abstract class DataCore
         $info = array();
         foreach($result as $k => $row)
         {
-            $info[$row['id']] = new $class($global_info, $row['id']);
+            $info[$row['id']] = new $class($row['id']);
         }
 
         return $info;
     }
 
-    static function get_objects_info($global_info, $offset = 0, $results = 10, $filter = array(), $order = '')
+    static function get_objects_info($offset = 0, $results = 10, $filter = array(), $order = '')
     {
-        $objs = static::get_objects($global_info, $offset, $results, $filter, $order);
+        $objs = static::get_objects($offset, $results, $filter, $order);
 
         $data = array();
         foreach ($objs as $obj)
@@ -390,43 +394,30 @@ abstract class DataCore
     }
 };
 
-class FactoryCore
+class FactoryCore extends FrameworkCore
 {
-    protected $global_info;
-    protected $database;
-    protected $state;
-    protected $config;
-
-    function __construct($global_info)
-    {
-        $this->global_info = $global_info;
-        $this->database = $global_info['database'];
-        $this->state = $global_info['state'];
-        $this->config = $global_info['config'];
-    }
-
     protected function get_core_object_by_id($type, $id)
     {
         verify(class_exists($type), 'Core Object ("'.$type.'") not known');
 
-        if (false === $type::exists($this->global_info, $id))
+        if (false === $type::exists($id))
             return false;
 
-        return new $type($this->global_info, $id);
+        return new $type($id);
     }
 
     protected function get_core_object($type, $filter = array())
     {
         verify(class_exists($type), 'Core Object ("'.$type.'") not known');
 
-        return $type::get_object($this->global_info, $filter);
+        return $type::get_object($filter);
     }
 
     protected function get_core_object_info($type, $filter = array())
     {
         verify(class_exists($type), 'Core Object ("'.$type.'") not known');
 
-        $obj = $type::get_object($this->global_info, $filter);
+        $obj = $type::get_object($filter);
         if ($obj === false)
             return false;
 
@@ -437,28 +428,28 @@ class FactoryCore
     {
         verify(class_exists($type), 'Core Object ("'.$type.'") not known');
 
-        return $type::exists($this->global_info, $id);
+        return $type::exists($id);
     }
 
     protected function get_core_object_count($type, $filter = array())
     {
         verify(class_exists($type), 'Core Object ("'.$type.'") not known');
 
-        return $type::count_objects($this->global_info, $filter);
+        return $type::count_objects($filter);
     }
 
     protected function get_core_objects($type, $offset = 0, $results = 10, $filter = array(), $order = '')
     {
         verify(class_exists($type), 'Core Object ("'.$type.'") not known');
 
-        return $type::get_objects($this->global_info, $offset, $results, $filter, $order);
+        return $type::get_objects($offset, $results, $filter, $order);
     }
 
     protected function get_core_objects_info($type, $offset = 0, $results = 10, $filter = array(), $order = '')
     {
         verify(class_exists($type), 'Core Object ("'.$type.'") not known');
 
-        $objs = $type::get_objects($this->global_info, $offset, $results, $filter, $order);
+        $objs = $type::get_objects($offset, $results, $filter, $order);
 
         $data = array();
         foreach ($objs as $obj)
@@ -471,7 +462,7 @@ class FactoryCore
     {
         verify(class_exists($type), 'Core Object ("'.$type.'") not known');
 
-        return $type::create($this->global_info, $data);
+        return $type::create($data);
     }
 };
 ?>

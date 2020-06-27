@@ -66,7 +66,7 @@ SQL;
 
         foreach($result as $k => $row)
         {
-            $right = Right::get_object_by_id($this->global_info, $row['right_id']);
+            $right = Right::get_object_by_id($row['right_id']);
             verify($right !== false, 'Failed to retrieve right');
 
             $this->rights[$right->short_name] = $right;
@@ -211,7 +211,7 @@ SQL;
             'email' => $email,
         );
 
-        if ($this->global_info['config']['authenticator']['unique_identifier'] == 'email')
+        if ($this->global_config['authenticator']['unique_identifier'] == 'email')
             $updates['username'] = $email;
 
         $this->update($updates);
@@ -239,9 +239,8 @@ SQL;
         $security_iterator = $this->increase_security_iterator();
 
         $code = $this->generate_verify_code('change_email', array('email' => $email, 'iterator' => $security_iterator));
-        $config = $this->global_info['config'];
-        $verify_url = 'https://'.$config['server_name'].
-                      $config['pages']['change_email']['verify_page'].
+        $verify_url = 'https://'.$this->config['server_name'].
+                      $this->config['pages']['change_email']['verify_page'].
                       '?code='.$code;
 
         $result = SenderCore::send('change_email_verification_link', $email,
@@ -286,8 +285,7 @@ SQL;
                     ));
         verify($result !== false, 'Failed to insert user right');
 
-        $this->rights[$short_name] = Right::get_object($this->global_info,
-                                            array('short_name' => $short_name));
+        $this->rights[$short_name] = Right::get_object(array('short_name' => $short_name));
 
         return true;
     }
@@ -339,9 +337,8 @@ SQL;
     function send_verify_mail($after_verify_data = array())
     {
         $code = $this->generate_verify_code('verify', $after_verify_data);
-        $config = $this->global_info['config'];
-        $verify_url = 'https://'.$config['server_name'].
-                      $config['pages']['login']['verify_page'].
+        $verify_url = 'https://'.$this->config['server_name'].
+                      $this->config['pages']['login']['verify_page'].
                       '?code='.$code;
 
         return SenderCore::send('email_verification_link', $this->email,
@@ -370,9 +367,8 @@ SQL;
         $security_iterator = $this->increase_security_iterator();
 
         $code = $this->generate_verify_code('reset_password', array('iterator' => $security_iterator));
-        $config = $this->global_info['config'];
-        $reset_url = 'https://'.$config['server_name'].
-                     $config['pages']['forgot_password']['reset_password_page'].
+        $reset_url = 'https://'.$this->config['server_name'].
+                     $this->config['pages']['forgot_password']['reset_password_page'].
                      '?code='.$code;
 
         return SenderCore::send('password_reset', $this->email,
@@ -439,7 +435,7 @@ class BaseFactory extends FactoryCore
     function get_user($user_id, $type = 'User')
     {
         verify(class_exists($type), 'Selected type does not exist');
-        return new $type($this->global_info, $user_id);
+        return new $type($user_id);
     }
 
     function get_users($offset = 0, $results = 10, $type = 'User')

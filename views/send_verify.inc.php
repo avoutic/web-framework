@@ -45,7 +45,7 @@ class PageSendVerify extends PageBasic
             exit();
         }
 
-        $base_factory = new BaseFactory($this->global_info);
+        $base_factory = new BaseFactory();
 
         // Check user status
         //

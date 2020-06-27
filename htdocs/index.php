@@ -17,9 +17,9 @@ require_once($includes.'blacklist.inc.php');
 
 function send_404($type = 'generic')
 {
-    global $global_info, $site_views;
+    global $global_config, $site_views;
 
-    $mapping = $global_info['config']['error_handlers']['404'];
+    $mapping = $global_config['error_handlers']['404'];
     $include_page = '';
 
     if (is_array($mapping))
@@ -47,7 +47,7 @@ function send_404($type = 'generic')
     $function_name = "html_main";
 
     header("HTTP/1.0 404 Page not found");
-    call_obj_func($global_info, $object_name, $function_name);
+    call_obj_func($object_name, $function_name);
     exit(0);
 }
 
@@ -128,14 +128,14 @@ function user_has_permissions($permissions)
 
 function enforce_permissions($object_name, $permissions)
 {
-    global $authenticator, $global_info;
+    global $authenticator, $global_state, $global_config;
 
     $has_permissions = user_has_permissions($permissions);
 
     if ($has_permissions)
         return;
 
-    if (!$global_info['state']['logged_in'])
+    if (!$global_state['logged_in'])
     {
         $redirect_type = $object_name::redirect_login_type();
         $request_uri = preg_replace('/\?.*/', '', $_SERVER['REQUEST_URI']);
@@ -143,7 +143,7 @@ function enforce_permissions($object_name, $permissions)
         exit(0);
     }
 
-    $authenticator->access_denied($global_info['config']['pages']['login']['location']);
+    $authenticator->access_denied($global_config['pages']['login']['location']);
     exit(0);
 }
 
@@ -297,23 +297,21 @@ require($includes.'auth.inc.php');
 
 $authenticator = null;
 if ($global_config['auth_mode'] == 'redirect')
-    $authenticator = new AuthRedirect($global_info);
+    $authenticator = new AuthRedirect();
 else if ($global_config['auth_mode'] == 'www-authenticate')
-    $authenticator = new AuthWwwAuthenticate($global_info);
+    $authenticator = new AuthWwwAuthenticate();
 else if ($global_config['auth_mode'] == 'custom' &&
          strlen($global_config['auth_module']))
 {
     require_once($site_includes.$global_config['auth_module']);
 
-    $authenticator = new AuthCustom($global_info);
+    $authenticator = new AuthCustom();
 }
 else
     die('No valid authenticator found.');
 
 # Clean stale sessions
 $authenticator->cleanup();
-
-$global_info['auth'] = $authenticator;
 
 # Check if logged in and populate standard fields.
 #
@@ -423,7 +421,7 @@ if (function_exists('site_get_filter'))
     array_walk($site_filter, 'validate_input');
 }
 
-function call_obj_func($global_info, $object_name, $function_name)
+function call_obj_func($object_name, $function_name)
 {
     global $authenticator;
 
@@ -443,16 +441,13 @@ function call_obj_func($global_info, $object_name, $function_name)
 
     enforce_permissions($object_name, $page_permissions);
 
-    if (function_exists('site_do_logic'))
-        site_do_logic($global_info);
-
     verify(class_exists($object_name), 'Registered route class does not exist');
-    $page_obj = new $object_name($global_info);
+    $page_obj = new $object_name();
 
     verify(method_exists($page_obj, $function_name), 'Registered route function does not exist');
     $page_obj->$function_name();
 }
 
-call_obj_func($global_info, $object_name, $function_name);
+call_obj_func($object_name, $function_name);
 
 ?>

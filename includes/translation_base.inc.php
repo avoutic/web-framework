@@ -1,13 +1,6 @@
 <?php
-class TranslationFactory
+class TranslationFactory extends FrameworkCore
 {
-    protected $database;
-
-    function __construct($global_info)
-    {
-        $this->database = $global_info['database'];
-    }
-
     function get_all_translations($lang)
     {
         $result = $this->database->Query('SELECT tt.key, t.value FROM translation_tags AS tt LEFT JOIN translations AS t ON t.key = tt.key AND t.lang = ?',

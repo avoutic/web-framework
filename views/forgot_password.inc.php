@@ -3,10 +3,10 @@ class PageForgotPassword extends PageBasic
 {
     static function get_filter()
     {
-        global $global_info;
+        global $global_config;
 
         $username_format = FORMAT_USERNAME;
-        if ($global_info['config']['authenticator']['unique_identifier'] == 'email')
+        if ($global_config['authenticator']['unique_identifier'] == 'email')
             $username_format = FORMAT_EMAIL;
 
         return array(
@@ -35,7 +35,7 @@ class PageForgotPassword extends PageBasic
             return;
         }
 
-        $base_factory = new BaseFactory($this->global_info);
+        $base_factory = new BaseFactory();
 
         // Retrieve user
         //

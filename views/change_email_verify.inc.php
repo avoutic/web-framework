@@ -24,7 +24,7 @@ class PageChangeEmailVerify extends PageBasic
     //
     function get_user($username)
     {
-        $factory = new BaseFactory($this->global_info);
+        $factory = new BaseFactory();
         $user = $factory->get_user_by_username($username);
 
         return $user;

@@ -15,7 +15,8 @@ class PageLogoff extends PageBasic
 
     function do_logic()
     {
-        $this->auth->deauthenticate();
+        global $authenticator;
+        $authenticator->deauthenticate();
 
         $return_page = $this->get_input_var('return_page');
 

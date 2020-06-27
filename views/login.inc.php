@@ -6,10 +6,10 @@ class PageLogin extends PageBasic
 {
     static function get_filter()
     {
-        global $global_info;
+        global $global_config;
 
         $username_format = FORMAT_USERNAME;
-        if ($global_info['config']['authenticator']['unique_identifier'] == 'email')
+        if ($global_config['authenticator']['unique_identifier'] == 'email')
             $username_format = FORMAT_EMAIL;
 
         return array(
@@ -53,7 +53,7 @@ class PageLogin extends PageBasic
     //
     function get_user($username)
     {
-        $factory = new BaseFactory($this->global_info);
+        $factory = new BaseFactory();
 
         $user = $factory->get_user_by_username($username);
 
@@ -128,7 +128,7 @@ class PageLogin extends PageBasic
                 return;
             }
 
-            $recaptcha = new Recaptcha($this->global_info);
+            $recaptcha = new Recaptcha();
             $result = $recaptcha->verify($recaptcha_response);
 
             if ($result != true)

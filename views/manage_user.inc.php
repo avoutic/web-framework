@@ -29,7 +29,7 @@ class PageManageUser extends PageBasic
     {
         $this->check_required($user_id, 'user_id');
 
-        $base_factory = new BaseFactory($this->global_info);
+        $base_factory = new BaseFactory();
 
         // Retrieve user information
         //

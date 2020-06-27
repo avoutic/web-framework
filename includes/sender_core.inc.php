@@ -1,15 +1,6 @@
 <?php
-abstract class SenderCore
+abstract class SenderCore extends FrameworkCore
 {
-    protected $global_info;
-    protected $config;
-
-    function __construct($global_info)
-    {
-        $this->global_info = $global_info;
-        $this->config = $global_info['config'];
-    }
-
     function get_sender_email()
     {
         $default_sender = $this->config['sender_core']['default_sender'];
@@ -20,14 +11,14 @@ abstract class SenderCore
 
     static function send_raw($to, $subject, $message)
     {
-        global $global_info, $global_config, $site_includes;
+        global $global_config;
 
         // Instantiate correct handler
         //
         verify(isset($global_config['sender_core']['handler_class']), 'No handler for sending configured');
         $handler_class = $global_config['sender_core']['handler_class'];
 
-        $handler = new $handler_class($global_info);
+        $handler = new $handler_class();
         verify(method_exists($handler, 'send_raw'), 'No raw send handler available');
 
         return $handler->send_raw_email($to, $subject, $message);
@@ -35,14 +26,14 @@ abstract class SenderCore
 
     static function send($template_name, $to, $params = array())
     {
-        global $global_info, $global_config, $site_includes;
+        global $global_config;
 
         // Instantiate correct handler
         //
         verify(isset($global_config['sender_core']['handler_class']), 'No handler for sending configured');
         $handler_class = $global_config['sender_core']['handler_class'];
 
-        $handler = new $handler_class($global_info);
+        $handler = new $handler_class();
         verify(method_exists($handler, $template_name), 'No template handler available');
 
         return $handler->$template_name($to, $params);

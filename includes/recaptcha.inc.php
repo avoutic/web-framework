@@ -1,16 +1,14 @@
 <?php
-class Recaptcha
+class Recaptcha extends FrameworkCore
 {
-    protected $global_info;
-    protected $config;
-
-    function __construct($global_info)
+    function __construct()
     {
-        $this->global_info = $global_info;
-        $this->config = $global_info['config']['security']['recaptcha'];
+        parent::__construct();
 
-        verify(strlen($this->config['site_key']), 'Missing reCAPTCHA Site Key');
-        verify(strlen($this->config['secret_key']), 'Missing reCAPTCHA Secret Key');
+        $this->module_config = $this->config['security']['recaptcha'];
+
+        verify(strlen($this->module_config['site_key']), 'Missing reCAPTCHA Site Key');
+        verify(strlen($this->module_config['secret_key']), 'Missing reCAPTCHA Secret Key');
     }
 
     function verify($recaptcha_response)
@@ -18,7 +16,7 @@ class Recaptcha
         if (!strlen($recaptcha_response))
             return false;
 
-        $recaptcha_secret = $this->config['secret_key'];
+        $recaptcha_secret = $this->module_config['secret_key'];
 
         $recaptcha_data = array(
             'secret' => $recaptcha_secret,

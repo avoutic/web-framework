@@ -35,7 +35,7 @@ Our Person object now has basic capabilities. So if we instantiate a Person (usi
 
     <?php
     // Retrieve person with id 5
-    $person = new Person($this->global_info, 5);
+    $person = new Person(5);
 
     // Retrieve base fields as object parameters
     echo 'Name: '.$person->name.PHP_EOL;
@@ -81,8 +81,8 @@ And we'll add a method called `fill_complex_fields()` in our Person class:
 
     function fill_complex_fields()
     {
-        $this->vehicles = Vehicles::get_objects($this->global_info, 0, -1,
-                                                array('owner_id' => $this->id));
+        $this->vehicles = Vehicles::get_objects(0, -1,
+                                       array('owner_id' => $this->id));
     }
 
 `fill_complex_fields()` is immediately called in the constructor after all base fields have been loaded.
@@ -105,11 +105,10 @@ DataCore Object
 
       An array with fields that should always be loaded into the object
 
-   .. php:staticmethod:: exists ($global_info, $id)
+   .. php:staticmethod:: exists ($id)
 
       Check if an object with that id exists.
 
-      :param array $global_info: The global_info to use
       :param int $id: ID of the object to check
 
    .. php:method:: get_field ($field)

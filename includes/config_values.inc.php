@@ -7,14 +7,19 @@ CREATE TABLE IF NOT EXISTS config_values (
      UNIQUE KEY `mod_name` (module,name)
 );
 */
+
+// Not a FrameworkCore object because it needs to operate before all components have been loaded
+//
 class ConfigValues
 {
     private $database;
     private $default_module;
 
-    function __construct($database, $default_module = "")
+    function __construct($default_module = "")
     {
-        $this->database = $database;
+        global $global_database;
+
+        $this->database = $global_database;
         $this->default_module = $default_module;
     }
 
@@ -30,7 +35,7 @@ class ConfigValues
             die('Failed to retrieve config values.');
 
         $info = array();
-        
+
         foreach ($result as $row)
             $info[$row['name']] = $row['value'];
 

@@ -1,22 +1,6 @@
 <?php
-abstract class PageCore
+abstract class PageCore extends FrameworkCore
 {
-    protected $global_info;
-    protected $state;
-    protected $database;
-    protected $cache;
-    protected $config;
-
-    function __construct($global_info)
-    {
-        $this->global_info = $global_info;
-        $this->database = $global_info['database'];
-        $this->cache = $global_info['cache'];
-        $this->state = $global_info['state'];
-        $this->config = $global_info['config'];
-        $this->auth = $global_info['auth'];
-    }
-
     static function get_filter()
     {
         return array();
@@ -73,9 +57,10 @@ abstract class PageBasic extends PageCore
     protected $page_content = array();
     private $mods = array();
 
-    function __construct($global_info)
+    function __construct()
     {
-        parent::__construct($global_info);
+        parent::__construct();
+
         $this->frame_file = $this->config['page']['default_frame_file'];
 
         if (isset($this->config['page']['mods']))
@@ -96,7 +81,7 @@ abstract class PageBasic extends PageCore
                 {
                     require_once($include_file);
 
-                    $mod_obj = new $class($global_info, $mod_info);
+                    $mod_obj = new $class($mod_info);
 
                     if ($this->cache != null && $class::is_cacheable)
                         $this->cache->set($tag, $mod_obj);

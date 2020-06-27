@@ -90,14 +90,14 @@ $base_config = array(
 
 function scrub_state(&$item)
 {
-    global $global_info;
+    global $wf_global_info;
 
     foreach ($item as $key => $value)
     {
         if (is_object($value))
             $value = $item[$key] = get_object_vars($value);
 
-        if ($key === 0 && $value == $global_info)
+        if ($key === 0 && $value == $wf_global_info)
             $item[$key] = 'omitted';
         else if (is_array($value))
             scrub_state($item[$key]);
@@ -295,7 +295,7 @@ function register_hook($hook_name, $file, $static_function, $args = array())
 
 function fire_hook($hook_name, $params)
 {
-    global $hook_array, $global_info, $site_includes, $includes;
+    global $hook_array, $site_includes, $includes;
 
     if (!isset($hook_array[$hook_name]))
         return;
@@ -307,7 +307,7 @@ function fire_hook($hook_name, $params)
 
         $function = $hook['static_function'];
 
-        $function($global_info, $hook['args'], $params);
+        $function($hook['args'], $params);
     }
 }
 
@@ -530,7 +530,7 @@ if ($global_config['database_enabled'] == true)
         http_error(500, 'Internal Server Error', "<h1>Database server connection failed</h1>\nThe connection to the database server failed. Please contact the administrator.");
     }
 
-    $config_values = new ConfigValues($global_database, 'db');
+    $config_values = new ConfigValues('db');
     $db_version = $config_values->get_value('version', '1');
     if ($db_version != $global_config['db_version'])
     {
@@ -565,18 +565,35 @@ if ($global_config['cache_enabled'] == true)
     $global_cache = new Cache($cache_config);
 }
 
-function get_db($tag)
+class FrameworkCore
 {
-    global $global_info;
+    protected $database;
+    private $databases;
+    protected $cache;
+    protected $config;
 
-    if (!strlen($tag))
-        return $global_info['database'];
+    function __construct()
+    {
+        global $wf_global_info;
 
-    verify(array_key_exists($tag, $global_info["databases"]), 'Database not registered');
-    return $global_info['databases'][$tag];
+        $this->database = $wf_global_info['database'];
+        $this->databases = $wf_global_info['databases'];
+        $this->cache = $wf_global_info['cache'];
+        $this->state = $wf_global_info['state'];
+        $this->config = $wf_global_info['config'];
+    }
+
+    protected function get_db($tag = '')
+    {
+        if (!strlen($tag))
+            return $this->database;
+
+        verify(array_key_exists($tag, $this->databases), 'Database not registered');
+        return $this->databases[$tag];
+    }
 }
 
-$global_info = array(
+$wf_global_info = array(
     'database' => $global_database,
     'databases' => $global_databases,
     'state' => &$global_state,

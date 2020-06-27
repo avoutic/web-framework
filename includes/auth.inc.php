@@ -13,7 +13,7 @@ class Session extends DataCore
         $last_active_timestamp = Helpers::mysql_datetime_to_timestamp($this->last_active);
 
         if ($current - $last_active_timestamp >
-            $this->global_info['config']['authenticator']['session_timeout'])
+            $this->config['authenticator']['session_timeout'])
         {
             return FALSE;
         }
@@ -38,17 +38,8 @@ class Session extends DataCore
     }
 };
 
-abstract class Authenticator
+abstract class Authenticator extends FrameworkCore
 {
-    protected $global_info;
-    protected $config;
-
-    function __construct($global_info)
-    {
-        $this->global_info = $global_info;
-        $this->config = $global_info['config'];
-    }
-
     abstract function set_logged_in($user);
     abstract function get_logged_in();
     abstract function deauthenticate();
@@ -115,24 +106,19 @@ abstract class Authenticator
 
 class AuthRedirect extends Authenticator
 {
-    function __construct($global_info)
-    {
-        parent::__construct($global_info);
-    }
-
     function cleanup()
     {
-        $timeout = $this->global_info['config']['authenticator']['session_timeout'];
+        $timeout = $this->config['authenticator']['session_timeout'];
         $timestamp = date('Y-m-d H:i:s');
 
-        $this->global_info['database']->Query('DELETE FROM sessions WHERE ADDDATE(last_active, INTERVAL ? SECOND) < ?', array($timeout, $timestamp));
+        $this->get_db()->Query('DELETE FROM sessions WHERE ADDDATE(last_active, INTERVAL ? SECOND) < ?', array($timeout, $timestamp));
     }
 
     function register_session($user_id, $session_id)
     {
         $timestamp = date('Y-m-d H:i:s');
 
-        $session = Session::create($this->global_info, array(
+        $session = Session::create(array(
                                             'user_id' => $user_id,
                                             'session_id' => $session_id,
                                             'last_active' => $timestamp));
@@ -144,7 +130,7 @@ class AuthRedirect extends Authenticator
 
     function invalidate_sessions($user_id)
     {
-        $result = $this->global_info['database']->Query('DELETE FROM sessions WHERE user_id = ?', array($user_id));
+        $result = $this->get_db()->Query('DELETE FROM sessions WHERE user_id = ?', array($user_id));
         verify($result !== FALSE, 'Failed to delete all user\'s sessions');
     }
 
@@ -153,7 +139,7 @@ class AuthRedirect extends Authenticator
         // Destroy running session
         if (isset($_SESSION['session_id']))
         {
-            $session = Session::get_object_by_id($this->global_info, $_SESSION['session_id']);
+            $session = Session::get_object_by_id($_SESSION['session_id']);
             if ($session !== FALSE)
                 $session->delete();
         }
@@ -171,7 +157,7 @@ class AuthRedirect extends Authenticator
         if (!isset($_SESSION['session_id']))
             return FALSE;
 
-        $session = Session::get_object_by_id($this->global_info, $_SESSION['session_id']);
+        $session = Session::get_object_by_id($_SESSION['session_id']);
         if ($session === FALSE)
             return FALSE;
 
@@ -200,7 +186,7 @@ class AuthRedirect extends Authenticator
     {
         if (isset($_SESSION['session_id']))
         {
-            $session = Session::get_object_by_id($this->global_info, $_SESSION['session_id']);
+            $session = Session::get_object_by_id($_SESSION['session_id']);
             $session->delete();
         }
 
@@ -219,9 +205,9 @@ class AuthWwwAuthenticate extends Authenticator
 {
     protected $realm = 'Unknown realm';
 
-    function __construct($global_info)
+    function __construct()
     {
-        parent::__construct($global_info);
+        parent::__construct();
 
         if (isset($this->config['realm']))
             $this->realm = $this->config['realm'];
@@ -249,7 +235,7 @@ class AuthWwwAuthenticate extends Authenticator
         $username = $_SERVER['PHP_AUTH_USER'];
         $password = sha1($_SERVER['PHP_AUTH_PW']);
 
-        $factory = new BaseFactory($this->global_info);
+        $factory = new BaseFactory();
 
         $user = $factory->get_user_by_username($username);
 

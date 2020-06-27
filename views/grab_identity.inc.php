@@ -32,7 +32,7 @@ class PageGrabIdentity extends PageBasic
         if (!strlen($user_id))
             return;
 
-        $factory = new BaseFactory($this->global_info);
+        $factory = new BaseFactory();
 
         // Log in user
         //

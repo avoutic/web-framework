@@ -4,15 +4,8 @@ interface iPageModule
     public function callback($input);
 };
 
-class UrlConfig implements iPageModule
+class UrlConfig extends FrameworkCore implements iPageModule
 {
-    protected $config;
-
-    function __construct($global_info)
-    {
-        $this->config = $global_info['config'];
-    }
-
     function callback($input)
     {
         $input = preg_replace_callback(
@@ -36,16 +29,14 @@ class UrlConfig implements iPageModule
     }
 };
 
-class Translator implements iPageModule
+class Translator extends FrameworkCore implements iPageModule
 {
-    protected $database;
-    protected $state;
     protected $match_func;
 
-    function __construct($global_info, $match_func = 'translate_match')
+    function __construct($match_func = 'translate_match')
     {
-        $this->database = $global_info['database'];
-        $this->state = $global_info['state'];
+        parent::__construct();
+
         $this->match_func = $match_func;
     }
 

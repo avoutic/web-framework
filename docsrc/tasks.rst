@@ -36,7 +36,7 @@ A simple API view:
 
             if (!$this->check_required($user_id, 'user_id')) return;
 
-            $user_factory = new UserFactory($this->global_info);
+            $user_factory = new UserFactory();
             $user = $user_factory->get_user($user_id);
 
             $this->output_json(true, $user->username);
@@ -134,7 +134,7 @@ Now we can use this value in the View's logic:
 
         // Actually change the name of user 1
         //
-        $user = new User($this->global_info, 1);
+        $user = new User(1);
         $user->update_field('name', $name);
 
         $this->add_message('success', 'Name changed', 'The name has been changed.');
