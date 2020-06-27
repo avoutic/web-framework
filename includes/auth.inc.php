@@ -46,7 +46,7 @@ abstract class Authenticator
     function __construct($global_info)
     {
         $this->global_info = $global_info;
-        $this->config = $global_info['config']['authenticator'];
+        $this->config = $global_info['config'];
     }
 
     abstract function set_logged_in($user);

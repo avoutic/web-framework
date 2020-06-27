@@ -105,8 +105,6 @@ abstract class PageContactBase extends PageBasic
                 $this->state['input']['message_content'],
                 "From: ".$email."\r\n");
 
-        framework_add_bad_ip_hit();
-
         // Redirect to main sceen
         //
         if ($result === FALSE)

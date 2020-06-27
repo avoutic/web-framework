@@ -17,17 +17,12 @@ class PageSendVerify extends PageBasic
 
     function do_logic()
     {
-        // Continued calling of this page might result in lots of transactional e-mails
-        // Until another limiting mechanism is in place, add a bad IP hit
-        //
-        framework_add_bad_ip_hit();
-
         // Check if code is present
         //
         $code = $this->get_input_var('code');
         if (!strlen($code))
         {
-            framework_add_bad_ip_hit(2);
+            add_blacklist_entry('missing-code');
             return;
         }
 
@@ -37,7 +32,7 @@ class PageSendVerify extends PageBasic
 
         if ($msg['action'] != 'send_verify')
         {
-            framework_add_bad_ip_hit(4);
+            add_blacklist_entry('wrong-action', 2);
             return;
         }
 

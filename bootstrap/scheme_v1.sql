@@ -45,7 +45,7 @@ CREATE TABLE `config_values` (
   CONSTRAINT `config_values_unique` UNIQUE (`module`, `name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT INTO config_values set module='db', name='version', value='1';
+INSERT INTO config_values set module='db', name='version', value='2';
 
 CREATE TABLE `user_config_values` (
   `id` int(11) NOT NULL auto_increment,
@@ -59,11 +59,15 @@ CREATE TABLE `user_config_values` (
   CONSTRAINT `user_config_values_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE `ip_list` (
-  `ip` int unsigned not null,
-  `hits` int unsigned not null,
-  `last_hit` timestamp,
-  PRIMARY KEY (`ip`)
+CREATE TABLE `blacklist_hits` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT,
+  `ip` VARCHAR(40) NOT NULL,
+  `user_id` INT(11) NOT NULL DEFAULT '0',
+  `severity` INT(11) NOT NULL,
+  `location` VARCHAR(50) NOT NULL,
+  `reason` VARCHAR(100) NOT NULL,
+  `timestamp` INT(11) NOT NULL,
+  PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE sessions (

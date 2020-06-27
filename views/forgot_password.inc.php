@@ -26,8 +26,6 @@ class PageForgotPassword extends PageBasic
         if (!strlen($this->get_input_var('do')))
             return;
 
-        framework_add_bad_ip_hit();
-
         // Check if user present
         //
         $username = $this->get_input_var('username');

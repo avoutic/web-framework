@@ -21,7 +21,7 @@ $base_config = array(
         'database_config' => 'main',        // main database tag.
         'databases' => array(),             // list of extra database tags to load.
                                             // files will be retrieved from 'includes/db_config.{TAG}.php'
-        'db_version' => 1,
+        'db_version' => 2,
         'site_name' => 'Unknown',
         'server_name' => (isset($_SERVER['SERVER_NAME']))?$_SERVER['SERVER_NAME']:'app',
         'http_mode' => 'https',
@@ -41,8 +41,12 @@ $base_config = array(
             'mods' => array()               // Should at least contain class, and include_file of mod!
         ),
         'security' => array(
-            'blacklisting' => false,
-            'blacklist_threshold' => 25,
+            'blacklist' => array(
+                'enabled' => true,
+                'trigger_period' => 14400,  // Period to consider for blacklisting (default: 4 hours)
+                'store_period' => 2592000,  // Period to keep entries (default: 30 days)
+                'threshold' => 25,          // Points before blacklisting occurs (default: 25)
+            ),
             'hash' => 'sha256',
             'hmac_key' =>  '',
             'crypt_key' => '',
@@ -398,7 +402,7 @@ function decode_and_verify_string($str)
 
     if ($str_hmac !== $part_hmac)
     {
-        framework_add_bad_ip_hit(5);
+        add_blacklist_entry('hmac-mismatch', 4);
         return "";
     }
 
@@ -463,6 +467,7 @@ if ($global_config['preload'] == true)
 #
 if ($global_config['database_enabled'] == true)
     require_once($includes.'database.inc.php');
+
 
 # Load global and site specific defines
 #

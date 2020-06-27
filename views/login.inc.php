@@ -112,7 +112,7 @@ class PageLogin extends PageBasic
         if ($user === FALSE)
         {
             $this->add_message('error', 'Username and password do not match.', 'Please check if you entered the username and/or password correctly.');
-            framework_add_bad_ip_hit();
+            add_blacklist_entry('unknown-username');
             return;
         }
 
@@ -141,7 +141,7 @@ class PageLogin extends PageBasic
         if (!$user->check_password($this->get_input_var('password')))
         {
             $this->add_message('error', 'Username and password do not match.', 'Please check if you entered the username and/or password correctly.');
-            framework_add_bad_ip_hit();
+            add_blacklist_entry('wrong-password');
             return;
         }
 

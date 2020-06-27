@@ -12,6 +12,8 @@ if (!file_exists(__DIR__ . '/../../vendor/autoload.php'))
 require_once(__DIR__ . '/../../vendor/autoload.php');
 
 require_once($includes.'wf_core.inc.php');
+require_once($includes.'page_basic.inc.php');
+require_once($includes.'blacklist.inc.php');
 
 function send_404($type = 'generic')
 {
@@ -48,8 +50,6 @@ function send_404($type = 'generic')
     call_obj_func($global_info, $object_name, $function_name);
     exit(0);
 }
-
-require_once($includes.'page_basic.inc.php');
 
 function validate_input($filter, $item)
 {
@@ -235,47 +235,19 @@ function validate_csrf_token()
     return ($diff === 0);
 }
 
-function framework_add_bad_ip_hit($amount = 1)
-{
-    global $global_database, $global_config;
-
-    if (!$global_config['security']['blacklisting'])
-        return;
-
-    $result = $global_database->Query('DELETE FROM ip_list WHERE last_hit < DATE_SUB(NOW(), INTERVAL 4 HOUR)', array());
-    verify($result !== FALSE, 'Failed to clean up hit_list');
-
-    $result = $global_database->Query('INSERT INTO ip_list VALUES(inet_aton(?), 1, NOW()) ON DUPLICATE KEY UPDATE hits = hits + ?', array($_SERVER['REMOTE_ADDR'], $amount));
-    verify($result !== FALSE, 'Failed to update hit_list');
-}
-
-function check_blacklisted()
-{
-    global $global_database, $global_config;
-
-    if (!$global_config['security']['blacklisting'])
-        return;
-
-    $result = $global_database->Query('DELETE FROM ip_list WHERE last_hit < DATE_SUB(NOW(), INTERVAL 4 HOUR)', array());
-    verify($result !== FALSE, 'Failed to clean up hit_list');
-
-    $result = $global_database->Query('SELECT * FROM ip_list WHERE ip = inet_aton(?) AND hits > ?', array($_SERVER['REMOTE_ADDR'], $global_config['security']['blacklist_threshold']));
-    verify($result !== FALSE, 'Failed to read hit_list');
-
-    if ($result->RecordCount() != 1)
-        return FALSE;
-
-    return TRUE;
-}
-
 session_name(preg_replace('/\./', '_', $global_config['server_name']));
 session_set_cookie_params(60 * 60 * 24, '/', $global_config['server_name'], $global_config['http_mode'] === 'https', true);
 session_start();
 
 // Check blacklist
 //
-if (check_blacklisted())
-    die('Blacklisted');
+$blacklist = new Blacklist();
+$user_id = 0;
+if (isset($global_state['user_id']))
+    $user_id = $global_state['user_id'];
+
+if ($blacklist->is_blacklisted($_SERVER['REMOTE_ADDR'], $user_id))
+    die('Too much suspicious activity. Contact the admin if you think this is a mistake.');
 
 // Add random header (against BREACH like attacks)
 //
@@ -301,14 +273,13 @@ if (strlen($global_state['input']['do']))
     if (!validate_csrf_token())
     {
         $global_state['input']['do'] = '';
-        framework_add_bad_ip_hit();
+        add_blacklist_entry('missing-csrf');
         set_message('error', 'CSRF token missing, possible attack.', '');
     }
 }
 
 # Load route and hooks array and site specific logic if available
 #
-
 if (is_file($site_includes."site_logic.inc.php"))
     include_once($site_includes."site_logic.inc.php");
 

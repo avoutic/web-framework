@@ -34,14 +34,12 @@ class PageChangeEmailVerify extends PageBasic
     {
         $change_page = $this->config['pages']['change_email']['location'];
 
-        framework_add_bad_ip_hit();
-
         // Check if code is present
         //
         $code = $this->get_input_var('code');
         if (!strlen($code))
         {
-            framework_add_bad_ip_hit(2);
+            add_blacklist_entry('code-missing');
             exit();
         }
 
@@ -51,7 +49,7 @@ class PageChangeEmailVerify extends PageBasic
 
         if ($msg['action'] != 'change_email')
         {
-            framework_add_bad_ip_hit(4);
+            add_blacklist_entry('wrong-action', 2);
             exit();
         }
 

@@ -27,7 +27,7 @@ class PageVerify extends PageBasic
         $code = $this->get_input_var('code');
         if (!strlen($code))
         {
-            framework_add_bad_ip_hit(2);
+            add_blacklist_entry('missing-code');
             return;
         }
 
@@ -37,7 +37,7 @@ class PageVerify extends PageBasic
 
         if ($msg['action'] != 'verify')
         {
-            framework_add_bad_ip_hit(4);
+            add_blacklist_entry('wrong-action', 2);
             return;
         }
 
