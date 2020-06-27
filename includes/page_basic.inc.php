@@ -147,6 +147,13 @@ abstract class PageBasic extends PageCore
         return "";
     }
 
+    function get_meta_robots()
+    {
+        // Default behaviour is "index,follow"
+        //
+        return "index,follow";
+    }
+
     function get_frame_file()
     {
         return $this->frame_file;

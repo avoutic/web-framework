@@ -53,13 +53,6 @@ class PageForgotPassword extends PageBasic
         exit();
     }
 
-    function display_header()
-    {
-        echo <<<HTML
-  <meta name="robots" content="noindex,follow" />
-HTML;
-    }
-
     function display_content()
     {
         $this->load_template('forgot_password.tpl', $this->page_content);

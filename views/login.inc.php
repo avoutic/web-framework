@@ -166,8 +166,6 @@ class PageLogin extends PageBasic
     function display_header()
     {
         echo <<<HTML
-  <meta name="robots" content="noindex,follow" />
-  <link rel="canonical" href="/login" />
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 HTML;
     }
