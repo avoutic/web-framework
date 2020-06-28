@@ -35,7 +35,7 @@ SQL;
         $cutoff = time() - $this->module_config['store_period'];
 
         $result = $this->query($query, array($cutoff));
-        verify($result !== false, 'Failed to clean up blacklist entries');
+        WF::verify($result !== false, 'Failed to clean up blacklist entries');
     }
 
     function add_entry($ip, $user_id, $reason, $severity = 1)
@@ -57,7 +57,7 @@ SQL;
                         'reason' => $full_reason,
                         'timestamp' => time(),
                     ));
-        verify($entry !== false, 'Failed to add blacklist entry');
+        WF::verify($entry !== false, 'Failed to add blacklist entry');
     }
 
     function is_blacklisted($ip, $user_id)
@@ -77,7 +77,7 @@ SQL;
         $cutoff = time() - $this->module_config['trigger_period'];
 
         $result = $this->query($query, array($ip, $user_id, $cutoff));
-        verify($result !== false, 'Failed to sum blacklist entries');
+        WF::verify($result !== false, 'Failed to sum blacklist entries');
 
         return $result->fields['total'] > $this->module_config['threshold'];
     }

@@ -1,6 +1,14 @@
 <?php
 abstract class PageCore extends FrameworkCore
 {
+    protected $web_handler = null;
+
+    function __construct()
+    {
+        parent::__construct();
+        $this->web_handler = WF::get_web_handler();
+    }
+
     static function get_filter()
     {
         return array();
@@ -8,7 +16,7 @@ abstract class PageCore extends FrameworkCore
 
     function get_input_var($name)
     {
-        verify(isset($this->state['input'][$name]), 'Missing input variable: '.$name);
+        WF::verify(isset($this->state['input'][$name]), 'Missing input variable: '.$name);
 
         return $this->state['input'][$name];
     }
@@ -25,9 +33,14 @@ abstract class PageCore extends FrameworkCore
 
     function get_raw_input_var($name)
     {
-        verify(isset($this->state['raw_input'][$name]), 'Missing input variable: '.$name);
+        WF::verify(isset($this->state['raw_input'][$name]), 'Missing input variable: '.$name);
 
         return $this->state['raw_input'][$name];
+    }
+
+    function send_404($type = 'generic')
+    {
+        $this->web_handler->send_404($type);
     }
 
     static function get_permissions()
@@ -42,7 +55,7 @@ abstract class PageCore extends FrameworkCore
 
     static function encode($input, $double_encode = true)
     {
-        verify(( is_string($input) || is_bool($input) || is_int($input) || is_float($input) || is_null($input)) && is_bool($double_encode), 'Not valid for encoding');
+        WF::verify(( is_string($input) || is_bool($input) || is_int($input) || is_float($input) || is_null($input)) && is_bool($double_encode), 'Not valid for encoding');
 
         $str = htmlentities((string)$input, ENT_QUOTES, 'UTF-8', $double_encode);
         if (!strlen($str))
@@ -90,6 +103,11 @@ abstract class PageBasic extends PageCore
                 array_push($this->mods, $mod_obj);
             }
         }
+    }
+
+    protected function get_csrf_token()
+    {
+        return $this->web_handler->get_csrf_token();
     }
 
     function add_page_mod($tag, iPageModule $mod)
@@ -144,20 +162,20 @@ abstract class PageBasic extends PageCore
         return $this->frame_file;
     }
 
+    function get_messages()
+    {
+        return WF::get_messages();
+    }
+
     function add_message($type, $message, $extra_message = "")
     {
-        array_push($this->state['messages'], array(
-                    'mtype' => $type,
-                    'message' => $message,
-                    'extra_message' => $extra_message));
+        WF::set_message($type, $message, $extra_message);
     }
 
     function load_template($name, $args = array())
     {
-        global $site_templates;
-
-        verify(file_exists($site_templates.$name.'.inc.php'), 'Requested template not present');
-        include($site_templates.$name.'.inc.php');
+        WF::verify(file_exists(WF::$site_templates.$name.'.inc.php'), 'Requested template not present');
+        include(WF::$site_templates.$name.'.inc.php');
     }
 
     function load_file($name)
@@ -208,15 +226,14 @@ abstract class PageBasic extends PageCore
 
     function display_frame()
     {
-        global $site_frames;
         unset($this->state['input']);
 
         ob_start();
 
         if (strlen($this->get_frame_file()))
         {
-            $frame_file = $site_frames.$this->get_frame_file();
-            verify(file_exists($frame_file), 'Requested frame file not present');
+            $frame_file = WF::$site_frames.$this->get_frame_file();
+            WF::verify(file_exists($frame_file), 'Requested frame file not present');
             require($frame_file);
         }
         else

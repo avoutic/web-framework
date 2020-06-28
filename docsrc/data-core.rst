@@ -42,12 +42,12 @@ Our Person object now has basic capabilities. So if we instantiate a Person (usi
 
     // Update this Person's country
     $result = $person->update(array('country' => 'Belgium'));
-    verify($result !== false, 'Failed to update person');
+    WF::verify($result !== false, 'Failed to update person');
     ?>
 
 .. note::
 
-   What is `verify()`? `verify()` is like `assert()`. It is used to guard code paths that should never occur, unless something is really wrong. But unlike `assert()` our `verify()` cannot be silently ignored due to PHP settings. For a secure-by-default platform, we want to make sure those guards are always there.
+   What is `WF::verify()`? `WF::verify()` is like `assert()`. It is used to guard code paths that should never occur, unless something is really wrong. But unlike `assert()` our `WF::verify()` cannot be silently ignored due to PHP settings. For a secure-by-default platform, we want to make sure those guards are always there. In addition it can show a debug trace, debug info and e-mail you in case a verify gate fails.
 
 Complex objects
 ***************
@@ -70,7 +70,7 @@ Now we include this file at the top of *includes/persons.inc.php*:
 
 .. code-block:: php
 
-    require_once($site_includes.'vehicles.inc.php');
+    require_once(WF::$site_includes.'vehicles.inc.php');
 
     class Person extends DataCore
     <snip>

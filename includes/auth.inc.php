@@ -1,5 +1,7 @@
 <?php
-require_once($includes.'helpers.inc.php');
+require_once(WF::$includes.'helpers.inc.php');
+require_once(WF::$includes.'base_logic.inc.php');
+
 
 class Session extends DataCore
 {
@@ -59,7 +61,7 @@ abstract class Authenticator extends FrameworkCore
         {
             $query = $_SERVER['QUERY_STRING'];
 
-            header('Location: '.$this->config['pages']['login']['location'].'?return_page='.urlencode($target).'&return_query='.urlencode($query).'&'.add_message_to_url('info', $this->config['authenticator']['auth_required_message']), true, 302);
+            header('Location: '.$this->config['pages']['login']['location'].'?return_page='.urlencode($target).'&return_query='.urlencode($query).'&'.$this->add_message_to_url('info', $this->config['authenticator']['auth_required_message']), true, 302);
         }
         else if ($type == '403')
         {
@@ -123,7 +125,7 @@ class AuthRedirect extends Authenticator
                                             'session_id' => $session_id,
                                             'last_active' => $timestamp));
 
-        verify($session !== FALSE, 'Failed to create Session');
+        WF::verify($session !== FALSE, 'Failed to create Session');
 
         return $session;
     }
@@ -131,7 +133,7 @@ class AuthRedirect extends Authenticator
     function invalidate_sessions($user_id)
     {
         $result = $this->query('DELETE FROM sessions WHERE user_id = ?', array($user_id));
-        verify($result !== FALSE, 'Failed to delete all user\'s sessions');
+        WF::verify($result !== FALSE, 'Failed to delete all user\'s sessions');
     }
 
     function set_logged_in($user)
@@ -164,7 +166,7 @@ class AuthRedirect extends Authenticator
         if (!$session->is_valid())
         {
             $this->deauthenticate();
-            set_message('info', 'Session timed out', '');
+            WF::set_message('info', 'Session timed out', '');
             return FALSE;
         }
 
@@ -198,8 +200,6 @@ class AuthRedirect extends Authenticator
         session_destroy();
     }
 };
-
-require_once($includes."base_logic.inc.php");
 
 class AuthWwwAuthenticate extends Authenticator
 {

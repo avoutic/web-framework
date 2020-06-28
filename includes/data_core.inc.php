@@ -22,13 +22,13 @@ abstract class DataCore extends FrameworkCore
 
     static function exists($id)
     {
-        global $global_cache, $global_database;
+        global $global_cache;
 
         if ($global_cache != null && static::$is_cacheable)
             if (false !== $global_cache->exists(static::get_cache_id($id)))
                 return true;
 
-        $result = $global_database->Query('SELECT id FROM '.static::$table_name.
+        $result = WF::get_db()->Query('SELECT id FROM '.static::$table_name.
                                    ' WHERE id = ?', array($id));
 
         if ($result === false)
@@ -89,8 +89,8 @@ abstract class DataCore extends FrameworkCore
                 'SELECT `'.implode('`, `', static::$base_fields).'` '.
                 'FROM '.static::$table_name.' WHERE id = ?', array($this->id));
 
-        verify($result !== false, 'Failed to retrieve base fields for '.static::$table_name);
-        verify($result->RecordCount() == 1, 'Failed to select single item. ('.$result->RecordCount().' for '.$this->id.' in '.static::$table_name.')');
+        WF::verify($result !== false, 'Failed to retrieve base fields for '.static::$table_name);
+        WF::verify($result->RecordCount() == 1, 'Failed to select single item. ('.$result->RecordCount().' for '.$this->id.' in '.static::$table_name.')');
 
         $row = $result->fields;
 
@@ -112,7 +112,7 @@ abstract class DataCore extends FrameworkCore
     {
         $result = $this->query('SELECT `'.$field.'` FROM '.static::$table_name.
                                          ' WHERE id = ?', array($this->id));
-        verify($result !== false, 'Failed to retrieve '.$field.' for '.static::$table_name);
+        WF::verify($result !== false, 'Failed to retrieve '.$field.' for '.static::$table_name);
 
         return $result->fields[$field];
     }
@@ -139,7 +139,7 @@ abstract class DataCore extends FrameworkCore
 
         $result = $this->query($query, $args);
         $class = get_called_class();
-        verify($result !== false, 'Failed to update object ('.$class.')');
+        WF::verify($result !== false, 'Failed to update object ('.$class.')');
 
         foreach ($data as $key => $value)
             $this->$key = $value;
@@ -156,7 +156,7 @@ abstract class DataCore extends FrameworkCore
 
         $result = $this->query($query, $args);
         $class = get_called_class();
-        verify($result !== false, 'Failed to update object ('.$class.')');
+        WF::verify($result !== false, 'Failed to update object ('.$class.')');
 
         $this->$field = $value;
     }
@@ -182,7 +182,7 @@ abstract class DataCore extends FrameworkCore
 
         $result = $this->query($query, $args);
         $class = get_called_class();
-        verify($result !== false, 'Failed to decrease field of object ('.$class.')');
+        WF::verify($result !== false, 'Failed to decrease field of object ('.$class.')');
 
         $this->$field = $this->get_field($field);
     }
@@ -198,7 +198,7 @@ abstract class DataCore extends FrameworkCore
 
         $result = $this->query($query, $args);
         $class = get_called_class();
-        verify($result !== false, 'Failed to increase field of object ('.$class.')');
+        WF::verify($result !== false, 'Failed to increase field of object ('.$class.')');
 
         $this->$field = $this->get_field($field);
     }
@@ -211,13 +211,11 @@ abstract class DataCore extends FrameworkCore
         $result = $this->query(
                     'DELETE FROM '.static::$table_name.' WHERE id = ?',
                     array($this->id));
-        verify($result !== false, 'Failed to delete item');
+        WF::verify($result !== false, 'Failed to delete item');
     }
 
     static function create($data)
     {
-        global $global_database;
-
         $query = 'INSERT INTO '.static::$table_name;
         $query .= ' SET ';
 
@@ -234,19 +232,17 @@ abstract class DataCore extends FrameworkCore
 
         $args = $data;
 
-        $result = $global_database->InsertQuery($query, $args);
+        $result = WF::get_db()->InsertQuery($query, $args);
 
         $class = get_called_class();
 
-        verify($result !== false, 'Failed to create object ('.$class.')');
+        WF::verify($result !== false, 'Failed to create object ('.$class.')');
 
         return new $class($result);
     }
 
     static function count_objects($filter = array())
     {
-        global $global_database;
-
         $query = 'SELECT COUNT(id) AS cnt FROM '.static::$table_name;
         if (count($filter))
         {
@@ -264,17 +260,15 @@ abstract class DataCore extends FrameworkCore
         }
 
         $args = $filter;
-        $result = $global_database->Query($query, $args);
-        verify($result !== false, 'Failed to count objects');
-        verify($result->RecordCount() == 1, 'Failed to count objects');
+        $result = WF::get_db()->Query($query, $args);
+        WF::verify($result !== false, 'Failed to count objects');
+        WF::verify($result->RecordCount() == 1, 'Failed to count objects');
 
         return $result->fields['cnt'];
     }
 
     static function get_object($filter = array())
     {
-        global $global_database;
-
         $query = 'SELECT id FROM '.static::$table_name;
         if (count($filter))
         {
@@ -293,12 +287,12 @@ abstract class DataCore extends FrameworkCore
 
         $args = $filter;
 
-        $result = $global_database->Query($query, $args);
+        $result = WF::get_db()->Query($query, $args);
 
         $class = get_called_class();
 
-        verify($result !== false, 'Failed to retrieve object ('.$class.')');
-        verify($result->RecordCount() <= 1, 'Non-unique object request ('.$class.')');
+        WF::verify($result !== false, 'Failed to retrieve object ('.$class.')');
+        WF::verify($result->RecordCount() <= 1, 'Non-unique object request ('.$class.')');
 
         if ($result->RecordCount() == 0)
             return false;
@@ -333,8 +327,6 @@ abstract class DataCore extends FrameworkCore
 
     static function get_objects($offset = 0, $results = 10, $filter = array(), $order = '')
     {
-        global $global_database;
-
         $query = 'SELECT id FROM '.static::$table_name;
         if (count($filter))
         {
@@ -360,11 +352,11 @@ abstract class DataCore extends FrameworkCore
             $args = array_merge($args, array((int) $offset, (int) $results));
         }
 
-        $result = $global_database->Query($query, $args);
+        $result = WF::get_db()->Query($query, $args);
 
         $class = get_called_class();
 
-        verify($result !== false, 'Failed to retrieve objects ('.$class.')');
+        WF::verify($result !== false, 'Failed to retrieve objects ('.$class.')');
 
         $info = array();
         foreach($result as $k => $row)

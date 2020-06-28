@@ -67,11 +67,11 @@ class Image
 	 */
 	public function resize($new_location, $size = array(100,100))
 	{
-		verify(function_exists("imagecreatetruecolor"), 'Missing imagecreatetruecolor function');
+		WF::verify(function_exists("imagecreatetruecolor"), 'Missing imagecreatetruecolor function');
         if (file_exists($new_location))
-    		verify(is_writable($new_location), 'Not writable');
+    		WF::verify(is_writable($new_location), 'Not writable');
         else
-            verify(is_writable(dirname($new_location)), 'Not writable');
+            WF::verify(is_writable(dirname($new_location)), 'Not writable');
 		
 		$image = $this->create_from($this->location);
 		$this->resize_resource($image, $size);
@@ -95,8 +95,8 @@ class Image
 	 */
 	private function resize_resource(&$image, $size = array(100,100))
 	{
-		verify(is_resource($image), 'Not a resource');
-		verify(is_array($size) && count($size) == 2 && $size[0] > 0 && $size[1] > 0, 'Size not correctly structured');
+		WF::verify(is_resource($image), 'Not a resource');
+		WF::verify(is_array($size) && count($size) == 2 && $size[0] > 0 && $size[1] > 0, 'Size not correctly structured');
 		
 		$width = imagesx($image);
 		$height = imagesy($image);
@@ -149,9 +149,9 @@ class Image
 	 */
 	public function rotate($new_location, $degrees, $backgroundColor = 16777215)
 	{
-		verify(function_exists("imagecreatetruecolor"), 'function imagecreatetruecolor() missing');
-		verify(is_writable($new_location), 'Not writable');
-		verify(is_int($degrees) && abs($degrees) <= 360, 'Invalid rotation');
+		WF::verify(function_exists("imagecreatetruecolor"), 'function imagecreatetruecolor() missing');
+		WF::verify(is_writable($new_location), 'Not writable');
+		WF::verify(is_int($degrees) && abs($degrees) <= 360, 'Invalid rotation');
 		
 		// Create new GD resource
 		$image = $this->create_from($this->location);
@@ -180,9 +180,9 @@ class Image
 	 */
 	private function rotateResource(&$image, $degrees, $backgroundColor = 16777215)
 	{
-		verify(function_exists("imagecreatetruecolor"), 'function imagecreatetruecolor() missing');
-		verify(is_resource($image), 'Not a resource');
-		verify(is_int($degrees) && abs($degrees) <= 360, 'Invalid rotation');
+		WF::verify(function_exists("imagecreatetruecolor"), 'function imagecreatetruecolor() missing');
+		WF::verify(is_resource($image), 'Not a resource');
+		WF::verify(is_int($degrees) && abs($degrees) <= 360, 'Invalid rotation');
 
 		imageantialias($image, true);
 		$rotate = imagerotate($image, $degrees, $backgroundColor);
@@ -203,8 +203,8 @@ class Image
 	 */
 	public function crop($new_location, $size, $offset = array(0,0))
 	{
-		verify(function_exists("imagecreatetruecolor"), 'function imagecreatetruecolor() missing');
-		verify(is_writable($new_location), 'Not writable');
+		WF::verify(function_exists("imagecreatetruecolor"), 'function imagecreatetruecolor() missing');
+		WF::verify(is_writable($new_location), 'Not writable');
 		
 		// Create new GD resource
 		$image = $this->create_from($this->location);
@@ -232,10 +232,10 @@ class Image
 	 */
 	public static function cropResource(&$image, $newSize, $offset = array(0,0) )
 	{
-		verify(function_exists("imagecreatetruecolor"), 'function imagecreatetruecolor() missing');
-		verify(is_resource($image), 'Not a resource');
-		verify(is_array($newSize) && count($newSize) == 2 && $newSize[0] > 0 && $newSize[1] > 0, 'Size not correctly structured');
-		verify(is_array($offset) && count($offset) == 2 && $offset[0] >= 0 && $offset[1] >= 0 && $offset[0] < $newSize[0] && $offset[1] < $newSize[1], 'Offset not correctly structured');
+		WF::verify(function_exists("imagecreatetruecolor"), 'function imagecreatetruecolor() missing');
+		WF::verify(is_resource($image), 'Not a resource');
+		WF::verify(is_array($newSize) && count($newSize) == 2 && $newSize[0] > 0 && $newSize[1] > 0, 'Size not correctly structured');
+		WF::verify(is_array($offset) && count($offset) == 2 && $offset[0] >= 0 && $offset[1] >= 0 && $offset[0] < $newSize[0] && $offset[1] < $newSize[1], 'Offset not correctly structured');
 
 		$dest = imagecreatetruecolor($newSize[0], $newSize[1]);
 		$result = imagecopy($dest, $image, 0, 0, $offset[0], $offset[1], $newSize[0], $newSize[1]);

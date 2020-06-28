@@ -6,10 +6,8 @@ class PageLogin extends PageBasic
 {
     static function get_filter()
     {
-        global $global_config;
-
         $username_format = FORMAT_USERNAME;
-        if ($global_config['authenticator']['unique_identifier'] == 'email')
+        if (WF::get_config('authenticator.unique_identifier') == 'email')
             $username_format = FORMAT_EMAIL;
 
         return array(
@@ -29,8 +27,8 @@ class PageLogin extends PageBasic
         if ($bruteforce_protection)
         {
             $recaptcha_config = $this->config['security']['recaptcha'];
-            verify(strlen($recaptcha_config['site_key']), 'Missing reCAPTCHA Site Key');
-            verify(strlen($recaptcha_config['secret_key']), 'Missing reCAPTCHA Secret Key');
+            WF::verify(strlen($recaptcha_config['site_key']), 'Missing reCAPTCHA Site Key');
+            WF::verify(strlen($recaptcha_config['secret_key']), 'Missing reCAPTCHA Secret Key');
         }
     }
 
@@ -159,7 +157,7 @@ class PageLogin extends PageBasic
         //
         $info = $this->auth->set_logged_in($user);
 
-        header("Location: ".$return_page."?".$return_query."&".add_message_to_url('success', 'Login successful.'));
+        header("Location: ".$return_page."?".$return_query."&".$this->add_message_to_url('success', 'Login successful.'));
         exit();
     }
 

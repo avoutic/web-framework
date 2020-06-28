@@ -7,8 +7,8 @@ class Recaptcha extends FrameworkCore
 
         $this->module_config = $this->config['security']['recaptcha'];
 
-        verify(strlen($this->module_config['site_key']), 'Missing reCAPTCHA Site Key');
-        verify(strlen($this->module_config['secret_key']), 'Missing reCAPTCHA Secret Key');
+        WF::verify(strlen($this->module_config['site_key']), 'Missing reCAPTCHA Site Key');
+        WF::verify(strlen($this->module_config['secret_key']), 'Missing reCAPTCHA Secret Key');
     }
 
     function verify($recaptcha_response)
@@ -35,8 +35,8 @@ class Recaptcha extends FrameworkCore
 
         if (isset($response['error_codes']))
         {
-            verify(!in_array('invalid-input-secret', $response['error-codes']), 'Invalid reCAPTCHA input secret used');
-            verify(!in_array('invalid-keys-secret', $response['error-codes']), 'Invalid reCAPTCHA key used');
+            WF::verify(!in_array('invalid-input-secret', $response['error-codes']), 'Invalid reCAPTCHA input secret used');
+            WF::verify(!in_array('invalid-keys-secret', $response['error-codes']), 'Invalid reCAPTCHA key used');
         }
 
         return $response['success'];

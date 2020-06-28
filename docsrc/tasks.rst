@@ -71,7 +71,7 @@ In our Template for this page we'll need to add a form to handle the interaction
 
     <form method="POST" action="/show-user">
       <input type="hidden" name="do" value="yes"/>
-      <input type="hidden" name="token" value="<?=get_csrf_token()?>"/>
+      <input type="hidden" name="token" value="<?=$this->get_csrf_token()?>"/>
       <input type="text" name="name" placeholder="Name" required autofocus autocomplete="off">
       <button type="submit">Change</button>
     </form>

@@ -3,10 +3,8 @@ class PageForgotPassword extends PageBasic
 {
     static function get_filter()
     {
-        global $global_config;
-
         $username_format = FORMAT_USERNAME;
-        if ($global_config['authenticator']['unique_identifier'] == 'email')
+        if (WF::get_config('authenticator.unique_identifier') == 'email')
             $username_format = FORMAT_EMAIL;
 
         return array(
@@ -47,7 +45,7 @@ class PageForgotPassword extends PageBasic
         // Redirect to main sceen
         //
         $login_page = $this->config['pages']['login']['location'];
-        header("Location: ${login_page}?".add_message_to_url('success', 'Reset link mailed to registered email account.'));
+        header("Location: ${login_page}?".$this->add_message_to_url('success', 'Reset link mailed to registered email account.'));
         exit();
     }
 

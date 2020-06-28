@@ -1,7 +1,7 @@
-<form method="post" class="register_form" action="/register_account" enctype="multipart/form-data" onsubmit="password.value = hex_sha1(password_helper.value); password2.value = hex_sha1(password2_helper.value); return true;">
+<form method="post" class="register_form" action="/register_account">
 	<fieldset class="register">
 		<input type="hidden" name="do" value="yes"/>
-        <input type="hidden" name="token" value="<?=get_csrf_token()?>"/>
+        <input type="hidden" name="token" value="<?=$this->get_csrf_token()?>"/>
         <input type="hidden" id="password" name="password" value=""/>
         <input type="hidden" id="password2" name="password2" value=""/>
 		<legend>Login Details</legend>
@@ -9,10 +9,10 @@
 			<label class="left" for="username">Username</label> <input type="text" class="field" id="username" name="username" value="<?=$this->page_content['username']?>"/>
 		</p>
 		<p>
-			<label class="left" for="password_helper">Password</label> <input type="password" class="field" id="password_helper" name="password_helper"/>
+			<label class="left" for="password">Password</label> <input type="password" class="field" id="password" name="password"/>
 		</p>
 		<p>
-			<label class="left" for="password2_helper">Password verification</label> <input type="password" class="field" id="password2_helper" name="password2_helper"/>
+			<label class="left" for="password2">Password verification</label> <input type="password" class="field" id="password2" name="password2"/>
 		</p>
 	</fieldset>
 	<fieldset class="user_details">

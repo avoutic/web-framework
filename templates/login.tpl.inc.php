@@ -1,7 +1,7 @@
-<form method="post" class="login_form" action="/<?=$args['login_page']?>" enctype="multipart/form-data" onsubmit="password.value = hex_sha1(password_helper.value); return true;">
+<form method="post" class="login_form" action="/<?=$args['login_page']?>">
 	<fieldset class="login">
 		<input type="hidden" name="do" value="yes"/>
-        <input type="hidden" name="token" value="<?=get_csrf_token()?>"/>
+        <input type="hidden" name="token" value="<?=$this->get_csrf_token()?>"/>
         <input type="hidden" id="password" name="password" value=""/>
 		<input type="hidden" name="return_page" value="<?=PageCore::encode($args['return_page'])?>"/>
 		<input type="hidden" name="return_query" value="<?=PageCore::encode($args['return_query'])?>"/>

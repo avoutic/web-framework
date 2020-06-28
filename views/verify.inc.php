@@ -31,7 +31,7 @@ class PageVerify extends PageBasic
             return;
         }
 
-        $msg = decode_and_verify_array($code);
+        $msg = WF::decode_and_verify_array($code);
         if (!$msg)
             return;
 
@@ -44,7 +44,7 @@ class PageVerify extends PageBasic
         if ($msg['timestamp'] + 86400 < time())
         {
             // Expired
-            header("Location: ${login_page}?".add_message_to_url('error', 'Verification mail expired', 'Please <a href="/login">request a new one</a> after logging in.'));
+            header("Location: ${login_page}?".$this->add_message_to_url('error', 'Verification mail expired', 'Please <a href="/login">request a new one</a> after logging in.'));
             exit();
         }
 
@@ -65,7 +65,7 @@ class PageVerify extends PageBasic
 
         // Redirect to main sceen
         //
-        header("Location: ${login_page}?".add_message_to_url('success', 'Verification succeeded', 'Verification succeeded. You can now use your account.')."&return_page=".urlencode($after_verify_page));
+        header("Location: ${login_page}?".$this->add_message_to_url('success', 'Verification succeeded', 'Verification succeeded. You can now use your account.')."&return_page=".urlencode($after_verify_page));
         exit();
     }
 };

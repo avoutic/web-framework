@@ -17,9 +17,7 @@ class ConfigValues
 
     function __construct($default_module = "")
     {
-        global $global_database;
-
-        $this->database = $global_database;
+        $this->database = WF::get_db();
         $this->default_module = $default_module;
     }
 

@@ -1,6 +1,6 @@
 <?php
-require_once('data_core.inc.php');
-require_once('config_values.inc.php');
+require_once(WF::$includes.'data_core.inc.php');
+require_once(WF::$includes.'config_values.inc.php');
 
 class Right extends DataCore
 {
@@ -62,12 +62,12 @@ class User extends DataCore
 SQL;
 
         $result = $this->query($query, array($this->id));
-        verify($result !== false, 'Failed to retrieve user rights.');
+        WF::verify($result !== false, 'Failed to retrieve user rights.');
 
         foreach($result as $k => $row)
         {
             $right = Right::get_object_by_id($row['right_id']);
-            verify($right !== false, 'Failed to retrieve right');
+            WF::verify($right !== false, 'Failed to retrieve right');
 
             $this->rights[$right->short_name] = $right;
         }
@@ -96,7 +96,7 @@ SQL;
 
         if ($params[0] == 'sha256')
         {
-            verify(count($params) == 4, 'Solid password format unknown');
+            WF::verify(count($params) == 4, 'Solid password format unknown');
 
             $stored_hash = $params[3];
             $calculated_hash = pbkdf2('sha256', $password, $params[2], (int) $params[1],
@@ -104,7 +104,7 @@ SQL;
         }
         else if ($params[0] == 'bootstrap')
         {
-            verify(count($params) == 2, 'Solid password format unknown');
+            WF::verify(count($params) == 2, 'Solid password format unknown');
 
             $stored_hash = $params[1];
             $calculated_hash = $password;
@@ -112,7 +112,7 @@ SQL;
         }
         else if ($params[0] == 'dolphin')
         {
-            verify(count($params) == 3, 'Solid password format unknown');
+            WF::verify(count($params) == 3, 'Solid password format unknown');
 
             $stored_hash = $params[2];
             $calculated_hash = sha1(md5($password) . $params[1]);
@@ -121,9 +121,9 @@ SQL;
         else
         {
             $result = $this->get_custom_hash($params, $password);
-            verify($result !== false, 'Unknown solid password format');
-            verify(isset($result['stored_hash']), 'Invalid result from get_custom_hash');
-            verify(isset($result['calculated_hash']), 'Invalid result from get_custom_hash');
+            WF::verify($result !== false, 'Unknown solid password format');
+            WF::verify(isset($result['stored_hash']), 'Invalid result from get_custom_hash');
+            WF::verify(isset($result['calculated_hash']), 'Invalid result from get_custom_hash');
 
             $stored_hash = $result['stored_hash'];
             $calculated_hash = $result['calculated_hash'];
@@ -211,12 +211,12 @@ SQL;
             'email' => $email,
         );
 
-        if ($this->global_config['authenticator']['unique_identifier'] == 'email')
+        if (WF::get_config('authenticator.unique_identifier') == 'email')
             $updates['username'] = $email;
 
         $this->update($updates);
 
-        fire_hook('change_email', array(
+        WF::fire_hook('change_email', array(
                                     'user_id' => $this->id,
                                     'old_email' => $this->email,
                                     'new_email' => $email));
@@ -283,7 +283,7 @@ SQL;
                     $this->id,
                     $short_name
                     ));
-        verify($result !== false, 'Failed to insert user right');
+        WF::verify($result !== false, 'Failed to insert user right');
 
         $this->rights[$short_name] = Right::get_object(array('short_name' => $short_name));
 
@@ -311,7 +311,7 @@ SQL;
                     $this->id
                     ));
 
-        verify($result !== false, 'Failed to delete user right');
+        WF::verify($result !== false, 'Failed to delete user right');
 
         unset($this->rights[$short_name]);
 
@@ -330,8 +330,8 @@ SQL;
                      'action' => $action,
                      'params' => $params,
                      'timestamp' => time());
-        $msg_str = json_encode($msg);
-        return encode_and_auth_string($msg_str);
+
+        return encode_and_auth_array($msg);
     }
 
     function send_verify_mail($after_verify_data = array())
@@ -434,28 +434,28 @@ class BaseFactory extends FactoryCore
 {
     function get_user($user_id, $type = 'User')
     {
-        verify(class_exists($type), 'Class does not exist');
+        WF::verify(class_exists($type), 'Class does not exist');
 
         return $type::get_object_by_id($user_id);
     }
 
     function get_users($offset = 0, $results = 10, $type = 'User')
     {
-        verify(class_exists($type), 'Class does not exist');
+        WF::verify(class_exists($type), 'Class does not exist');
 
         return $type::get_objects($offset, $results);
     }
 
     function get_user_by_username($username, $type = 'User')
     {
-        verify(class_exists($type), 'Class does not exist');
+        WF::verify(class_exists($type), 'Class does not exist');
 
         return $type::get_object(array('username' => $username));
     }
 
     function get_user_by_email($email, $type = 'User')
     {
-        verify(class_exists($type), 'Class does not exist');
+        WF::verify(class_exists($type), 'Class does not exist');
 
         return $type::get_object(array('email' => $email));
     }
@@ -475,7 +475,7 @@ SQL;
                         "%{$string}%",
                         "%{$string}%",
                     ));
-        verify($result !== false, 'Failed to search users');
+        WF::verify($result !== false, 'Failed to search users');
 
         $data = array();
         foreach ($result as $row)
@@ -489,7 +489,7 @@ SQL;
 
     function create_user($username, $password, $email, $terms_accepted, $type = 'User')
     {
-        verify(class_exists($type), 'Class does not exist');
+        WF::verify(class_exists($type), 'Class does not exist');
 
         $solid_password = User::new_hash_from_password($password);
 
@@ -500,7 +500,7 @@ SQL;
                             'terms_accepted' => $terms_accepted,
                             'registered' => time(),
                 ));
-        verify($user !== false, 'Failed to create new user');
+        WF::verify($user !== false, 'Failed to create new user');
 
         return $user;
     }

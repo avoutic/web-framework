@@ -18,7 +18,7 @@ $this->display_header();
 <?php
 $this->display_content();
 
-if (user_has_permissions(array('debug')))
+if (WF::user_has_permissions(array('debug')))
 {
     $state = print_r($this->state, TRUE);
 

@@ -4,37 +4,33 @@ abstract class SenderCore extends FrameworkCore
     function get_sender_email()
     {
         $default_sender = $this->config['sender_core']['default_sender'];
-        verify(strlen($default_sender), 'No default sender e-mail address defined');
+        WF::verify(strlen($default_sender), 'No default sender e-mail address defined');
 
         return $default_sender;
     }
 
     static function send_raw($to, $subject, $message)
     {
-        global $global_config;
-
         // Instantiate correct handler
         //
-        verify(isset($global_config['sender_core']['handler_class']), 'No handler for sending configured');
-        $handler_class = $global_config['sender_core']['handler_class'];
+        $handler_class = WF::get_config('sender_core.handler_class');
+        WF::verify(strlen($handler_class), 'No handler for sending configured');
 
         $handler = new $handler_class();
-        verify(method_exists($handler, 'send_raw'), 'No raw send handler available');
+        WF::verify(method_exists($handler, 'send_raw'), 'No raw send handler available');
 
         return $handler->send_raw_email($to, $subject, $message);
     }
 
     static function send($template_name, $to, $params = array())
     {
-        global $global_config;
-
         // Instantiate correct handler
         //
-        verify(isset($global_config['sender_core']['handler_class']), 'No handler for sending configured');
-        $handler_class = $global_config['sender_core']['handler_class'];
+        $handler_class = WF::get_config('sender_core.handler_class');
+        WF::verify(strlen($handler_class), 'No handler for sending configured');
 
         $handler = new $handler_class();
-        verify(method_exists($handler, $template_name), 'No template handler available');
+        WF::verify(method_exists($handler, $template_name), 'No template handler available');
 
         return $handler->$template_name($to, $params);
     }
@@ -55,5 +51,5 @@ abstract class SenderCore extends FrameworkCore
     abstract function new_password($to, $params);
 };
 
-require_once($site_includes.'sender_handler.inc.php');
+require_once(WF::$site_includes.'sender_handler.inc.php');
 ?>

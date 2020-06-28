@@ -1,5 +1,5 @@
 <?php
-$site_config = array(
+return array(
     'database_enabled' => false,
     'security' => array(
         'hmac_key' => 'CHANGETHISTO20CHARRANDOMSTRING',

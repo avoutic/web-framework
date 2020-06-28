@@ -1,13 +1,37 @@
 <?php
-####################################################################
-# Global settings
-#
-srand();
-date_default_timezone_set('UTC');
+require_once(WF::$includes.'wf_helpers.inc.php');
 
-# Load configuration
-#
-$base_config = array(
+class WF
+{
+    static $includes = __DIR__.'/';
+    static $views = __DIR__.'/../views/';
+    static $site_includes = __DIR__.'/../../includes/';
+    static $site_views = __DIR__.'/../../views/';
+    static $site_frames = __DIR__.'/../../frames/';
+    static $site_templates = __DIR__.'/../../templates/';
+
+    private static $in_verify = false;      // Only go into an assert_handler once
+    protected static $hook_array = array();
+
+    private static $global_cache = null;
+    private static $global_database = null;
+    private static $global_databases = array();
+    protected static $global_state = array(
+                    'logged_in' => false,
+                    'permissions' => array(),
+                    'input' => array(),
+                    'raw_input' => array(),
+                    'messages' => array(),
+                    'raw_post' => array(),
+                );
+    private static $framework = null;
+
+    private $blacklist = null;
+
+
+    // Default configuration
+    //
+    private static $global_config = array(
         'debug' => false,
         'debug_mail' => true,
         'preload' => false,
@@ -30,9 +54,9 @@ $base_config = array(
                                             // a mismatch between required and current value
         ),
         'site_name' => 'Unknown',
-        'server_name' => (isset($_SERVER['SERVER_NAME']))?$_SERVER['SERVER_NAME']:'app',
+        'server_name' => '',                // Set to $_SERVER['SERVER_NAME'] or 'app' automatically
         'http_mode' => 'https',
-        'document_root' => $_SERVER['DOCUMENT_ROOT'],
+        'document_root' => '',              // Set to $_SERVER['DOCUMENT_ROOT'] automatically
         'cache_enabled' => false,
         'cache_config' => 'main',
         'auth_mode' => 'redirect',            // redirect, www-authenticate, custom (requires auth_module)
@@ -93,546 +117,585 @@ $base_config = array(
             'handler_class' => 'SenderCore',
             'default_sender' => '',
         ),
-);
+    );
 
-function scrub_state(&$item)
-{
-    global $wf_global_info;
-
-    foreach ($item as $key => $value)
+    static function assert_handler($file, $line, $message, $error_type, $silent = false)
     {
-        if (is_object($value))
-            $value = $item[$key] = get_object_vars($value);
+        $path_parts = pathinfo($file);
+        $file = $path_parts['filename'];
 
-        if ($key === 0 && $value == $wf_global_info)
-            $item[$key] = 'omitted';
-        else if (is_array($value))
-            scrub_state($item[$key]);
-        else if ($key === 'config')
-            $item[$key] = 'scrubbed';
-    }
-}
+        $error_type = WFHelpers::get_error_type_string($error_type);
 
-function get_error_type_string($type)
-{
-    switch($type)
-    {
-        case E_ERROR: // 1 //
-            return 'E_ERROR';
-        case E_WARNING: // 2 //
-            return 'E_WARNING';
-        case E_PARSE: // 4 //
-            return 'E_PARSE';
-        case E_NOTICE: // 8 //
-            return 'E_NOTICE';
-        case E_CORE_ERROR: // 16 //
-            return 'E_CORE_ERROR';
-        case E_CORE_WARNING: // 32 //
-            return 'E_CORE_WARNING';
-        case E_COMPILE_ERROR: // 64 //
-            return 'E_COMPILE_ERROR';
-        case E_COMPILE_WARNING: // 128 //
-            return 'E_COMPILE_WARNING';
-        case E_USER_ERROR: // 256 //
-            return 'E_USER_ERROR';
-        case E_USER_WARNING: // 512 //
-            return 'E_USER_WARNING';
-        case E_USER_NOTICE: // 1024 //
-            return 'E_USER_NOTICE';
-        case E_STRICT: // 2048 //
-            return 'E_STRICT';
-        case E_RECOVERABLE_ERROR: // 4096 //
-            return 'E_RECOVERABLE_ERROR';
-        case E_DEPRECATED: // 8192 //
-            return 'E_DEPRECATED';
-        case E_USER_DEPRECATED: // 16384 //
-            return 'E_USER_DEPRECATED';
-    }
+        $state = WF::get_state();
+        if (is_array($state))
+            WFHelpers::scrub_state($state);
 
-    return $type;
-}
-
-// Create a handler function
-function assert_handler($file, $line, $message, $error_type, $silent = false)
-{
-    global $global_config, $global_state, $global_database;
-
-    $path_parts = pathinfo($file);
-    $file = $path_parts['filename'];
-
-    $error_type = get_error_type_string($error_type);
-
-    $state = $global_state;
-    if (is_array($state))
-        scrub_state($state);
-
-    $trace = debug_backtrace();
-    if (is_array($trace))
-    {
-        $i = 0;
-        while(count($trace))
+        $trace = debug_backtrace();
+        if (is_array($trace))
         {
-            if (in_array($trace[$i]['function'],
-                array('assert_handler', 'verify', 'silent_verify')))
+            $i = 0;
+            while(count($trace))
             {
-                unset($trace[$i]);
-                $i++;
-                continue;
+                if (in_array($trace[$i]['function'],
+                            array('assert_handler', 'verify', 'silent_verify')))
+                {
+                    unset($trace[$i]);
+                    $i++;
+                    continue;
+                }
+                break;
             }
-            break;
+
+            WFHelpers::scrub_state($trace);
         }
 
-        scrub_state($trace);
+        $db_error = 'Not initialized yet';
+        if (WF::get_db() != null)
+        {
+            $db_error = WF::get_db()->GetLastError();
+            if ($db_error === false || $db_error === '')
+                $db_error = 'None';
+        }
+
+        $low_info_message = "File '$file'\nLine '$line'\n";
+
+        $debug_message = "File '$file'\nLine '$line'\nMessage '$message'\n";
+        $debug_message.= "Last Database error: ".$db_error."\n";
+        $debug_message.= "Backtrace:\n".print_r($trace, true);
+        $debug_message.= "State:\n".print_r($state, true);
+
+        header("HTTP/1.0 500 Internal Server Error");
+        var_dump(WF::get_config('debug'));
+        if (WF::get_config('debug') == true)
+        {
+            echo "Failure information: $error_type<br/>";
+            echo "<pre>";
+            echo $debug_message;
+            echo "</pre>";
+        }
+        else if (!$silent)
+        {
+            echo "Failure information: $error_type\n";
+            echo "<pre>\n";
+            echo $low_info_message;
+            echo "</pre>\n";
+        }
+
+        if (WF::get_config('debug_mail') == true)
+        {
+            $debug_message.= "\n----------------------------\n\n";
+            $debug_message.= "Server variables:\n".print_r($_SERVER, true);
+
+            SenderCore::send_raw(
+                WF::get_config('sender_core.default_sender'),
+                'Assertion failed',
+                "Failure information: $error_type\n\nServer: ".
+                WF::get_confif('server_name')."\n<pre>".$debug_message.'</pre>'
+            );
+        }
+
+        if (!$silent)
+            die("Oops. Something went wrong. Please retry later or contact us with the information above!\n");
     }
 
-    $db_error = 'Not initialized yet';
-    if (isset($global_database))
+    static function silent_verify($bool, $message)
     {
-        $db_error = $global_database->GetLastError();
-        if ($db_error === false || $db_error === '')
-            $db_error = 'None';
+        WF::verify($bool, $message, true);
     }
 
-    $low_info_message = "File '$file'\nLine '$line'\n";
-
-    $debug_message = "File '$file'\nLine '$line'\nMessage '$message'\n";
-    $debug_message.= "Last Database error: ".$db_error."\n";
-    $debug_message.= "Backtrace:\n".print_r($trace, true);
-    $debug_message.= "State:\n".print_r($state, true);
-
-    header("HTTP/1.0 500 Internal Server Error");
-    if ($global_config['debug'])
+    static function verify($bool, $message, $silent = false)
     {
-        echo "Failure information: $error_type<br/>";
-        echo "<pre>";
-        echo $debug_message;
-        echo "</pre>";
-    }
-    else if (!$silent) {
-        echo "Failure information: $error_type\n";
-        echo "<pre>\n";
-        echo $low_info_message;
-        echo "</pre>\n";
-    }
+        if ($bool)
+            return true;
 
-    if ($global_config['debug_mail'] == true)
-    {
-        $debug_message.= "\n----------------------------\n\n";
-        $debug_message.= "Server variables:\n".print_r($_SERVER, true);
+        if (WF::$in_verify)
+            exit();
 
-        SenderCore::send_raw($global_config['sender_core']['default_sender'], 'Assertion failed',
-                "Failure information: $error_type\n\nServer: ".$global_config['server_name']."\n<pre>".$debug_message.'</pre>');
-    }
-
-    if (!$silent)
-        die("Oops. Something went wrong. Please retry later or contact us with the information above!\n");
-}
-
-// Only go into assert_handler once
-$in_verify = false;
-
-function silent_verify($bool, $message)
-{
-    verify($bool, $message, true);
-}
-
-function verify($bool, $message, $silent = false)
-{
-    if ($bool)
-        return true;
-
-    global $in_verify;
-    if ($in_verify)
-        exit();
-
-    $in_verify = true;
-    $bt = debug_backtrace();
-    $caller = array_shift($bt);
-    if ($caller['function'] == 'verify')
+        WF::$in_verify = true;
+        $bt = debug_backtrace();
         $caller = array_shift($bt);
+        if ($caller['function'] == 'verify')
+            $caller = array_shift($bt);
 
-    assert_handler($caller['file'], $caller['line'], $message, 'verify', $silent);
-    exit();
-}
+        WF::assert_handler($caller['file'], $caller['line'], $message, 'verify', $silent);
+        exit();
+    }
 
-function shutdown_handler()
-{
-    $last_error = error_get_last();
-    if (!$last_error)
-        return;
-
-    if ($last_error['type'] == E_NOTICE && $last_error['file'] == 'adodb-mysqli.inc')
-        return;
-
-    switch($last_error['type'])
+    static function shutdown_handler()
     {
+        $last_error = error_get_last();
+        if (!$last_error)
+            return;
+
+        if ($last_error['type'] == E_NOTICE && $last_error['file'] == 'adodb-mysqli.inc')
+            return;
+
+        switch($last_error['type'])
+        {
         case E_ERROR:
         case E_PARSE:
         case E_CORE_ERROR:
         case E_CORE_WARNING:
         case E_COMPILE_ERROR:
         case E_COMPILE_WARNING:
-            assert_handler($last_error['file'], $last_error['line'], $last_error['message'], $last_error['type']);
+            WF::assert_handler($last_error['file'], $last_error['line'], $last_error['message'], $last_error['type']);
             break;
         default:
-            assert_handler($last_error['file'], $last_error['line'], $last_error['message'], $last_error['type'], true);
+            WF::assert_handler($last_error['file'], $last_error['line'], $last_error['message'], $last_error['type'], true);
             exit();
+        }
     }
 
-}
+    static function http_error($code, $short_message, $message)
+    {
+        header("HTTP/1.0 $code $short_message");
+        print "$message";
+        exit(0);
+    }
 
-function http_error($code, $short_message, $message)
-{
-    header("HTTP/1.0 $code $short_message");
-    print "$message";
-    exit(0);
-}
-
-$hook_array = array();
-
-function register_hook($hook_name, $file, $static_function, $args = array())
-{
-    global $hook_array;
-
-    $hook_array[$hook_name][] = array(
+    static function register_hook($hook_name, $file, $static_function, $args = array())
+    {
+        WF::$hook_array[$hook_name][] = array(
                     'include_file' => $file,
                     'static_function' => $static_function,
                     'args' => $args);
-}
-
-function fire_hook($hook_name, $params)
-{
-    global $hook_array, $site_includes, $includes;
-
-    if (!isset($hook_array[$hook_name]))
-        return;
-
-    $hooks = $hook_array[$hook_name];
-    foreach ($hooks as $hook)
-    {
-        require_once($site_includes.$hook['include_file'].".inc.php");
-
-        $function = $hook['static_function'];
-
-        $function($hook['args'], $params);
-    }
-}
-
-function urlencode_and_auth_array($array)
-{
-    global $global_config;
-
-    return urlencode(encode_and_auth_array($array));
-}
-
-function encode_and_auth_array($array)
-{
-    global $global_config;
-
-    $str = json_encode($array);
-
-    # First encrypt it
-    $cipher = 'AES-256-CBC';
-    $iv_len = openssl_cipher_iv_length($cipher);
-    $iv = openssl_random_pseudo_bytes($iv_len);
-    $key = hash('sha256', $global_config['security']['crypt_key'], TRUE);
-    $str = openssl_encrypt($str, $cipher, $key, 0, $iv);
-
-    $str = base64_encode($str);
-    $iv = base64_encode($iv);
-
-    $str_hmac = hash_hmac($global_config['security']['hash'], $iv.$str, $global_config['security']['hmac_key']);
-
-    return $iv.":".$str.":".$str_hmac;
-}
-
-function encode_and_auth_string($str)
-{
-    global $global_config;
-
-    # First encrypt it
-    $cipher = 'AES-256-CBC';
-    $iv_len = openssl_cipher_iv_length($cipher);
-    $iv = openssl_random_pseudo_bytes($iv_len);
-    $key = hash('sha256', $global_config['security']['crypt_key'], TRUE);
-    $str = openssl_encrypt($str, $cipher, $key, 0, $iv);
-
-    $str = base64_encode($str);
-    $iv = base64_encode($iv);
-
-    $str_hmac = hash_hmac($global_config['security']['hash'], $iv.$str, $global_config['security']['hmac_key']);
-
-    return urlencode($iv.":".$str.":".$str_hmac);
-}
-
-function urldecode_and_verify_array($str)
-{
-    $urldecoded = urldecode($str);
-
-    return decode_and_verify_array($urldecoded);
-}
-
-function decode_and_verify_array($str)
-{
-    $json_encoded = decode_and_verify_string($str);
-    if (!strlen($json_encoded))
-        return false;
-
-    $array = json_decode($json_encoded, true);
-    if (!is_array($array))
-        return false;
-
-    return $array;
-}
-
-function decode_and_verify_string($str)
-{
-    global $global_config;
-
-    $idx = strpos($str, ":");
-    if ($idx === FALSE)
-        return "";
-
-    $part_iv = substr($str, 0, $idx);
-    $iv = base64_decode($part_iv);
-
-    $str = substr($str, $idx + 1);
-
-    $idx = strpos($str, ":");
-    if ($idx === FALSE)
-        return "";
-
-    $part_msg = substr($str, 0, $idx);
-    $part_hmac = substr($str, $idx + 1);
-
-    $str_hmac = hash_hmac($global_config['security']['hash'], $part_iv.$part_msg, $global_config['security']['hmac_key']);
-
-    if ($str_hmac !== $part_hmac)
-    {
-        add_blacklist_entry('hmac-mismatch', 4);
-        return "";
     }
 
-    $key = hash('sha256', $global_config['security']['crypt_key'], TRUE);
-    $cipher = 'AES-256-CBC';
-    $part_msg = openssl_decrypt(base64_decode($part_msg), $cipher, $key, 0, $iv);
-
-    $part_msg = rtrim($part_msg. "\0");
-
-    return $part_msg;
-}
-
-if (!is_file($site_includes."config.php"))
-{
-    http_error(500, 'Internal Server Error', "<h1>Requirement error</h1>\nOne of the required files is not found on the server. Please contact the administrator.");
-}
-
-if (!is_file($site_includes."sender_handler.inc.php"))
-{
-    http_error(500, 'Internal Server Error', "<h1>Sender Handler missing</h1>\nOne of the required files is not found on the server. Please contact the administrator.");
-}
-
-# Merge configurations
-#
-$site_config = array();
-require($site_includes."config.php");
-$global_config = array_replace_recursive($base_config, $site_config);
-
-if (file_exists($site_includes."config_local.php"))
-{
-    require($site_includes."config_local.php");
-    $global_config = array_replace_recursive($global_config, $local_config);
-}
-
-# Enable debugging if requested
-#
-if ($global_config['debug'] == true)
-{
-    error_reporting(E_ALL | E_STRICT);
-    ini_set("display_errors", 1);
-}
-else
-{
-    register_shutdown_function('shutdown_handler');
-}
-
-# Set default timezone
-#
-date_default_timezone_set($global_config['timezone']);
-
-# Check for special loads before anything else
-#
-if ($global_config['preload'] == true)
-{
-    if (!file_exists($site_includes.'preload.inc.php'))
-        die('preload.inc.php indicated but not present');
-
-    require_once($site_includes.'preload.inc.php');
-}
-
-# Load other prerequisites
-#
-if ($global_config['database_enabled'] == true)
-    require_once($includes.'database.inc.php');
-
-
-# Load global and site specific defines
-#
-require_once($includes."defines.inc.php");
-require_once($includes."sender_core.inc.php");
-require_once($includes."base_logic.inc.php");
-require_once($includes."config_values.inc.php");
-
-if (is_file($site_includes."site_defines.inc.php"))
-    include_once($site_includes."site_defines.inc.php");
-
-# Check for required values
-#
-verify(strlen($global_config['sender_core']['default_sender']), 'No default_sender specified. Required for mailing verify information');
-verify(strlen($global_config['security']['hmac_key']) > 20, 'No or too short HMAC Key provided (Minimum 20 chars)');
-verify(strlen($global_config['security']['crypt_key']) > 20, 'No or too short Crypt Key provided (Minimum 20 chars)');
-
-# Start with a clean slate
-#
-unset($global_state);
-$global_state['logged_in'] = false;
-$global_state['permissions'] = array();
-$global_state['input'] = array();
-$global_state['raw_input'] = array();
-$global_state['messages'] = array();
-$global_state['raw_post'] = array();
-
-$data = file_get_contents("php://input");
-$data = json_decode($data, true);
-if (is_array($data))
-    $global_state['raw_post'] = $data;
-
-# Start the database connection
-#
-$global_database = NULL;
-$global_databases = array();
-
-function get_auth_config($name)
-{
-    global $site_includes;
-
-    $auth_config_file = $site_includes.'/auth/'.$name.'.php';
-    if (!file_exists($auth_config_file))
-        die("Auth Config {$name} does not exist");
-
-    $auth_config = require($auth_config_file);
-    verify(is_array($auth_config) || strlen($auth_config), 'Auth Config '.$name.' invalid');
-
-    return $auth_config;
-}
-
-if ($global_config['database_enabled'] == true)
-{
-    $global_database = new Database();
-    $main_db_tag = $global_config['database_config'];
-    $main_config = get_auth_config('db_config.'.$main_db_tag);
-
-    if (FALSE === $global_database->Connect($main_config))
+    static function fire_hook($hook_name, $params)
     {
-        http_error(500, 'Internal Server Error', "<h1>Database server connection failed</h1>\nThe connection to the database server failed. Please contact the administrator.");
-    }
+        if (!isset(WF::$hook_array[$hook_name]))
+            return;
 
-    // Verify all versions for compatibility
-    //
-    $required_wf_version = FRAMEWORK_VERSION;
-    $required_wf_db_version = FRAMEWORK_DB_VERSION;
-    $required_app_db_version = $global_config['versions']['required_app_db'];
-
-    $config_values = new ConfigValues('db');
-    $supported_wf_version = $global_config['versions']['supported_framework'];
-    $current_wf_db_version = $config_values->get_value('wf_db_version', '0');
-    $current_app_db_version = $config_values->get_value('app_db_version', '1');
-
-    if ($required_wf_version != $supported_wf_version)
-    {
-        http_error(500, 'Internal Server Error', "<h1>Framework version mismatch</h1>\nPlease make sure that this app is upgraded to support version {$required_wf_version} of this Framework.\nPlease contact the administrator.");
-    }
-
-    if ($required_wf_db_version != $current_wf_db_version)
-    {
-        http_error(500, 'Internal Server Error', "<h1>Framework Database version mismatch</h1>\nPlease make sure that the latest Framework database changes for version {$required_wf_db_version} of the scheme are applied. Please contact the administrator.");
-    }
-
-    if ($required_app_db_version != $current_app_db_version)
-    {
-        http_error(500, 'Internal Server Error', "<h1>App DB version mismatch</h1>\nPlease make sure that the app DB scheme matches {$required_app_db_version}. Please contact the adiministrator.");
-    }
-
-    # Open auxilary database connections
-    #
-    foreach ($global_config['databases'] as $tag)
-    {
-        $global_databases[$tag] = new Database();
-        $tag_config = get_auth_config('db_config.'.$tag);
-
-        if (FALSE === $global_databases[$tag]->Connect($tag_config))
+        $hooks = WF::$hook_array[$hook_name];
+        foreach ($hooks as $hook)
         {
-            http_error(500, 'Internal Server Error', "<h1>Databases server connection failed</h1>\nThe connection to the database server failed. Please contact the administrator.");
+            require_once(WF::$site_includes.$hook['include_file'].".inc.php");
+
+            $function = $hook['static_function'];
+
+            $function($hook['args'], $params);
         }
     }
-}
 
-# Start the cache connection
-#
-$global_cache = null;
-if ($global_config['cache_enabled'] == true)
-{
-    require_once($includes.'cache_core.inc.php');
-    require_once($site_includes.'cache_handler.inc.php');
+    static function urlencode_and_auth_array($array)
+    {
+        return urlencode(WF::encode_and_auth_array($array));
+    }
 
-    $cache_tag = $global_config['cache_config'];
-    $cache_config = get_auth_config('cache_config.'.$cache_tag);
+    static function encode_and_auth_array($array)
+    {
+        $str = json_encode($array);
 
-    $global_cache = new Cache($cache_config);
+        // First encrypt it
+        //
+        $cipher = 'AES-256-CBC';
+        $iv_len = openssl_cipher_iv_length($cipher);
+        $iv = openssl_random_pseudo_bytes($iv_len);
+        $key = hash('sha256', WF::get_config('security.crypt_key'), true);
+        $str = openssl_encrypt($str, $cipher, $key, 0, $iv);
+
+        $str = base64_encode($str);
+        $iv = base64_encode($iv);
+
+        $str_hmac = hash_hmac(WF::get_config('security.hash'), $iv.$str,
+                              WF::get_config('security.hmac_key'));
+
+        return $iv.":".$str.":".$str_hmac;
+    }
+
+    static function urldecode_and_verify_array($str)
+    {
+        $urldecoded = urldecode($str);
+
+        return WF::decode_and_verify_array($urldecoded);
+    }
+
+    static function decode_and_verify_array($str)
+    {
+        $idx = strpos($str, ":");
+        if ($idx === false)
+            return "";
+
+        $part_iv = substr($str, 0, $idx);
+        $iv = base64_decode($part_iv);
+
+        $str = substr($str, $idx + 1);
+
+        $idx = strpos($str, ":");
+        if ($idx === FALSE)
+            return false;
+
+        $part_msg = substr($str, 0, $idx);
+        $part_hmac = substr($str, $idx + 1);
+
+        $str_hmac = hash_hmac(WF::get_config('security.hash'), $part_iv.$part_msg,
+                              WF::get_config('security.hmac_key'));
+
+        if ($str_hmac !== $part_hmac)
+        {
+            add_blacklist_entry('hmac-mismatch', 4);
+            return "";
+        }
+
+        $key = hash('sha256', WF::get_config('security.crypt_key'), true);
+        $cipher = 'AES-256-CBC';
+        $json_encoded = openssl_decrypt(base64_decode($part_msg), $cipher, $key, 0, $iv);
+
+        if (!strlen($json_encoded))
+            return false;
+
+        $array = json_decode($json_encoded, true);
+        if (!is_array($array))
+            return false;
+
+        return $array;
+    }
+
+    static function get_auth_config($name)
+    {
+        $auth_config_file = WF::$site_includes.'/auth/'.$name.'.php';
+        if (!file_exists($auth_config_file))
+            die("Auth Config {$name} does not exist");
+
+        $auth_config = require($auth_config_file);
+        WF::verify(is_array($auth_config) || strlen($auth_config), 'Auth Config '.$name.' invalid');
+
+        return $auth_config;
+    }
+
+    static function get_web_handler()
+    {
+        WF::verify(get_class(WF::$framework) == 'WFWebHandler', 'Not started as WFWebHandler');
+        return WF::$framework;
+    }
+
+    static function get_config($location = '')
+    {
+        if (!strlen($location))
+            return WF::$global_config;
+
+        $path = explode('.', $location);
+        $part = WF::$global_config;
+
+        foreach ($path as $step)
+        {
+            WF::verify(isset($part[$step]), "Missing configuration {$location}");
+            $part = $part[$step];
+        }
+
+        return $part;
+    }
+
+    static function get_db($tag = '')
+    {
+        if (!strlen($tag))
+            return WF::$global_database;
+
+        WF::verify(array_key_exists($tag, WF::$global_databases), 'Database not registered');
+        return WF::$global_databases[$tag];
+    }
+
+    static function get_cache()
+    {
+        return WF::$global_cache;
+    }
+
+    static function get_state()
+    {
+        return WF::$global_state;
+    }
+
+    static function set_state($key, $value)
+    {
+        $global_state[$key] = $value;
+    }
+
+    function validate_input($filter, $item)
+    {
+        if (!strlen($filter))
+            die("Unexpected input: \$filter not defined in validate_input().");
+
+        if (substr($item, -2) == '[]')
+        {
+            $item = substr($item, 0, -2);
+
+            // Expect multiple values
+            //
+            $info = array();
+            WF::$global_state['input'][$item] = array();
+            WF::$global_state['raw_input'][$item] = array();
+
+            if (isset(WF::$global_state['raw_post'][$item]))
+                $info = WF::$global_state['raw_post'][$item];
+            else if (isset($_POST[$item]))
+                $info = $_POST[$item];
+            else if (isset($_PUT[$item]))
+                $info = $_PUT[$item];
+            else if (isset($_GET[$item]))
+                $info = $_GET[$item];
+
+            foreach ($info as $k => $val)
+            {
+                WF::$global_state['raw_input'][$item][$k] = $val;
+                if (preg_match("/^\s*$filter\s*$/m", $val))
+                    WF::$global_state['input'][$item][$k] = trim($val);
+            }
+        }
+        else
+        {
+            $str = "";
+            WF::$global_state['input'][$item] = "";
+
+            if (isset(WF::$global_state['raw_post'][$item]))
+                $str = WF::$global_state['raw_post'][$item];
+            else if (isset($_POST[$item]))
+                $str = $_POST[$item];
+            else if (isset($_PUT[$item]))
+                $str = $_PUT[$item];
+            else if (isset($_GET[$item]))
+                $str = $_GET[$item];
+
+            WF::$global_state['raw_input'][$item] = $str;
+
+            if (preg_match("/^\s*$filter\s*$/m", $str))
+                WF::$global_state['input'][$item] = trim($str);
+        }
+    }
+
+    static function user_has_permissions($permissions)
+    {
+        if (count($permissions) == 0)
+            return true;
+
+        if (WF::$global_state['logged_in'] == false)
+            return false;
+
+        foreach ($permissions as $permission) {
+            if ($permission == 'logged_in')
+                continue;
+
+            if (!WF::$global_state['user']->has_right($permission))
+                return false;
+        }
+
+        return true;
+    }
+
+    static function get_messages()
+    {
+        return WF::$global_state['messages'];
+    }
+
+    static function set_message($type, $message, $extra_message)
+    {
+        array_push(WF::$global_state['messages'], array(
+            'mtype' => $type,
+            'message' => $message,
+            'extra_message' => $extra_message));
+    }
+
+    function init()
+    {
+        srand();
+
+        if (!is_file(WF::$site_includes."config.php"))
+            WF::http_error(500, 'Internal Server Error', "<h1>Requirement error</h1>\nOne of the required files is not found on the server. Please contact the administrator.");
+
+        if (!is_file(WF::$site_includes."sender_handler.inc.php"))
+            WF::http_error(500, 'Internal Server Error', "<h1>Sender Handler missing</h1>\nOne of the required files is not found on the server. Please contact the administrator.");
+
+        $this->merge_configs();
+
+        // Enable debugging if requested
+        //
+        if (WF::get_config('debug') == true)
+        {
+            error_reporting(E_ALL | E_STRICT);
+            ini_set("display_errors", 1);
+        }
+        else
+            register_shutdown_function('WF::shutdown_handler');
+
+        $this->check_config_requirements();
+
+        // Set default timezone
+        //
+        date_default_timezone_set(WF::get_config('timezone'));
+
+        $this->load_requirements();
+
+        $data = file_get_contents("php://input");
+        $data = json_decode($data, true);
+        if (is_array($data))
+            WF::$global_state['raw_post'] = $data;
+
+        if (WF::get_config('database_enabled') == true)
+            $this->init_databases();
+
+        $this->check_compatibility();
+
+        if (WF::get_config('cache_enabled') == true)
+            $this->init_cache();
+
+        WF::$framework = $this;
+    }
+
+    private function load_requirements()
+    {
+        // Check for special loads before anything else
+        //
+        if (WF::get_config('preload') == true)
+        {
+            WF::verify(file_exists(WF::$site_includes.'preload.inc.php'),
+                            'preload.inc.php indicated but not present');
+
+            require_once(WF::$site_includes.'preload.inc.php');
+        }
+
+        // Load global and site specific defines
+        //
+        require_once(WF::$includes."defines.inc.php");
+        require_once(WF::$includes."sender_core.inc.php");
+        require_once(WF::$includes."base_logic.inc.php");
+        require_once(WF::$includes."config_values.inc.php");
+
+        if (is_file(WF::$site_includes."site_defines.inc.php"))
+            include_once(WF::$site_includes."site_defines.inc.php");
+    }
+
+    private function merge_configs()
+    {
+        // Merge configurations
+        //
+        $site_config = require(WF::$site_includes.'config.php');
+        WF::verify(is_array($site_config), 'Site config invalid');
+        $merge_config = array_replace_recursive(WF::$global_config, $site_config);
+
+        if (file_exists(WF::$site_includes."config_local.php"))
+        {
+            $local_config = require(WF::$site_includes."config_local.php");
+            $merge_config = array_replace_recursive($merge_config, $local_config);
+        }
+
+        $merge_config['server_name'] = isset($_SERVER['SERVER_NAME'])?$_SERVER['SERVER_NAME']:'app';
+        $merge_config['document_root'] = $_SERVER['DOCUMENT_ROOT'];
+
+        WF::$global_config = $merge_config;
+    }
+
+    private function check_config_requirements()
+    {
+        // Check for required values
+        //
+        WF::verify(strlen(WF::get_config('sender_core.default_sender')),
+                'No default_sender specified. Required for mailing verify information');
+
+        WF::verify(strlen(WF::get_config('security.hmac_key')) > 20,
+                'No or too short HMAC Key provided (Minimum 20 chars)');
+
+        WF::verify(strlen(WF::get_config('security.crypt_key')) > 20,
+                'No or too short Crypt Key provided (Minimum 20 chars)');
+    }
+
+    private function init_databases()
+    {
+        // Start the database connection(s)
+        //
+        require_once(WF::$includes.'database.inc.php');
+
+        WF::$global_database = new Database();
+        $main_db_tag = WF::get_config('database_config');
+        $main_config = WF::get_auth_config('db_config.'.$main_db_tag);
+
+        if (WF::$global_database->Connect($main_config) === false)
+            WF::http_error(500, 'Internal Server Error', "<h1>Database server connection failed</h1>\nThe connection to the database server failed. Please contact the administrator.");
+
+        // Open auxilary database connections
+        //
+        foreach (WF::get_config('databases') as $tag)
+        {
+            $database = new Database();
+            $tag_config = WF::get_auth_config('db_config.'.$tag);
+
+            if ($database->Connect($tag_config) === false)
+                WF::http_error(500, 'Internal Server Error', "<h1>Databases server connection failed</h1>\nThe connection to the database server failed. Please contact the administrator.");
+
+            WF::$global_databases[$tag] = $database;
+        }
+    }
+
+    private function check_compatibility()
+    {
+        // Verify all versions for compatibility
+        //
+        $required_wf_version = FRAMEWORK_VERSION;
+        $supported_wf_version = WF::get_config('versions.supported_framework');
+
+        if ($required_wf_version != $supported_wf_version)
+            WF::http_error(500, 'Internal Server Error', "<h1>Framework version mismatch</h1>\nPlease make sure that this app is upgraded to support version {$required_wf_version} of this Framework.\nPlease contact the administrator.");
+
+        if (WF::get_config('database_enabled') != true)
+            return;
+
+        $required_wf_db_version = FRAMEWORK_DB_VERSION;
+        $required_app_db_version = WF::get_config('versions.required_app_db');
+
+        $config_values = new ConfigValues('db');
+        $current_wf_db_version = $config_values->get_value('wf_db_version', '0');
+        $current_app_db_version = $config_values->get_value('app_db_version', '1');
+
+        if ($required_wf_db_version != $current_wf_db_version)
+            WF::http_error(500, 'Internal Server Error', "<h1>Framework Database version mismatch</h1>\nPlease make sure that the latest Framework database changes for version {$required_wf_db_version} of the scheme are applied. Please contact the administrator.");
+
+        if ($required_app_db_version != $current_app_db_version)
+            WF::http_error(500, 'Internal Server Error', "<h1>App DB version mismatch</h1>\nPlease make sure that the app DB scheme matches {$required_app_db_version}. Please contact the adiministrator.");
+    }
+
+    private function init_cache()
+    {
+        // Start the cache connection
+        //
+        require_once(WF::$includes.'cache_core.inc.php');
+        require_once(WF::$site_includes.'cache_handler.inc.php');
+
+        $cache_tag = WF::get_config('cache_config');
+        $cache_config = WF::get_auth_config('cache_config.'.$cache_tag);
+
+        WF::$global_cache = new Cache($cache_config);
+    }
 }
 
 class FrameworkCore
 {
-    private $database;
-    private $databases;
     protected $cache;
     protected $config;
 
     function __construct()
     {
-        global $wf_global_info;
-
-        $this->database = $wf_global_info['database'];
-        $this->databases = $wf_global_info['databases'];
-        $this->cache = $wf_global_info['cache'];
-        $this->state = $wf_global_info['state'];
-        $this->config = $wf_global_info['config'];
+        $this->cache = WF::get_cache();
+        $this->state = WF::get_state();
+        $this->config = WF::get_config();
     }
 
     protected function get_db($tag = '')
     {
-        if (!strlen($tag))
-            return $this->database;
-
-        verify(array_key_exists($tag, $this->databases), 'Database not registered');
-        return $this->databases[$tag];
+        return WF::get_db($tag);
     }
 
     protected function query($query, $params)
     {
-        return $this->database->Query($query, $params);
+        return WF::get_db()->Query($query, $params);
     }
 
     protected function insert_query($query, $params)
     {
-        return $this->database->InsertQuery($query, $params);
+        return WF::get_db()->InsertQuery($query, $params);
     }
-}
 
-$wf_global_info = array(
-    'database' => $global_database,
-    'databases' => $global_databases,
-    'state' => &$global_state,
-    'config' => $global_config,
-    'cache' => $global_cache);
+    function add_message_to_url($mtype, $message, $extra_message = '')
+    {
+        $msg = array('mtype' => $mtype, 'message' => $message, 'extra_message' => $extra_message);
+        return "msg=".WF::encode_and_auth_array($msg);
+    }
+};
 ?>

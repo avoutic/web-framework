@@ -26,7 +26,7 @@ class PageResetPassword extends PageBasic
             return;
         }
 
-        $msg = decode_and_verify_array($code);
+        $msg = WF::decode_and_verify_array($code);
         if (!$msg)
             return;
 
@@ -39,7 +39,7 @@ class PageResetPassword extends PageBasic
         if ($msg['timestamp'] + 600 < time())
         {
             // Expired
-            header("Location: /forgot-password?".add_message_to_url('error', 'Password reset link expired'));
+            header("Location: /forgot-password?".$this->add_message_to_url('error', 'Password reset link expired'));
             exit();
         }
 
@@ -55,14 +55,14 @@ class PageResetPassword extends PageBasic
 
         if (!$user->is_verified())
         {
-            header("Location: ${login_page}?".add_message_to_url('error', 'User is not verified.'));
+            header("Location: ${login_page}?".$this->add_message_to_url('error', 'User is not verified.'));
             exit();
         }
 
         if (!isset($msg['params']) || !isset($msg['params']['iterator']) ||
             $user->get_security_iterator() != $msg['params']['iterator'])
         {
-            header("Location: /forgot-password?".add_message_to_url('error', 'Password reset link expired'));
+            header("Location: /forgot-password?".$this->add_message_to_url('error', 'Password reset link expired'));
             exit();
         }
 
@@ -74,7 +74,7 @@ class PageResetPassword extends PageBasic
 
         // Redirect to main sceen
         //
-        header("Location: {$login_page}?".add_message_to_url('success', 'Password reset', 'You will receive a mail with your new password'));
+        header("Location: {$login_page}?".$this->add_message_to_url('success', 'Password reset', 'You will receive a mail with your new password'));
         exit();
     }
 };

@@ -1,13 +1,13 @@
 <?php
-require_once($includes.'sender_core.inc.php');
+require_once(WF::$includes.'sender_core.inc.php');
 use Postmark\PostmarkClient;
 
 class PostmarkSender extends SenderCore
 {
     function get_api_key()
     {
-        verify(isset($this->config['postmark']['api_key_file']), 'No Postmark API key defined');
-        $api_key = get_auth_config($this->config['postmark']['api_key_file']);
+        WF::verify(strlen($this->config['postmark']['api_key_file']), 'No Postmark API key defined');
+        $api_key = WF::get_auth_config($this->config['postmark']['api_key_file']);
 
         return $api_key;
     }
@@ -69,8 +69,8 @@ class PostmarkSender extends SenderCore
             if ($e->postmarkApiErrorCode == 406)
                 return 'inactive_address';
 
-            verify($e->postmarkApiErrorCode != 1101, 'Template ID not correct');
-            verify(false, 'Unknown Postmark error: '.$e->postmarkApiErrorCode.' - '.$e->getMessage());
+            WF::verify($e->postmarkApiErrorCode != 1101, 'Template ID not correct');
+            WF::verify(false, 'Unknown Postmark error: '.$e->postmarkApiErrorCode.' - '.$e->getMessage());
         }
 
         return true;
@@ -78,7 +78,7 @@ class PostmarkSender extends SenderCore
 
     function get_template_id($template_name)
     {
-        verify(isset($this->config['postmark']['templates'][$template_name]), 'Template mapping not available.');
+        WF::verify(isset($this->config['postmark']['templates'][$template_name]), 'Template mapping not available.');
         return $this->config['postmark']['templates'][$template_name];
     }
 
