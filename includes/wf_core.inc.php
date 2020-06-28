@@ -21,7 +21,14 @@ $base_config = array(
         'database_config' => 'main',        // main database tag.
         'databases' => array(),             // list of extra database tags to load.
                                             // files will be retrieved from 'includes/db_config.{TAG}.php'
-        'db_version' => 2,
+        'versions' => array(
+            'supported_framework' => -1,    // Default is always -1. App should set supported semantic
+                                            // version of this framework it supports in own config.
+            'required_app_db' => 1,         // Default is always 1. App should set this if it tracks its
+                                            // own database version in the db.app_db_version config value
+                                            // in the database and wants the framework to indicate
+                                            // a mismatch between required and current value
+        ),
         'site_name' => 'Unknown',
         'server_name' => (isset($_SERVER['SERVER_NAME']))?$_SERVER['SERVER_NAME']:'app',
         'http_mode' => 'https',
@@ -530,11 +537,30 @@ if ($global_config['database_enabled'] == true)
         http_error(500, 'Internal Server Error', "<h1>Database server connection failed</h1>\nThe connection to the database server failed. Please contact the administrator.");
     }
 
+    // Verify all versions for compatibility
+    //
+    $required_wf_version = FRAMEWORK_VERSION;
+    $required_wf_db_version = FRAMEWORK_DB_VERSION;
+    $required_app_db_version = $global_config['versions']['required_app_db'];
+
     $config_values = new ConfigValues('db');
-    $db_version = $config_values->get_value('version', '1');
-    if ($db_version != $global_config['db_version'])
+    $supported_wf_version = $global_config['versions']['supported_framework'];
+    $current_wf_db_version = $config_values->get_value('wf_db_version', '0');
+    $current_app_db_version = $config_values->get_value('app_db_version', '1');
+
+    if ($required_wf_version != $supported_wf_version)
     {
-        http_error(500, 'Internal Server Error', "<h1>Database version mismatch</h1>\nPlease contact the administrator.");
+        http_error(500, 'Internal Server Error', "<h1>Framework version mismatch</h1>\nPlease make sure that this app is upgraded to support version {$required_wf_version} of this Framework.\nPlease contact the administrator.");
+    }
+
+    if ($required_wf_db_version != $current_wf_db_version)
+    {
+        http_error(500, 'Internal Server Error', "<h1>Framework Database version mismatch</h1>\nPlease make sure that the latest Framework database changes for version {$required_wf_db_version} of the scheme are applied. Please contact the administrator.");
+    }
+
+    if ($required_app_db_version != $current_app_db_version)
+    {
+        http_error(500, 'Internal Server Error', "<h1>App DB version mismatch</h1>\nPlease make sure that the app DB scheme matches {$required_app_db_version}. Please contact the adiministrator.");
     }
 
     # Open auxilary database connections

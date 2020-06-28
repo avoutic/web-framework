@@ -1,4 +1,9 @@
 <?php
+# Semantic versions of the current framework
+#
+define("FRAMEWORK_VERSION", 2);
+define("FRAMEWORK_DB_VERSION", 2);
+
 # Format defines for verifying input
 #
 define("FORMAT_ID", '\d+');
