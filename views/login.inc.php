@@ -1,6 +1,6 @@
 <?php
-require_once($includes.'base_logic.inc.php');
-require_once($includes.'recaptcha.inc.php');
+require_once(WF::$includes.'base_logic.inc.php');
+require_once(WF::$includes.'recaptcha.inc.php');
 
 class PageLogin extends PageBasic
 {
