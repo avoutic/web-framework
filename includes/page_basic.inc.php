@@ -19,9 +19,11 @@ abstract class PageCore extends FrameworkCore
         return array();
     }
 
-    function get_input_var($name)
+    function get_input_var($name, $content_required = false)
     {
         WF::verify(isset($this->input[$name]), 'Missing input variable: '.$name);
+        if ($content_required)
+            WF::verify(strlen($this->input[$name]), 'Missing input variable: '.$name);
 
         return $this->input[$name];
     }
@@ -176,19 +178,6 @@ abstract class PageBasic extends PageCore
         include($this->get_config('document_root').'/'.$name);
     }
 
-    function check_required(&$var, $name)
-    {
-
-        if (!isset($this->input[$name]) ||
-            !strlen($this->input[$name]))
-        {
-            die('Missing input variable \''.$name.'\'.');
-        }
-
-        $var = $this->input[$name];
-        return TRUE;
-    }
-
     function is_blocked($name)
     {
         return $this->input[$name] != $this->raw_input[$name];
@@ -267,20 +256,6 @@ abstract class PageService extends PageCore
         return '403';
     }
 
-    function check_required(&$var, $name)
-    {
-
-        if (!isset($this->input[$name]) ||
-            !strlen($this->input[$name]))
-        {
-            $this->output_json(false, 'Missing input variable \''.$name.'\'.');
-            return FALSE;
-        }
-
-        $var = $this->input[$name];
-        return TRUE;
-    }
-
     function output_json($success, $output, $direct = false)
     {
         header('Content-type: application/json');
@@ -301,5 +276,4 @@ abstract class PageService extends PageCore
                         )));
     }
 };
-
 ?>

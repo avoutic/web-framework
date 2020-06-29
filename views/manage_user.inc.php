@@ -27,7 +27,7 @@ class PageManageUser extends PageBasic
 
     function do_logic()
     {
-        $this->check_required($user_id, 'user_id');
+        $user_id = $this->get_input_var($user_id, true);
 
         $base_factory = new BaseFactory();
 

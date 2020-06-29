@@ -32,9 +32,7 @@ A simple API view:
 
         function get_user()
         {
-            $user_id = 0;
-
-            if (!$this->check_required($user_id, 'user_id')) return;
+            $user_id = $this->get_input_var('user_id', true);
 
             $user_factory = new UserFactory();
             $user = $user_factory->get_user($user_id);
