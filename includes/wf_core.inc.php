@@ -753,9 +753,9 @@ class FrameworkCore
         return $this->framework->authenticate($user);
     }
 
-    protected function deauthenticate($user)
+    protected function deauthenticate()
     {
-        return $this->framework->deauthenticate($user);
+        return $this->framework->deauthenticate();
     }
 
     protected function invalidate_sessions($user_id)
