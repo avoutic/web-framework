@@ -79,7 +79,7 @@ class PageLogin extends PageBasic
         $send_verify_page = $this->get_config('pages.login.send_verify_page');
 
         // Check if already logged in and redirect immediately
-        if ($this->state['logged_in'])
+        if ($this->is_authenticated())
         {
             header("Location: ".$return_page."?".$return_query);
             exit();
@@ -155,7 +155,7 @@ class PageLogin extends PageBasic
 
         // Log in user
         //
-        $info = $this->auth->set_logged_in($user);
+        $info = $this->authenticate($user);
 
         header("Location: ".$return_page."?".$return_query."&".$this->add_message_to_url('success', 'Login successful.'));
         exit();

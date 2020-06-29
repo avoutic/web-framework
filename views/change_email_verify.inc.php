@@ -66,9 +66,9 @@ class PageChangeEmailVerify extends PageBasic
 
         // Only allow for current user
         //
-        if ($user_id != $this->state['user_id'])
+        if ($user_id != $this->get_authenticated('user_id'))
         {
-            $this->auth->deauthenticate();
+            $this->deauthenticate();
             $login_page = $this->get_config('pages.login.location');
             header("Location: {$login_page}?".$this->add_message_to_url('error', 'Other account', 'The link you used is meant for a different account. The current account has been logged off. Please try the link again.'));
             exit();
@@ -76,7 +76,7 @@ class PageChangeEmailVerify extends PageBasic
 
         // Change email
         //
-        $user = $this->get_user($this->state['username']);
+        $user = $this->get_user($this->get_authenticated('username'));
         $old_email = $user->email;
 
         if (!isset($msg['params']) || !isset($msg['params']['iterator']) ||
@@ -97,8 +97,8 @@ class PageChangeEmailVerify extends PageBasic
 
         // Invalidate old sessions
         //
-        $this->auth->invalidate_sessions($user->id);
-        $this->auth->set_logged_in($user);
+        $this->invalidate_sessions($user->id);
+        $this->authenticate($user);
 
         // Redirect to verification request screen
         //

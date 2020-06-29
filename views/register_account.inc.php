@@ -85,7 +85,7 @@ class PageRegister extends Pagebasic
 
         // Check if already logged in
         //
-        if ($this->state['logged_in'])
+        if ($this->is_authenticated())
             return;
 
         // Check if this is a true attempt

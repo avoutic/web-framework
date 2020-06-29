@@ -5,6 +5,7 @@ class WFWebHandler extends WF
 {
     protected $blacklist = null;
     protected $authenticator = null;
+    protected $auth_array = false;
     protected $route_array = array();
 
     function init()
@@ -37,8 +38,8 @@ class WFWebHandler extends WF
         // Check blacklist
         //
         $user_id = 0;
-        if (isset(WF::$global_state['user_id']))
-            $user_id = WF::$global_state['user_id'];
+        if ($this->is_authenticated())
+            $user_id = $this->get_authenticated('user_id');
 
         if ($this->blacklist->is_blacklisted($_SERVER['REMOTE_ADDR'], $user_id))
         {
@@ -50,7 +51,7 @@ class WFWebHandler extends WF
         $this->handle_fixed_input();
         $this->create_authenticator();
         $this->authenticator->cleanup();
-        $this->check_authentication();
+        $this->auth_array = $this->authenticator->get_logged_in();
         $this->handle_page_routing();
     }
 
@@ -127,24 +128,54 @@ class WFWebHandler extends WF
             WF::verify(false, 'No valid authenticator found.');
     }
 
-    private function check_authentication()
+    function is_authenticated()
     {
-        // Check if logged in and populate standard fields.
-        //
-        $logged_in = $this->authenticator->get_logged_in();
+        return $this->auth_array !== false;
+    }
 
-        if ($logged_in === false)
-            return;
+    function authenticate($user)
+    {
+        $this->authenticator->set_logged_in($user);
+    }
 
-        WF::set_state('auth', $logged_in);
-        WF::set_state('logged_in', true);
+    function deauthenticate()
+    {
+        $this->authenticator->logoff();
+    }
 
-        // Retrieve id / long name / short name
-        //
-        WF::set_state('user', $logged_in['user']);
-        WF::set_state('user_id', $logged_in['user_id']);
-        WF::set_state('username', $logged_in['username']);
-        WF::set_state('email', $logged_in['email']);
+    function invalidate_sessions($user_id)
+    {
+        $this->authenticator->auth_invalidate_sessions($user_id);
+    }
+
+    function get_authenticated($item = '')
+    {
+        if (!strlen($item))
+            return $this->auth_array;
+
+        WF::verify(isset($this->auth_array[$item]), 'Authenticated item not present');
+
+        return $this->auth_array[$item];
+    }
+
+    function user_has_permissions($permissions)
+    {
+        if (count($permissions) == 0)
+            return true;
+
+        if (!$this->is_authenticated())
+            return false;
+
+        foreach ($permissions as $permission)
+        {
+            if ($permission == 'logged_in')
+                continue;
+
+            if (!$this->auth_array['user']->has_right($permission))
+                return false;
+        }
+
+        return true;
     }
 
     private function handle_page_routing()
@@ -232,12 +263,12 @@ class WFWebHandler extends WF
 
     private function enforce_permissions($object_name, $permissions)
     {
-        $has_permissions = WF::user_has_permissions($permissions);
+        $has_permissions = $this->user_has_permissions($permissions);
 
         if ($has_permissions)
             return;
 
-        if (!WF::$global_state['logged_in'])
+        if (!$this->is_authenticated())
         {
             $redirect_type = $object_name::redirect_login_type();
             $request_uri = preg_replace('/\?.*/', '', $_SERVER['REQUEST_URI']);

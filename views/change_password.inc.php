@@ -69,7 +69,7 @@ class PageChangePassword extends PageBasic
             return;
         }
 
-        $user = $this->get_user($this->state['username']);
+        $user = $this->get_user($this->get_authenticated('username'));
         $result = $user->change_password($orig_password, $password);
 
         if ($result == User::ERR_ORIG_PASSWORD_MISMATCH)
@@ -92,8 +92,8 @@ class PageChangePassword extends PageBasic
 
         // Invalidate old sessions
         //
-        $this->auth->invalidate_sessions($user->id);
-        $this->auth->set_logged_in($user);
+        $this->invalidate_sessions($user->id);
+        $this->authenticate($user);
 
         // Redirect to main sceen
         //

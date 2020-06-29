@@ -43,7 +43,7 @@ abstract class PageContactBase extends PageBasic
 
     function do_logic()
     {
-        $this->page_content['logged_in'] = $this->state['logged_in'];
+        $this->page_content['logged_in'] = $this->is_authenticated();
         $this->page_content['name'] = $this->state['input']['name'];
         $this->page_content['email'] = $this->state['input']['email'];
         $this->page_content['type'] = $this->state['input']['type'];
@@ -60,10 +60,10 @@ abstract class PageContactBase extends PageBasic
         $email = $this->state['input']['email'];
         $subject = $this->state['input']['subject'];
 
-        if ($this->state['logged_in'])
+        if ($this->is_authenticated())
         {
-            $name = $this->state['username'];
-            $email = $this->state['email'];
+            $name = $this->get_authenticated('username');
+            $email = $this->get_authenticated('email');
         }
 
         // Check if name, email address, subject and message are present

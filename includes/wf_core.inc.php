@@ -362,6 +362,11 @@ class WF
         return $auth_config;
     }
 
+    static function get_framework()
+    {
+        return WF::$framework;
+    }
+
     static function get_web_handler()
     {
         WF::verify(get_class(WF::$framework) == 'WFWebHandler', 'Not started as WFWebHandler');
@@ -459,25 +464,6 @@ class WF
             if (preg_match("/^\s*$filter\s*$/m", $str))
                 WF::$global_state['input'][$item] = trim($str);
         }
-    }
-
-    static function user_has_permissions($permissions)
-    {
-        if (count($permissions) == 0)
-            return true;
-
-        if (WF::$global_state['logged_in'] == false)
-            return false;
-
-        foreach ($permissions as $permission) {
-            if ($permission == 'logged_in')
-                continue;
-
-            if (!WF::$global_state['user']->has_right($permission))
-                return false;
-        }
-
-        return true;
     }
 
     static function get_messages()
@@ -685,14 +671,46 @@ class WF
 
         WF::$global_cache = new Cache($cache_config);
     }
+
+    function is_authenticated()
+    {
+        return false;
+    }
+
+    function authenticate($user)
+    {
+        WF::verify(false, 'Cannot authenticate in script mode');
+    }
+
+    function deauthenticate()
+    {
+        WF::verify(false, 'Cannot deauthenticate in script mode');
+    }
+
+    function invalidate_sessions($user_id)
+    {
+        WF::verify(false, 'Cannot invalidate sessions in script mode');
+    }
+
+    function get_authenticated($item = '')
+    {
+        WF::verify(false, 'Cannot retrieve authenticated data in script mode');
+    }
+
+    function user_has_permissions($permissions)
+    {
+        return false;
+    }
 }
 
 class FrameworkCore
 {
     protected $cache;
+    private $framework;
 
     function __construct()
     {
+        $this->framework = WF::get_framework();
         $this->cache = WF::get_cache();
         $this->state = WF::get_state();
     }
@@ -717,10 +735,47 @@ class FrameworkCore
         return WF::get_db()->InsertQuery($query, $params);
     }
 
-    function add_message_to_url($mtype, $message, $extra_message = '')
+    protected function add_message_to_url($mtype, $message, $extra_message = '')
     {
         $msg = array('mtype' => $mtype, 'message' => $message, 'extra_message' => $extra_message);
         return "msg=".WF::encode_and_auth_array($msg);
+    }
+
+    protected function add_blacklist_entry($reason, $severity = 1)
+    {
+        $this->framework->add_blacklist_entry($reason, $severity);
+    }
+
+    // Authentication related
+    //
+    protected function authenticate($user)
+    {
+        return $this->framework->authenticate($user);
+    }
+
+    protected function deauthenticate($user)
+    {
+        return $this->framework->deauthenticate($user);
+    }
+
+    protected function invalidate_sessions($user_id)
+    {
+        return $this->framework->invalidate_sessions($user_id);
+    }
+
+    protected function is_authenticated()
+    {
+        return $this->framework->is_authenticated();
+    }
+
+    protected function get_authenticated($field = '')
+    {
+        return $this->framework->get_authenticated($field);
+    }
+
+    protected function user_has_permissions($permissions)
+    {
+        return $this->framework->user_has_permissions($permissions);
     }
 };
 ?>

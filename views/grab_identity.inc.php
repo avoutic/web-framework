@@ -49,7 +49,7 @@ class PageGrabIdentity extends PageBasic
 
         // Log in user
         //
-        $this->auth->set_logged_in($user);
+        $this->authenticate($user);
 
         header("Location: /?".$this->add_message_to_url('success', 'Login successful.'));
         exit();

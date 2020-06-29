@@ -44,7 +44,7 @@ abstract class Authenticator extends FrameworkCore
 {
     abstract function set_logged_in($user);
     abstract function get_logged_in();
-    abstract function deauthenticate();
+    abstract function logoff();
     abstract function cleanup();
 
     function redirect_login($type, $target)
@@ -130,7 +130,7 @@ class AuthRedirect extends Authenticator
         return $session;
     }
 
-    function invalidate_sessions($user_id)
+    function auth_invalidate_sessions($user_id)
     {
         $result = $this->query('DELETE FROM sessions WHERE user_id = ?', array($user_id));
         WF::verify($result !== FALSE, 'Failed to delete all user\'s sessions');
@@ -165,7 +165,7 @@ class AuthRedirect extends Authenticator
 
         if (!$session->is_valid())
         {
-            $this->deauthenticate();
+            $this->logoff();
             WF::set_message('info', 'Session timed out', '');
             return FALSE;
         }
@@ -184,7 +184,7 @@ class AuthRedirect extends Authenticator
         return $_SESSION['auth'];
     }
 
-    function deauthenticate()
+    function logoff()
     {
         if (isset($_SESSION['session_id']))
         {
@@ -247,7 +247,7 @@ class AuthWwwAuthenticate extends Authenticator
         return $info;
     }
 
-    function deauthenticate()
+    function logoff()
     {
         # Cannot deauthenticate from server side on this authentication method
     }

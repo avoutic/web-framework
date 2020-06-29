@@ -70,7 +70,7 @@ class PageResetPassword extends PageBasic
 
         // Invalidate old sessions
         //
-        $this->auth->invalidate_sessions($user->id);
+        $this->invalidate_sessions($user->id);
 
         // Redirect to main sceen
         //
