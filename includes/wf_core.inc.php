@@ -764,7 +764,7 @@ class FrameworkCore
         $this->framework->add_message($mtype, $message, $extra_message);
     }
 
-    protected function add_message_to_url($mtype, $message, $extra_message = '')
+    protected function get_message_for_url($mtype, $message, $extra_message = '')
     {
         $msg = array('mtype' => $mtype, 'message' => $message, 'extra_message' => $extra_message);
         return "msg=".WF::encode_and_auth_array($msg);

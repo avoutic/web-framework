@@ -33,7 +33,7 @@ class PageSendVerify extends PageBasic
             $login_page = $this->get_config('pages.login.location');
 
             // Expired
-            header("Location: ${login_page}?".$this->add_message_to_url('error', 'Send verification link expired', 'Please login again to request a new one.'));
+            header("Location: ${login_page}?".$this->get_message_for_url('error', 'Send verification link expired', 'Please login again to request a new one.'));
             exit();
         }
 
@@ -52,7 +52,7 @@ class PageSendVerify extends PageBasic
         //
         $after_verify_page = $this->get_config('pages.send_verify.after_verify_page');
 
-        header("Location: ${after_verify_page}?".$this->add_message_to_url('success', 'Verification mail sent', 'Verification mail is sent (if not already verified). Please check your mailbox and follow the instructions.'));
+        header("Location: ${after_verify_page}?".$this->get_message_for_url('success', 'Verification mail sent', 'Verification mail is sent (if not already verified). Please check your mailbox and follow the instructions.'));
         exit();
     }
 

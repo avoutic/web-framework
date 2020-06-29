@@ -108,9 +108,9 @@ abstract class PageContactBase extends PageBasic
         // Redirect to main sceen
         //
         if ($result === FALSE)
-            header("Location: ?".$this->add_message_to_url('error', 'Message failed to send.', 'Please contact us directly on '.$this->get_email_in_text()));
+            header("Location: ?".$this->get_message_for_url('error', 'Message failed to send.', 'Please contact us directly on '.$this->get_email_in_text()));
         else
-            header("Location: ?".$this->add_message_to_url('success', 'Message sent successfully.'));
+            header("Location: ?".$this->get_message_for_url('success', 'Message sent successfully.'));
     }
 
     function display_content()

@@ -48,7 +48,7 @@ class PageChangeEmailVerify extends PageBasic
         if ($msg['timestamp'] + 600 < time())
         {
             // Expired
-            header("Location: {$change_page}?".$this->add_message_to_url('error', 'E-mail verification link expired'));
+            header("Location: {$change_page}?".$this->get_message_for_url('error', 'E-mail verification link expired'));
             exit();
         }
 
@@ -62,7 +62,7 @@ class PageChangeEmailVerify extends PageBasic
         {
             $this->deauthenticate();
             $login_page = $this->get_config('pages.login.location');
-            header("Location: {$login_page}?".$this->add_message_to_url('error', 'Other account', 'The link you used is meant for a different account. The current account has been logged off. Please try the link again.'));
+            header("Location: {$login_page}?".$this->get_message_for_url('error', 'Other account', 'The link you used is meant for a different account. The current account has been logged off. Please try the link again.'));
             exit();
         }
 
@@ -74,7 +74,7 @@ class PageChangeEmailVerify extends PageBasic
         if (!isset($msg['params']) || !isset($msg['params']['iterator']) ||
             $user->get_security_iterator() != $msg['params']['iterator'])
         {
-            header("Location: {$change_page}?".$this->add_message_to_url('error', 'E-mail verification link expired'));
+            header("Location: {$change_page}?".$this->get_message_for_url('error', 'E-mail verification link expired'));
             exit();
         }
 
@@ -82,7 +82,7 @@ class PageChangeEmailVerify extends PageBasic
 
         if ($result == User::ERR_DUPLICATE_EMAIL)
         {
-            header("Location: {$change_page}?".$this->add_message_to_url('error', 'E-mail address is already in use in another account.', 'The e-mail address is already in use and cannot be re-used in this account. Please choose another address.'));
+            header("Location: {$change_page}?".$this->get_message_for_url('error', 'E-mail address is already in use in another account.', 'The e-mail address is already in use and cannot be re-used in this account. Please choose another address.'));
             exit();
         }
         WF::verify($result == User::RESULT_SUCCESS, 'Unknown change email error');
@@ -95,7 +95,7 @@ class PageChangeEmailVerify extends PageBasic
         // Redirect to verification request screen
         //
         $return_page = $this->get_config('pages.change_email.return_page');
-        header("Location: ${return_page}?".$this->add_message_to_url('success', 'E-mail address changed successfully'));
+        header("Location: ${return_page}?".$this->get_message_for_url('success', 'E-mail address changed successfully'));
         exit();
     }
 };

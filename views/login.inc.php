@@ -157,7 +157,7 @@ class PageLogin extends PageBasic
         //
         $info = $this->authenticate($user);
 
-        header("Location: ".$return_page."?".$return_query."&".$this->add_message_to_url('success', 'Login successful.'));
+        header("Location: ".$return_page."?".$return_query."&".$this->get_message_for_url('success', 'Login successful.'));
         exit();
     }
 
