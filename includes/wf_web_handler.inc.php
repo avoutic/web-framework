@@ -15,6 +15,14 @@ class WFWebHandler extends WF
         $this->blacklist = new Blacklist();
     }
 
+    protected function exit_error($short_message, $message)
+    {
+        header("HTTP/1.0 500 $short_message");
+        print($message.PHP_EOL);
+        print('Please contact the administrator.'.PHP_EOL);
+        exit();
+    }
+
     function handle_request()
     {
         // Run WebHandler
@@ -33,7 +41,10 @@ class WFWebHandler extends WF
             $user_id = WF::$global_state['user_id'];
 
         if ($this->blacklist->is_blacklisted($_SERVER['REMOTE_ADDR'], $user_id))
-            die('Too much suspicious activity. Contact the admin if you think this is a mistake.');
+        {
+            $this->exit_error('Blacklisted',
+                    'Too much suspicious activity. Do you think this is a mistake?');
+        }
 
         $this->add_security_headers();
         $this->handle_fixed_input();
@@ -245,7 +256,7 @@ class WFWebHandler extends WF
         $page_obj = NULL;
 
         if (!class_exists($object_name))
-            WF::http_error(500, 'Internal Server Error', "<h1>Object not found</h1>\nThe requested object could not be located. Please contact the administrator.");
+            $this->exit_error('Object not found', 'The requested object could not be located.');
 
         $include_page_filter = $object_name::get_filter();
         $page_permissions = $object_name::get_permissions();
@@ -335,7 +346,9 @@ class WFWebHandler extends WF
 
         if (!strlen($include_page))
         {
-            WF::http_error(404, 'Not Found', "<h1>Page not found</h1>\nPage not found. Please return to the <a href=\"/\">main page</a>.");
+            header("HTTP/1.0 404 Not Found");
+            print('<h1>Page not found</h1>'.PHP_EOL.
+                  'Page not found. Please return to the <a href="/">main page</a>.');
             exit();
         }
 

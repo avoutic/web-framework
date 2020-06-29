@@ -245,11 +245,11 @@ class WF
         }
     }
 
-    static function http_error($code, $short_message, $message)
+    protected function exit_error($short_message, $message)
     {
-        header("HTTP/1.0 $code $short_message");
-        print "$message";
-        exit(0);
+        print('Fatal error: '.$short_message.PHP_EOL);
+        print($message.PHP_EOL);
+        exit();
     }
 
     static function register_hook($hook_name, $file, $static_function, $args = array())
@@ -498,10 +498,16 @@ class WF
         srand();
 
         if (!is_file(WF::$site_includes."config.php"))
-            WF::http_error(500, 'Internal Server Error', "<h1>Requirement error</h1>\nOne of the required files is not found on the server. Please contact the administrator.");
+        {
+            $this->exit_error('Missing requirement',
+                              'One of the required files is not found on the server.');
+        }
 
         if (!is_file(WF::$site_includes."sender_handler.inc.php"))
-            WF::http_error(500, 'Internal Server Error', "<h1>Sender Handler missing</h1>\nOne of the required files is not found on the server. Please contact the administrator.");
+        {
+            $this->exit_error('Sender Handler missing',
+                              'One of the required files is not found on the server.');
+        }
 
         $this->merge_configs();
 
@@ -607,7 +613,10 @@ class WF
         $main_config = WF::get_auth_config('db_config.'.$main_db_tag);
 
         if (WF::$global_database->Connect($main_config) === false)
-            WF::http_error(500, 'Internal Server Error', "<h1>Database server connection failed</h1>\nThe connection to the database server failed. Please contact the administrator.");
+        {
+            $this->exit_error('Database server connection failed',
+                    'The connection to the database server failed.');
+        }
 
         // Open auxilary database connections
         //
@@ -617,7 +626,10 @@ class WF
             $tag_config = WF::get_auth_config('db_config.'.$tag);
 
             if ($database->Connect($tag_config) === false)
-                WF::http_error(500, 'Internal Server Error', "<h1>Databases server connection failed</h1>\nThe connection to the database server failed. Please contact the administrator.");
+            {
+                $this->exit_error('Databases server connection failed',
+                        'The connection to the database server failed.');
+            }
 
             WF::$global_databases[$tag] = $database;
         }
@@ -631,7 +643,11 @@ class WF
         $supported_wf_version = WF::get_config('versions.supported_framework');
 
         if ($required_wf_version != $supported_wf_version)
-            WF::http_error(500, 'Internal Server Error', "<h1>Framework version mismatch</h1>\nPlease make sure that this app is upgraded to support version {$required_wf_version} of this Framework.\nPlease contact the administrator.");
+        {
+            $this->exit_error('Framework version mismatch',
+                    "Please make sure that this app is upgraded to support version ".
+                    "{$required_wf_version} of this Framework.");
+        }
 
         if (WF::get_config('database_enabled') != true)
             return;
@@ -644,10 +660,17 @@ class WF
         $current_app_db_version = $config_values->get_value('app_db_version', '1');
 
         if ($required_wf_db_version != $current_wf_db_version)
-            WF::http_error(500, 'Internal Server Error', "<h1>Framework Database version mismatch</h1>\nPlease make sure that the latest Framework database changes for version {$required_wf_db_version} of the scheme are applied. Please contact the administrator.");
+        {
+            $this->exit_error('Framework Database version mismatch',
+                    "Please make sure that the latest Framework database changes for version ".
+                    "{$required_wf_db_version} of the scheme are applied.");
+        }
 
         if ($required_app_db_version != $current_app_db_version)
-            WF::http_error(500, 'Internal Server Error', "<h1>App DB version mismatch</h1>\nPlease make sure that the app DB scheme matches {$required_app_db_version}. Please contact the adiministrator.");
+        {
+            $this->exit_error('App DB version mismatch',
+                    "Please make sure that the app DB scheme matches {$required_app_db_version}.");
+        }
     }
 
     private function init_cache()
