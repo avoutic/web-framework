@@ -8,7 +8,7 @@ class PostmarkSender extends SenderCore
     {
         $api_key_file = $this->get_config('postmark.api_key_file');
         WF::verify(strlen($api_key_file), 'No Postmark API key defined');
-        $api_key = WF::get_auth_config($api_key_file);
+        $api_key = $this->get_auth_config($api_key_file);
 
         return $api_key;
     }

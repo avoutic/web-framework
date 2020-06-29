@@ -1,5 +1,6 @@
 <?php
 require_once(WF::$includes.'wf_helpers.inc.php');
+require_once(WF::$includes.'wf_security.inc.php');
 
 class WF
 {
@@ -21,7 +22,8 @@ class WF
     protected $raw_input = array();
     protected $raw_post = array();
 
-    private $blacklist = null;
+    protected $blacklist = null;
+    protected $security = null;
     private $messages = array();
 
     // Default configuration
@@ -261,93 +263,6 @@ class WF
         exit();
     }
 
-    static function urlencode_and_auth_array($array)
-    {
-        return urlencode(WF::encode_and_auth_array($array));
-    }
-
-    static function encode_and_auth_array($array)
-    {
-        $str = json_encode($array);
-
-        // First encrypt it
-        //
-        $cipher = 'AES-256-CBC';
-        $iv_len = openssl_cipher_iv_length($cipher);
-        $iv = openssl_random_pseudo_bytes($iv_len);
-        $key = hash('sha256', WF::get_config('security.crypt_key'), true);
-        $str = openssl_encrypt($str, $cipher, $key, 0, $iv);
-
-        $str = base64_encode($str);
-        $iv = base64_encode($iv);
-
-        $str_hmac = hash_hmac(WF::get_config('security.hash'), $iv.$str,
-                              WF::get_config('security.hmac_key'));
-
-        return $iv.":".$str.":".$str_hmac;
-    }
-
-    static function urldecode_and_verify_array($str)
-    {
-        $urldecoded = urldecode($str);
-
-        return WF::decode_and_verify_array($urldecoded);
-    }
-
-    static function decode_and_verify_array($str)
-    {
-        $idx = strpos($str, ":");
-        if ($idx === false)
-            return "";
-
-        $part_iv = substr($str, 0, $idx);
-        $iv = base64_decode($part_iv);
-
-        $str = substr($str, $idx + 1);
-
-        $idx = strpos($str, ":");
-        if ($idx === FALSE)
-            return false;
-
-        $part_msg = substr($str, 0, $idx);
-        $part_hmac = substr($str, $idx + 1);
-
-        $str_hmac = hash_hmac(WF::get_config('security.hash'), $part_iv.$part_msg,
-                              WF::get_config('security.hmac_key'));
-
-        if ($str_hmac !== $part_hmac)
-        {
-            $framework = WF::get_framework();
-            $framework->add_blacklist_entry('hmac-mismatch', 4);
-            return "";
-        }
-
-        $key = hash('sha256', WF::get_config('security.crypt_key'), true);
-        $cipher = 'AES-256-CBC';
-        $json_encoded = openssl_decrypt(base64_decode($part_msg), $cipher, $key, 0, $iv);
-
-        if (!strlen($json_encoded))
-            return false;
-
-        $array = json_decode($json_encoded, true);
-        if (!is_array($array))
-            return false;
-
-        return $array;
-    }
-
-    static function get_auth_config($name)
-    {
-        $auth_config_file = WF::$site_includes.'/auth/'.$name.'.php';
-        if (!file_exists($auth_config_file))
-            die("Auth Config {$name} does not exist");
-
-        $auth_config = require($auth_config_file);
-        WF::verify(is_array($auth_config) || strlen($auth_config), 'Auth Config '.$name.' invalid');
-
-        return $auth_config;
-    }
-
     static function get_framework()
     {
         return WF::$framework;
@@ -388,6 +303,11 @@ class WF
     static function get_cache()
     {
         return WF::$global_cache;
+    }
+
+    function get_security()
+    {
+        return $this->security;
     }
 
     function validate_input($filter, $item)
@@ -491,6 +411,7 @@ class WF
         date_default_timezone_set(WF::get_config('timezone'));
 
         $this->load_requirements();
+        $this->security = new WFSecurity(WF::get_config('security'));
 
         $data = file_get_contents("php://input");
         $data = json_decode($data, true);
@@ -573,7 +494,7 @@ class WF
 
         WF::$global_database = new Database();
         $main_db_tag = WF::get_config('database_config');
-        $main_config = WF::get_auth_config('db_config.'.$main_db_tag);
+        $main_config = $this->security->get_auth_config('db_config.'.$main_db_tag);
 
         if (WF::$global_database->Connect($main_config) === false)
         {
@@ -586,7 +507,7 @@ class WF
         foreach (WF::get_config('databases') as $tag)
         {
             $database = new Database();
-            $tag_config = WF::get_auth_config('db_config.'.$tag);
+            $tag_config = $this->security->get_auth_config('db_config.'.$tag);
 
             if ($database->Connect($tag_config) === false)
             {
@@ -644,7 +565,7 @@ class WF
         require_once(WF::$site_includes.'cache_handler.inc.php');
 
         $cache_tag = WF::get_config('cache_config');
-        $cache_config = WF::get_auth_config('cache_config.'.$cache_tag);
+        $cache_config = $this->security->get_auth_config('cache_config.'.$cache_tag);
 
         WF::$global_cache = new Cache($cache_config);
     }
@@ -694,11 +615,13 @@ class FrameworkCore
 {
     protected $cache;
     protected $framework;
+    protected $security;
 
     function __construct()
     {
         $this->framework = WF::get_framework();
         $this->cache = WF::get_cache();
+        $this->security = $this->framework->get_security();
     }
 
     protected function get_config($path)
@@ -746,14 +669,39 @@ class FrameworkCore
     protected function get_message_for_url($mtype, $message, $extra_message = '')
     {
         $msg = array('mtype' => $mtype, 'message' => $message, 'extra_message' => $extra_message);
-        return "msg=".WF::encode_and_auth_array($msg);
+        return "msg=".$this->security->encode_and_auth_array($msg);
     }
 
     // Security related
     //
+    protected function get_auth_config($key_file)
+    {
+        return $this->security->get_auth_config($key_file);
+    }
+
     protected function add_blacklist_entry($reason, $severity = 1)
     {
         $this->framework->add_blacklist_entry($reason, $severity);
+    }
+
+    protected function urlencode_and_auth_array($array)
+    {
+        return $this->security->urlencode_and_auth_array($array);
+    }
+
+    protected function encode_and_auth_array($array)
+    {
+        return $this->security->encode_and_auth_array($array);
+    }
+
+    protected function urldecode_and_verify_array($str)
+    {
+        return $this->security->urldecode_and_verify_array($str);
+    }
+
+    protected function decode_and_verify_array($str)
+    {
+        return $this->security->decode_and_verify_array($str);
     }
 
     // Authentication related
