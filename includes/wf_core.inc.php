@@ -11,7 +11,6 @@ class WF
     static $site_templates = __DIR__.'/../../templates/';
 
     private static $in_verify = false;      // Only go into an assert_handler once
-    protected static $hook_array = array();
 
     private static $global_cache = null;
     private static $global_database = null;
@@ -260,30 +259,6 @@ class WF
         print('Fatal error: '.$short_message.PHP_EOL);
         print($message.PHP_EOL);
         exit();
-    }
-
-    static function register_hook($hook_name, $file, $static_function, $args = array())
-    {
-        WF::$hook_array[$hook_name][] = array(
-                    'include_file' => $file,
-                    'static_function' => $static_function,
-                    'args' => $args);
-    }
-
-    static function fire_hook($hook_name, $params)
-    {
-        if (!isset(WF::$hook_array[$hook_name]))
-            return;
-
-        $hooks = WF::$hook_array[$hook_name];
-        foreach ($hooks as $hook)
-        {
-            require_once(WF::$site_includes.$hook['include_file'].".inc.php");
-
-            $function = $hook['static_function'];
-
-            $function($hook['args'], $params);
-        }
     }
 
     static function urlencode_and_auth_array($array)

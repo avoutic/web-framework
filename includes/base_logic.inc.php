@@ -216,11 +216,6 @@ SQL;
 
         $this->update($updates);
 
-        WF::fire_hook('change_email', array(
-                                    'user_id' => $this->id,
-                                    'old_email' => $this->email,
-                                    'new_email' => $email));
-
         return User::RESULT_SUCCESS;
     }
 
