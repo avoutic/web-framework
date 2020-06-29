@@ -220,6 +220,21 @@ class WF
         exit();
     }
 
+    static function blacklist_verify($bool, $reason, $severity = 1)
+    {
+        if ($bool)
+            return;
+
+        $framework = WF::get_framework();
+        $framework->add_blacklist_entry($reason, $severity);
+        exit();
+    }
+
+    function add_blacklist_entry($reason, $severity = 1)
+    {
+        WF::verify(false, 'No blacklist support in script mode');
+    }
+
     static function shutdown_handler()
     {
         $last_error = error_get_last();
@@ -332,7 +347,8 @@ class WF
 
         if ($str_hmac !== $part_hmac)
         {
-            add_blacklist_entry('hmac-mismatch', 4);
+            $framework = WF::get_framework();
+            $framework->add_blacklist_entry('hmac-mismatch', 4);
             return "";
         }
 

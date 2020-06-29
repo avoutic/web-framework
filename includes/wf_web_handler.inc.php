@@ -92,7 +92,7 @@ class WFWebHandler extends WF
             if (!$this->validate_csrf_token())
             {
                 WF::$global_state['input']['do'] = '';
-                WF::add_blacklist_entry('missing-csrf');
+                $this->add_blacklist_entry('missing-csrf');
                 WF::set_message('error', 'CSRF token missing, possible attack.', '');
             }
         }
@@ -396,6 +396,15 @@ class WFWebHandler extends WF
         header("HTTP/1.0 404 Page not found");
         $this->call_obj_func($object_name, $function_name);
         exit();
+    }
+
+    function add_blacklist_entry($reason, $severity = 1)
+    {
+        $user_id = 0;
+        if ($this->is_authenticated())
+            $user_id = $this->get_authenticated('user_id');
+
+        $this->blacklist->add_entry($_SERVER['REMOTE_ADDR'], $user_id, $reason, $severity);
     }
 };
 ?>

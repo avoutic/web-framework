@@ -1,15 +1,4 @@
 <?php
-function add_blacklist_entry($reason, $severity = 1)
-{
-    global $blacklist, $global_state;
-
-    $user_id = 0;
-    if (isset($global_state['user_id']))
-        $user_id = $global_state['user_id'];
-
-    $blacklist->add_entry($_SERVER['REMOTE_ADDR'], $user_id, $reason, $severity);
-}
-
 class BlackListEntry extends DataCore
 {
     static protected $table_name = 'blacklist_entries';
@@ -45,7 +34,16 @@ SQL;
         $this->cleanup();
 
         $bt = debug_backtrace();
-        $caller = $bt[1];
+        $stack = array_reverse($bt);
+        $caller = false;
+        foreach($stack as $entry)
+        {
+            $caller = $entry;
+
+            if (in_array($entry['function'], array('blacklist_verify', 'add_blacklist_entry')))
+                break;
+        }
+
         $path_parts = pathinfo($caller['file']);
         $file = $path_parts['filename'];
         $full_reason = $file.':'.$caller['line'].':'.$reason;

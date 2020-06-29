@@ -37,21 +37,13 @@ class PageChangeEmailVerify extends PageBasic
         // Check if code is present
         //
         $code = $this->get_input_var('code');
-        if (!strlen($code))
-        {
-            add_blacklist_entry('code-missing');
-            exit();
-        }
+        WF::blacklist_verify(strlen($code), 'code-missing');
 
         $msg = WF::decode_and_verify_array($code);
         if (!$msg)
             exit();
 
-        if ($msg['action'] != 'change_email')
-        {
-            add_blacklist_entry('wrong-action', 2);
-            exit();
-        }
+        WF::blacklist_verify($msg['action'] == 'change_email', 'wrong-action', 2);
 
         if ($msg['timestamp'] + 600 < time())
         {

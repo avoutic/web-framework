@@ -25,21 +25,13 @@ class PageVerify extends PageBasic
         // Check if code is present
         //
         $code = $this->get_input_var('code');
-        if (!strlen($code))
-        {
-            add_blacklist_entry('missing-code');
-            return;
-        }
+        WF::blacklist_verify(strlen($code), 'missing-code');
 
         $msg = WF::decode_and_verify_array($code);
         if (!$msg)
             return;
 
-        if ($msg['action'] != 'verify')
-        {
-            add_blacklist_entry('wrong-action', 2);
-            return;
-        }
+        WF::blacklist_verify($msg['action'] == 'verify', 'wrong-action', 2);
 
         if ($msg['timestamp'] + 86400 < time())
         {
