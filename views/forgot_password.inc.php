@@ -44,7 +44,7 @@ class PageForgotPassword extends PageBasic
 
         // Redirect to main sceen
         //
-        $login_page = $this->config['pages']['login']['location'];
+        $login_page = $this->get_config('pages.login.location');
         header("Location: ${login_page}?".$this->add_message_to_url('success', 'Reset link mailed to registered email account.'));
         exit();
     }

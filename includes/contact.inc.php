@@ -100,8 +100,8 @@ abstract class PageContactBase extends PageBasic
 
         // Send mail to administrator
         //
-        $result = SenderCore::raw($this->config['sender_core']['default_sender'],
-                $this->config['site_name'].": User '".$name."' contacted you about '".$this->state['input']['type']."' '".$subject."'",
+        $result = SenderCore::raw($this->get_config('sender_core.default_sender'),
+                $this->get_config('site_name').": User '".$name."' contacted you about '".$this->state['input']['type']."' '".$subject."'",
                 $this->state['input']['message_content'],
                 "From: ".$email."\r\n");
 

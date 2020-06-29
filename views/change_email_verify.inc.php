@@ -32,7 +32,7 @@ class PageChangeEmailVerify extends PageBasic
 
     function do_logic()
     {
-        $change_page = $this->config['pages']['change_email']['location'];
+        $change_page = $this->get_config('pages.change_email.location');
 
         // Check if code is present
         //
@@ -69,7 +69,7 @@ class PageChangeEmailVerify extends PageBasic
         if ($user_id != $this->state['user_id'])
         {
             $this->auth->deauthenticate();
-            $login_page = $this->config['pages']['login']['location'];
+            $login_page = $this->get_config('pages.login.location');
             header("Location: {$login_page}?".$this->add_message_to_url('error', 'Other account', 'The link you used is meant for a different account. The current account has been logged off. Please try the link again.'));
             exit();
         }
@@ -102,7 +102,7 @@ class PageChangeEmailVerify extends PageBasic
 
         // Redirect to verification request screen
         //
-        $return_page = $this->config['pages']['change_email']['return_page'];
+        $return_page = $this->get_config('pages.change_email.return_page');
         header("Location: ${return_page}?".$this->add_message_to_url('success', 'E-mail address changed successfully'));
         exit();
     }

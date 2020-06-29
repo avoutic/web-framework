@@ -6,8 +6,9 @@ class PostmarkSender extends SenderCore
 {
     function get_api_key()
     {
-        WF::verify(strlen($this->config['postmark']['api_key_file']), 'No Postmark API key defined');
-        $api_key = WF::get_auth_config($this->config['postmark']['api_key_file']);
+        $api_key_file = $this->get_config('postmark.api_key_file');
+        WF::verify(strlen($api_key_file), 'No Postmark API key defined');
+        $api_key = WF::get_auth_config($api_key_file);
 
         return $api_key;
     }
@@ -78,8 +79,9 @@ class PostmarkSender extends SenderCore
 
     function get_template_id($template_name)
     {
-        WF::verify(isset($this->config['postmark']['templates'][$template_name]), 'Template mapping not available.');
-        return $this->config['postmark']['templates'][$template_name];
+        $template_name = $this->get_config('postmark.templates.'.$template_name);
+        WF::verify(isset($template_name), 'Template mapping not available.');
+        return $template_name;
     }
 
     function email_verification_link($to, $params)

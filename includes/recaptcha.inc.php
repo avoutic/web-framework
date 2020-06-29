@@ -5,7 +5,7 @@ class Recaptcha extends FrameworkCore
     {
         parent::__construct();
 
-        $this->module_config = $this->config['security']['recaptcha'];
+        $this->module_config = $this->get_config('security.recaptcha');
 
         WF::verify(strlen($this->module_config['site_key']), 'Missing reCAPTCHA Site Key');
         WF::verify(strlen($this->module_config['secret_key']), 'Missing reCAPTCHA Secret Key');

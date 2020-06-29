@@ -15,7 +15,7 @@ class Session extends DataCore
         $last_active_timestamp = Helpers::mysql_datetime_to_timestamp($this->last_active);
 
         if ($current - $last_active_timestamp >
-            $this->config['authenticator']['session_timeout'])
+            $this->get_config('authenticator.session_timeout'))
         {
             return FALSE;
         }
@@ -61,7 +61,7 @@ abstract class Authenticator extends FrameworkCore
         {
             $query = $_SERVER['QUERY_STRING'];
 
-            header('Location: '.$this->config['pages']['login']['location'].'?return_page='.urlencode($target).'&return_query='.urlencode($query).'&'.$this->add_message_to_url('info', $this->config['authenticator']['auth_required_message']), true, 302);
+            header('Location: '.$this->get_config('pages.login.location').'?return_page='.urlencode($target).'&return_query='.urlencode($query).'&'.$this->add_message_to_url('info', $this->get_config('authenticator.auth_required_message')), true, 302);
         }
         else if ($type == '403')
         {
@@ -110,7 +110,7 @@ class AuthRedirect extends Authenticator
 {
     function cleanup()
     {
-        $timeout = $this->config['authenticator']['session_timeout'];
+        $timeout = $this->get_config('authenticator.session_timeout');
         $timestamp = date('Y-m-d H:i:s');
 
         $this->query('DELETE FROM sessions WHERE ADDDATE(last_active, INTERVAL ? SECOND) < ?', array($timeout, $timestamp));
@@ -209,8 +209,8 @@ class AuthWwwAuthenticate extends Authenticator
     {
         parent::__construct();
 
-        if (isset($this->config['realm']))
-            $this->realm = $this->config['realm'];
+        if (strlen($this->get_config('realm')))
+            $this->realm = $this->get_config['realm'];
     }
 
     function cleanup()

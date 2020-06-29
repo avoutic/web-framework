@@ -26,7 +26,7 @@ class PageRegister extends Pagebasic
 
     function check_sanity()
     {
-        $recaptcha_config = $this->config['security']['recaptcha'];
+        $recaptcha_config = $this->get_config('security.recaptcha');
         WF::verify(strlen($recaptcha_config['site_key']), 'Missing reCAPTCHA Site Key');
         WF::verify(strlen($recaptcha_config['secret_key']), 'Missing reCAPTCHA Secret Key');
     }
@@ -61,7 +61,7 @@ class PageRegister extends Pagebasic
 
     function do_logic()
     {
-        $identifier = $this->config['authenticator']['unique_identifier'];
+        $identifier = $this->get_config('authenticator.unique_identifier');
 
         $email = $this->get_input_var('email');
         $password = $this->get_input_var('password');
@@ -79,7 +79,7 @@ class PageRegister extends Pagebasic
         $this->page_content['password2'] = $password2;
         $this->page_content['email'] = $this->get_raw_input_var('email');
         $this->page_content['accept_terms'] = $accept_terms;
-        $this->page_content['recaptcha_site_key'] = $this->config['security']['recaptcha']['site_key'];
+        $this->page_content['recaptcha_site_key'] = $this->get_config('security.recaptcha.site_key');
 
         $this->custom_prepare_page_content();
 
@@ -205,13 +205,13 @@ class PageRegister extends Pagebasic
     {
         // Send mail to administrator
         //
-        SenderCore::send_raw($this->config['sender_core']['default_sender'],
-                $this->config['site_name'].": User '".$user->username."' registered.",
+        SenderCore::send_raw($this->get_config('sender_core.default_sender'),
+                $this->get_config('site_name').": User '".$user->username."' registered.",
                 "The user with username '".$user->username."' registered.\n".
                 "E-mail is: '".$user->email."'.");
 
         $code = $user->generate_verify_code('send_verify', $this->get_after_verify_data());
-        $send_verify_page = $this->config['pages']['login']['send_verify_page'];
+        $send_verify_page = $this->get_config('pages.login.send_verify_page');
         $send_verify_url = $send_verify_page.'?code='.$code;
 
         // Redirect to verification request screen

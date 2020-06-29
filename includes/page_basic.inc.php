@@ -74,34 +74,32 @@ abstract class PageBasic extends PageCore
     {
         parent::__construct();
 
-        $this->frame_file = $this->config['page']['default_frame_file'];
+        $this->frame_file = $this->get_config('page.default_frame_file');
 
-        if (isset($this->config['page']['mods']))
+        $page_mods = $this->get_config('page.mods');
+        foreach ($page_mods as $mod_info)
         {
-            foreach ($this->config['page']['mods'] as $mod_info)
+            $mod_obj = FALSE;
+
+            $class = $mod_info['class'];
+            $include_file = $mod_info['include_file'];
+
+            $tag = sha1($mod_info);
+
+            if ($this->cache != null && $class::is_cacheable)
+                $mod_obj = $this->cache->get($tag);
+
+            if ($mod_obj === FALSE)
             {
-                $mod_obj = FALSE;
+                require_once($include_file);
 
-                $class = $mod_info['class'];
-                $include_file = $mod_info['include_file'];
-
-                $tag = sha1($mod_info);
+                $mod_obj = new $class($mod_info);
 
                 if ($this->cache != null && $class::is_cacheable)
-                    $mod_obj = $this->cache->get($tag);
-
-                if ($mod_obj === FALSE)
-                {
-                    require_once($include_file);
-
-                    $mod_obj = new $class($mod_info);
-
-                    if ($this->cache != null && $class::is_cacheable)
-                        $this->cache->set($tag, $mod_obj);
-                }
-
-                array_push($this->mods, $mod_obj);
+                    $this->cache->set($tag, $mod_obj);
             }
+
+            array_push($this->mods, $mod_obj);
         }
     }
 
@@ -180,7 +178,7 @@ abstract class PageBasic extends PageCore
 
     function load_file($name)
     {
-        include($this->config['document_root'].'/'.$name);
+        include($this->get_config('document_root').'/'.$name);
     }
 
     function check_required(&$var, $name)

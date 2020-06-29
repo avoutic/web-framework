@@ -72,7 +72,7 @@ class PageChangeEmail extends PageBasic
 
         // Redirect to verification request screen
         //
-        $return_page = $this->config['pages']['change_email']['return_page'];
+        $return_page = $this->get_config('pages.change_email.return_page');
         header("Location: ${return_page}?".$this->add_message_to_url('success', 'Verification mail has been sent.','A verification mail has been sent. Please wait for the e-mail in your inbox and follow the instructions.'));
         exit();
     }

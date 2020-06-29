@@ -22,7 +22,7 @@ class Blacklist extends FrameworkCore
     {
         parent::__construct();
 
-        $this->module_config = $this->config['security']['blacklist'];
+        $this->module_config = $this->get_config('security.blacklist');
     }
 
     function cleanup()

@@ -22,10 +22,11 @@ class UrlConfig extends FrameworkCore implements iPageModule
 
     function translate($tag, $replaces = array())
     {
-        if (!isset($this->config['mods']['urls'][$tag]))
+        $urls = $this->get_config('mods.urls');
+        if (!isset($urls[$tag]))
             return $tag;
 
-        return $this->config['mods']['urls'][$tag];
+        return $urls[$tag];
     }
 };
 

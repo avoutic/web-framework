@@ -21,12 +21,12 @@ class PageLogin extends PageBasic
 
     function check_sanity()
     {
-        $login_config = $this->config['pages']['login'];
+        $login_config = $this->get_config('pages.login');
         $bruteforce_protection = $login_config['bruteforce_protection'];
 
         if ($bruteforce_protection)
         {
-            $recaptcha_config = $this->config['security']['recaptcha'];
+            $recaptcha_config = $this->get_config('security.recaptcha');
             WF::verify(strlen($recaptcha_config['site_key']), 'Missing reCAPTCHA Site Key');
             WF::verify(strlen($recaptcha_config['secret_key']), 'Missing reCAPTCHA Secret Key');
         }
@@ -66,17 +66,17 @@ class PageLogin extends PageBasic
         $this->page_content['return_query'] = $return_query;
         $this->page_content['username'] = $this->get_raw_input_var('username');
         $this->page_content['recaptcha_needed'] = false;
-        $this->page_content['recaptcha_site_key'] = $this->config['security']['recaptcha']['site_key'];
+        $this->page_content['recaptcha_site_key'] = $this->get_config('security.recaptcha.site_key');
 
         if (!strlen($return_page) || substr($return_page, 0, 2) == '//')
-            $return_page = $this->config['pages']['login']['default_return_page'];
+            $return_page = $this->get_config('pages.login.default_return_page');
 
         if (substr($return_page, 0, 1) != '/')
             $return_page = '/'.$return_page;
 
         $this->page_content['return_page'] = $return_page;
-        $this->page_content['login_page'] = $this->config['pages']['login']['location'];
-        $send_verify_page = $this->config['pages']['login']['send_verify_page'];
+        $this->page_content['login_page'] = $this->get_config('pages.login.location');
+        $send_verify_page = $this->get_config('pages.login.send_verify_page');
 
         // Check if already logged in and redirect immediately
         if ($this->state['logged_in'])
@@ -114,7 +114,7 @@ class PageLogin extends PageBasic
             return;
         }
 
-        $bruteforce_protection = $this->config['pages']['login']['bruteforce_protection'];
+        $bruteforce_protection = $this->get_config('pages.login.bruteforce_protection');
         if ($user->failed_login > 5 && $bruteforce_protection)
         {
             $recaptcha_response = $this->get_input_var('g-recaptcha-response');

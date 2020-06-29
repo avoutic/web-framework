@@ -211,7 +211,7 @@ SQL;
             'email' => $email,
         );
 
-        if (WF::get_config('authenticator.unique_identifier') == 'email')
+        if ($this->get_config('authenticator.unique_identifier') == 'email')
             $updates['username'] = $email;
 
         $this->update($updates);
@@ -239,8 +239,8 @@ SQL;
         $security_iterator = $this->increase_security_iterator();
 
         $code = $this->generate_verify_code('change_email', array('email' => $email, 'iterator' => $security_iterator));
-        $verify_url = 'https://'.$this->config['server_name'].
-                      $this->config['pages']['change_email']['verify_page'].
+        $verify_url = 'https://'.$this->get_config('server_name').
+                      $this->get_config('pages.change_email.verify_page').
                       '?code='.$code;
 
         $result = SenderCore::send('change_email_verification_link', $email,
@@ -337,8 +337,8 @@ SQL;
     function send_verify_mail($after_verify_data = array())
     {
         $code = $this->generate_verify_code('verify', $after_verify_data);
-        $verify_url = 'https://'.$this->config['server_name'].
-                      $this->config['pages']['login']['verify_page'].
+        $verify_url = 'https://'.$this->get_config('server_name').
+                      $this->get_config('pages.login.verify_page').
                       '?code='.$code;
 
         return SenderCore::send('email_verification_link', $this->email,
@@ -367,8 +367,8 @@ SQL;
         $security_iterator = $this->increase_security_iterator();
 
         $code = $this->generate_verify_code('reset_password', array('iterator' => $security_iterator));
-        $reset_url = 'https://'.$this->config['server_name'].
-                     $this->config['pages']['forgot_password']['reset_password_page'].
+        $reset_url = 'https://'.$this->get_config('server_name').
+                     $this->get_config('pages.forgot_password.reset_password_page').
                      '?code='.$code;
 
         return SenderCore::send('password_reset', $this->email,

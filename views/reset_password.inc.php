@@ -48,7 +48,7 @@ class PageResetPassword extends PageBasic
         // Check user status
         //
         $user = $factory->get_user_by_username($msg['username']);
-        $login_page = $this->config['pages']['login']['location'];
+        $login_page = $this->get_config('pages.login.location');
 
         if ($user === FALSE)
             return;

@@ -69,7 +69,7 @@ class WF
         'page' => array(
             'default_frame_file' => 'default_frame.inc.php',
             'default_page' => 'main',
-            'mods' => array()               // Should at least contain class, and include_file of mod!
+            'mods' => array(),              // Should at least contain class, and include_file of mod!
         ),
         'security' => array(
             'blacklist' => array(
@@ -668,13 +668,16 @@ class WF
 class FrameworkCore
 {
     protected $cache;
-    protected $config;
 
     function __construct()
     {
         $this->cache = WF::get_cache();
         $this->state = WF::get_state();
-        $this->config = WF::get_config();
+    }
+
+    protected function get_config($path)
+    {
+        return WF::get_config($path);
     }
 
     protected function get_db($tag = '')
