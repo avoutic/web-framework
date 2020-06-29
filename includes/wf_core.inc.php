@@ -12,15 +12,15 @@ class WF
     static $site_templates = __DIR__.'/../../templates/';
 
     private static $in_verify = false;      // Only go into an assert_handler once
-
-    private static $global_database = null;
-    private static $global_databases = array();
     private static $framework = null;
+    private static $main_db = null;
 
     protected $input = array();
     protected $raw_input = array();
     protected $raw_post = array();
 
+    private $main_database = null;
+    private $aux_databases = array();
     private $cache = null;
     protected $blacklist = null;
     protected $security = null;
@@ -140,9 +140,9 @@ class WF
         }
 
         $db_error = 'Not initialized yet';
-        if (WF::get_db() != null)
+        if (WF::get_main_db() != null)
         {
-            $db_error = WF::get_db()->GetLastError();
+            $db_error = WF::get_main_db()->GetLastError();
             if ($db_error === false || $db_error === '')
                 $db_error = 'None';
         }
@@ -274,6 +274,11 @@ class WF
         return WF::$framework;
     }
 
+    static function get_main_db()
+    {
+        return WF::$main_db;
+    }
+
     static function get_config($location = '')
     {
         if (!strlen($location))
@@ -291,13 +296,13 @@ class WF
         return $part;
     }
 
-    static function get_db($tag = '')
+    function get_db($tag = '')
     {
         if (!strlen($tag))
-            return WF::$global_database;
+            return $this->main_database;
 
-        WF::verify(array_key_exists($tag, WF::$global_databases), 'Database not registered');
-        return WF::$global_databases[$tag];
+        WF::verify(array_key_exists($tag, $this->aux_databases), 'Database not registered');
+        return $this->aux_databases[$tag];
     }
 
     function get_cache()
@@ -492,15 +497,17 @@ class WF
         //
         require_once(WF::$includes.'database.inc.php');
 
-        WF::$global_database = new Database();
+        $this->main_database = new Database();
         $main_db_tag = WF::get_config('database_config');
         $main_config = $this->security->get_auth_config('db_config.'.$main_db_tag);
 
-        if (WF::$global_database->Connect($main_config) === false)
+        if ($this->main_database->Connect($main_config) === false)
         {
             $this->exit_error('Database server connection failed',
                     'The connection to the database server failed.');
         }
+
+        WF::$main_db = $this->main_database;
 
         // Open auxilary database connections
         //
@@ -515,7 +522,7 @@ class WF
                         'The connection to the database server failed.');
             }
 
-            WF::$global_databases[$tag] = $database;
+            $this->aux_databases[$tag] = $database;
         }
     }
 
@@ -616,12 +623,14 @@ class FrameworkCore
     protected $cache;
     protected $framework;
     protected $security;
+    private $database;
 
     function __construct()
     {
         $this->framework = WF::get_framework();
         $this->security = $this->framework->get_security();
         $this->cache = $this->framework->get_cache();
+        $this->database = WF::get_main_db();
     }
 
     protected function get_config($path)
@@ -631,17 +640,17 @@ class FrameworkCore
 
     protected function get_db($tag = '')
     {
-        return WF::get_db($tag);
+        return $this->framework->get_db($tag);
     }
 
     protected function query($query, $params)
     {
-        return WF::get_db()->Query($query, $params);
+        return $this->database->Query($query, $params);
     }
 
     protected function insert_query($query, $params)
     {
-        return WF::get_db()->InsertQuery($query, $params);
+        return $this->database->InsertQuery($query, $params);
     }
 
     protected function get_input()

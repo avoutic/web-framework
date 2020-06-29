@@ -28,7 +28,7 @@ abstract class DataCore extends FrameworkCore
             if (false !== $global_cache->exists(static::get_cache_id($id)))
                 return true;
 
-        $result = WF::get_db()->Query('SELECT id FROM '.static::$table_name.
+        $result = WF::get_main_db()->Query('SELECT id FROM '.static::$table_name.
                                    ' WHERE id = ?', array($id));
 
         if ($result === false)
@@ -232,7 +232,7 @@ abstract class DataCore extends FrameworkCore
 
         $args = $data;
 
-        $result = WF::get_db()->InsertQuery($query, $args);
+        $result = WF::get_main_db()->InsertQuery($query, $args);
 
         $class = get_called_class();
 
@@ -260,7 +260,7 @@ abstract class DataCore extends FrameworkCore
         }
 
         $args = $filter;
-        $result = WF::get_db()->Query($query, $args);
+        $result = WF::get_main_db()->Query($query, $args);
         WF::verify($result !== false, 'Failed to count objects');
         WF::verify($result->RecordCount() == 1, 'Failed to count objects');
 
@@ -287,7 +287,7 @@ abstract class DataCore extends FrameworkCore
 
         $args = $filter;
 
-        $result = WF::get_db()->Query($query, $args);
+        $result = WF::get_main_db()->Query($query, $args);
 
         $class = get_called_class();
 
@@ -352,7 +352,7 @@ abstract class DataCore extends FrameworkCore
             $args = array_merge($args, array((int) $offset, (int) $results));
         }
 
-        $result = WF::get_db()->Query($query, $args);
+        $result = WF::get_main_db()->Query($query, $args);
 
         $class = get_called_class();
 
