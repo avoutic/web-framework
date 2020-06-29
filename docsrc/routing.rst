@@ -76,8 +76,8 @@ To provide multiple 404 page:
         ),
     );
 
-In case any code calls `send_404();`, the generic mapping is used, and *views/page_not_found.inc.php* is opened with the `PagePageNotFound` class called.
+In case any code calls `$this->exit_send_404();`, the generic mapping is used, and *views/page_not_found.inc.php* is opened with the `PagePageNotFound` class called.
 
-For specific 404 cases, code can call `send_404('product');` and then *views/product_not_found.inc.php* is opened with the `PageProductNotFound` class called.
+For specific 404 cases, code can call `$this->exit_send_404('product');` and then *views/product_not_found.inc.php* is opened with the `PageProductNotFound` class called.
 
 

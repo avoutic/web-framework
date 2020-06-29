@@ -38,9 +38,9 @@ abstract class PageCore extends FrameworkCore
         return $this->state['raw_input'][$name];
     }
 
-    function send_404($type = 'generic')
+    function exit_send_404($type = 'generic')
     {
-        $this->web_handler->send_404($type);
+        $this->web_handler->exit_send_404($type);
     }
 
     static function get_permissions()

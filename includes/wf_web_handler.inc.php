@@ -195,11 +195,11 @@ class WFWebHandler extends WF
             $include_page = WF::get_config('page.default_page');
 
         if (!strlen($include_page))
-            WF::send_404();
+            $this->exit_send_404();
 
         $include_page_file = WF::$site_views.$include_page.".inc.php";
         if (!is_file($include_page_file))
-            WF::send_404();
+            $this->exit_send_404();
 
         require_once($include_page_file);
 
@@ -331,7 +331,7 @@ class WFWebHandler extends WF
         return ($diff === 0);
     }
 
-    function send_404($type = 'generic')
+    function exit_send_404($type = 'generic')
     {
         $mapping = WF::get_config('error_handlers.404');
         $include_page = '';
