@@ -19,9 +19,10 @@ class WFWebHandler extends WF
 
     protected function exit_error($short_message, $message)
     {
-        header("HTTP/1.0 500 $short_message");
-        print($message.PHP_EOL);
-        print('Please contact the administrator.'.PHP_EOL);
+        header('HTTP/1.0 500 Internal Error');
+        print("<h1>$short_message</h1>");
+        print($message.'<br/>');
+        print('Please contact the administrator.');
         exit();
     }
 
