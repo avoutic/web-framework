@@ -20,13 +20,13 @@ class PageResetPassword extends PageBasic
         // Check if code is present
         //
         $code = $this->get_input_var('code');
-        WF::blacklist_verify(strlen($code), 'missing-code');
+        $this->blacklist_verify(strlen($code), 'missing-code');
 
-        $msg = WF::decode_and_verify_array($code);
+        $msg = $this->decode_and_verify_array($code);
         if (!$msg)
             return;
 
-        WF::blacklist_verify($msg['action'] == 'reset_password', 'wrong-action', 2);
+        $this->blacklist_verify($msg['action'] == 'reset_password', 'wrong-action', 2);
 
         if ($msg['timestamp'] + 600 < time())
         {

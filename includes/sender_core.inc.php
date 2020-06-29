@@ -4,7 +4,7 @@ abstract class SenderCore extends FrameworkCore
     function get_sender_email()
     {
         $default_sender = $this->get_config('sender_core.default_sender');
-        WF::verify(strlen($default_sender), 'No default sender e-mail address defined');
+        $this->verify(strlen($default_sender), 'No default sender e-mail address defined');
 
         return $default_sender;
     }

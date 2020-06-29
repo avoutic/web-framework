@@ -72,7 +72,7 @@ class Translator extends FrameworkCore implements iPageModule
         $result = $this->query('SELECT value FROM translations WHERE `key` = ? AND lang = ?',
                 array($tag, $_SESSION['lang']));
 
-        WF::verify($result !== FALSE, 'Failed to get translation');
+        $this->verify($result !== FALSE, 'Failed to get translation');
 
         $msg = $tag;
 

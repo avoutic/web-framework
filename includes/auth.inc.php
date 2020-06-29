@@ -125,7 +125,7 @@ class AuthRedirect extends Authenticator
                                             'session_id' => $session_id,
                                             'last_active' => $timestamp));
 
-        WF::verify($session !== FALSE, 'Failed to create Session');
+        $this->verify($session !== FALSE, 'Failed to create Session');
 
         return $session;
     }
@@ -133,7 +133,7 @@ class AuthRedirect extends Authenticator
     function auth_invalidate_sessions($user_id)
     {
         $result = $this->query('DELETE FROM sessions WHERE user_id = ?', array($user_id));
-        WF::verify($result !== FALSE, 'Failed to delete all user\'s sessions');
+        $this->verify($result !== FALSE, 'Failed to delete all user\'s sessions');
     }
 
     function set_logged_in($user)

@@ -685,6 +685,23 @@ class FrameworkCore
         return "msg=".$this->security->encode_and_auth_array($msg);
     }
 
+    // Assert related
+    //
+    function silent_verify($bool, $message)
+    {
+        WF::silent_verify($bool, $message);
+    }
+
+    function verify($bool, $message, $silent = false)
+    {
+        WF::verify($bool, $message, $silent);
+    }
+
+    function blacklist_verify($bool, $reason, $severity = 1)
+    {
+        WF::blacklist_verify($bool, $reason, $severity);
+    }
+
     // Security related
     //
     protected function get_auth_config($key_file)

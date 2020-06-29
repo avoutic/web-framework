@@ -21,9 +21,9 @@ abstract class PageCore extends FrameworkCore
 
     function get_input_var($name, $content_required = false)
     {
-        WF::verify(isset($this->input[$name]), 'Missing input variable: '.$name);
+        $this->verify(isset($this->input[$name]), 'Missing input variable: '.$name);
         if ($content_required)
-            WF::verify(strlen($this->input[$name]), 'Missing input variable: '.$name);
+            $this->verify(strlen($this->input[$name]), 'Missing input variable: '.$name);
 
         return $this->input[$name];
     }
@@ -40,7 +40,7 @@ abstract class PageCore extends FrameworkCore
 
     function get_raw_input_var($name)
     {
-        WF::verify(isset($this->raw_input[$name]), 'Missing input variable: '.$name);
+        $this->verify(isset($this->raw_input[$name]), 'Missing input variable: '.$name);
 
         return $this->raw_input[$name];
     }
@@ -169,7 +169,7 @@ abstract class PageBasic extends PageCore
 
     function load_template($name, $args = array())
     {
-        WF::verify(file_exists(WF::$site_templates.$name.'.inc.php'), 'Requested template not present');
+        $this->verify(file_exists(WF::$site_templates.$name.'.inc.php'), 'Requested template not present');
         include(WF::$site_templates.$name.'.inc.php');
     }
 
@@ -219,7 +219,7 @@ abstract class PageBasic extends PageCore
         if (strlen($this->get_frame_file()))
         {
             $frame_file = WF::$site_frames.$this->get_frame_file();
-            WF::verify(file_exists($frame_file), 'Requested frame file not present');
+            $this->verify(file_exists($frame_file), 'Requested frame file not present');
             require($frame_file);
         }
         else

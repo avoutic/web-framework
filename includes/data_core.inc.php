@@ -89,8 +89,8 @@ abstract class DataCore extends FrameworkCore
                 'SELECT `'.implode('`, `', static::$base_fields).'` '.
                 'FROM '.static::$table_name.' WHERE id = ?', array($this->id));
 
-        WF::verify($result !== false, 'Failed to retrieve base fields for '.static::$table_name);
-        WF::verify($result->RecordCount() == 1, 'Failed to select single item. ('.$result->RecordCount().' for '.$this->id.' in '.static::$table_name.')');
+        $this->verify($result !== false, 'Failed to retrieve base fields for '.static::$table_name);
+        $this->verify($result->RecordCount() == 1, 'Failed to select single item. ('.$result->RecordCount().' for '.$this->id.' in '.static::$table_name.')');
 
         $row = $result->fields;
 
@@ -112,7 +112,7 @@ abstract class DataCore extends FrameworkCore
     {
         $result = $this->query('SELECT `'.$field.'` FROM '.static::$table_name.
                                          ' WHERE id = ?', array($this->id));
-        WF::verify($result !== false, 'Failed to retrieve '.$field.' for '.static::$table_name);
+        $this->verify($result !== false, 'Failed to retrieve '.$field.' for '.static::$table_name);
 
         return $result->fields[$field];
     }
@@ -139,7 +139,7 @@ abstract class DataCore extends FrameworkCore
 
         $result = $this->query($query, $args);
         $class = get_called_class();
-        WF::verify($result !== false, 'Failed to update object ('.$class.')');
+        $this->verify($result !== false, 'Failed to update object ('.$class.')');
 
         foreach ($data as $key => $value)
             $this->$key = $value;
@@ -156,7 +156,7 @@ abstract class DataCore extends FrameworkCore
 
         $result = $this->query($query, $args);
         $class = get_called_class();
-        WF::verify($result !== false, 'Failed to update object ('.$class.')');
+        $this->verify($result !== false, 'Failed to update object ('.$class.')');
 
         $this->$field = $value;
     }
@@ -182,7 +182,7 @@ abstract class DataCore extends FrameworkCore
 
         $result = $this->query($query, $args);
         $class = get_called_class();
-        WF::verify($result !== false, 'Failed to decrease field of object ('.$class.')');
+        $this->verify($result !== false, 'Failed to decrease field of object ('.$class.')');
 
         $this->$field = $this->get_field($field);
     }
@@ -198,7 +198,7 @@ abstract class DataCore extends FrameworkCore
 
         $result = $this->query($query, $args);
         $class = get_called_class();
-        WF::verify($result !== false, 'Failed to increase field of object ('.$class.')');
+        $this->verify($result !== false, 'Failed to increase field of object ('.$class.')');
 
         $this->$field = $this->get_field($field);
     }
@@ -211,7 +211,7 @@ abstract class DataCore extends FrameworkCore
         $result = $this->query(
                     'DELETE FROM '.static::$table_name.' WHERE id = ?',
                     array($this->id));
-        WF::verify($result !== false, 'Failed to delete item');
+        $this->verify($result !== false, 'Failed to delete item');
     }
 
     static function create($data)

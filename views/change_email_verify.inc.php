@@ -37,13 +37,13 @@ class PageChangeEmailVerify extends PageBasic
         // Check if code is present
         //
         $code = $this->get_input_var('code');
-        WF::blacklist_verify(strlen($code), 'code-missing');
+        $this->blacklist_verify(strlen($code), 'code-missing');
 
-        $msg = WF::decode_and_verify_array($code);
+        $msg = $this->decode_and_verify_array($code);
         if (!$msg)
             exit();
 
-        WF::blacklist_verify($msg['action'] == 'change_email', 'wrong-action', 2);
+        $this->blacklist_verify($msg['action'] == 'change_email', 'wrong-action', 2);
 
         if ($msg['timestamp'] + 600 < time())
         {
@@ -85,7 +85,7 @@ class PageChangeEmailVerify extends PageBasic
             header("Location: {$change_page}?".$this->get_message_for_url('error', 'E-mail address is already in use in another account.', 'The e-mail address is already in use and cannot be re-used in this account. Please choose another address.'));
             exit();
         }
-        WF::verify($result == User::RESULT_SUCCESS, 'Unknown change email error');
+        $this->verify($result == User::RESULT_SUCCESS, 'Unknown change email error');
 
         // Invalidate old sessions
         //

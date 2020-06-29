@@ -6,7 +6,7 @@ class TranslationFactory extends FrameworkCore
         $result = $this->query('SELECT tt.key, t.value FROM translation_tags AS tt LEFT JOIN translations AS t ON t.key = tt.key AND t.lang = ?',
                 array($lang));
 
-        WF::verify($result !== FALSE, 'Failed to get translations');
+        $this->verify($result !== FALSE, 'Failed to get translations');
 
         $info = array();
 
@@ -21,7 +21,7 @@ class TranslationFactory extends FrameworkCore
         $result = $this->query('SELECT value FROM translations WHERE lang = ? AND `key` = ?',
                 array($lang, $key));
 
-        WF::verify($result !== FALSE, 'Failed to get translation');
+        $this->verify($result !== FALSE, 'Failed to get translation');
 
         if ($result->RecordCount() == 0)
             return $key;
@@ -34,7 +34,7 @@ class TranslationFactory extends FrameworkCore
         $result = $this->query('REPLACE INTO translations SET `key` = ?, lang = ?, value = ?',
                 array($key, $lang, $value));
 
-        WF::verify($result !== FALSE, 'Failed to update translation');
+        $this->verify($result !== FALSE, 'Failed to update translation');
 
         return TRUE;
     }

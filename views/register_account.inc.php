@@ -27,8 +27,8 @@ class PageRegister extends Pagebasic
     function check_sanity()
     {
         $recaptcha_config = $this->get_config('security.recaptcha');
-        WF::verify(strlen($recaptcha_config['site_key']), 'Missing reCAPTCHA Site Key');
-        WF::verify(strlen($recaptcha_config['secret_key']), 'Missing reCAPTCHA Secret Key');
+        $this->verify(strlen($recaptcha_config['site_key']), 'Missing reCAPTCHA Site Key');
+        $this->verify(strlen($recaptcha_config['secret_key']), 'Missing reCAPTCHA Secret Key');
     }
 
     function get_title()
@@ -167,7 +167,7 @@ class PageRegister extends Pagebasic
             $result = $this->query('SELECT id FROM users WHERE email = ?',
                     array($email));
 
-            WF::verify($result->RecordCount() <= 1, 'Too many results for email: '.$email);
+            $this->verify($result->RecordCount() <= 1, 'Too many results for email: '.$email);
 
             if ($result->RecordCount() == 1)
             {
@@ -181,7 +181,7 @@ class PageRegister extends Pagebasic
             $result = $this->query('SELECT id FROM users WHERE username = ?',
                     array($username));
 
-            WF::verify($result->RecordCount() <= 1, 'Too many results for username: '.$username);
+            $this->verify($result->RecordCount() <= 1, 'Too many results for username: '.$username);
 
             if ($result->RecordCount() == 1)
             {
@@ -195,7 +195,7 @@ class PageRegister extends Pagebasic
         //
         $base_factory = new BaseFactory();
         $result = $base_factory->create_user($username, $password, $email, time());
-        WF::verify($result !== false, 'Failed to create user');
+        $this->verify($result !== false, 'Failed to create user');
 
         $this->custom_finalize_create($result);
         $this->post_create_actions($result);

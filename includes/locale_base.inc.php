@@ -15,7 +15,7 @@ class LocaleFactory extends FrameworkCore
     {
         $result = $this->query('SELECT language, name FROM languages', array());
 
-        WF::verify($result !== FALSE, 'Failed to select languages');
+        $this->verify($result !== FALSE, 'Failed to select languages');
 
         $info = array();
 
@@ -36,7 +36,7 @@ class LocaleFactory extends FrameworkCore
     function update_available_languages()
     {
         $result = $this->query('SELECT language, name FROM languages', array());
-        WF::verify($result !== FALSE, 'Failed to retrieve languages');
+        $this->verify($result !== FALSE, 'Failed to retrieve languages');
 
         $info = array();
         foreach ($result as $row)
@@ -50,7 +50,7 @@ class LocaleFactory extends FrameworkCore
         $result = $this->query('SELECT id FROM languages WHERE language = ?',
                 array($lang));
 
-        WF::verify($result !== FALSE, 'Failed to check language');
+        $this->verify($result !== FALSE, 'Failed to check language');
 
         if ($result->RecordCount() == 0)
             return FALSE;
@@ -88,7 +88,7 @@ class LocaleFactory extends FrameworkCore
         $result = $this->query('SELECT locale_string FROM languages WHERE language = ?',
                 array($code));
 
-        WF::verify($result !== FALSE, 'Failed to select locale');
+        $this->verify($result !== FALSE, 'Failed to select locale');
 
         if ($result->RecordCount())
             return $result->fields['locale_string'];
@@ -131,7 +131,7 @@ class CountryLocaleFactory extends LocaleFactory
         $result = $this->query('SELECT l.language, l.name FROM languages AS l, country_languages AS cl, countries AS c WHERE c.code = ? AND cl.country_id = c.id AND l.language = cl.language',
                 array($current_country));
 
-        WF::verify($result !== FALSE, 'Failed to retrieve country languages');
+        $this->verify($result !== FALSE, 'Failed to retrieve country languages');
 
         $info = array();
         foreach ($result as $row)
@@ -160,7 +160,7 @@ class CountryLocaleFactory extends LocaleFactory
         $result = $this->query('SELECT cl.language FROM country_languages AS cl, countries AS c WHERE c.code = ? AND cl.country_id = c.id AND country_default = 1 LIMIT 1',
                 array($country_code));
 
-        WF::verify($result !== FALSE, 'Failed to select default language for country');
+        $this->verify($result !== FALSE, 'Failed to select default language for country');
         if ($result->RecordCount())
             return $result->fields['language'];
 
@@ -172,7 +172,7 @@ class CountryLocaleFactory extends LocaleFactory
         $result = $this->query('SELECT cl.id FROM country_languages AS cl, countries AS c WHERE c.code = ? AND cl.country_id = c.id AND cl.language = ? LIMIT 1',
                 array($country_code, $lang));
 
-        WF::verify($result !== FALSE, 'Failed to check if language supported');
+        $this->verify($result !== FALSE, 'Failed to check if language supported');
 
         if ($result->RecordCount())
             return TRUE;

@@ -27,8 +27,8 @@ class PageLogin extends PageBasic
         if ($bruteforce_protection)
         {
             $recaptcha_config = $this->get_config('security.recaptcha');
-            WF::verify(strlen($recaptcha_config['site_key']), 'Missing reCAPTCHA Site Key');
-            WF::verify(strlen($recaptcha_config['secret_key']), 'Missing reCAPTCHA Secret Key');
+            $this->:verify(strlen($recaptcha_config['site_key']), 'Missing reCAPTCHA Site Key');
+            $this->:verify(strlen($recaptcha_config['secret_key']), 'Missing reCAPTCHA Secret Key');
         }
     }
 
