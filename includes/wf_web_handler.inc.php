@@ -85,14 +85,14 @@ class WFWebHandler extends WF
 
         array_walk($fixed_page_filter, array($this, 'validate_input'));
 
-        if (strlen(WF::$global_state['input']['msg']))
-            $this->add_message_from_url(WF::$global_state['input']['msg']);
+        if (strlen($this->input['msg']))
+            $this->add_message_from_url($this->input['msg']);
 
-        if (strlen(WF::$global_state['input']['do']))
+        if (strlen($this->input['do']))
         {
             if (!$this->validate_csrf_token())
             {
-                WF::$global_state['input']['do'] = '';
+                $this->input['do'] = '';
                 $this->add_blacklist_entry('missing-csrf');
                 $this->add_message('error', 'CSRF token missing, possible attack.', '');
             }
@@ -244,7 +244,7 @@ class WFWebHandler extends WF
             $function_name = $target[1];
 
             for ($i = 0; $i < count($target_info['args']); $i++)
-                WF::$global_state['raw_post'][$target_info['args'][$i]] = $matches[$i + 1];
+                $this->raw_post[$target_info['args'][$i]] = $matches[$i + 1];
         }
         else
         {
@@ -340,7 +340,7 @@ class WFWebHandler extends WF
             return FALSE;
 
         $check = $_SESSION['csrf_token'];
-        $value = WF::$global_state['input']['token'];
+        $value = $this->input['token'];
         if (strlen($value) != 16 * 4 || strlen($check) != 16)
             return;
 

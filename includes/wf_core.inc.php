@@ -16,12 +16,11 @@ class WF
     private static $global_cache = null;
     private static $global_database = null;
     private static $global_databases = array();
-    protected static $global_state = array(
-                    'input' => array(),
-                    'raw_input' => array(),
-                    'raw_post' => array(),
-                );
     private static $framework = null;
+
+    protected $input = array();
+    protected $raw_input = array();
+    protected $raw_post = array();
 
     private $blacklist = null;
     private $messages = array();
@@ -122,10 +121,6 @@ class WF
 
         $error_type = WFHelpers::get_error_type_string($error_type);
 
-        $state = WF::get_state();
-        if (is_array($state))
-            WFHelpers::scrub_state($state);
-
         $trace = debug_backtrace();
         if (is_array($trace))
         {
@@ -158,7 +153,6 @@ class WF
         $debug_message = "File '$file'\nLine '$line'\nMessage '$message'\n";
         $debug_message.= "Last Database error: ".$db_error."\n";
         $debug_message.= "Backtrace:\n".print_r($trace, true);
-        $debug_message.= "State:\n".print_r($state, true);
 
         header("HTTP/1.0 500 Internal Server Error");
         var_dump(WF::get_config('debug'));
@@ -417,16 +411,6 @@ class WF
         return WF::$global_cache;
     }
 
-    static function get_state()
-    {
-        return WF::$global_state;
-    }
-
-    static function set_state($key, $value)
-    {
-        $global_state[$key] = $value;
-    }
-
     function validate_input($filter, $item)
     {
         if (!strlen($filter))
@@ -439,11 +423,11 @@ class WF
             // Expect multiple values
             //
             $info = array();
-            WF::$global_state['input'][$item] = array();
-            WF::$global_state['raw_input'][$item] = array();
+            $this->input[$item] = array();
+            $this->raw_input[$item] = array();
 
-            if (isset(WF::$global_state['raw_post'][$item]))
-                $info = WF::$global_state['raw_post'][$item];
+            if (isset($this->raw_post[$item]))
+                $info = $this->raw_post[$item];
             else if (isset($_POST[$item]))
                 $info = $_POST[$item];
             else if (isset($_PUT[$item]))
@@ -453,18 +437,18 @@ class WF
 
             foreach ($info as $k => $val)
             {
-                WF::$global_state['raw_input'][$item][$k] = $val;
+                $this->raw_input[$item][$k] = $val;
                 if (preg_match("/^\s*$filter\s*$/m", $val))
-                    WF::$global_state['input'][$item][$k] = trim($val);
+                    $this->input[$item][$k] = trim($val);
             }
         }
         else
         {
             $str = "";
-            WF::$global_state['input'][$item] = "";
+            $this->input[$item] = "";
 
-            if (isset(WF::$global_state['raw_post'][$item]))
-                $str = WF::$global_state['raw_post'][$item];
+            if (isset($this->raw_post[$item]))
+                $str = $this->raw_post[$item];
             else if (isset($_POST[$item]))
                 $str = $_POST[$item];
             else if (isset($_PUT[$item]))
@@ -472,10 +456,10 @@ class WF
             else if (isset($_GET[$item]))
                 $str = $_GET[$item];
 
-            WF::$global_state['raw_input'][$item] = $str;
+            $this->raw_input[$item] = $str;
 
             if (preg_match("/^\s*$filter\s*$/m", $str))
-                WF::$global_state['input'][$item] = trim($str);
+                $this->input[$item] = trim($str);
         }
     }
 
@@ -532,7 +516,7 @@ class WF
         $data = file_get_contents("php://input");
         $data = json_decode($data, true);
         if (is_array($data))
-            WF::$global_state['raw_post'] = $data;
+            $this->raw_post = $data;
 
         if (WF::get_config('database_enabled') == true)
             $this->init_databases();
@@ -715,18 +699,27 @@ class WF
     {
         return false;
     }
+
+    function get_input()
+    {
+        return $this->input;
+    }
+
+    function get_raw_input()
+    {
+        return $this->raw_input;
+    }
 }
 
 class FrameworkCore
 {
     protected $cache;
-    private $framework;
+    protected $framework;
 
     function __construct()
     {
         $this->framework = WF::get_framework();
         $this->cache = WF::get_cache();
-        $this->state = WF::get_state();
     }
 
     protected function get_config($path)
@@ -747,6 +740,16 @@ class FrameworkCore
     protected function insert_query($query, $params)
     {
         return WF::get_db()->InsertQuery($query, $params);
+    }
+
+    protected function get_input()
+    {
+        return $this->framework->get_input();
+    }
+
+    protected function get_raw_input()
+    {
+        return $this->framework->get_raw_input();
     }
 
     // Message related

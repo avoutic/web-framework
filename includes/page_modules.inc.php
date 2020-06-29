@@ -70,7 +70,7 @@ class Translator extends FrameworkCore implements iPageModule
     {
         // Get message
         $result = $this->query('SELECT value FROM translations WHERE `key` = ? AND lang = ?',
-                array($tag, WF::get_state('lang')));
+                array($tag, $_SESSION['lang']));
 
         WF::verify($result !== FALSE, 'Failed to get translation');
 
@@ -85,4 +85,4 @@ class Translator extends FrameworkCore implements iPageModule
         return str_replace('\n', "\n", $msg);
     }
 };
-?> 
+?>

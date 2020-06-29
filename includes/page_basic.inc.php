@@ -2,11 +2,16 @@
 abstract class PageCore extends FrameworkCore
 {
     protected $web_handler = null;
+    private $input = array();
+    private $raw_input = array();
 
     function __construct()
     {
         parent::__construct();
+
         $this->web_handler = WF::get_web_handler();
+        $this->input = $this->framework->get_input();
+        $this->raw_input = $this->framework->get_raw_input();
     }
 
     static function get_filter()
@@ -16,9 +21,9 @@ abstract class PageCore extends FrameworkCore
 
     function get_input_var($name)
     {
-        WF::verify(isset($this->state['input'][$name]), 'Missing input variable: '.$name);
+        WF::verify(isset($this->input[$name]), 'Missing input variable: '.$name);
 
-        return $this->state['input'][$name];
+        return $this->input[$name];
     }
 
     function get_input_vars()
@@ -26,16 +31,16 @@ abstract class PageCore extends FrameworkCore
         $fields = array();
 
         foreach (array_keys($this->get_filter()) as $key)
-            $fields[$key] = $this->state['input'][$key];
+            $fields[$key] = $this->input[$key];
 
         return $fields;
     }
 
     function get_raw_input_var($name)
     {
-        WF::verify(isset($this->state['raw_input'][$name]), 'Missing input variable: '.$name);
+        WF::verify(isset($this->raw_input[$name]), 'Missing input variable: '.$name);
 
-        return $this->state['raw_input'][$name];
+        return $this->raw_input[$name];
     }
 
     function exit_send_404($type = 'generic')
@@ -174,19 +179,19 @@ abstract class PageBasic extends PageCore
     function check_required(&$var, $name)
     {
 
-        if (!isset($this->state['input'][$name]) ||
-            !strlen($this->state['input'][$name]))
+        if (!isset($this->input[$name]) ||
+            !strlen($this->input[$name]))
         {
             die('Missing input variable \''.$name.'\'.');
         }
 
-        $var = $this->state['input'][$name];
+        $var = $this->input[$name];
         return TRUE;
     }
 
     function is_blocked($name)
     {
-        return $this->state['input'][$name] != $this->state['raw_input'][$name];
+        return $this->input[$name] != $this->raw_input[$name];
     }
 
     function check_sanity()
@@ -214,7 +219,11 @@ abstract class PageBasic extends PageCore
 
     function display_frame()
     {
-        unset($this->state['input']);
+        // Unset availability of input in display
+        // Forces explicit handling in do_logic()
+        //
+        unset($this->input);
+        unset($this->raw_input);
 
         ob_start();
 
@@ -230,9 +239,7 @@ abstract class PageBasic extends PageCore
         $content = ob_get_clean();
 
         foreach ($this->mods as $mod)
-        {
             $content = $mod->callback($content);
-        }
 
         print($content);
     }
@@ -263,14 +270,14 @@ abstract class PageService extends PageCore
     function check_required(&$var, $name)
     {
 
-        if (!isset($this->state['input'][$name]) ||
-            !strlen($this->state['input'][$name]))
+        if (!isset($this->input[$name]) ||
+            !strlen($this->input[$name]))
         {
             $this->output_json(false, 'Missing input variable \''.$name.'\'.');
             return FALSE;
         }
 
-        $var = $this->state['input'][$name];
+        $var = $this->input[$name];
         return TRUE;
     }
 
