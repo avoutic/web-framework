@@ -135,7 +135,7 @@ class WF
                     break;
             }
 
-            $trace = array_slice($trace, $i);
+            $trace = array_slice($trace, count($trace) - $i);
             WFHelpers::scrub_state($trace);
         }
 
@@ -149,9 +149,14 @@ class WF
 
         $low_info_message = "File '$file'\nLine '$line'\n";
 
+        $framework = WF::get_framework();
+
         $debug_message = "File '$file'\nLine '$line'\nMessage '$message'\n";
         $debug_message.= "Last Database error: ".$db_error."\n";
         $debug_message.= "Backtrace:\n".print_r($trace, true);
+        $debug_message.= "Auth:\n".print_r($framework->get_authenticated(), true);
+        $debug_message.= "Input:\n".print_r($framework->get_input(), true);
+        $debug_message.= "Raw Input:\n".print_r($framework->get_raw_input(), true);
 
         header("HTTP/1.0 500 Internal Server Error");
         var_dump(WF::get_config('debug'));
@@ -179,7 +184,7 @@ class WF
                 WF::get_config('sender_core.default_sender'),
                 'Assertion failed',
                 "Failure information: $error_type\n\nServer: ".
-                WF::get_confif('server_name')."\n<pre>".$debug_message.'</pre>'
+                WF::get_config('server_name')."\n<pre>".$debug_message.'</pre>'
             );
         }
 
