@@ -124,19 +124,17 @@ class WF
         $trace = debug_backtrace();
         if (is_array($trace))
         {
+            $stack = array_reverse($trace);
             $i = 0;
-            while(count($trace))
+            foreach($stack as $entry)
             {
-                if (in_array($trace[$i]['function'],
-                            array('assert_handler', 'verify', 'silent_verify')))
-                {
-                    unset($trace[$i]);
-                    $i++;
-                    continue;
-                }
-                break;
+                $i++;
+
+                if (in_array($entry['function'], array('assert_handler', 'verify', 'silent_verify')))
+                    break;
             }
 
+            $trace = array_slice($trace, $i);
             WFHelpers::scrub_state($trace);
         }
 
@@ -203,9 +201,15 @@ class WF
 
         WF::$in_verify = true;
         $bt = debug_backtrace();
-        $caller = array_shift($bt);
-        if ($caller['function'] == 'verify')
-            $caller = array_shift($bt);
+        $stack = array_reverse($bt);
+        $caller = false;
+        foreach($stack as $entry)
+        {
+            $caller = $entry;
+
+            if (in_array($entry['function'], array('assert_handler', 'verify', 'silent_verify')))
+                break;
+        }
 
         WF::assert_handler($caller['file'], $caller['line'], $message, 'verify', $silent);
         exit();
