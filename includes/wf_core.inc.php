@@ -17,8 +17,6 @@ class WF
     private static $global_database = null;
     private static $global_databases = array();
     protected static $global_state = array(
-                    'logged_in' => false,
-                    'permissions' => array(),
                     'input' => array(),
                     'raw_input' => array(),
                     'raw_post' => array(),
