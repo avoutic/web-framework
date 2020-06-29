@@ -44,21 +44,21 @@ abstract class PageContactBase extends PageBasic
     function do_logic()
     {
         $this->page_content['logged_in'] = $this->is_authenticated();
-        $this->page_content['name'] = $this->state['input']['name'];
-        $this->page_content['email'] = $this->state['input']['email'];
-        $this->page_content['type'] = $this->state['input']['type'];
-        $this->page_content['subject'] = $this->state['input']['subject'];
-        $this->page_content['message_content'] = $this->state['input']['message_content'];
+        $this->page_content['name'] = $this->get_input_var('name');
+        $this->page_content['email'] = $this->get_input_var('email');
+        $this->page_content['type'] = $this->get_input_var('type');
+        $this->page_content['subject'] = $this->get_input_var('subject');
+        $this->page_content['message_content'] = $this->get_input_var('message_content');
         $this->page_content['contact_types'] = static::get_contact_types();
 
         // Check if this is a true attempt
         //
-        if (!strlen($this->state['input']['do']))
+        if (!strlen($this->get_input_var('do')))
             return;
 
-        $name = $this->state['input']['name'];
-        $email = $this->state['input']['email'];
-        $subject = $this->state['input']['subject'];
+        $name = $this->get_input_var('name');
+        $email = $this->get_input_var('email');
+        $subject = $this->get_input_var('subject');
 
         if ($this->is_authenticated())
         {
@@ -93,7 +93,7 @@ abstract class PageContactBase extends PageBasic
             return;
         }
 
-        if (!strlen($this->state['input']['message_content'])) {
+        if (!strlen($this->get_input_var('message_content'))) {
             $this->add_message('error', 'Please enter a message.', 'Messages can contain any character.');
             return;
         }
@@ -101,8 +101,8 @@ abstract class PageContactBase extends PageBasic
         // Send mail to administrator
         //
         $result = SenderCore::raw($this->get_config('sender_core.default_sender'),
-                $this->get_config('site_name').": User '".$name."' contacted you about '".$this->state['input']['type']."' '".$subject."'",
-                $this->state['input']['message_content'],
+                $this->get_config('site_name').": User '".$name."' contacted you about '".$this->get_input_var('type')."' '".$subject."'",
+                $this->get_input_var('message_content'),
                 "From: ".$email."\r\n");
 
         // Redirect to main sceen
