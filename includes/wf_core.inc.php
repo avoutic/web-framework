@@ -13,7 +13,6 @@ class WF
 
     private static $in_verify = false;      // Only go into an assert_handler once
 
-    private static $global_cache = null;
     private static $global_database = null;
     private static $global_databases = array();
     private static $framework = null;
@@ -22,6 +21,7 @@ class WF
     protected $raw_input = array();
     protected $raw_post = array();
 
+    private $cache = null;
     protected $blacklist = null;
     protected $security = null;
     private $messages = array();
@@ -300,9 +300,9 @@ class WF
         return WF::$global_databases[$tag];
     }
 
-    static function get_cache()
+    function get_cache()
     {
-        return WF::$global_cache;
+        return $this->cache;
     }
 
     function get_security()
@@ -567,7 +567,7 @@ class WF
         $cache_tag = WF::get_config('cache_config');
         $cache_config = $this->security->get_auth_config('cache_config.'.$cache_tag);
 
-        WF::$global_cache = new Cache($cache_config);
+        $this->cache = new Cache($cache_config);
     }
 
     function is_authenticated()
@@ -620,8 +620,8 @@ class FrameworkCore
     function __construct()
     {
         $this->framework = WF::get_framework();
-        $this->cache = WF::get_cache();
         $this->security = $this->framework->get_security();
+        $this->cache = $this->framework->get_cache();
     }
 
     protected function get_config($path)

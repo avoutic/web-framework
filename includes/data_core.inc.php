@@ -74,7 +74,7 @@ abstract class DataCore extends FrameworkCore
             $this->fill_base_fields_from_db();
 
             if ($this->cache != null && $this->is_cacheable)
-                $this->cache->add(static::get_cache_id($id), $this);
+                $this->cache->add(static::get_cache_id($id), $this->get_base_fields());
         }
         else
             $this->fill_base_fields_from_obj($obj);
@@ -98,10 +98,10 @@ abstract class DataCore extends FrameworkCore
             $this->$name = $row[$name];
     }
 
-    private function fill_base_fields_from_obj($obj)
+    private function fill_base_fields_from_obj($fields)
     {
         foreach (static::$base_fields as $name)
-            $this->$name = $obj->$name;
+            $this->$name = $fields[$name];
     }
 
     protected function fill_complex_fields()
@@ -206,7 +206,7 @@ abstract class DataCore extends FrameworkCore
     function delete()
     {
         if ($this->cache != null && $this->is_cacheable)
-            $this->cache->delete(static::get_cache_id($this->id));
+            $this->cache->invalidate(static::get_cache_id($this->id));
 
         $result = $this->query(
                     'DELETE FROM '.static::$table_name.' WHERE id = ?',
