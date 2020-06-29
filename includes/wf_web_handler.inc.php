@@ -7,6 +7,7 @@ class WFWebHandler extends WF
     protected $authenticator = null;
     protected $auth_array = false;
     protected $route_array = array();
+    protected $request_uri = '/';
 
     function init()
     {
@@ -182,14 +183,10 @@ class WFWebHandler extends WF
     {
         // Check page requested
         //
-        $request_uri = '/';
-
         if (isset($_SERVER['REQUEST_URI']))
-            $request_uri = preg_replace('/\?.*/', '', $_SERVER['REQUEST_URI']);
+            $this->request_uri = preg_replace('/\?.*/', '', $_SERVER['REQUEST_URI']);
 
-        WF::set_state('request_uri', $request_uri);
-
-        $request_uri = $_SERVER['REQUEST_METHOD'].' '.$request_uri;
+        $this->request_uri = $_SERVER['REQUEST_METHOD'].' '.$this->request_uri;
 
         // Check if there is a route to follow
         //
@@ -199,7 +196,7 @@ class WFWebHandler extends WF
         foreach ($this->route_array as $target)
         {
             $route = $target['regex'];
-            if (preg_match("!^$route$!", $request_uri, $matches))
+            if (preg_match("!^$route$!", $this->request_uri, $matches))
             {
                 $target_info = $target;
                 break;
@@ -222,7 +219,7 @@ class WFWebHandler extends WF
 
             $include_page = $target_info['include_file'];
         }
-        else if ($request_uri == 'GET /')
+        else if ($this->request_uri == 'GET /')
             $include_page = WF::get_config('page.default_page');
 
         if (!strlen($include_page))
@@ -271,8 +268,7 @@ class WFWebHandler extends WF
         if (!$this->is_authenticated())
         {
             $redirect_type = $object_name::redirect_login_type();
-            $request_uri = preg_replace('/\?.*/', '', $_SERVER['REQUEST_URI']);
-            $this->authenticator->redirect_login($redirect_type, $request_uri);
+            $this->authenticator->redirect_login($redirect_type, $this->request_uri);
             exit();
         }
 
