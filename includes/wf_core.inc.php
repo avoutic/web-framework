@@ -36,7 +36,6 @@ class WF
         'debug_mail' => true,
         'preload' => false,
         'timezone' => 'UTC',
-        'disabled_pages' => array(),
         'registration' => array(
             'allow_registration' => true,
             'after_verify_page' => '/',

@@ -186,11 +186,6 @@ class WFWebHandler extends WF
         if (!strlen($include_page))
             WF::send_404();
 
-        // Check if page is allowed
-        //
-        if (in_array($include_page, WF::get_config('disabled_pages')))
-            $this->authenticator->show_disabled();
-
         $include_page_file = WF::$site_views.$include_page.".inc.php";
         if (!is_file($include_page_file))
             WF::send_404();
