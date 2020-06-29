@@ -127,7 +127,7 @@ class PageLogin extends PageBasic
             }
 
             $recaptcha = new Recaptcha();
-            $result = $recaptcha->verify($recaptcha_response);
+            $result = $recaptcha->verify_response($recaptcha_response);
 
             if ($result != true)
             {

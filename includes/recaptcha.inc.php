@@ -11,7 +11,7 @@ class Recaptcha extends FrameworkCore
         WF::verify(strlen($this->module_config['secret_key']), 'Missing reCAPTCHA Secret Key');
     }
 
-    function verify($recaptcha_response)
+    function verify_response($recaptcha_response)
     {
         if (!strlen($recaptcha_response))
             return false;
