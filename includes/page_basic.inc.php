@@ -160,16 +160,6 @@ abstract class PageBasic extends PageCore
         return $this->frame_file;
     }
 
-    function get_messages()
-    {
-        return WF::get_messages();
-    }
-
-    function add_message($type, $message, $extra_message = "")
-    {
-        WF::set_message($type, $message, $extra_message);
-    }
-
     function load_template($name, $args = array())
     {
         WF::verify(file_exists(WF::$site_templates.$name.'.inc.php'), 'Requested template not present');

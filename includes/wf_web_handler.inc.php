@@ -72,7 +72,7 @@ class WFWebHandler extends WF
         $msg = WF::decode_and_verify_array($url_str);
         WF::verify($msg !== false, 'Illegal message in url');
 
-        WF::set_message($msg['mtype'], $msg['message'], $msg['extra_message']);
+        $this->add_message($msg['mtype'], $msg['message'], $msg['extra_message']);
     }
 
     private function handle_fixed_input()
@@ -94,7 +94,7 @@ class WFWebHandler extends WF
             {
                 WF::$global_state['input']['do'] = '';
                 $this->add_blacklist_entry('missing-csrf');
-                WF::set_message('error', 'CSRF token missing, possible attack.', '');
+                $this->add_message('error', 'CSRF token missing, possible attack.', '');
             }
         }
 

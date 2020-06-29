@@ -21,13 +21,12 @@ class WF
                     'permissions' => array(),
                     'input' => array(),
                     'raw_input' => array(),
-                    'messages' => array(),
                     'raw_post' => array(),
                 );
     private static $framework = null;
 
     private $blacklist = null;
-
+    private $messages = array();
 
     // Default configuration
     //
@@ -482,17 +481,18 @@ class WF
         }
     }
 
-    static function get_messages()
+    function get_messages()
     {
-        return WF::$global_state['messages'];
+        return $this->messages;
     }
 
-    static function set_message($type, $message, $extra_message)
+    function add_message($type, $message, $extra_message)
     {
-        array_push(WF::$global_state['messages'], array(
+        array_push($this->messages, array(
             'mtype' => $type,
             'message' => $message,
-            'extra_message' => $extra_message));
+            'extra_message' => $extra_message,
+        ));
     }
 
     function init()
@@ -751,12 +751,26 @@ class FrameworkCore
         return WF::get_db()->InsertQuery($query, $params);
     }
 
+    // Message related
+    //
+    protected function get_messages()
+    {
+        return $this->framework->get_messages();
+    }
+
+    protected function add_message($mtype, $message, $extra_message = '')
+    {
+        $this->framework->add_message($mtype, $message, $extra_message);
+    }
+
     protected function add_message_to_url($mtype, $message, $extra_message = '')
     {
         $msg = array('mtype' => $mtype, 'message' => $message, 'extra_message' => $extra_message);
         return "msg=".WF::encode_and_auth_array($msg);
     }
 
+    // Security related
+    //
     protected function add_blacklist_entry($reason, $severity = 1)
     {
         $this->framework->add_blacklist_entry($reason, $severity);

@@ -166,7 +166,7 @@ class AuthRedirect extends Authenticator
         if (!$session->is_valid())
         {
             $this->logoff();
-            WF::set_message('info', 'Session timed out', '');
+            $this->add_message('info', 'Session timed out', '');
             return FALSE;
         }
 
