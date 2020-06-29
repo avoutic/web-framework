@@ -622,7 +622,7 @@ class FrameworkCore
 {
     protected $cache;
     protected $framework;
-    protected $security;
+    private $security;
     private $database;
 
     function __construct()
@@ -638,6 +638,8 @@ class FrameworkCore
         return WF::get_config($path);
     }
 
+    // Database related
+    //
     protected function get_db($tag = '')
     {
         return $this->framework->get_db($tag);
@@ -653,6 +655,8 @@ class FrameworkCore
         return $this->database->InsertQuery($query, $params);
     }
 
+    // Input related
+    //
     protected function get_input()
     {
         return $this->framework->get_input();
