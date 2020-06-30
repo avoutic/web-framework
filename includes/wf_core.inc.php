@@ -390,18 +390,7 @@ class WF
     {
         srand();
 
-        if (!is_file(WF::$site_includes."config.php"))
-        {
-            $this->exit_error('Missing requirement',
-                              'One of the required files is not found on the server.');
-        }
-
-        if (!is_file(WF::$site_includes."sender_handler.inc.php"))
-        {
-            $this->exit_error('Sender Handler missing',
-                              'One of the required files is not found on the server.');
-        }
-
+        $this->check_file_requirements();
         $this->merge_configs();
 
         // Enable debugging if requested
@@ -439,6 +428,20 @@ class WF
         WF::$framework = $this;
     }
 
+    private function check_file_requirements()
+    {
+        if (!is_file(WF::$site_includes."config.php"))
+        {
+            $this->exit_error('Missing requirement',
+                              'One of the required files is not found on the server.');
+        }
+
+        if (!is_file(WF::$site_includes."sender_handler.inc.php"))
+        {
+            $this->exit_error('Sender Handler missing',
+                              'One of the required files is not found on the server.');
+        }
+    }
     private function load_requirements()
     {
         // Check for special loads before anything else
