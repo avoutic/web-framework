@@ -403,19 +403,13 @@ class WF
         else
             register_shutdown_function('WF::shutdown_handler');
 
-        $this->check_config_requirements();
-
         // Set default timezone
         //
         date_default_timezone_set(WF::get_config('timezone'));
 
+        $this->check_config_requirements();
         $this->load_requirements();
         $this->security = new WFSecurity(WF::get_config('security'));
-
-        $data = file_get_contents("php://input");
-        $data = json_decode($data, true);
-        if (is_array($data))
-            $this->raw_post = $data;
 
         if (WF::get_config('database_enabled') == true)
             $this->init_databases();

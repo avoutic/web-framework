@@ -55,12 +55,21 @@ class WFWebHandler extends WF
             }
         }
 
+        $this->load_raw_input();
         $this->add_security_headers();
         $this->handle_fixed_input();
         $this->create_authenticator();
         $this->authenticator->cleanup();
         $this->auth_array = $this->authenticator->get_logged_in();
         $this->handle_page_routing();
+    }
+
+    private function load_raw_input()
+    {
+        $data = file_get_contents("php://input");
+        $data = json_decode($data, true);
+        if (is_array($data))
+            $this->raw_post = $data;
     }
 
     private function add_security_headers()
