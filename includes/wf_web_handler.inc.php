@@ -106,7 +106,7 @@ class WFWebHandler extends WF
 
         if (strlen($this->input['do']))
         {
-            if (!$this->validate_csrf_token($this->input['token']))
+            if (!$this->security->validate_csrf_token($this->input['token']))
             {
                 $this->input['do'] = '';
                 $this->add_blacklist_entry('missing-csrf');

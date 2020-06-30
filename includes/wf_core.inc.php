@@ -684,7 +684,7 @@ class FrameworkCore
     protected function get_message_for_url($mtype, $message, $extra_message = '')
     {
         $msg = array('mtype' => $mtype, 'message' => $message, 'extra_message' => $extra_message);
-        return "msg=".$this->security->encode_and_auth_array($msg);
+        return "msg=".$this->security->urlencode_and_auth_array($msg);
     }
 
     // Assert related

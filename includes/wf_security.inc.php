@@ -82,7 +82,7 @@ class WFSecurity
     {
         $idx = strpos($str, ":");
         if ($idx === false)
-            return "";
+            return false;
 
         $part_iv = substr($str, 0, $idx);
         $iv = base64_decode($part_iv);
@@ -103,7 +103,7 @@ class WFSecurity
         {
             $framework = WF::get_framework();
             $framework->add_blacklist_entry('hmac-mismatch', 4);
-            return "";
+            return false;
         }
 
         $key = hash('sha256', $this->module_config['crypt_key'], true);
