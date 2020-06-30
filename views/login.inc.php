@@ -81,7 +81,8 @@ class PageLogin extends PageBasic
         // Check if already logged in and redirect immediately
         if ($this->is_authenticated())
         {
-            header("Location: ".$return_page."?".$return_query);
+            header("Location: ".$return_page."?".$return_query.'&'.
+                            $this->get_message_for_url('info', 'Already logged in'));
             exit();
         }
 
