@@ -171,10 +171,10 @@ moment.</p>
 <h2>User Registration<a class="headerlink" href="#user-registration" title="Permalink to this headline">¶</a></h2>
 <p>The base implementation of user registration is implemented in <em>views/register_account.inc.php</em> in the class <cite>PageRegister</cite>. This view supports the core user registration for the required fields:</p>
 <ul class="simple">
-<li><p><cite>email</cite>, which by default will also function as the username</p></li>
+<li><p><cite>email</cite>, which by default is the main identifier for an account.</p></li>
 <li><p><cite>password</cite></p></li>
 <li><p><cite>accept_terms</cite></p></li>
-<li><p><cite>username</cite>, but only if the configuration option in <cite>$config[‘registration’][‘email_is_username’]</cite> is set to false.</p></li>
+<li><p><cite>username</cite>, is a copy of <cite>email</cite> by default. Can be unique and used to login, if the configuration option in <cite>$config[‘authenticator’][‘unique_identifier’]</cite> is set to <cite>username</cite>.</p></li>
 </ul>
 <p>The core flow will verify that all relevant values from the registration form are present, then check validity of those fields and register error messages where needed, and if all is correct create a new user account.</p>
 <p>If you want to accept and handle other fields, in addition to the fields above, or want to add a handler for things like subscribing to a newsletter, you can extend the core <cite>PageRegister</cite> class and implement one or all of the following functions:</p>

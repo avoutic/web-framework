@@ -18,10 +18,10 @@ User Registration
 
 The base implementation of user registration is implemented in *views/register_account.inc.php* in the class `PageRegister`. This view supports the core user registration for the required fields:
 
-* `email`, which by default will also function as the username
+* `email`, which by default is the main identifier for an account.
 * `password`
 * `accept_terms`
-* `username`, but only if the configuration option in `$config['registration']['email_is_username']` is set to false.
+* `username`, is a copy of `email` by default. Can be unique and used to login, if the configuration option in `$config['authenticator']['unique_identifier']` is set to `username`.
 
 The core flow will verify that all relevant values from the registration form are present, then check validity of those fields and register error messages where needed, and if all is correct create a new user account.
 

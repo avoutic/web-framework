@@ -87,7 +87,9 @@
 <li class="toctree-l1"><a class="reference internal" href="accounts.html">Accounts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tasks.html">Tasks</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Routing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#adding-a-redirect">Adding a redirect</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#adding-a-route">Adding a route</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#handling-404s">Handling 404s</a></li>
 </ul>
 </li>
 </ul>
@@ -156,10 +158,63 @@
   <div class="section" id="routing">
 <h1>Routing<a class="headerlink" href="#routing" title="Permalink to this headline">¶</a></h1>
 <p>If nothing is configured, web-framework will only allow traffic to the default page (<em>main</em> by default). To make sure other pages get handled we have to populate the routing array.</p>
+<p>Routes are configured in <em>includes/site_logic.inc.php</em>. This file is the central switchroom of your application. Without it, web-framework is not called.</p>
+<p>The function <cite>register_routes()</cite> contains all route statements for your application.</p>
+<div class="section" id="adding-a-redirect">
+<h2>Adding a redirect<a class="headerlink" href="#adding-a-redirect" title="Permalink to this headline">¶</a></h2>
+<p>A redirect is an instruction to return a 301 (or other redirect code) to the client and move the communication somewhere else.</p>
+<p>In it’s most basic form, a redirect is nothing more than a statement to redirect a method and URL to another URL, like this:</p>
+<div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="k">function</span> <span class="nf">register_routes</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="nx">register_redirect</span><span class="p">(</span><span class="s1">&#39;GET /old_page&#39;</span><span class="p">,</span> <span class="s1">&#39;/new-page&#39;</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>For a more dynamic redirect, we can also include regex-mapping to our redirect. In the third parameter to <cite>register_redirect()</cite> we tell it what kind of return code should be used. In the fourth parameter we provide a mapping from a name to the index of the regex matches. In this case we map the first match by the regex to the name <cite>slug</cite>.</p>
+<div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="k">function</span> <span class="nf">register_routes</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="nx">register_redirect</span><span class="p">(</span><span class="s1">&#39;GET /old_category/(\w+)&#39;</span><span class="p">,</span> <span class="s1">&#39;/new-category/{slug}&#39;</span><span class="p">,</span>
+                      <span class="mi">301</span><span class="p">,</span> <span class="k">array</span><span class="p">(</span><span class="s1">&#39;slug&#39;</span> <span class="o">=&gt;</span> <span class="mi">1</span><span class="p">));</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
 <div class="section" id="adding-a-route">
 <h2>Adding a route<a class="headerlink" href="#adding-a-route" title="Permalink to this headline">¶</a></h2>
-<p>Routes are configured in <em>includes/site_logic.inc.php</em>.</p>
-<p>Let’s add a route:</p>
+<p>A route is a mapping that will result in a specific view Page being called and executed.</p>
+<p>Let’s start with a simple mapping to tell web-framework to send all requests for <em>/dashboard</em> to your View in <em>views/dashboard.inc.php</em> with class name <cite>PageDashboard</cite> and to call <cite>html_main()</cite> on that object. That would look something like:</p>
+<div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="k">function</span> <span class="nf">register_routes</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="nx">register_route</span><span class="p">(</span><span class="s1">&#39;GET /dashboard&#39;</span><span class="p">,</span> <span class="s1">&#39;dashboard&#39;</span><span class="p">,</span> <span class="s1">&#39;PageDashboard.html_main&#39;</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>In some cases the URL already contains relevant information for your View to use as input. In that case we can map regex-matches to input variables (that are filtered with your View’s static <cite>get_filter()</cite> function.</p>
+<div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="k">function</span> <span class="nf">register_routes</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="nx">register_route</span><span class="p">(</span><span class="s1">&#39;GET /product/(\w+)&#39;</span><span class="p">,</span> <span class="s1">&#39;product&#39;</span><span class="p">,</span> <span class="s1">&#39;PageProduct.html_main&#39;</span><span class="p">,</span> <span class="k">array</span><span class="p">(</span><span class="s1">&#39;slug&#39;</span><span class="p">));</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>This will map part of the URL to the <cite>slug</cite> input variable for your PageProduct View.</p>
+</div>
+<div class="section" id="handling-404s">
+<h2>Handling 404s<a class="headerlink" href="#handling-404s" title="Permalink to this headline">¶</a></h2>
+<p>If you don’t specify anything, web-framework will serve very boring text messages in case a page is not found.</p>
+<p>You can either provide a single 404 page that is used for all 404 cases, or you can provide multiple different pages, by setting the right configuration.</p>
+<p>To provide multiple 404 page:</p>
+<div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="nv">$site_config</span> <span class="o">=</span> <span class="k">array</span><span class="p">(</span>
+    <span class="s1">&#39;error_handlers&#39;</span> <span class="o">=&gt;</span> <span class="k">array</span><span class="p">(</span>
+        <span class="s1">&#39;404&#39;</span> <span class="o">=&gt;</span> <span class="k">array</span><span class="p">(</span>
+            <span class="s1">&#39;generic&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;page_not_found&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;product&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;product_not_found&#39;</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">),</span>
+<span class="p">);</span>
+</pre></div>
+</div>
+<p>In case any code calls <cite>$this-&gt;exit_send_404();</cite>, the generic mapping is used, and <em>views/page_not_found.inc.php</em> is opened with the <cite>PagePageNotFound</cite> class called.</p>
+<p>For specific 404 cases, code can call <cite>$this-&gt;exit_send_404(‘product’);</cite> and then <em>views/product_not_found.inc.php</em> is opened with the <cite>PageProductNotFound</cite> class called.</p>
 </div>
 </div>
 

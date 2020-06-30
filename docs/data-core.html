@@ -189,20 +189,20 @@
 <p>Our Person object now has basic capabilities. So if we instantiate a Person (using our global database information), we can take actions, like these:</p>
 <div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;?</span><span class="nx">php</span>
 <span class="c1">// Retrieve person with id 5</span>
-<span class="nv">$person</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Person</span><span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">global_info</span><span class="p">,</span> <span class="mi">5</span><span class="p">);</span>
+<span class="nv">$person</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Person</span><span class="p">(</span><span class="mi">5</span><span class="p">);</span>
 
 <span class="c1">// Retrieve base fields as object parameters</span>
 <span class="k">echo</span> <span class="s1">&#39;Name: &#39;</span><span class="o">.</span><span class="nv">$person</span><span class="o">-&gt;</span><span class="na">name</span><span class="o">.</span><span class="nx">PHP_EOL</span><span class="p">;</span>
 
 <span class="c1">// Update this Person&#39;s country</span>
 <span class="nv">$result</span> <span class="o">=</span> <span class="nv">$person</span><span class="o">-&gt;</span><span class="na">update</span><span class="p">(</span><span class="k">array</span><span class="p">(</span><span class="s1">&#39;country&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;Belgium&#39;</span><span class="p">));</span>
-<span class="nx">verify</span><span class="p">(</span><span class="nv">$result</span> <span class="o">!==</span> <span class="k">false</span><span class="p">,</span> <span class="s1">&#39;Failed to update person&#39;</span><span class="p">);</span>
+<span class="nx">WF</span><span class="o">::</span><span class="na">verify</span><span class="p">(</span><span class="nv">$result</span> <span class="o">!==</span> <span class="k">false</span><span class="p">,</span> <span class="s1">&#39;Failed to update person&#39;</span><span class="p">);</span>
 <span class="cp">?&gt;</span><span class="x"></span>
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>What is <cite>verify()</cite>? <cite>verify()</cite> is like <cite>assert()</cite>. It is used to guard code paths that should never occur, unless something is really wrong. But unlike <cite>assert()</cite> our <cite>verify()</cite> cannot be silently ignored due to PHP settings. For a secure-by-default platform, we want to make sure those guards are always there.</p>
+<p>What is <cite>WF::verify()</cite>? <cite>WF::verify()</cite> is like <cite>assert()</cite>. It is used to guard code paths that should never occur, unless something is really wrong. But unlike <cite>assert()</cite> our <cite>WF::verify()</cite> cannot be silently ignored due to PHP settings. For a secure-by-default platform, we want to make sure those guards are always there. In addition it can show a debug trace, debug info and e-mail you in case a verify gate fails.</p>
 </div>
 <div class="section" id="complex-objects">
 <h3>Complex objects<a class="headerlink" href="#complex-objects" title="Permalink to this headline">¶</a></h3>
@@ -218,7 +218,7 @@
 </pre></div>
 </div>
 <p>Now we include this file at the top of <em>includes/persons.inc.php</em>:</p>
-<div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="k">require_once</span><span class="p">(</span><span class="nv">$site_includes</span><span class="o">.</span><span class="s1">&#39;vehicles.inc.php&#39;</span><span class="p">);</span>
+<div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="k">require_once</span><span class="p">(</span><span class="nx">WF</span><span class="o">::</span><span class="nv">$site_includes</span><span class="o">.</span><span class="s1">&#39;vehicles.inc.php&#39;</span><span class="p">);</span>
 
 <span class="k">class</span> <span class="nc">Person</span> <span class="k">extends</span> <span class="nx">DataCore</span>
 <span class="o">&lt;</span><span class="nx">snip</span><span class="o">&gt;</span>
@@ -227,8 +227,8 @@
 <p>And we’ll add a method called <cite>fill_complex_fields()</cite> in our Person class:</p>
 <div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="k">function</span> <span class="nf">fill_complex_fields</span><span class="p">()</span>
 <span class="p">{</span>
-    <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">vehicles</span> <span class="o">=</span> <span class="nx">Vehicles</span><span class="o">::</span><span class="na">get_objects</span><span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">global_info</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
-                                            <span class="k">array</span><span class="p">(</span><span class="s1">&#39;owner_id&#39;</span> <span class="o">=&gt;</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">id</span><span class="p">));</span>
+    <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">vehicles</span> <span class="o">=</span> <span class="nx">Vehicles</span><span class="o">::</span><span class="na">get_objects</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+                                   <span class="k">array</span><span class="p">(</span><span class="s1">&#39;owner_id&#39;</span> <span class="o">=&gt;</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">id</span><span class="p">));</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -257,12 +257,11 @@
 
 <dl class="staticmethod">
 <dt id="DataCore::exists">
-<em class="property">static </em><code class="sig-name descname">exists</code><span class="sig-paren">(</span><em class="sig-param">$global_info</em>, <em class="sig-param">$id</em><span class="sig-paren">)</span><a class="headerlink" href="#DataCore::exists" title="Permalink to this definition">¶</a></dt>
+<em class="property">static </em><code class="sig-name descname">exists</code><span class="sig-paren">(</span><em class="sig-param">$id</em><span class="sig-paren">)</span><a class="headerlink" href="#DataCore::exists" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check if an object with that id exists.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>$global_info</strong> (<em>array</em>) – The global_info to use</p></li>
 <li><p><strong>$id</strong> (<em>int</em>) – ID of the object to check</p></li>
 </ul>
 </dd>
