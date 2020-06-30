@@ -136,61 +136,6 @@ class WFWebHandler extends WF
             WF::verify(false, 'No valid authenticator found.');
     }
 
-    function is_authenticated()
-    {
-        return $this->auth_array !== false;
-    }
-
-    function authenticate($user)
-    {
-        $this->authenticator->set_logged_in($user);
-    }
-
-    function deauthenticate()
-    {
-        $this->authenticator->logoff();
-    }
-
-    function invalidate_sessions($user_id)
-    {
-        $this->authenticator->auth_invalidate_sessions($user_id);
-    }
-
-    function get_authenticated($item = '')
-    {
-        if (!strlen($item))
-            return $this->auth_array;
-
-        WF::verify(isset($this->auth_array[$item]), 'Authenticated item not present');
-
-        return $this->auth_array[$item];
-    }
-
-    function user_has_permissions($permissions)
-    {
-        if (count($permissions) == 0)
-            return true;
-
-        if (!$this->is_authenticated())
-            return false;
-
-        foreach ($permissions as $permission)
-        {
-            if ($permission == 'logged_in')
-                continue;
-
-            if (!$this->auth_array['user']->has_right($permission))
-                return false;
-        }
-
-        return true;
-    }
-
-    function get_csrf_token()
-    {
-        return $this->security->get_csrf_token();
-    }
-
     private function handle_page_routing()
     {
         // Check page requested
@@ -367,6 +312,61 @@ class WFWebHandler extends WF
         header("HTTP/1.0 404 Page not found");
         $this->call_obj_func($object_name, $function_name);
         exit();
+    }
+
+    function is_authenticated()
+    {
+        return $this->auth_array !== false;
+    }
+
+    function authenticate($user)
+    {
+        $this->authenticator->set_logged_in($user);
+    }
+
+    function deauthenticate()
+    {
+        $this->authenticator->logoff();
+    }
+
+    function invalidate_sessions($user_id)
+    {
+        $this->authenticator->auth_invalidate_sessions($user_id);
+    }
+
+    function get_authenticated($item = '')
+    {
+        if (!strlen($item))
+            return $this->auth_array;
+
+        WF::verify(isset($this->auth_array[$item]), 'Authenticated item not present');
+
+        return $this->auth_array[$item];
+    }
+
+    function user_has_permissions($permissions)
+    {
+        if (count($permissions) == 0)
+            return true;
+
+        if (!$this->is_authenticated())
+            return false;
+
+        foreach ($permissions as $permission)
+        {
+            if ($permission == 'logged_in')
+                continue;
+
+            if (!$this->auth_array['user']->has_right($permission))
+                return false;
+        }
+
+        return true;
+    }
+
+    function get_csrf_token()
+    {
+        return $this->security->get_csrf_token();
     }
 
     function add_blacklist_entry($reason, $severity = 1)
