@@ -13,8 +13,11 @@ class WFWebHandler extends WF
     {
         parent::init();
 
-        require_once(WF::$includes.'blacklist.inc.php');
-        $this->blacklist = new Blacklist();
+        if (WF::get_config('security.blacklist.enabled') == true)
+        {
+            require_once(WF::$includes.'blacklist.inc.php');
+            $this->blacklist = new Blacklist();
+        }
     }
 
     protected function exit_error($short_message, $message)
@@ -37,16 +40,19 @@ class WFWebHandler extends WF
                                   WF::get_config('http_mode') === 'https', true);
         session_start();
 
-        // Check blacklist
-        //
-        $user_id = 0;
-        if ($this->is_authenticated())
-            $user_id = $this->get_authenticated('user_id');
-
-        if ($this->blacklist->is_blacklisted($_SERVER['REMOTE_ADDR'], $user_id))
+        if (WF::get_config('security.blacklist.enabled') == true)
         {
-            $this->exit_error('Blacklisted',
-                    'Too much suspicious activity. Do you think this is a mistake?');
+            // Check blacklist
+            //
+            $user_id = 0;
+            if ($this->is_authenticated())
+                $user_id = $this->get_authenticated('user_id');
+
+            if ($this->blacklist->is_blacklisted($_SERVER['REMOTE_ADDR'], $user_id))
+            {
+                $this->exit_error('Blacklisted',
+                        'Too much suspicious activity. Do you think this is a mistake?');
+            }
         }
 
         $this->add_security_headers();
@@ -397,6 +403,9 @@ class WFWebHandler extends WF
 
     function add_blacklist_entry($reason, $severity = 1)
     {
+        if (WF::get_config('security.blacklist.enabled') != true)
+            return;
+
         $user_id = 0;
         if ($this->is_authenticated())
             $user_id = $this->get_authenticated('user_id');
