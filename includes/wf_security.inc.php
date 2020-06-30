@@ -8,6 +8,43 @@ class WFSecurity
         $this->module_config = $module_config;
     }
 
+    function get_csrf_token()
+    {
+        if (!isset($_SESSION['csrf_token']) || strlen($_SESSION['csrf_token']) != 16)
+            $_SESSION['csrf_token'] = openssl_random_pseudo_bytes(16);
+
+        $token = $_SESSION['csrf_token'];
+        $xor = openssl_random_pseudo_bytes(16);
+        for ($i = 0; $i < 16; $i++)
+            $token[$i] = chr(ord($xor[$i]) ^ ord($token[$i]));
+
+        return bin2hex($xor).bin2hex($token);
+    }
+
+    function validate_csrf_token($token)
+    {
+        if(!isset($_SESSION['csrf_token']))
+            return FALSE;
+
+        $check = $_SESSION['csrf_token'];
+        $value = $token;
+        if (strlen($value) != 16 * 4 || strlen($check) != 16)
+            return;
+
+        $xor = pack("H*" , substr($value, 0, 16 * 2));
+        $token = pack("H*", substr($value, 16 * 2, 16 * 2));
+
+        // Slow compare (time-constant)
+        $diff = 0;
+        for ($i = 0; $i < 16; $i++)
+        {
+            $token[$i] = chr(ord($xor[$i]) ^ ord($token[$i]));
+            $diff |= ord($token[$i]) ^ ord($check[$i]);
+        }
+
+        return ($diff === 0);
+    }
+
     function urlencode_and_auth_array($array)
     {
         return urlencode($this->encode_and_auth_array($array));
