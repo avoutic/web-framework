@@ -151,15 +151,17 @@ class WF
 
         $framework = WF::get_framework();
 
+        $auth_array = $framework->get_authenticated();
+        WFHelpers::scrub_state($auth_array);
+
         $debug_message = "File '$file'\nLine '$line'\nMessage '$message'\n";
         $debug_message.= "Last Database error: ".$db_error."\n";
         $debug_message.= "Backtrace:\n".print_r($trace, true);
-        $debug_message.= "Auth:\n".print_r($framework->get_authenticated(), true);
+        $debug_message.= "Auth:\n".print_r($auth_array, true);
         $debug_message.= "Input:\n".print_r($framework->get_input(), true);
         $debug_message.= "Raw Input:\n".print_r($framework->get_raw_input(), true);
 
         header("HTTP/1.0 500 Internal Server Error");
-        var_dump(WF::get_config('debug'));
         if (WF::get_config('debug') == true)
         {
             echo "Failure information: $error_type<br/>";
