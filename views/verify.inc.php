@@ -29,7 +29,10 @@ class PageVerify extends PageBasic
 
         $msg = $this->decode_and_verify_array($code);
         if (!$msg)
-            return;
+        {
+            header("Location: ${login_page}?".$this->get_message_for_url('error', 'Verification mail expired', 'Please <a href="/login">request a new one</a> after logging in.'));
+            exit();
+        }
 
         $this->blacklist_verify($msg['action'] == 'verify', 'wrong-action', 2);
 
