@@ -466,7 +466,9 @@ class WF
         // Merge configurations
         //
         $site_config = require(WF::$site_includes.'config.php');
-        WF::verify(is_array($site_config), 'Site config invalid');
+        if (!is_array($site_config))
+            $this->exit_error('Site config invalid', 'No config array found');
+
         $merge_config = array_replace_recursive(WF::$global_config, $site_config);
 
         if (file_exists(WF::$site_includes."config_local.php"))
