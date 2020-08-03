@@ -1,0 +1,22 @@
+Actions to take to migrate from v1/v2 to v3 of web-framework
+
+* Remove RewriteCond page and don't add page parameter to index.php
+* Remove SITE_NAME and MAIL_ADDRESS from site_defines.inc.php
+* There are no return values for update_field(), update(), increase_field(), decrease_field()
+* $global_info is not needed in constructors and static DataCore functions anymore
+* $this->database->Query() -> $this->query()
+* Migrate core_object functions to static DataCore equivalents
+* send_404() -> $this->exit_send_404()
+* verify() -> $this->verify() or WF::verify()
+* No more $global_config, use $this->get_config() or WF::get_config()
+* WF:: before $includes, $site_includes and $views
+* add_message_to_url() -> $this->get_message_for_url()
+* $this->check_required() -> $this->get_input_var('xyz', true)
+* $this->state['messages'] => $this->get_messages()
+* $this->state['user_id'] => $this->get_authenticated('user_id')
+* $this->state['username'] => $this->get_authenticated('username')
+* $this->state['user'] => $this->get_authenticated()['user']
+* $this->state['input'] => $this->get_input_var()
+* get_crsf_token() to $this->get_csrf_token()
+* Routes from register_routes() to individual $framework->register_route()
+
