@@ -1,5 +1,5 @@
 <?php
-require_once($includes.'base_logic.inc.php');
+require_once(WF::$includes.'base_logic.inc.php');
 
 class PageSendVerify extends PageBasic
 {

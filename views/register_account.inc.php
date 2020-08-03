@@ -1,5 +1,5 @@
 <?php
-require_once($includes.'recaptcha.inc.php');
+require_once(WF::$includes.'recaptcha.inc.php');
 
 class PageRegister extends Pagebasic
 {
