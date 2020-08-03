@@ -326,7 +326,7 @@ SQL;
                      'params' => $params,
                      'timestamp' => time());
 
-        return encode_and_auth_array($msg);
+        return $this->encode_and_auth_array($msg);
     }
 
     function send_verify_mail($after_verify_data = array())
