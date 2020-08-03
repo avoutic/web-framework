@@ -60,7 +60,7 @@ CREATE TABLE `user_config_values` (
   CONSTRAINT `user_config_values_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE `blacklist_hits` (
+CREATE TABLE `blacklist_entries` (
   `id` INT(11) NOT NULL AUTO_INCREMENT,
   `ip` VARCHAR(40) NOT NULL,
   `user_id` INT(11) NOT NULL DEFAULT '0',
