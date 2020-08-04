@@ -45,9 +45,11 @@ class WFSecurity
         return ($diff === 0);
     }
 
+    // Deprecated (Remove for v4)
+    //
     function urlencode_and_auth_array($array)
     {
-        return urlencode($this->encode_and_auth_array($array));
+        return $this->encode_and_auth_array($array);
     }
 
     function encode_and_auth_array($array)
@@ -62,34 +64,34 @@ class WFSecurity
         $key = hash('sha256', $this->module_config['crypt_key'], true);
         $str = openssl_encrypt($str, $cipher, $key, 0, $iv);
 
-        $str = base64_encode($str);
-        $iv = base64_encode($iv);
+        $str = strtr(base64_encode($str), '+/=', '._~');
+        $iv = strtr(base64_encode($iv), '+/=', '._~');
 
         $str_hmac = hash_hmac($this->module_config['hash'], $iv.$str,
                               $this->module_config['hmac_key']);
 
-        return $iv.":".$str.":".$str_hmac;
+        return $iv."-".$str."-".$str_hmac;
     }
 
+    // Deprecated (Remove for v4)
+    //
     function urldecode_and_verify_array($str)
     {
-        $urldecoded = urldecode($str);
-
-        return $this->decode_and_verify_array($urldecoded);
+        return $this->decode_and_verify_array($str);
     }
 
     function decode_and_verify_array($str)
     {
-        $idx = strpos($str, ":");
+        $idx = strpos($str, "-");
         if ($idx === false)
             return false;
 
         $part_iv = substr($str, 0, $idx);
-        $iv = base64_decode($part_iv);
+        $iv = base64_decode(strtr($part_iv, '._~', '+/='));
 
         $str = substr($str, $idx + 1);
 
-        $idx = strpos($str, ":");
+        $idx = strpos($str, "-");
         if ($idx === FALSE)
             return false;
 
@@ -108,7 +110,8 @@ class WFSecurity
 
         $key = hash('sha256', $this->module_config['crypt_key'], true);
         $cipher = 'AES-256-CBC';
-        $json_encoded = openssl_decrypt(base64_decode($part_msg), $cipher, $key, 0, $iv);
+        $msg = base64_decode(strtr($part_msg, '._~', '+/='));
+        $json_encoded = openssl_decrypt($msg, $cipher, $key, 0, $iv);
 
         if (!strlen($json_encoded))
             return false;

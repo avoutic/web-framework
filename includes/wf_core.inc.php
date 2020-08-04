@@ -688,7 +688,7 @@ class FrameworkCore
     protected function get_message_for_url($mtype, $message, $extra_message = '')
     {
         $msg = array('mtype' => $mtype, 'message' => $message, 'extra_message' => $extra_message);
-        return "msg=".$this->security->urlencode_and_auth_array($msg);
+        return "msg=".$this->security->encode_and_auth_array($msg);
     }
 
     // Assert related
@@ -720,9 +720,11 @@ class FrameworkCore
         $this->framework->add_blacklist_entry($reason, $severity);
     }
 
+    // Deprecated (Remove for v4)
+    //
     protected function urlencode_and_auth_array($array)
     {
-        return $this->security->urlencode_and_auth_array($array);
+        return $this->security->encode_and_auth_array($array);
     }
 
     protected function encode_and_auth_array($array)
@@ -730,9 +732,11 @@ class FrameworkCore
         return $this->security->encode_and_auth_array($array);
     }
 
+    // Deprecated (Remove for v4)
+    //
     protected function urldecode_and_verify_array($str)
     {
-        return $this->security->urldecode_and_verify_array($str);
+        return $this->security->decode_and_verify_array($str);
     }
 
     protected function decode_and_verify_array($str)
