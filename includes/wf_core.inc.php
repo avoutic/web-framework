@@ -736,7 +736,7 @@ class FrameworkCore
     //
     protected function urldecode_and_verify_array($str)
     {
-        return $this->security->decode_and_verify_array($str);
+        return $this->security->urldecode_and_verify_array($str);
     }
 
     protected function decode_and_verify_array($str)

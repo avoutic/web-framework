@@ -77,7 +77,7 @@ class WFSecurity
     //
     function urldecode_and_verify_array($str)
     {
-        return $this->decode_and_verify_array($str);
+        return $this->decode_and_verify_array(urldecode($str));
     }
 
     function decode_and_verify_array($str)
