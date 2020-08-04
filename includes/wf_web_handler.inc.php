@@ -152,7 +152,7 @@ class WFWebHandler extends WF
         if (isset($_SERVER['REQUEST_URI']))
             $this->request_uri = preg_replace('/\?.*/', '', $_SERVER['REQUEST_URI']);
 
-        $this->request_uri = $_SERVER['REQUEST_METHOD'].' '.$this->request_uri;
+        $full_request_uri = $_SERVER['REQUEST_METHOD'].' '.$this->request_uri;
 
         // Check if there is a route to follow
         //
@@ -162,7 +162,7 @@ class WFWebHandler extends WF
         foreach ($this->route_array as $target)
         {
             $route = $target['regex'];
-            if (preg_match("!^$route$!", $this->request_uri, $matches))
+            if (preg_match("!^$route$!", $full_request_uri, $matches))
             {
                 $target_info = $target;
                 break;
@@ -185,7 +185,7 @@ class WFWebHandler extends WF
 
             $include_page = $target_info['include_file'];
         }
-        else if ($this->request_uri == 'GET /')
+        else if ($full_request_uri == 'GET /')
             $include_page = WF::get_config('page.default_page');
 
         if (!strlen($include_page))
