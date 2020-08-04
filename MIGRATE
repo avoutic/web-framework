@@ -1,3 +1,8 @@
+Deprecated items that should be removed prior to v4 of web-framework
+
+* urldecode_and_verify_array() -> decode_and_verify_array()
+* urlencode_and_auth_array() -> encode_and_auth_array()
+
 Actions to take to migrate from v1/v2 to v3 of web-framework
 
 * Remove RewriteCond page and don't add page parameter to index.php
