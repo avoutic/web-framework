@@ -102,9 +102,9 @@ class UserConfigValues
     private $user_id;
     private $default_module;
 
-    function __construct($database, $user_id, $default_module = "")
+    function __construct($user_id, $default_module = "")
     {
-        $this->database = $database;
+        $this->database = WF::get_main_db();
         $this->user_id = $user_id;
         $this->default_module = $default_module;
     }

@@ -391,7 +391,7 @@ SQL;
     protected function get_config_store()
     {
         if ($this->user_config == null)
-            $this->user_config = new userConfigValues($this->database, $this->id);
+            $this->user_config = new UserConfigValues($this->id);
 
         return $this->user_config;
     }
