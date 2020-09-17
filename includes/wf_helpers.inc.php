@@ -42,6 +42,9 @@ class WFHelpers
 
     static function scrub_state(&$item)
     {
+        if (!is_array($item))
+            return;
+
         foreach ($item as $key => $value)
         {
             if (is_object($value))
