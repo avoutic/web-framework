@@ -65,7 +65,6 @@ CREATE TABLE `blacklist_entries` (
   `ip` VARCHAR(40) NOT NULL,
   `user_id` INT(11) NOT NULL DEFAULT '0',
   `severity` INT(11) NOT NULL,
-  `location` VARCHAR(50) NOT NULL,
   `reason` VARCHAR(100) NOT NULL,
   `timestamp` INT(11) NOT NULL,
   PRIMARY KEY  (`id`)
