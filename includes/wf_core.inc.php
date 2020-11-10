@@ -110,7 +110,7 @@ class WF
             ),
         ),
         'sender_core' => array(
-            'handler_class' => 'SenderCore',
+            'handler_class' => '',
             'default_sender' => '',
         ),
     );
@@ -454,6 +454,12 @@ class WF
         //
         require_once(WF::$includes."defines.inc.php");
         require_once(WF::$includes."sender_core.inc.php");
+        if (!class_exists(WF::get_config('sender_core.handler_class')))
+        {
+            $this->exit_error('Handler class does not exist',
+                              'The class configured in "sender_core.handler_class" is not provided by includes/sender_handler.inc.php.');
+        }
+
         require_once(WF::$includes."base_logic.inc.php");
         require_once(WF::$includes."config_values.inc.php");
 
