@@ -164,7 +164,7 @@ class WF
         header("HTTP/1.0 500 Internal Server Error");
         if (WF::get_config('debug') == true)
         {
-            echo "Failure information: $error_type<br/>";
+            echo "Debug information: $error_type<br/>";
             echo "<pre>";
             echo $debug_message;
             echo "</pre>";
