@@ -203,8 +203,7 @@ class WFWebHandler extends WF
             $this->exit_send_404();
 
         $include_page_file = WF::$site_views.$include_page.".inc.php";
-        if (!is_file($include_page_file))
-            $this->exit_send_404();
+        WF::verify(is_file($include_page_file), 'Page file for configured route not present');
 
         require_once($include_page_file);
 
@@ -259,8 +258,7 @@ class WFWebHandler extends WF
         $page_permissions = NULL;
         $page_obj = NULL;
 
-        if (!class_exists($object_name))
-            $this->exit_error('Object not found', 'The requested object could not be located.');
+        WF::verify(class_exists($object_name), 'Requested object could not be located.');
 
         $include_page_filter = $object_name::get_filter();
         $page_permissions = $object_name::get_permissions();
