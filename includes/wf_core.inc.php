@@ -428,16 +428,17 @@ class WF
     {
         if (!is_file(WF::$site_includes."config.php"))
         {
-            $this->exit_error('Missing requirement',
-                              'One of the required files is not found on the server.');
+            $this->exit_error('Missing base requirement',
+                              'One of the required files (includes/config.php) is not found on the server.');
         }
 
         if (!is_file(WF::$site_includes."sender_handler.inc.php"))
         {
             $this->exit_error('Sender Handler missing',
-                              'One of the required files is not found on the server.');
+                              'One of the required files (includes/sender_handler.inc.php) is not found on the server.');
         }
     }
+
     private function load_requirements()
     {
         // Check for special loads before anything else
@@ -493,14 +494,24 @@ class WF
     {
         // Check for required values
         //
-        WF::verify(strlen(WF::get_config('sender_core.default_sender')),
-                'No default_sender specified. Required for mailing verify information');
+        if (!strlen(WF::get_config('sender_core.default_sender')))
+        {
+            $this->exit_error('No default sender specified',
+                              'One of the required config values (sender_core.default_sender) is missing. '.
+                              'Required for mailing verify information');
+        }
 
-        WF::verify(strlen(WF::get_config('security.hmac_key')) > 20,
-                'No or too short HMAC Key provided (Minimum 20 chars)');
+        if (strlen(WF::get_config('security.hmac_key')) < 20)
+        {
+            $this->exit_error('Required config value missing',
+                'No or too short HMAC Key provided (Minimum 20 chars) in (security.hmac_key).');
+        }
 
-        WF::verify(strlen(WF::get_config('security.crypt_key')) > 20,
-                'No or too short Crypt Key provided (Minimum 20 chars)');
+        if (strlen(WF::get_config('security.crypt_key')) < 20)
+        {
+            $this->exit_error('Required config value missing',
+                'No or too short Crypt Key provided (Minimum 20 chars) in (security.crypt_key).');
+        }
     }
 
     private function init_databases()
@@ -545,11 +556,18 @@ class WF
         $required_wf_version = FRAMEWORK_VERSION;
         $supported_wf_version = WF::get_config('versions.supported_framework');
 
+        if ($supported_wf_version == -1)
+        {
+            $this->exit_error('No supported Framework version configured',
+                    'There is no supported framework version provided in "versions.supported_framework". '.
+                    'The current version is {$required_wf_version} of this Framework.');
+        }
+
         if ($required_wf_version != $supported_wf_version)
         {
             $this->exit_error('Framework version mismatch',
-                    "Please make sure that this app is upgraded to support version ".
-                    "{$required_wf_version} of this Framework.");
+                    'Please make sure that this app is upgraded to support version '.
+                    '{$required_wf_version} of this Framework.');
         }
 
         if (WF::get_config('database_enabled') != true)
