@@ -12,6 +12,11 @@ class WFWebHandler extends WF
     function init()
     {
         parent::init();
+        if (WF::get_config('database_enabled') == false)
+        {
+            $this->exit_error('Database required',
+                    'Web handler is used but no database is configured.');
+        }
 
         if (WF::get_config('security.blacklist.enabled') == true)
         {
@@ -31,6 +36,12 @@ class WFWebHandler extends WF
 
     function handle_request()
     {
+        if (count($this->route_array) == 0)
+        {
+            $this->exit_error('No routes loaded',
+                    'No routes have been loaded into Web handler.');
+        }
+
         // Run WebHandler
         //
         require_once(WF::$includes.'page_basic.inc.php');
