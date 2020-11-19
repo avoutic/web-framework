@@ -31,8 +31,9 @@ a2enmod rewrite
 Now that all prerequisites are in place, we can setup our default directory structure and link in the core framework file.
 
 ```
-mkdir -p data htdocs frames includes templates views
+mkdir -p data htdocs frames includes/auth templates views
 (cd htdocs && ln -s ../web-framework/htdocs/index.php .)
+(cd includes && ln -s ../web-framework/includes/sender_postmark.inc.php sender_handler.inc.php
 ```
 
 If you now browse to the website's URL, you should see a 'Requirements Error'. This means the framework is in place, but you have not yet provided it with your configuration, etc.
@@ -42,10 +43,9 @@ If you are using Apache, you should make sure that the following rewrite rules a
 ```
 RewriteEngine on
 
-RewriteCond %{QUERY_STRING} !^page
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ /index.php?page=$1 [L,NC,QSA]
+RewriteRule ^(.*)$ /index.php [L,NC,QSA]
 ```
 
 These rewrite conditions and rule make sure that Apache will call web-framework for any and all files and directories that do not exist as a static file in _htdocs/_.
@@ -69,6 +69,6 @@ Then we use the example hello_world files to set up your first configuration fil
 cp -a web-framework/hello_world_example/* .
 ```
 
-Make sure you adjust the configuration file (_includes/config.php_) with the right credentials for your database.
+Make sure you adjust the configuration file (_includes/config.php_ and _includes/auth/db\_config\_main.php_) with the right credentials for your database.
 
 Now reload your page and voila. You should see 'Hello World'.
