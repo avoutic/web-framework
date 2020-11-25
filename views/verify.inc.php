@@ -20,7 +20,6 @@ class PageVerify extends PageBasic
     function do_logic()
     {
         $login_page = $this->get_base_url().$this->get_config('pages.login.location');
-        $after_verify_page = $this->get_base_url().$this->get_config('pages.login.after_verify_page');
 
         // Check if code is present
         //
@@ -60,6 +59,7 @@ class PageVerify extends PageBasic
 
         // Redirect to main sceen
         //
+        $after_verify_page = $this->get_config('pages.login.after_verify_page');
         header("Location: ${login_page}?".$this->get_message_for_url('success', 'Verification succeeded', 'Verification succeeded. You can now use your account.')."&return_page=".urlencode($after_verify_page));
         exit();
     }
