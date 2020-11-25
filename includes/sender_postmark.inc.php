@@ -38,6 +38,7 @@ class PostmarkSender extends SenderCore
         }
         catch (Exception $e)
         {
+            error_log($e->getMessage());
             return false;
         }
 
