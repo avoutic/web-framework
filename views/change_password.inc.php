@@ -97,7 +97,7 @@ class PageChangePassword extends PageBasic
 
         // Redirect to main sceen
         //
-        $return_page = $this->get_config('pages.change_password.return_page');
+        $return_page = $this->get_base_url().$this->get_config('pages.change_password.return_page');
         header("Location: ${return_page}?".$this->get_message_for_url('success', 'Password changed successfully.'));
         exit();
     }

@@ -81,7 +81,7 @@ class PageLogin extends PageBasic
         // Check if already logged in and redirect immediately
         if ($this->is_authenticated())
         {
-            header("Location: ".$return_page."?".$return_query.'&'.
+            header("Location: ".$this->get_base_url().$return_page."?".$return_query.'&'.
                             $this->get_message_for_url('info', 'Already logged in'));
             exit();
         }
@@ -150,7 +150,7 @@ class PageLogin extends PageBasic
         {
             $code = $user->generate_verify_code('send_verify');
 
-            $this->add_message('error', 'Account not yet verified.', 'Account is not yet verified. Please check your mailbox for the verification e-mail and go to the presented link. If you have not received such a mail, you can <a href="'.$send_verify_page.'?code='.$code.'">request a new one</a>.');
+            $this->add_message('error', 'Account not yet verified.', 'Account is not yet verified. Please check your mailbox for the verification e-mail and go to the presented link. If you have not received such a mail, you can <a href="'.$this->get_base_url().$send_verify_page.'?code='.$code.'">request a new one</a>.');
             return;
         }
 
@@ -158,7 +158,7 @@ class PageLogin extends PageBasic
         //
         $info = $this->authenticate($user);
 
-        header("Location: ".$return_page."?".$return_query."&".$this->get_message_for_url('success', 'Login successful.'));
+        header("Location: ".$this->get_base_url().$return_page."?".$return_query."&".$this->get_message_for_url('success', 'Login successful.'));
         exit();
     }
 

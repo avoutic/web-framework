@@ -19,8 +19,8 @@ class PageVerify extends PageBasic
 
     function do_logic()
     {
-        $login_page = $this->get_config('pages.login.location');
-        $after_verify_page = $this->get_config('pages.login.after_verify_page');
+        $login_page = $this->get_base_url().$this->get_config('pages.login.location');
+        $after_verify_page = $this->get_base_url().$this->get_config('pages.login.after_verify_page');
 
         // Check if code is present
         //

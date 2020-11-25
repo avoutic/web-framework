@@ -82,6 +82,7 @@ abstract class PageBasic extends PageCore
         parent::__construct();
 
         $this->frame_file = $this->get_config('page.default_frame_file');
+        $this->page_content['base_url'] = $this->get_base_url();
 
         $page_mods = $this->get_config('page.mods');
         foreach ($page_mods as $mod_info)
@@ -113,6 +114,11 @@ abstract class PageBasic extends PageCore
     protected function get_csrf_token()
     {
         return $this->web_handler->get_csrf_token();
+    }
+
+    protected function get_base_url()
+    {
+        return $this->get_config('page.base_url');
     }
 
     function add_page_mod($tag, iPageModule $mod)

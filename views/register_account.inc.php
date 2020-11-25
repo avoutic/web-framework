@@ -216,7 +216,7 @@ class PageRegister extends Pagebasic
 
         // Redirect to verification request screen
         //
-        header("Location: ".$send_verify_url);
+        header("Location: ".$this->get_base_url().$send_verify_url);
         exit();
     }
 

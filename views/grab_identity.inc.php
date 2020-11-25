@@ -43,7 +43,7 @@ class PageGrabIdentity extends PageBasic
         if (!$user->is_verified()) {
             $code = $user->generate_verify_code('send_verify');
 
-            $this->add_message('error', 'Account not yet verified.', 'Account is not yet verified. Please check your mailbox for the verification e-mail and go to the presented link. If you have not received such a mail, you can <a href="/send_verify?code='.$code.'">request a new one</a>.');
+            $this->add_message('error', 'Account not yet verified.', 'Account is not yet verified. Please check your mailbox for the verification e-mail and go to the presented link. If you have not received such a mail, you can <a href="'.$this->get_base_url().'/send_verify?code='.$code.'">request a new one</a>.');
             return;
         }
 
@@ -51,7 +51,8 @@ class PageGrabIdentity extends PageBasic
         //
         $this->authenticate($user);
 
-        header("Location: /?".$this->get_message_for_url('success', 'Login successful.'));
+        $page = $this->get_base_url().$this->get_config('pages.login.default_return_page');
+        header("Location: {$page}?".$this->get_message_for_url('success', 'Login successful.'));
         exit();
     }
 };

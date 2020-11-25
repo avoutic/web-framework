@@ -17,6 +17,9 @@ class PageResetPassword extends PageBasic
 
     function do_logic()
     {
+        $forgot_password_page = $this->get_base_url().'/forgot-password';
+        $login_page = $this->get_base_url().$this->get_config('pages.login.location');
+
         // Check if code is present
         //
         $code = $this->get_input_var('code');
@@ -31,7 +34,7 @@ class PageResetPassword extends PageBasic
         if ($msg['timestamp'] + 600 < time())
         {
             // Expired
-            header("Location: /forgot-password?".$this->get_message_for_url('error', 'Password reset link expired'));
+            header("Location: {$forgot_password_page}?".$this->get_message_for_url('error', 'Password reset link expired'));
             exit();
         }
 
@@ -40,21 +43,20 @@ class PageResetPassword extends PageBasic
         // Check user status
         //
         $user = $factory->get_user_by_username($msg['username']);
-        $login_page = $this->get_config('pages.login.location');
 
         if ($user === FALSE)
             return;
 
         if (!$user->is_verified())
         {
-            header("Location: ${login_page}?".$this->get_message_for_url('error', 'User is not verified.'));
+            header("Location: {$login_page}?".$this->get_message_for_url('error', 'User is not verified.'));
             exit();
         }
 
         if (!isset($msg['params']) || !isset($msg['params']['iterator']) ||
             $user->get_security_iterator() != $msg['params']['iterator'])
         {
-            header("Location: /forgot-password?".$this->get_message_for_url('error', 'Password reset link expired'));
+            header("Location: {$forgot_password_page}?".$this->get_message_for_url('error', 'Password reset link expired'));
             exit();
         }
 
