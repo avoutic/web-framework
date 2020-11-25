@@ -4,6 +4,15 @@ require_once(WF::$includes.'recaptcha.inc.php');
 
 class PageLogin extends PageBasic
 {
+    protected $unique_identifier = '';
+
+    function __construct()
+    {
+        parent::__construct();
+
+        $this->unique_identifier = $this->get_config('authenticator.unique_identifier');
+    }
+
     static function get_filter()
     {
         $username_format = FORMAT_USERNAME;
@@ -95,7 +104,11 @@ class PageLogin extends PageBasic
         //
         if (!strlen($this->get_input_var('username')))
         {
-            $this->add_message('error', 'Please enter a valid username.');
+            if ($this->unique_identifier == 'email')
+                $this->add_message('error', 'Please enter a valid email.');
+            else
+                $this->add_message('error', 'Please enter a valid username.');
+
             return;
         }
         if (!strlen($this->get_input_var('password')))
@@ -110,7 +123,11 @@ class PageLogin extends PageBasic
 
         if ($user === FALSE)
         {
-            $this->add_message('error', 'Username and password do not match.', 'Please check if you entered the username and/or password correctly.');
+            if ($this->unique_identifier == 'email')
+                $this->add_message('error', 'E-mail and password do not match.', 'Please check if you entered the e-mail and/or password correctly.');
+            else
+                $this->add_message('error', 'Username and password do not match.', 'Please check if you entered the username and/or password correctly.');
+
             $this->add_blacklist_entry('unknown-username');
             return;
         }
