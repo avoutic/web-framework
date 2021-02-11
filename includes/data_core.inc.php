@@ -302,12 +302,17 @@ abstract class DataCore extends FrameworkCore
 
     static function get_object_info($filter = array())
     {
+        return static::get_object_data('get_info', $filter);
+    }
+
+    static function get_object_data($data_function, $filter = array())
+    {
         $obj = static::get_object($filter);
 
         if ($obj === false)
             return false;
 
-        return $obj->get_info();
+        return $obj->$data_function();
     }
 
     static function get_object_by_id($id)
@@ -317,12 +322,17 @@ abstract class DataCore extends FrameworkCore
 
     static function get_object_info_by_id($id)
     {
-        $obj = static::get_object(array('id' => $id));
+        $obj = static::get_object_data('get_info', array('id' => $id));
+    }
+
+    static function get_object_data_by_id($data_function, $id)
+    {
+        $obj = static::get_object_by_id($id);
 
         if ($obj === false)
             return false;
 
-        return $obj->get_info();
+        return $obj->$data_function();
     }
 
     static function get_objects($offset = 0, $results = 10, $filter = array(), $order = '')
@@ -369,11 +379,16 @@ abstract class DataCore extends FrameworkCore
 
     static function get_objects_info($offset = 0, $results = 10, $filter = array(), $order = '')
     {
+        return static::get_objects_data('get_info', $offset, $results, $filter, $order);
+    }
+
+    static function get_objects_data($data_function, $offset = 0, $results = 10, $filter = array(), $order = '')
+    {
         $objs = static::get_objects($offset, $results, $filter, $order);
 
         $data = array();
         foreach ($objs as $obj)
-            array_push($data, $obj->get_info());
+            array_push($data, $obj->$data_function());
 
         return $data;
     }
