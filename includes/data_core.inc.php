@@ -322,7 +322,7 @@ abstract class DataCore extends FrameworkCore
 
     static function get_object_info_by_id($id)
     {
-        $obj = static::get_object_data('get_info', array('id' => $id));
+        return static::get_object_data('get_info', array('id' => $id));
     }
 
     static function get_object_data_by_id($data_function, $id)
