@@ -129,7 +129,7 @@ abstract class PageBasic extends PageCore
 
     function get_canonical()
     {
-        return "";
+        return $_SERVER['REQUEST_URI'];
     }
 
     function get_onload()
