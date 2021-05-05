@@ -47,12 +47,6 @@ class PageResetPassword extends PageBasic
         if ($user === FALSE)
             return;
 
-        if (!$user->is_verified())
-        {
-            header("Location: {$login_page}?".$this->get_message_for_url('error', 'User is not verified.'));
-            exit();
-        }
-
         if (!isset($msg['params']) || !isset($msg['params']['iterator']) ||
             $user->get_security_iterator() != $msg['params']['iterator'])
         {
