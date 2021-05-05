@@ -53,6 +53,9 @@ class PostmarkSender extends SenderCore
         if (isset($template_variables['reply_to']))
             $reply_to = $template_variables['reply_to'];
 
+        if (!isset($template_variables['server_name']))
+            $template_variables['server_name'] = $this->get_config('server_name');
+
         try
         {
             $result = $client->sendEmailWithTemplate(
