@@ -318,6 +318,7 @@ class WFWebHandler extends WF
         }
 
         $include_page_file = WF::$site_views.$include_page.".inc.php";
+        $this->verify(file_exists($include_page_file), 'Missing 404 page: '.$include_page_file);
 
         require_once($include_page_file);
 
