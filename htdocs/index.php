@@ -412,6 +412,15 @@ else
         send_404();
 
     $include_page = $global_state['input']['page'];
+
+    // Prevent directory traversal attacks
+    //
+    if (strpos($include_page, '../') !== false)
+    {
+        framework_add_bad_ip_hit(4);
+        send_404();
+    }
+
     if (!$include_page && isset($_GET['page']) && strlen($_GET['page']))
         send_404();
     $matches = null;
