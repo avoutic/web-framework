@@ -58,6 +58,11 @@ class UploadHandler
         return $ext;
     }
 
+    function get_orig_filename()
+    {
+        return $this->orig_filename;
+    }
+
     function move($new_location)
     {
         return move_uploaded_file($this->tmp_filename, $new_location);
