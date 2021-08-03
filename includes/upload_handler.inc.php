@@ -29,6 +29,9 @@ class UploadHandler
             return 'upload_error';
         }
 
+        if ($_FILES[$var_name]['size'] > $max_size)
+            return 'file_too_large';
+
         $this->tmp_filename = $_FILES[$var_name]['tmp_name'];
         $this->orig_filename = $_FILES[$var_name]['name'];
 
