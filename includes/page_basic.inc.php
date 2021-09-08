@@ -50,6 +50,16 @@ abstract class PageCore extends FrameworkCore
         $this->web_handler->exit_send_404($type);
     }
 
+    function blacklist_404($bool, $reason, $type = 'generic')
+    {
+        if ($bool)
+            return;
+
+        $this->add_blacklist_entry($reason);
+
+        $this->exit_send_404($type);
+    }
+
     static function get_permissions()
     {
         return array();
