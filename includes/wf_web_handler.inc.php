@@ -298,7 +298,12 @@ class WFWebHandler extends WF
 
     function exit_send_404($type = 'generic')
     {
-        $mapping = WF::get_config('error_handlers.404');
+        $this->exit_send_error(404, 'Page not found', $type);
+    }
+
+    function exit_send_error($code, $title, $type = 'generic')
+    {
+        $mapping = WF::get_config('error_handlers.'.$code);
         $include_page = '';
 
         if (is_array($mapping))
@@ -309,16 +314,15 @@ class WFWebHandler extends WF
         else if (strlen($mapping))
             $include_page = $mapping;
 
+        http_response_code($code);
         if (!strlen($include_page))
         {
-            header("HTTP/1.0 404 Not Found");
-            print('<h1>Page not found</h1>'.PHP_EOL.
-                  'Page not found. Please return to the <a href="/">main page</a>.');
+            print('<h1>'.$title.'</h1>');
             exit();
         }
 
         $include_page_file = WF::$site_views.$include_page.".inc.php";
-        $this->verify(file_exists($include_page_file), 'Missing 404 page: '.$include_page_file);
+        $this->verify(file_exists($include_page_file), 'Missing error page: '.$include_page_file);
 
         require_once($include_page_file);
 
@@ -328,7 +332,6 @@ class WFWebHandler extends WF
                     }, 'page_'.$include_page);
         $function_name = "html_main";
 
-        header("HTTP/1.0 404 Page not found");
         $this->call_obj_func($object_name, $function_name);
         exit();
     }
