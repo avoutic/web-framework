@@ -250,11 +250,16 @@ class WF
 
     static function blacklist_verify($bool, $reason, $severity = 1)
     {
+        $framework = WF::get_framework();
+        $framework->internal_blacklist_verify($bool, $reason, $severity);
+    }
+
+    function internal_blacklist_verify($bool, $reason, $severity = 1)
+    {
         if ($bool)
             return;
 
-        $framework = WF::get_framework();
-        $framework->add_blacklist_entry($reason, $severity);
+        $this->add_blacklist_entry($reason, $severity);
         exit();
     }
 
@@ -774,7 +779,7 @@ class FrameworkCore
 
     function blacklist_verify($bool, $reason, $severity = 1)
     {
-        WF::blacklist_verify($bool, $reason, $severity);
+        $this->framework->internal_blacklist_verify($bool, $reason, $severity);
     }
 
     // Security related

@@ -40,7 +40,8 @@ SQL;
         {
             $caller = $entry;
 
-            if (in_array($entry['function'], array('blacklist_verify', 'add_blacklist_entry')))
+            if (in_array($entry['function'], array('blacklist_verify', 'internal_blacklist_verify',
+                                                   'add_blacklist_entry')))
                 break;
         }
 
