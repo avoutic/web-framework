@@ -437,7 +437,7 @@ class WF
             ini_set("display_errors", 1);
         }
         else
-            register_shutdown_function('WF::shutdown_handler');
+            register_shutdown_function(array($this, 'internal_shutdown_handler'));
 
         // Set default timezone
         //
