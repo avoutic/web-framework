@@ -138,8 +138,11 @@ class WF
             {
                 $i++;
 
-                if (in_array($entry['function'], array('assert_handler', 'verify', 'silent_verify')))
+                if (in_array($entry['function'], array('internal_assert_handler', 'verify',
+                                                       'silent_verify')))
+                {
                     break;
+                }
             }
 
             $trace = array_slice($trace, count($trace) - $i);
@@ -237,11 +240,11 @@ class WF
         {
             $caller = $entry;
 
-            if (in_array($entry['function'], array('assert_handler', 'verify', 'silent_verify')))
+            if (in_array($entry['function'], array('internal_assert_handler', 'verify', 'silent_verify')))
                 break;
         }
 
-        WF::assert_handler($caller['file'], $caller['line'], $message, 'verify', $silent);
+        $this->internal_assert_handler($caller['file'], $caller['line'], $message, 'verify', $silent);
         exit();
     }
 
@@ -257,7 +260,7 @@ class WF
 
     function add_blacklist_entry($reason, $severity = 1)
     {
-        WF::verify(false, 'No blacklist support in script mode');
+        $this->internal_verify(false, 'No blacklist support in script mode');
     }
 
     static function shutdown_handler()
@@ -283,12 +286,18 @@ class WF
         case E_CORE_WARNING:
         case E_COMPILE_ERROR:
         case E_COMPILE_WARNING:
-            WF::assert_handler($last_error['file'], $last_error['line'], $last_error['message'], $last_error['type']);
+            $this->internal_assert_handler($last_error['file'], $last_error['line'],
+                                  $last_error['message'], $last_error['type']);
             break;
         default:
-            WF::assert_handler($last_error['file'], $last_error['line'], $last_error['message'], $last_error['type'], true);
-            exit();
+            $this->internal_assert_handler($last_error['file'], $last_error['line'],
+                                  $last_error['message'], $last_error['type'], true);
+            break;
         }
+
+        // Don't trigger other handlers after this call
+        //
+        exit();
     }
 
     protected function exit_error($short_message, $message)
@@ -319,7 +328,7 @@ class WF
 
         foreach ($path as $step)
         {
-            WF::verify(isset($part[$step]), "Missing configuration {$location}");
+            $this->internal_verify(isset($part[$step]), "Missing configuration {$location}");
             $part = $part[$step];
         }
 
@@ -331,7 +340,8 @@ class WF
         if (!strlen($tag))
             return $this->main_database;
 
-        WF::verify(array_key_exists($tag, $this->aux_databases), 'Database not registered');
+        $this->internal_verify(array_key_exists($tag, $this->aux_databases), 'Database not registered');
+
         return $this->aux_databases[$tag];
     }
 
@@ -649,22 +659,22 @@ class WF
 
     function authenticate($user)
     {
-        WF::verify(false, 'Cannot authenticate in script mode');
+        $this->internal_verify(false, 'Cannot authenticate in script mode');
     }
 
     function deauthenticate()
     {
-        WF::verify(false, 'Cannot deauthenticate in script mode');
+        $this->internal_verify(false, 'Cannot deauthenticate in script mode');
     }
 
     function invalidate_sessions($user_id)
     {
-        WF::verify(false, 'Cannot invalidate sessions in script mode');
+        $this->internal_verify(false, 'Cannot invalidate sessions in script mode');
     }
 
     function get_authenticated($item = '')
     {
-        WF::verify(false, 'Cannot retrieve authenticated data in script mode');
+        $this->internal_verify(false, 'Cannot retrieve authenticated data in script mode');
     }
 
     function user_has_permissions($permissions)
@@ -759,7 +769,7 @@ class FrameworkCore
 
     function verify($bool, $message, $silent = false)
     {
-        WF::verify($bool, $message, $silent);
+        $this->framework->internal_verify($bool, $message, $silent);
     }
 
     function blacklist_verify($bool, $reason, $severity = 1)
