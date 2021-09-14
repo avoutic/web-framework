@@ -332,7 +332,7 @@ class WF
     static function get_config($location = '')
     {
         $framework = WF::get_framework();
-        $framework->internal_get_config($location);
+        return $framework->internal_get_config($location);
     }
 
     function internal_get_config($location = '')
