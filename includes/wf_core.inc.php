@@ -221,6 +221,12 @@ class WF
 
     static function verify($bool, $message, $silent = false)
     {
+        $framework = WF::get_framework();
+        $framework->internal_verify($bool, $message, $silent);
+    }
+
+    function internal_verify($bool, $message, $silent = false)
+    {
         if ($bool)
             return true;
 
