@@ -424,6 +424,10 @@ class WF
 
     function init()
     {
+        // Make sure static wrapper functions can work
+        //
+        WF::$framework = $this;
+
         srand();
 
         $this->check_file_requirements();
@@ -454,8 +458,6 @@ class WF
 
         if (WF::get_config('cache_enabled') == true)
             $this->init_cache();
-
-        WF::$framework = $this;
     }
 
     private function check_file_requirements()
