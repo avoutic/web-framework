@@ -150,17 +150,28 @@ class WF
 
         $low_info_message = "File '$file'\nLine '$line'\n";
 
-        $framework = WF::get_framework();
+        $auth_data = 'Not authenticated';
+        $input_data = '';
+        $raw_input_data = '';
 
-        $auth_array = $framework->get_authenticated();
-        WFHelpers::scrub_state($auth_array);
+        $framework = WF::get_framework();
+        if ($framework)
+        {
+            $auth_array = $framework->get_authenticated();
+            WFHelpers::scrub_state($auth_array);
+
+            $auth_data = print_r($auth_array, true);
+
+            $input_data = print_r($framework->get_input(), true);
+            $raw_input_data = print_r($framework->get_raw_input(), true);
+        }
 
         $debug_message = "File '$file'\nLine '$line'\nMessage '$message'\n";
         $debug_message.= "Last Database error: ".$db_error."\n";
         $debug_message.= "Backtrace:\n".print_r($trace, true);
-        $debug_message.= "Auth:\n".print_r($auth_array, true);
-        $debug_message.= "Input:\n".print_r($framework->get_input(), true);
-        $debug_message.= "Raw Input:\n".print_r($framework->get_raw_input(), true);
+        $debug_message.= "Auth:\n".$auth_data;
+        $debug_message.= "Input:\n".$input_data;
+        $debug_message.= "Raw Input:\n".$raw_input_data;
 
         header("HTTP/1.0 500 Internal Server Error");
         if (WF::get_config('debug') == true)
@@ -178,7 +189,7 @@ class WF
             echo "</pre>\n";
         }
 
-        if (WF::get_config('debug_mail') == true)
+        if ($framework && WF::get_config('debug_mail') == true)
         {
             $debug_message.= "\n----------------------------\n\n";
             $debug_message.= "Server variables:\n".print_r($_SERVER, true);
