@@ -13,7 +13,7 @@ class WF
 
     private static $in_verify = false;      // Only go into an assert_handler once
     private static $framework = null;
-    private static $main_db = null;
+    private static $main_db = null;         // Only for DataCore and ConfigValues abstraction
 
     protected $input = array();
     protected $raw_input = array();
@@ -140,16 +140,9 @@ class WF
             WFHelpers::scrub_state($trace);
         }
 
-        $db_error = 'Not initialized yet';
-        if (WF::get_main_db() != null)
-        {
-            $db_error = WF::get_main_db()->GetLastError();
-            if ($db_error === false || $db_error === '')
-                $db_error = 'None';
-        }
-
         $low_info_message = "File '$file'\nLine '$line'\n";
 
+        $db_error = 'Not initialized yet';
         $auth_data = 'Not authenticated';
         $input_data = '';
         $raw_input_data = '';
@@ -157,6 +150,15 @@ class WF
         $framework = WF::get_framework();
         if ($framework)
         {
+            $main_db = $framework->get_db();
+
+            if ($main_db != null)
+            {
+                $db_error = $main_db->GetLastError();
+                if ($db_error === false || $db_error === '')
+                    $db_error = 'None';
+            }
+
             $auth_array = $framework->get_authenticated();
             WFHelpers::scrub_state($auth_array);
 
@@ -293,11 +295,6 @@ class WF
         return WF::$framework;
     }
 
-    static function get_main_db()
-    {
-        return WF::$main_db;
-    }
-
     static function get_config($location = '')
     {
         if (!strlen($location))
@@ -322,6 +319,13 @@ class WF
 
         WF::verify(array_key_exists($tag, $this->aux_databases), 'Database not registered');
         return $this->aux_databases[$tag];
+    }
+
+    // Only relevant for DataCore and ConfigValues to retrieve main database in static functions
+    //
+    static function get_main_db()
+    {
+        return WF::$main_db;
     }
 
     function get_cache()
@@ -533,6 +537,8 @@ class WF
         require_once(WF::$includes.'database.inc.php');
 
         $this->main_database = new Database();
+        WF::$main_db = $this->main_database;
+
         $main_db_tag = WF::get_config('database_config');
         $main_config = $this->security->get_auth_config('db_config.'.$main_db_tag);
 
@@ -541,8 +547,6 @@ class WF
             $this->exit_error('Database server connection failed',
                     'The connection to the database server failed.');
         }
-
-        WF::$main_db = $this->main_database;
 
         // Open auxilary database connections
         //
@@ -672,7 +676,7 @@ class FrameworkCore
         $this->framework = WF::get_framework();
         $this->security = $this->framework->get_security();
         $this->cache = $this->framework->get_cache();
-        $this->database = WF::get_main_db();
+        $this->database = $this->framework->get_db();
     }
 
     protected function get_config($path)
