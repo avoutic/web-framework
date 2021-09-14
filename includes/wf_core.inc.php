@@ -479,8 +479,11 @@ class WF
         //
         if (WF::get_config('preload') == true)
         {
-            WF::verify(file_exists(WF::$site_includes.'preload.inc.php'),
-                            'preload.inc.php indicated but not present');
+            if (!file_exists(WF::$site_includes.'preload.inc.php'))
+            {
+                $this->exit_error('Preload indicated but not present',
+                    'The file "preload.inc.php" does not exist.');
+            }
 
             require_once(WF::$site_includes.'preload.inc.php');
         }
