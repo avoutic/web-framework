@@ -12,13 +12,13 @@ class WFWebHandler extends WF
     function init()
     {
         parent::init();
-        if (WF::get_config('database_enabled') == false)
+        if ($this->internal_get_config('database_enabled') == false)
         {
             $this->exit_error('Database required',
                     'Web handler is used but no database is configured.');
         }
 
-        if (WF::get_config('security.blacklist.enabled') == true)
+        if ($this->internal_get_config('security.blacklist.enabled') == true)
         {
             require_once(WF::$includes.'blacklist.inc.php');
             $this->blacklist = new Blacklist();
@@ -46,12 +46,12 @@ class WFWebHandler extends WF
         //
         require_once(WF::$includes.'page_basic.inc.php');
 
-        session_name(preg_replace('/\./', '_', WF::get_config('server_name')));
-        session_set_cookie_params(60 * 60 * 24, '/', WF::get_config('server_name'),
-                                  WF::get_config('http_mode') === 'https', true);
+        session_name(preg_replace('/\./', '_', $this->internal_get_config('server_name')));
+        session_set_cookie_params(60 * 60 * 24, '/', $this->internal_get_config('server_name'),
+                                  $this->internal_get_config('http_mode') === 'https', true);
         session_start();
 
-        if (WF::get_config('security.blacklist.enabled') == true)
+        if ($this->internal_get_config('security.blacklist.enabled') == true)
         {
             // Check blacklist
             //
@@ -140,15 +140,15 @@ class WFWebHandler extends WF
         //
         require(WF::$includes.'auth.inc.php');
 
-        $auth_mode = WF::get_config('auth_mode');
+        $auth_mode = $this->internal_get_config('auth_mode');
         if ($auth_mode == 'redirect')
             $this->authenticator = new AuthRedirect();
         else if ($auth_mode == 'www-authenticate')
             $this->authenticator = new AuthWwwAuthenticate();
         else if ($auth_mode == 'custom' &&
-                strlen(WF::get_config('auth_module')))
+                strlen($this->internal_get_config('auth_module')))
         {
-            require_once(WF::$site_includes.WF::get_config('auth_module'));
+            require_once(WF::$site_includes.$this->internal_get_config('auth_module'));
 
             $this->authenticator = new AuthCustom();
         }
@@ -197,7 +197,7 @@ class WFWebHandler extends WF
             $include_page = $target_info['include_file'];
         }
         else if ($full_request_uri == 'GET /')
-            $include_page = WF::get_config('page.default_page');
+            $include_page = $this->internal_get_config('page.default_page');
 
         if (!strlen($include_page))
             $this->exit_send_404();
@@ -248,7 +248,7 @@ class WFWebHandler extends WF
             exit();
         }
 
-        $this->authenticator->access_denied(WF::get_config('pages.login.location'));
+        $this->authenticator->access_denied($this->internal_get_config('pages.login.location'));
         exit();
     }
 
@@ -303,7 +303,7 @@ class WFWebHandler extends WF
 
     function exit_send_error($code, $title, $type = 'generic')
     {
-        $mapping = WF::get_config('error_handlers.'.$code);
+        $mapping = $this->internal_get_config('error_handlers.'.$code);
         $include_page = '';
 
         if (is_array($mapping))
@@ -393,7 +393,7 @@ class WFWebHandler extends WF
 
     function add_blacklist_entry($reason, $severity = 1)
     {
-        if (WF::get_config('security.blacklist.enabled') != true)
+        if ($this->internal_get_config('security.blacklist.enabled') != true)
             return;
 
         $user_id = null;

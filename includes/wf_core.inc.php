@@ -181,21 +181,21 @@ class WF
         $debug_message.= "Input:\n".$input_data;
         $debug_message.= "Raw Input:\n".$raw_input_data;
 
-        if ($this->initialized && WF::get_config('debug_mail') == true)
+        if ($this->initialized && $this->internal_get_config('debug_mail') == true)
         {
             // If available and configured, send a debug e-mail with server variables as well
             //
             SenderCore::send_raw(
-                WF::get_config('sender_core.default_sender'),
+                $this->internal_get_config('sender_core.default_sender'),
                 'Assertion failed',
                 "Failure information: $error_type\n\nServer: ".
-                WF::get_config('server_name')."\n".$debug_message.
+                $this->internal_get_config('server_name')."\n".$debug_message.
                 "\n----------------------------\n\n".
                 "Server variables:\n".print_r($_SERVER, true)
             );
         }
 
-        if (WF::get_config('debug') == true)
+        if ($this->internal_get_config('debug') == true)
         {
             $this->exit_error(
                 "Oops, something went wrong",
@@ -458,7 +458,7 @@ class WF
 
         // Enable debugging if requested
         //
-        if (WF::get_config('debug') == true)
+        if ($this->internal_get_config('debug') == true)
         {
             error_reporting(E_ALL | E_STRICT);
             ini_set("display_errors", 1);
@@ -468,18 +468,18 @@ class WF
 
         // Set default timezone
         //
-        date_default_timezone_set(WF::get_config('timezone'));
+        date_default_timezone_set($this->internal_get_config('timezone'));
 
         $this->check_config_requirements();
         $this->load_requirements();
-        $this->security = new WFSecurity(WF::get_config('security'));
+        $this->security = new WFSecurity($this->internal_get_config('security'));
 
-        if (WF::get_config('database_enabled') == true)
+        if ($this->internal_get_config('database_enabled') == true)
             $this->init_databases();
 
         $this->check_compatibility();
 
-        if (WF::get_config('cache_enabled') == true)
+        if ($this->internal_get_config('cache_enabled') == true)
             $this->init_cache();
 
         $this->initialized = true;
@@ -504,7 +504,7 @@ class WF
     {
         // Check for special loads before anything else
         //
-        if (WF::get_config('preload') == true)
+        if ($this->internal_get_config('preload') == true)
         {
             if (!file_exists(WF::$site_includes.'preload.inc.php'))
             {
@@ -519,7 +519,7 @@ class WF
         //
         require_once(WF::$includes."defines.inc.php");
         require_once(WF::$includes."sender_core.inc.php");
-        if (!class_exists(WF::get_config('sender_core.handler_class')))
+        if (!class_exists($this->internal_get_config('sender_core.handler_class')))
         {
             $this->exit_error('Handler class does not exist',
                               'The class configured in "sender_core.handler_class" is not provided by includes/sender_handler.inc.php.');
@@ -558,20 +558,20 @@ class WF
     {
         // Check for required values
         //
-        if (!strlen(WF::get_config('sender_core.default_sender')))
+        if (!strlen($this->internal_get_config('sender_core.default_sender')))
         {
             $this->exit_error('No default sender specified',
                               'One of the required config values (sender_core.default_sender) is missing. '.
                               'Required for mailing verify information');
         }
 
-        if (strlen(WF::get_config('security.hmac_key')) < 20)
+        if (strlen($this->internal_get_config('security.hmac_key')) < 20)
         {
             $this->exit_error('Required config value missing',
                 'No or too short HMAC Key provided (Minimum 20 chars) in (security.hmac_key).');
         }
 
-        if (strlen(WF::get_config('security.crypt_key')) < 20)
+        if (strlen($this->internal_get_config('security.crypt_key')) < 20)
         {
             $this->exit_error('Required config value missing',
                 'No or too short Crypt Key provided (Minimum 20 chars) in (security.crypt_key).');
@@ -587,7 +587,7 @@ class WF
         $this->main_database = new Database();
         WF::$main_db = $this->main_database;
 
-        $main_db_tag = WF::get_config('database_config');
+        $main_db_tag = $this->internal_get_config('database_config');
         $main_config = $this->security->get_auth_config('db_config.'.$main_db_tag);
 
         if ($this->main_database->Connect($main_config) === false)
@@ -598,7 +598,7 @@ class WF
 
         // Open auxilary database connections
         //
-        foreach (WF::get_config('databases') as $tag)
+        foreach ($this->internal_get_config('databases') as $tag)
         {
             $database = new Database();
             $tag_config = $this->security->get_auth_config('db_config.'.$tag);
@@ -618,7 +618,7 @@ class WF
         // Verify all versions for compatibility
         //
         $required_wf_version = FRAMEWORK_VERSION;
-        $supported_wf_version = WF::get_config('versions.supported_framework');
+        $supported_wf_version = $this->internal_get_config('versions.supported_framework');
 
         if ($supported_wf_version == -1)
         {
@@ -634,11 +634,11 @@ class WF
                     '{$required_wf_version} of this Framework.');
         }
 
-        if (WF::get_config('database_enabled') != true)
+        if ($this->internal_get_config('database_enabled') != true)
             return;
 
         $required_wf_db_version = FRAMEWORK_DB_VERSION;
-        $required_app_db_version = WF::get_config('versions.required_app_db');
+        $required_app_db_version = $this->internal_get_config('versions.required_app_db');
 
         $config_values = new ConfigValues('db');
         $current_wf_db_version = $config_values->get_value('wf_db_version', '0');
@@ -665,7 +665,7 @@ class WF
         require_once(WF::$includes.'cache_core.inc.php');
         require_once(WF::$site_includes.'cache_handler.inc.php');
 
-        $cache_tag = WF::get_config('cache_config');
+        $cache_tag = $this->internal_get_config('cache_config');
         $cache_config = $this->security->get_auth_config('cache_config.'.$cache_tag);
 
         $this->cache = new Cache($cache_config);
