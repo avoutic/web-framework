@@ -254,6 +254,12 @@ class WF
 
     static function shutdown_handler()
     {
+        $framework = WF::get_framework();
+        $framework->internal_shutdown_handler();
+    }
+
+    function internal_shutdown_handler()
+    {
         $last_error = error_get_last();
         if (!$last_error)
             return;
