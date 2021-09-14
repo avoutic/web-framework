@@ -383,8 +383,7 @@ class WF
 
     function validate_input($filter, $item)
     {
-        if (!strlen($filter))
-            die("Unexpected input: \$filter not defined in validate_input().");
+        $this->internal_verify(strlen($filter), 'No filter provided');
 
         if (substr($item, -2) == '[]')
         {
