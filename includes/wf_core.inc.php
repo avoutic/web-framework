@@ -19,6 +19,7 @@ class WF
     protected $raw_input = array();
     protected $raw_post = array();
 
+    private $initialized = false;
     private $main_database = null;
     private $aux_databases = array();
     private $cache = null;
@@ -180,37 +181,42 @@ class WF
         $debug_message.= "Input:\n".$input_data;
         $debug_message.= "Raw Input:\n".$raw_input_data;
 
-        header("HTTP/1.0 500 Internal Server Error");
-        if (WF::get_config('debug') == true)
+        if ($this->initialized && WF::get_config('debug_mail') == true)
         {
-            echo "Debug information: $error_type<br/>";
-            echo "<pre>";
-            echo $debug_message;
-            echo "</pre>";
-        }
-        else if (!$silent)
-        {
-            echo "Failure information: $error_type\n";
-            echo "<pre>\n";
-            echo $low_info_message;
-            echo "</pre>\n";
-        }
-
-        if ($framework && WF::get_config('debug_mail') == true)
-        {
-            $debug_message.= "\n----------------------------\n\n";
-            $debug_message.= "Server variables:\n".print_r($_SERVER, true);
-
+            // If available and configured, send a debug e-mail with server variables as well
+            //
             SenderCore::send_raw(
                 WF::get_config('sender_core.default_sender'),
                 'Assertion failed',
                 "Failure information: $error_type\n\nServer: ".
-                WF::get_config('server_name')."\n<pre>".$debug_message.'</pre>'
+                WF::get_config('server_name')."\n".$debug_message.
+                "\n----------------------------\n\n".
+                "Server variables:\n".print_r($_SERVER, true)
             );
         }
 
-        if (!$silent)
-            die("Oops. Something went wrong. Please retry later or contact us with the information above!\n");
+        if (WF::get_config('debug') == true)
+        {
+            $this->exit_error(
+                "Oops, something went wrong",
+                "Debug information: $error_type<br/>".
+                "<pre>".
+                $debug_message.
+                "</pre>"
+            );
+        }
+        else if (!$silent)
+        {
+            $this->exit_error(
+                "Oops, something went wrong",
+                "Failure information: $error_type\n".
+                "<pre>\n".
+                $low_info_message.
+                "</pre>\n"
+            );
+        }
+        else
+            exit();
     }
 
     static function silent_verify($bool, $message)
@@ -469,6 +475,8 @@ class WF
 
         if (WF::get_config('cache_enabled') == true)
             $this->init_cache();
+
+        $this->initialized = true;
     }
 
     private function check_file_requirements()
