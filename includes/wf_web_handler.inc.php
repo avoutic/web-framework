@@ -12,13 +12,13 @@ class WFWebHandler extends WF
     function init()
     {
         parent::init();
-        if (WF::get_config('database_enabled') == false)
+        if ($this->internal_get_config('database_enabled') == false)
         {
             $this->exit_error('Database required',
                     'Web handler is used but no database is configured.');
         }
 
-        if (WF::get_config('security.blacklist.enabled') == true)
+        if ($this->internal_get_config('security.blacklist.enabled') == true)
         {
             require_once(WF::$includes.'blacklist.inc.php');
             $this->blacklist = new Blacklist();
@@ -46,12 +46,12 @@ class WFWebHandler extends WF
         //
         require_once(WF::$includes.'page_basic.inc.php');
 
-        session_name(preg_replace('/\./', '_', WF::get_config('server_name')));
-        session_set_cookie_params(60 * 60 * 24, '/', WF::get_config('server_name'),
-                                  WF::get_config('http_mode') === 'https', true);
+        session_name(preg_replace('/\./', '_', $this->internal_get_config('server_name')));
+        session_set_cookie_params(60 * 60 * 24, '/', $this->internal_get_config('server_name'),
+                                  $this->internal_get_config('http_mode') === 'https', true);
         session_start();
 
-        if (WF::get_config('security.blacklist.enabled') == true)
+        if ($this->internal_get_config('security.blacklist.enabled') == true)
         {
             // Check blacklist
             //
@@ -97,7 +97,7 @@ class WFWebHandler extends WF
     private function add_message_from_url($url_str)
     {
         $msg = $this->security->decode_and_verify_array($url_str);
-        WF::verify($msg !== false, 'Illegal message in url');
+        $this->internal_verify($msg !== false, 'Illegal message in url');
 
         $this->add_message($msg['mtype'], $msg['message'], $msg['extra_message']);
     }
@@ -140,20 +140,20 @@ class WFWebHandler extends WF
         //
         require(WF::$includes.'auth.inc.php');
 
-        $auth_mode = WF::get_config('auth_mode');
+        $auth_mode = $this->internal_get_config('auth_mode');
         if ($auth_mode == 'redirect')
             $this->authenticator = new AuthRedirect();
         else if ($auth_mode == 'www-authenticate')
             $this->authenticator = new AuthWwwAuthenticate();
         else if ($auth_mode == 'custom' &&
-                strlen(WF::get_config('auth_module')))
+                strlen($this->internal_get_config('auth_module')))
         {
-            require_once(WF::$site_includes.WF::get_config('auth_module'));
+            require_once(WF::$site_includes.$this->internal_get_config('auth_module'));
 
             $this->authenticator = new AuthCustom();
         }
         else
-            WF::verify(false, 'No valid authenticator found.');
+            $this->internal_verify(false, 'No valid authenticator found.');
     }
 
     private function handle_page_routing()
@@ -197,13 +197,13 @@ class WFWebHandler extends WF
             $include_page = $target_info['include_file'];
         }
         else if ($full_request_uri == 'GET /')
-            $include_page = WF::get_config('page.default_page');
+            $include_page = $this->internal_get_config('page.default_page');
 
         if (!strlen($include_page))
             $this->exit_send_404();
 
         $include_page_file = WF::$site_views.$include_page.".inc.php";
-        WF::verify(is_file($include_page_file), 'Page file for configured route not present');
+        $this->internal_verify(is_file($include_page_file), 'Page file for configured route not present');
 
         require_once($include_page_file);
 
@@ -248,7 +248,7 @@ class WFWebHandler extends WF
             exit();
         }
 
-        $this->authenticator->access_denied(WF::get_config('pages.login.location'));
+        $this->authenticator->access_denied($this->internal_get_config('pages.login.location'));
         exit();
     }
 
@@ -258,21 +258,21 @@ class WFWebHandler extends WF
         $page_permissions = NULL;
         $page_obj = NULL;
 
-        WF::verify(class_exists($object_name), 'Requested object could not be located.');
+        $this->internal_verify(class_exists($object_name), 'Requested object could not be located.');
 
         $include_page_filter = $object_name::get_filter();
         $page_permissions = $object_name::get_permissions();
 
-        WF::verify(is_array($include_page_filter), 'Filter does not have correct form');
+        $this->internal_verify(is_array($include_page_filter), 'Filter does not have correct form');
 
         array_walk($include_page_filter, array($this, 'validate_input'));
 
         $this->enforce_permissions($object_name, $page_permissions);
 
-        WF::verify(class_exists($object_name), 'Registered route class does not exist');
+        $this->internal_verify(class_exists($object_name), 'Registered route class does not exist');
         $page_obj = new $object_name();
 
-        WF::verify(method_exists($page_obj, $function_name), 'Registered route function does not exist');
+        $this->internal_verify(method_exists($page_obj, $function_name), 'Registered route function does not exist');
         $page_obj->$function_name();
     }
 
@@ -303,7 +303,7 @@ class WFWebHandler extends WF
 
     function exit_send_error($code, $title, $type = 'generic')
     {
-        $mapping = WF::get_config('error_handlers.'.$code);
+        $mapping = $this->internal_get_config('error_handlers.'.$code);
         $include_page = '';
 
         if (is_array($mapping))
@@ -361,7 +361,7 @@ class WFWebHandler extends WF
         if (!strlen($item))
             return $this->auth_array;
 
-        WF::verify(isset($this->auth_array[$item]), 'Authenticated item not present');
+        $this->internal_verify(isset($this->auth_array[$item]), 'Authenticated item not present');
 
         return $this->auth_array[$item];
     }
@@ -393,7 +393,7 @@ class WFWebHandler extends WF
 
     function add_blacklist_entry($reason, $severity = 1)
     {
-        if (WF::get_config('security.blacklist.enabled') != true)
+        if ($this->internal_get_config('security.blacklist.enabled') != true)
             return;
 
         $user_id = null;

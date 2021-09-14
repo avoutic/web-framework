@@ -11,14 +11,15 @@ class WF
     static $site_frames = __DIR__.'/../../frames/';
     static $site_templates = __DIR__.'/../../templates/';
 
-    private static $in_verify = false;      // Only go into an assert_handler once
     private static $framework = null;
-    private static $main_db = null;
+    private static $main_db = null;         // Only for DataCore and ConfigValues abstraction
 
     protected $input = array();
     protected $raw_input = array();
     protected $raw_post = array();
 
+    private $initialized = false;
+    private $in_verify = false;             // Only go into an assert_handler once
     private $main_database = null;
     private $aux_databases = array();
     private $cache = null;
@@ -28,7 +29,7 @@ class WF
 
     // Default configuration
     //
-    private static $global_config = array(
+    private $global_config = array(
         'debug' => false,
         'debug_mail' => true,
         'preload' => false,
@@ -118,6 +119,12 @@ class WF
 
     static function assert_handler($file, $line, $message, $error_type, $silent = false)
     {
+         $framework = WF::get_framework();
+         $framework->internal_assert_handler($file, $line, $message, $error_type, $silent);
+    }
+
+    function internal_assert_handler($file, $line, $message, $error_type, $silent = false)
+    {
         $path_parts = pathinfo($file);
         $file = $path_parts['filename'];
 
@@ -132,39 +139,41 @@ class WF
             {
                 $i++;
 
-                if (in_array($entry['function'], array('assert_handler', 'verify', 'silent_verify')))
+                if (in_array($entry['function'], array('internal_assert_handler', 'assert_handler',
+                                                       'internal_verify', 'verify',
+                                                       'silent_verify')))
+                {
                     break;
+                }
             }
 
             $trace = array_slice($trace, count($trace) - $i);
             WFHelpers::scrub_state($trace);
         }
 
-        $db_error = 'Not initialized yet';
-        if (WF::get_main_db() != null)
-        {
-            $db_error = WF::get_main_db()->GetLastError();
-            if ($db_error === false || $db_error === '')
-                $db_error = 'None';
-        }
-
         $low_info_message = "File '$file'\nLine '$line'\n";
 
+        $db_error = 'Not initialized yet';
         $auth_data = 'Not authenticated';
         $input_data = '';
         $raw_input_data = '';
 
-        $framework = WF::get_framework();
-        if ($framework)
+        $main_db = $this->get_db();
+
+        if ($main_db != null)
         {
-            $auth_array = $framework->get_authenticated();
-            WFHelpers::scrub_state($auth_array);
-
-            $auth_data = print_r($auth_array, true);
-
-            $input_data = print_r($framework->get_input(), true);
-            $raw_input_data = print_r($framework->get_raw_input(), true);
+            $db_error = $main_db->GetLastError();
+            if ($db_error === false || $db_error === '')
+                $db_error = 'None';
         }
+
+        $auth_array = $this->get_authenticated();
+        WFHelpers::scrub_state($auth_array);
+
+        $auth_data = print_r($auth_array, true);
+
+        $input_data = print_r($this->get_input(), true);
+        $raw_input_data = print_r($this->get_raw_input(), true);
 
         $debug_message = "File '$file'\nLine '$line'\nMessage '$message'\n";
         $debug_message.= "Last Database error: ".$db_error."\n";
@@ -173,37 +182,42 @@ class WF
         $debug_message.= "Input:\n".$input_data;
         $debug_message.= "Raw Input:\n".$raw_input_data;
 
-        header("HTTP/1.0 500 Internal Server Error");
-        if (WF::get_config('debug') == true)
+        if ($this->initialized && $this->internal_get_config('debug_mail') == true)
         {
-            echo "Debug information: $error_type<br/>";
-            echo "<pre>";
-            echo $debug_message;
-            echo "</pre>";
-        }
-        else if (!$silent)
-        {
-            echo "Failure information: $error_type\n";
-            echo "<pre>\n";
-            echo $low_info_message;
-            echo "</pre>\n";
-        }
-
-        if ($framework && WF::get_config('debug_mail') == true)
-        {
-            $debug_message.= "\n----------------------------\n\n";
-            $debug_message.= "Server variables:\n".print_r($_SERVER, true);
-
+            // If available and configured, send a debug e-mail with server variables as well
+            //
             SenderCore::send_raw(
-                WF::get_config('sender_core.default_sender'),
+                $this->internal_get_config('sender_core.default_sender'),
                 'Assertion failed',
                 "Failure information: $error_type\n\nServer: ".
-                WF::get_config('server_name')."\n<pre>".$debug_message.'</pre>'
+                $this->internal_get_config('server_name')."\n".$debug_message.
+                "\n----------------------------\n\n".
+                "Server variables:\n".print_r($_SERVER, true)
             );
         }
 
-        if (!$silent)
-            die("Oops. Something went wrong. Please retry later or contact us with the information above!\n");
+        if ($this->internal_get_config('debug') == true)
+        {
+            $this->exit_error(
+                "Oops, something went wrong",
+                "Debug information: $error_type<br/>".
+                "<pre>".
+                $debug_message.
+                "</pre>"
+            );
+        }
+        else if (!$silent)
+        {
+            $this->exit_error(
+                "Oops, something went wrong",
+                "Failure information: $error_type\n".
+                "<pre>\n".
+                $low_info_message.
+                "</pre>\n"
+            );
+        }
+        else
+            exit();
     }
 
     static function silent_verify($bool, $message)
@@ -213,13 +227,19 @@ class WF
 
     static function verify($bool, $message, $silent = false)
     {
+        $framework = WF::get_framework();
+        $framework->internal_verify($bool, $message, $silent);
+    }
+
+    function internal_verify($bool, $message, $silent = false)
+    {
         if ($bool)
             return true;
 
-        if (WF::$in_verify)
+        if ($this->in_verify)
             exit();
 
-        WF::$in_verify = true;
+        $this->in_verify = true;
         $bt = debug_backtrace();
         $stack = array_reverse($bt);
         $caller = false;
@@ -227,30 +247,42 @@ class WF
         {
             $caller = $entry;
 
-            if (in_array($entry['function'], array('assert_handler', 'verify', 'silent_verify')))
+            if (in_array($entry['function'], array('internal_assert_handler', 'assert_handler',
+                                                   'internal_verify', 'verify', 'silent_verify')))
                 break;
         }
 
-        WF::assert_handler($caller['file'], $caller['line'], $message, 'verify', $silent);
+        $this->internal_assert_handler($caller['file'], $caller['line'], $message, 'verify', $silent);
         exit();
     }
 
     static function blacklist_verify($bool, $reason, $severity = 1)
     {
+        $framework = WF::get_framework();
+        $framework->internal_blacklist_verify($bool, $reason, $severity);
+    }
+
+    function internal_blacklist_verify($bool, $reason, $severity = 1)
+    {
         if ($bool)
             return;
 
-        $framework = WF::get_framework();
-        $framework->add_blacklist_entry($reason, $severity);
+        $this->add_blacklist_entry($reason, $severity);
         exit();
     }
 
     function add_blacklist_entry($reason, $severity = 1)
     {
-        WF::verify(false, 'No blacklist support in script mode');
+        $this->internal_verify(false, 'No blacklist support in script mode');
     }
 
     static function shutdown_handler()
+    {
+        $framework = WF::get_framework();
+        $framework->internal_shutdown_handler();
+    }
+
+    function internal_shutdown_handler()
     {
         $last_error = error_get_last();
         if (!$last_error)
@@ -267,12 +299,18 @@ class WF
         case E_CORE_WARNING:
         case E_COMPILE_ERROR:
         case E_COMPILE_WARNING:
-            WF::assert_handler($last_error['file'], $last_error['line'], $last_error['message'], $last_error['type']);
+            $this->internal_assert_handler($last_error['file'], $last_error['line'],
+                                  $last_error['message'], $last_error['type']);
             break;
         default:
-            WF::assert_handler($last_error['file'], $last_error['line'], $last_error['message'], $last_error['type'], true);
-            exit();
+            $this->internal_assert_handler($last_error['file'], $last_error['line'],
+                                  $last_error['message'], $last_error['type'], true);
+            break;
         }
+
+        // Don't trigger other handlers after this call
+        //
+        exit();
     }
 
     protected function exit_error($short_message, $message)
@@ -293,22 +331,23 @@ class WF
         return WF::$framework;
     }
 
-    static function get_main_db()
-    {
-        return WF::$main_db;
-    }
-
     static function get_config($location = '')
     {
+        $framework = WF::get_framework();
+        return $framework->internal_get_config($location);
+    }
+
+    function internal_get_config($location = '')
+    {
         if (!strlen($location))
-            return WF::$global_config;
+            return $this->global_config;
 
         $path = explode('.', $location);
-        $part = WF::$global_config;
+        $part = $this->global_config;
 
         foreach ($path as $step)
         {
-            WF::verify(isset($part[$step]), "Missing configuration {$location}");
+            $this->internal_verify(isset($part[$step]), "Missing configuration {$location}");
             $part = $part[$step];
         }
 
@@ -320,8 +359,16 @@ class WF
         if (!strlen($tag))
             return $this->main_database;
 
-        WF::verify(array_key_exists($tag, $this->aux_databases), 'Database not registered');
+        $this->internal_verify(array_key_exists($tag, $this->aux_databases), 'Database not registered');
+
         return $this->aux_databases[$tag];
+    }
+
+    // Only relevant for DataCore and ConfigValues to retrieve main database in static functions
+    //
+    static function get_main_db()
+    {
+        return WF::$main_db;
     }
 
     function get_cache()
@@ -336,8 +383,7 @@ class WF
 
     function validate_input($filter, $item)
     {
-        if (!strlen($filter))
-            die("Unexpected input: \$filter not defined in validate_input().");
+        $this->internal_verify(strlen($filter), 'No filter provided');
 
         if (substr($item, -2) == '[]')
         {
@@ -402,6 +448,10 @@ class WF
 
     function init()
     {
+        // Make sure static wrapper functions can work
+        //
+        WF::$framework = $this;
+
         srand();
 
         $this->check_file_requirements();
@@ -409,31 +459,31 @@ class WF
 
         // Enable debugging if requested
         //
-        if (WF::get_config('debug') == true)
+        if ($this->internal_get_config('debug') == true)
         {
             error_reporting(E_ALL | E_STRICT);
             ini_set("display_errors", 1);
         }
         else
-            register_shutdown_function('WF::shutdown_handler');
+            register_shutdown_function(array($this, 'internal_shutdown_handler'));
 
         // Set default timezone
         //
-        date_default_timezone_set(WF::get_config('timezone'));
+        date_default_timezone_set($this->internal_get_config('timezone'));
 
         $this->check_config_requirements();
         $this->load_requirements();
-        $this->security = new WFSecurity(WF::get_config('security'));
+        $this->security = new WFSecurity($this->internal_get_config('security'));
 
-        if (WF::get_config('database_enabled') == true)
+        if ($this->internal_get_config('database_enabled') == true)
             $this->init_databases();
 
         $this->check_compatibility();
 
-        if (WF::get_config('cache_enabled') == true)
+        if ($this->internal_get_config('cache_enabled') == true)
             $this->init_cache();
 
-        WF::$framework = $this;
+        $this->initialized = true;
     }
 
     private function check_file_requirements()
@@ -455,10 +505,13 @@ class WF
     {
         // Check for special loads before anything else
         //
-        if (WF::get_config('preload') == true)
+        if ($this->internal_get_config('preload') == true)
         {
-            WF::verify(file_exists(WF::$site_includes.'preload.inc.php'),
-                            'preload.inc.php indicated but not present');
+            if (!file_exists(WF::$site_includes.'preload.inc.php'))
+            {
+                $this->exit_error('Preload indicated but not present',
+                    'The file "preload.inc.php" does not exist.');
+            }
 
             require_once(WF::$site_includes.'preload.inc.php');
         }
@@ -467,7 +520,7 @@ class WF
         //
         require_once(WF::$includes."defines.inc.php");
         require_once(WF::$includes."sender_core.inc.php");
-        if (!class_exists(WF::get_config('sender_core.handler_class')))
+        if (!class_exists($this->internal_get_config('sender_core.handler_class')))
         {
             $this->exit_error('Handler class does not exist',
                               'The class configured in "sender_core.handler_class" is not provided by includes/sender_handler.inc.php.');
@@ -488,7 +541,7 @@ class WF
         if (!is_array($site_config))
             $this->exit_error('Site config invalid', 'No config array found');
 
-        $merge_config = array_replace_recursive(WF::$global_config, $site_config);
+        $merge_config = array_replace_recursive($this->global_config, $site_config);
 
         if (file_exists(WF::$site_includes."config_local.php"))
         {
@@ -499,27 +552,27 @@ class WF
         $merge_config['server_name'] = isset($_SERVER['SERVER_NAME'])?$_SERVER['SERVER_NAME']:'app';
         $merge_config['document_root'] = $_SERVER['DOCUMENT_ROOT'];
 
-        WF::$global_config = $merge_config;
+        $this->global_config = $merge_config;
     }
 
     private function check_config_requirements()
     {
         // Check for required values
         //
-        if (!strlen(WF::get_config('sender_core.default_sender')))
+        if (!strlen($this->internal_get_config('sender_core.default_sender')))
         {
             $this->exit_error('No default sender specified',
                               'One of the required config values (sender_core.default_sender) is missing. '.
                               'Required for mailing verify information');
         }
 
-        if (strlen(WF::get_config('security.hmac_key')) < 20)
+        if (strlen($this->internal_get_config('security.hmac_key')) < 20)
         {
             $this->exit_error('Required config value missing',
                 'No or too short HMAC Key provided (Minimum 20 chars) in (security.hmac_key).');
         }
 
-        if (strlen(WF::get_config('security.crypt_key')) < 20)
+        if (strlen($this->internal_get_config('security.crypt_key')) < 20)
         {
             $this->exit_error('Required config value missing',
                 'No or too short Crypt Key provided (Minimum 20 chars) in (security.crypt_key).');
@@ -533,7 +586,9 @@ class WF
         require_once(WF::$includes.'database.inc.php');
 
         $this->main_database = new Database();
-        $main_db_tag = WF::get_config('database_config');
+        WF::$main_db = $this->main_database;
+
+        $main_db_tag = $this->internal_get_config('database_config');
         $main_config = $this->security->get_auth_config('db_config.'.$main_db_tag);
 
         if ($this->main_database->Connect($main_config) === false)
@@ -542,11 +597,9 @@ class WF
                     'The connection to the database server failed.');
         }
 
-        WF::$main_db = $this->main_database;
-
         // Open auxilary database connections
         //
-        foreach (WF::get_config('databases') as $tag)
+        foreach ($this->internal_get_config('databases') as $tag)
         {
             $database = new Database();
             $tag_config = $this->security->get_auth_config('db_config.'.$tag);
@@ -566,7 +619,7 @@ class WF
         // Verify all versions for compatibility
         //
         $required_wf_version = FRAMEWORK_VERSION;
-        $supported_wf_version = WF::get_config('versions.supported_framework');
+        $supported_wf_version = $this->internal_get_config('versions.supported_framework');
 
         if ($supported_wf_version == -1)
         {
@@ -582,11 +635,11 @@ class WF
                     '{$required_wf_version} of this Framework.');
         }
 
-        if (WF::get_config('database_enabled') != true)
+        if ($this->internal_get_config('database_enabled') != true)
             return;
 
         $required_wf_db_version = FRAMEWORK_DB_VERSION;
-        $required_app_db_version = WF::get_config('versions.required_app_db');
+        $required_app_db_version = $this->internal_get_config('versions.required_app_db');
 
         $config_values = new ConfigValues('db');
         $current_wf_db_version = $config_values->get_value('wf_db_version', '0');
@@ -613,7 +666,7 @@ class WF
         require_once(WF::$includes.'cache_core.inc.php');
         require_once(WF::$site_includes.'cache_handler.inc.php');
 
-        $cache_tag = WF::get_config('cache_config');
+        $cache_tag = $this->internal_get_config('cache_config');
         $cache_config = $this->security->get_auth_config('cache_config.'.$cache_tag);
 
         $this->cache = new Cache($cache_config);
@@ -626,22 +679,22 @@ class WF
 
     function authenticate($user)
     {
-        WF::verify(false, 'Cannot authenticate in script mode');
+        $this->internal_verify(false, 'Cannot authenticate in script mode');
     }
 
     function deauthenticate()
     {
-        WF::verify(false, 'Cannot deauthenticate in script mode');
+        $this->internal_verify(false, 'Cannot deauthenticate in script mode');
     }
 
     function invalidate_sessions($user_id)
     {
-        WF::verify(false, 'Cannot invalidate sessions in script mode');
+        $this->internal_verify(false, 'Cannot invalidate sessions in script mode');
     }
 
     function get_authenticated($item = '')
     {
-        WF::verify(false, 'Cannot retrieve authenticated data in script mode');
+        $this->internal_verify(false, 'Cannot retrieve authenticated data in script mode');
     }
 
     function user_has_permissions($permissions)
@@ -672,12 +725,12 @@ class FrameworkCore
         $this->framework = WF::get_framework();
         $this->security = $this->framework->get_security();
         $this->cache = $this->framework->get_cache();
-        $this->database = WF::get_main_db();
+        $this->database = $this->framework->get_db();
     }
 
     protected function get_config($path)
     {
-        return WF::get_config($path);
+        return $this->framework->internal_get_config($path);
     }
 
     // Database related
@@ -736,12 +789,12 @@ class FrameworkCore
 
     function verify($bool, $message, $silent = false)
     {
-        WF::verify($bool, $message, $silent);
+        $this->framework->internal_verify($bool, $message, $silent);
     }
 
     function blacklist_verify($bool, $reason, $severity = 1)
     {
-        WF::blacklist_verify($bool, $reason, $severity);
+        $this->framework->internal_blacklist_verify($bool, $reason, $severity);
     }
 
     // Security related
