@@ -153,26 +153,22 @@ class WF
         $input_data = '';
         $raw_input_data = '';
 
-        $framework = WF::get_framework();
-        if ($framework)
+        $main_db = $this->get_db();
+
+        if ($main_db != null)
         {
-            $main_db = $framework->get_db();
-
-            if ($main_db != null)
-            {
-                $db_error = $main_db->GetLastError();
-                if ($db_error === false || $db_error === '')
-                    $db_error = 'None';
-            }
-
-            $auth_array = $framework->get_authenticated();
-            WFHelpers::scrub_state($auth_array);
-
-            $auth_data = print_r($auth_array, true);
-
-            $input_data = print_r($framework->get_input(), true);
-            $raw_input_data = print_r($framework->get_raw_input(), true);
+            $db_error = $main_db->GetLastError();
+            if ($db_error === false || $db_error === '')
+                $db_error = 'None';
         }
+
+        $auth_array = $this->get_authenticated();
+        WFHelpers::scrub_state($auth_array);
+
+        $auth_data = print_r($auth_array, true);
+
+        $input_data = print_r($this->get_input(), true);
+        $raw_input_data = print_r($this->get_raw_input(), true);
 
         $debug_message = "File '$file'\nLine '$line'\nMessage '$message'\n";
         $debug_message.= "Last Database error: ".$db_error."\n";
