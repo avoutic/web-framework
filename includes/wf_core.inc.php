@@ -118,6 +118,12 @@ class WF
 
     static function assert_handler($file, $line, $message, $error_type, $silent = false)
     {
+         $framework = WF::get_framework();
+         $framework->internal_assert_handler($file, $line, $message, $error_type, $silent);
+    }
+
+    function internal_assert_handler($file, $line, $message, $error_type, $silent = false)
+    {
         $path_parts = pathinfo($file);
         $file = $path_parts['filename'];
 
