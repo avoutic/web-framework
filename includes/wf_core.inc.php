@@ -29,7 +29,7 @@ class WF
 
     // Default configuration
     //
-    private static $global_config = array(
+    private $global_config = array(
         'debug' => false,
         'debug_mail' => true,
         'preload' => false,
@@ -331,11 +331,17 @@ class WF
 
     static function get_config($location = '')
     {
+        $framework = WF::get_framework();
+        $framework->internal_get_config($location);
+    }
+
+    function internal_get_config($location = '')
+    {
         if (!strlen($location))
-            return WF::$global_config;
+            return $this->global_config;
 
         $path = explode('.', $location);
-        $part = WF::$global_config;
+        $part = $this->global_config;
 
         foreach ($path as $step)
         {
@@ -534,7 +540,7 @@ class WF
         if (!is_array($site_config))
             $this->exit_error('Site config invalid', 'No config array found');
 
-        $merge_config = array_replace_recursive(WF::$global_config, $site_config);
+        $merge_config = array_replace_recursive($this->global_config, $site_config);
 
         if (file_exists(WF::$site_includes."config_local.php"))
         {
@@ -545,7 +551,7 @@ class WF
         $merge_config['server_name'] = isset($_SERVER['SERVER_NAME'])?$_SERVER['SERVER_NAME']:'app';
         $merge_config['document_root'] = $_SERVER['DOCUMENT_ROOT'];
 
-        WF::$global_config = $merge_config;
+        $this->global_config = $merge_config;
     }
 
     private function check_config_requirements()
@@ -723,7 +729,7 @@ class FrameworkCore
 
     protected function get_config($path)
     {
-        return WF::get_config($path);
+        return $this->framework->internal_get_config($path);
     }
 
     // Database related
