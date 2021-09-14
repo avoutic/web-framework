@@ -11,7 +11,6 @@ class WF
     static $site_frames = __DIR__.'/../../frames/';
     static $site_templates = __DIR__.'/../../templates/';
 
-    private static $in_verify = false;      // Only go into an assert_handler once
     private static $framework = null;
     private static $main_db = null;         // Only for DataCore and ConfigValues abstraction
 
@@ -20,6 +19,7 @@ class WF
     protected $raw_post = array();
 
     private $initialized = false;
+    private $in_verify = false;             // Only go into an assert_handler once
     private $main_database = null;
     private $aux_databases = array();
     private $cache = null;
@@ -235,10 +235,10 @@ class WF
         if ($bool)
             return true;
 
-        if (WF::$in_verify)
+        if ($this->in_verify)
             exit();
 
-        WF::$in_verify = true;
+        $this->in_verify = true;
         $bt = debug_backtrace();
         $stack = array_reverse($bt);
         $caller = false;
