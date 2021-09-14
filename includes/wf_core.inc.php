@@ -139,7 +139,8 @@ class WF
             {
                 $i++;
 
-                if (in_array($entry['function'], array('internal_assert_handler', 'verify',
+                if (in_array($entry['function'], array('internal_assert_handler', 'assert_handler',
+                                                       'internal_verify', 'verify',
                                                        'silent_verify')))
                 {
                     break;
@@ -246,7 +247,8 @@ class WF
         {
             $caller = $entry;
 
-            if (in_array($entry['function'], array('internal_assert_handler', 'verify', 'silent_verify')))
+            if (in_array($entry['function'], array('internal_assert_handler', 'assert_handler',
+                                                   'internal_verify', 'verify', 'silent_verify')))
                 break;
         }
 
