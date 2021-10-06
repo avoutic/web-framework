@@ -406,7 +406,7 @@ class WF
 
             foreach ($info as $k => $val)
             {
-                $this->raw_input[$item][$k] = $val;
+                $this->raw_input[$item][$k] = trim($val);
                 if (preg_match("/^\s*$filter\s*$/m", $val))
                     $this->input[$item][$k] = trim($val);
             }
@@ -425,7 +425,7 @@ class WF
             else if (isset($_GET[$item]))
                 $str = $_GET[$item];
 
-            $this->raw_input[$item] = $str;
+            $this->raw_input[$item] = trim($str);
 
             if (preg_match("/^\s*$filter\s*$/m", $str))
                 $this->input[$item] = trim($str);
