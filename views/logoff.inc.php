@@ -25,7 +25,7 @@ class PageLogoff extends PageBasic
         if (substr($return_page, 0, 1) != '/')
             $return_page = '/'.$return_page;
 
-        header("Location: ".$return_page);
+        header("Location: ".$this->get_base_url().$return_page);
         exit();
     }
 
