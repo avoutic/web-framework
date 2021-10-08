@@ -114,6 +114,7 @@ class WF
         'sender_core' => array(
             'handler_class' => '',
             'default_sender' => '',
+            'assert_recipient' => '',
         ),
     );
 
@@ -187,7 +188,7 @@ class WF
             // If available and configured, send a debug e-mail with server variables as well
             //
             SenderCore::send_raw(
-                $this->internal_get_config('sender_core.default_sender'),
+                $this->internal_get_config('sender_core.assert_recipient'),
                 'Assertion failed',
                 "Failure information: $error_type\n\nServer: ".
                 $this->internal_get_config('server_name')."\n".$debug_message.
@@ -563,6 +564,13 @@ class WF
         {
             $this->exit_error('No default sender specified',
                               'One of the required config values (sender_core.default_sender) is missing. '.
+                              'Required for mailing verify information');
+        }
+
+        if (!strlen($this->internal_get_config('sender_core.assert_recipient')))
+        {
+            $this->exit_error('No assert recipient specified',
+                              'One of the required config values (sender_core.assert_recipient) is missing. '.
                               'Required for mailing verify information');
         }
 
