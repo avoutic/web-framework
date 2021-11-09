@@ -248,8 +248,7 @@ class WFWebHandler extends WF
             exit();
         }
 
-        $this->authenticator->access_denied($this->internal_get_config('pages.login.location'));
-        exit();
+        $this->exit_send_403();
     }
 
     private function call_obj_func($object_name, $function_name)
