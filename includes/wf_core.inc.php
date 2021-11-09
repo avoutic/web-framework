@@ -85,7 +85,8 @@ class WF
             ),
         ),
         'error_handlers' => array(
-            '404' => ''
+            '403' => '',
+            '404' => '',
         ),
         'pages' => array(
             'login' => array(

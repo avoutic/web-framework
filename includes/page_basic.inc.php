@@ -45,6 +45,11 @@ abstract class PageCore extends FrameworkCore
         return $this->raw_input[$name];
     }
 
+    function exit_send_403($type = 'generic')
+    {
+        $this->web_handler->exit_send_403($type);
+    }
+
     function exit_send_404($type = 'generic')
     {
         $this->web_handler->exit_send_404($type);

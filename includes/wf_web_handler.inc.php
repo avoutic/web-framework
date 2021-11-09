@@ -301,6 +301,11 @@ class WFWebHandler extends WF
         $this->exit_send_error(404, 'Page not found', $type);
     }
 
+    function exit_send_403($type = 'generic')
+    {
+        $this->exit_send_error(403, 'Access Denied', $type);
+    }
+
     function exit_send_error($code, $title, $type = 'generic')
     {
         $mapping = $this->internal_get_config('error_handlers.'.$code);
