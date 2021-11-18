@@ -51,6 +51,10 @@ class WFWebHandler extends WF
                                   $this->internal_get_config('http_mode') === 'https', true);
         session_start();
 
+        $this->create_authenticator();
+        $this->authenticator->cleanup();
+        $this->auth_array = $this->authenticator->get_logged_in();
+
         if ($this->internal_get_config('security.blacklist.enabled') == true)
         {
             // Check blacklist
@@ -69,9 +73,6 @@ class WFWebHandler extends WF
         $this->load_raw_input();
         $this->add_security_headers();
         $this->handle_fixed_input();
-        $this->create_authenticator();
-        $this->authenticator->cleanup();
-        $this->auth_array = $this->authenticator->get_logged_in();
         $this->handle_page_routing();
     }
 
