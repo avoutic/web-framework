@@ -64,18 +64,27 @@ SQL;
         if ($this->module_config['enabled'] == false)
             return false;
 
+        $cutoff = time() - $this->module_config['trigger_period'];
+        $params = array($cutoff, $ip);
+        $user_fmt = '';
+
+        if ($user_id != null)
+        {
+            array_push($params, $user_id);
+            $user_fmt = 'OR user_id = ?';
+        }
+
         $query = <<<SQL
         SELECT SUM(severity) AS total
         FROM blacklist_entries
-        WHERE ( ip = ? OR
-                user_id = ?
-              ) AND
-              timestamp > ?
+        WHERE timestamp > ? AND
+              (
+                 ip = ?
+                {$user_fmt}
+              )
 SQL;
 
-        $cutoff = time() - $this->module_config['trigger_period'];
-
-        $result = $this->query($query, array($ip, $user_id, $cutoff));
+        $result = $this->query($query, $params);
         $this->verify($result !== false, 'Failed to sum blacklist entries');
 
         return $result->fields['total'] > $this->module_config['threshold'];

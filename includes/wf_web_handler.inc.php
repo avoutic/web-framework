@@ -55,7 +55,7 @@ class WFWebHandler extends WF
         {
             // Check blacklist
             //
-            $user_id = 0;
+            $user_id = null;
             if ($this->is_authenticated())
                 $user_id = $this->get_authenticated('user_id');
 
