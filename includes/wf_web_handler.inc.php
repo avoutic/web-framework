@@ -98,7 +98,9 @@ class WFWebHandler extends WF
     private function add_message_from_url($url_str)
     {
         $msg = $this->security->decode_and_verify_array($url_str);
-        $this->internal_verify($msg !== false, 'Illegal message in url');
+
+        if ($msg === false)
+            return;
 
         $this->add_message($msg['mtype'], $msg['message'], $msg['extra_message']);
     }
