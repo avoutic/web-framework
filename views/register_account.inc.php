@@ -59,6 +59,17 @@ class PageRegister extends Pagebasic
     {
     }
 
+    // Can be overriden for project specific user factories and user classes
+    //
+    function create_user($username, $password, $email)
+    {
+        $factory = new BaseFactory();
+        $user = $factory->create_user($username, $password, $email, time());
+        $this->verify($user !== false, 'Failed to create user');
+
+        return $user;
+    }
+
     function do_logic()
     {
         $identifier = $this->get_config('authenticator.unique_identifier');
@@ -193,9 +204,7 @@ class PageRegister extends Pagebasic
 
         // Add account
         //
-        $base_factory = new BaseFactory();
-        $result = $base_factory->create_user($username, $password, $email, time());
-        $this->verify($result !== false, 'Failed to create user');
+        $result = $this->create_user($username, $password, $email);
 
         $this->custom_finalize_create($result);
         $this->post_create_actions($result);
