@@ -32,6 +32,8 @@ class WF
     protected $security = null;
     private $messages = array();
 
+    private $check_app_db_version = true;
+
     // Default configuration
     //
     private $global_config = array(
@@ -493,6 +495,11 @@ class WF
         ));
     }
 
+    function skip_app_db_version_check()
+    {
+        $this->check_app_db_version = false;
+    }
+
     function init()
     {
         // Make sure static wrapper functions can work
@@ -705,7 +712,7 @@ class WF
                     "{$required_wf_db_version} of the scheme are applied.");
         }
 
-        if ($required_app_db_version != $current_app_db_version)
+        if ($this->check_app_db_version && $required_app_db_version != $current_app_db_version)
         {
             $this->exit_error('App DB version mismatch',
                     "Please make sure that the app DB scheme matches {$required_app_db_version}.");
