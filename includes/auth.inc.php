@@ -110,10 +110,19 @@ class AuthRedirect extends Authenticator
 {
     function cleanup()
     {
+        if (isset($_SESSION['last_session_cleanup']) &&
+            $_SESSION['last_session_cleanup'] + 60 * 60 > time())
+        {
+            // Skip, because already cleaned in the last hour
+            return;
+        }
+
         $timeout = $this->get_config('authenticator.session_timeout');
         $timestamp = date('Y-m-d H:i:s');
 
         $this->query('DELETE FROM sessions WHERE ADDDATE(last_active, INTERVAL ? SECOND) < ?', array($timeout, $timestamp));
+
+        $_SESSION['last_session_cleanup'] = time();
     }
 
     function register_session($user_id, $session_id)
