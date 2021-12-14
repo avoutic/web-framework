@@ -244,25 +244,38 @@ abstract class DataCore extends FrameworkCore
     static function count_objects($filter = array())
     {
         $query = 'SELECT COUNT(id) AS cnt FROM '.static::$table_name;
+        $params = array();
+
         if (count($filter))
         {
             $query .= ' WHERE ';
             $first = true;
+
             foreach ($filter as $key => $value)
             {
                 if (!$first)
                     $query .= ' AND ';
 
-                $query .= ' `'.$key.'` = ? ';
+                if ($value === null)
+                {
+                    $query .= ' `'.$key.'` IS NULL ';
+                }
+                else
+                {
+                    $query .= ' `'.$key.'` = ? ';
+                    array_push($params, $value);
+                }
 
                 $first = false;
             }
         }
 
-        $args = $filter;
-        $result = WF::get_main_db()->Query($query, $args);
-        WF::verify($result !== false, 'Failed to count objects');
-        WF::verify($result->RecordCount() == 1, 'Failed to count objects');
+        $result = WF::get_main_db()->Query($query, $params);
+
+        $class = get_called_class();
+
+        WF::verify($result !== false, 'Failed to count objects ('.$class.')');
+        WF::verify($result->RecordCount() == 1, 'Failed to count objects ('.$class.')');
 
         return $result->fields['cnt'];
     }
@@ -270,24 +283,33 @@ abstract class DataCore extends FrameworkCore
     static function get_object($filter = array())
     {
         $query = 'SELECT id FROM '.static::$table_name;
+        $params = array();
+
         if (count($filter))
         {
             $query .= ' WHERE ';
             $first = true;
+
             foreach ($filter as $key => $value)
             {
                 if (!$first)
                     $query .= ' AND ';
 
-                $query .= ' `'.$key.'` = ? ';
+                if ($value === null)
+                {
+                    $query .= ' `'.$key.'` IS NULL ';
+                }
+                else
+                {
+                    $query .= ' `'.$key.'` = ? ';
+                    array_push($params, $value);
+                }
 
                 $first = false;
             }
         }
 
-        $args = $filter;
-
-        $result = WF::get_main_db()->Query($query, $args);
+        $result = WF::get_main_db()->Query($query, $params);
 
         $class = get_called_class();
 
@@ -338,31 +360,43 @@ abstract class DataCore extends FrameworkCore
     static function get_objects($offset = 0, $results = 10, $filter = array(), $order = '')
     {
         $query = 'SELECT id FROM '.static::$table_name;
+        $params = array();
+
         if (count($filter))
         {
             $query .= ' WHERE ';
             $first = true;
+
             foreach ($filter as $key => $value)
             {
                 if (!$first)
                     $query .= ' AND ';
 
-                $query .= ' `'.$key.'` = ? ';
+                if ($value === null)
+                {
+                    $query .= ' `'.$key.'` IS NULL ';
+                }
+                else
+                {
+                    $query .= ' `'.$key.'` = ? ';
+                    array_push($params, $value);
+                }
 
                 $first = false;
             }
         }
 
-        $args = $filter;
         if (strlen($order))
             $query .= ' ORDER BY '.$order;
+
         if($results != -1)
         {
             $query .= ' LIMIT ?,?';
-            $args = array_merge($args, array((int) $offset, (int) $results));
+            array_push($params, (int) $offset);
+            array_push($params, (int) $results);
         }
 
-        $result = WF::get_main_db()->Query($query, $args);
+        $result = WF::get_main_db()->Query($query, $params);
 
         $class = get_called_class();
 
