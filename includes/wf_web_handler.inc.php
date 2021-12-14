@@ -27,11 +27,7 @@ class WFWebHandler extends WF
 
     protected function exit_error($short_message, $message)
     {
-        header('HTTP/1.0 500 Internal Error');
-        print("<h1>$short_message</h1>");
-        print($message.'<br/>');
-        print('Please contact the administrator.');
-        exit();
+        $this->exit_send_error(500, $short_message, 'generic', $message);
     }
 
     function handle_request()
@@ -308,7 +304,7 @@ class WFWebHandler extends WF
         $this->exit_send_error(403, 'Access Denied', $type);
     }
 
-    function exit_send_error($code, $title, $type = 'generic')
+    function exit_send_error($code, $title, $type = 'generic', $message = '')
     {
         $mapping = $this->internal_get_config('error_handlers.'.$code);
         $include_page = '';
@@ -324,8 +320,15 @@ class WFWebHandler extends WF
         http_response_code($code);
         if (!strlen($include_page))
         {
-            print('<h1>'.$title.'</h1>');
+            print("<h1>$title</h1>");
+            print($message.'<br/>');
+            print('Please contact the administrator.');
             exit();
+        }
+        else
+        {
+            $this->input['error_title'] = $title;
+            $this->input['error_message'] = $message;
         }
 
         $include_page_file = WF::$site_views.$include_page.".inc.php";

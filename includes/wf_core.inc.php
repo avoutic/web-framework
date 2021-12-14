@@ -91,6 +91,7 @@ class WF
         'error_handlers' => array(
             '403' => '',
             '404' => '',
+            '500' => '',
         ),
         'pages' => array(
             'login' => array(
