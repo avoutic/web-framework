@@ -18,8 +18,12 @@ class WF
     protected $raw_input = array();
     protected $raw_post = array();
 
+    private $in_verify = 0;             // Only go into an assert_handler for a maximum amount of times
+    private $debug_message = '';
+    private $debug_data = '';
+    private $low_info_message = '';
+
     private $initialized = false;
-    private $in_verify = false;             // Only go into an assert_handler once
     private $main_database = null;
     private $aux_databases = array();
     private $cache = null;
@@ -132,28 +136,38 @@ class WF
 
         $error_type = WFHelpers::get_error_type_string($error_type);
 
-        $trace = debug_backtrace();
+        $trace = debug_backtrace(0);
+        $stack = array();
+        $stack_condensed = '';
+
         if (is_array($trace))
         {
-            $stack = array_reverse($trace);
-            $i = 0;
-            foreach($stack as $entry)
-            {
-                $i++;
+            $skipping = true;
 
-                if (in_array($entry['function'], array('internal_assert_handler', 'assert_handler',
+            foreach($trace as $entry)
+            {
+                if ($skipping &&
+                    in_array($entry['function'], array('internal_assert_handler', 'assert_handler',
                                                        'internal_verify', 'verify',
                                                        'silent_verify')))
                 {
-                    break;
+                    continue;
                 }
+
+                $skipping = false;
+
+                if (in_array($entry['function'], array('exit_send_error', 'exit_error')))
+                    unset($entry['args']);
+
+                $stack_condensed .= $entry['file'].'('.$entry['line'].'): '.
+                                    $entry['class'].$entry['type'].$entry['function']."()\n";
+                array_push($stack, $entry);
             }
 
-            $trace = array_slice($trace, count($trace) - $i);
-            WFHelpers::scrub_state($trace);
+            WFHelpers::scrub_state($stack);
         }
 
-        $low_info_message = "File '$file'\nLine '$line'\n";
+        $this->low_info_message .= "File '$file'\nLine '$line'\n";
 
         $db_error = 'Not initialized yet';
         $auth_data = 'Not authenticated';
@@ -174,15 +188,23 @@ class WF
 
         $auth_data = print_r($auth_array, true);
 
-        $input_data = print_r($this->get_input(), true);
+        // Filter out error_message to prevent recursion
+        //
+        $inputs = $this->get_input();
+        unset($inputs['error_message']);
+        $input_data = print_r($inputs, true);
+
         $raw_input_data = print_r($this->get_raw_input(), true);
 
-        $debug_message = "File '$file'\nLine '$line'\nMessage '$message'\n";
-        $debug_message.= "Last Database error: ".$db_error."\n";
-        $debug_message.= "Backtrace:\n".print_r($trace, true);
-        $debug_message.= "Auth:\n".$auth_data;
-        $debug_message.= "Input:\n".$input_data;
-        $debug_message.= "Raw Input:\n".$raw_input_data;
+        $this->debug_message .= "File '$file'\nLine '$line'\nMessage '$message'\n";
+
+        $this->debug_data = "\n";
+        $this->debug_data .= "Condensed backtrace:\n".$stack_condensed."\n";
+        $this->debug_data .= "Last Database error: ".$db_error."\n\n";
+        $this->debug_data .= "Input:\n".$input_data."\n";
+        $this->debug_data .= "Raw Input:\n".$raw_input_data."\n";
+        $this->debug_data .= "Auth:\n".$auth_data."\n";
+        $this->debug_data .= "Backtrace:\n".print_r($stack, true);
 
         if ($this->initialized && $this->internal_get_config('debug_mail') == true)
         {
@@ -192,7 +214,9 @@ class WF
                 $this->internal_get_config('sender_core.assert_recipient'),
                 'Assertion failed',
                 "Failure information: $error_type\n\nServer: ".
-                $this->internal_get_config('server_name')."\n".$debug_message.
+                $this->internal_get_config('server_name')."\n".
+                $this->debug_message.
+                $this->debug_data.
                 "\n----------------------------\n\n".
                 "Server variables:\n".print_r($_SERVER, true)
             );
@@ -204,7 +228,8 @@ class WF
                 "Oops, something went wrong",
                 "Debug information: $error_type<br/>".
                 "<pre>".
-                $debug_message.
+                $this->debug_message.
+                $this->debug_data.
                 "</pre>"
             );
         }
@@ -214,7 +239,7 @@ class WF
                 "Oops, something went wrong",
                 "Failure information: $error_type\n".
                 "<pre>\n".
-                $low_info_message.
+                $this->low_info_message.
                 "</pre>\n"
             );
         }
@@ -238,20 +263,29 @@ class WF
         if ($bool)
             return true;
 
-        if ($this->in_verify)
-            exit();
+        if ($this->in_verify > 2)
+        {
+            print('<pre>');
+            print($this->debug_message.PHP_EOL);
+            print($this->debug_data.PHP_EOL);
+            print('</pre>');
 
-        $this->in_verify = true;
-        $bt = debug_backtrace();
-        $stack = array_reverse($bt);
+            die('2 deep into verifications.. Aborting.');
+        }
+
+        $this->in_verify++;
+        $stack = debug_backtrace(0);
         $caller = false;
+
         foreach($stack as $entry)
         {
             $caller = $entry;
 
             if (in_array($entry['function'], array('internal_assert_handler', 'assert_handler',
                                                    'internal_verify', 'verify', 'silent_verify')))
-                break;
+                continue;
+
+            break;
         }
 
         $this->internal_assert_handler($caller['file'], $caller['line'], $message, 'verify', $silent);
