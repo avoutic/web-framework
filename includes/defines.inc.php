@@ -10,7 +10,7 @@ define("FORMAT_ID", '\d+');
 define("FORMAT_USERNAME", '[\w_\-\.]+');
 define("FORMAT_PASSWORD", '.*');
 define("FORMAT_NAME", '[\w _\-\.\']+');
-define("FORMAT_EMAIL", '[\w\._\-]+@[\w_\-\.]+\.[\w_\-]+');
+define("FORMAT_EMAIL", '[\w\._\-+]+@[\w_\-\.]+\.[\w_\-]+');
 define("FORMAT_VERIFY_CODE", '[\w]{40}');
 define("FORMAT_RETURN_PAGE", '[\/\w\.\-_]+');
 define("FORMAT_RETURN_QUERY", '[\w\&=:\._\-%\(\)\?\/]+');
