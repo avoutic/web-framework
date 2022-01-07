@@ -146,6 +146,14 @@ SQL;
 
         $params = array();
         $result = $this->query($query, $params);
+
+        if ($result === false)
+        {
+            echo "   Failed: ";
+            $db = $this->get_db();
+            echo $db->GetLastError().PHP_EOL;
+            exit();
+        }
     }
 };
 ?>
