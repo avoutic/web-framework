@@ -3,14 +3,14 @@ class DBManager extends FrameworkCore
 {
     function execute($data)
     {
-        $this->verify(isset($data['start_version']), 'No start version specified');
         $this->verify(isset($data['target_version']), 'No target version specified');
         $this->verify(is_array($data['actions']), 'No action array specified');
-        $this->verify($data['start_version'] < $data['target_version'], 'Target version not larger than start version');
 
-        echo " - Checking current version to match {$data['start_version']}".PHP_EOL;
+        $start_version = $data['target_version'] - 1;
 
-        $this->check_version($data['start_version']);
+        echo " - Checking current version to match {$start_version}".PHP_EOL;
+
+        $this->check_version($start_version);
 
         foreach ($data['actions'] as $action)
         {
@@ -29,7 +29,7 @@ class DBManager extends FrameworkCore
 
         echo " - Updating version to {$data['target_version']}".PHP_EOL;
 
-        $this->set_version($data['start_version'], $data['target_version']);
+        $this->set_version($data['target_version']);
     }
 
     function get_current_version()
@@ -58,10 +58,8 @@ SQL;
         $this->verify($current_version == $app_db_version, "DB version '{$current_version}' does not match requested version '{$app_db_version}'");
     }
 
-    private function set_version($from, $to)
+    private function set_version($to)
     {
-        $this->check_version($from);
-
         // Update version
         //
         $query = <<<SQL
