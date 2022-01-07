@@ -107,6 +107,10 @@ SQL;
 
                 array_push($field_lines, "`{$info['name']}` VARCHAR({$info['size']}) NOT NULL");
             }
+            else if ($info['type'] == 'int')
+            {
+                array_push($field_lines, "`{$info['name']}` INT NOT NULL");
+            }
             else
                 $this->verify(false, "Unknown field type '{$info['type']}'");
         }
