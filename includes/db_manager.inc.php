@@ -1,6 +1,97 @@
 <?php
 class DBManager extends FrameworkCore
 {
+    function calculate_hash()
+    {
+        // Get tables
+        //
+        $query = <<<SQL
+        SHOW TABLES
+SQL;
+
+        $params = array();
+
+        $result = $this->query($query, $params);
+        $this->verify($result !== false, 'Failed to retrieve tables');
+
+        $db_def = '';
+
+        foreach ($result as $row)
+        {
+            $table_name = $row[0];
+
+            // Get tables
+            //
+            $query = <<<SQL
+            SHOW CREATE TABLE {$table_name}
+SQL;
+
+            $params = array();
+
+            $result = $this->query($query, $params);
+            $this->verify($result !== false, 'Failed to retrieve create table');
+
+            $statement = $result->fields['Create Table'].PHP_EOL;
+
+            // Filter out AUTO_INCREMENT intrializer
+            //
+            $statement = preg_replace('/ AUTO_INCREMENT=\d+/', '', $statement);
+
+            $db_def .= $statement;
+        }
+
+        return sha1($db_def);
+    }
+
+    function verify_hash()
+    {
+        $stored_hash = $this->get_stored_hash();
+        $actual_hash = $this->calculate_hash();
+
+        return $stored_hash === $actual_hash;
+    }
+
+    function get_stored_hash()
+    {
+        // Retrieve hash
+        //
+        $query = <<<SQL
+        SELECT value
+        FROM config_values
+        WHERE module = 'db' AND
+              name = 'app_db_hash'
+SQL;
+
+        $params = array();
+
+        $result = $this->query($query, $params);
+        $this->verify($result !== false, 'Failed to retrieve App DB hash');
+
+        if ($result->RecordCount() == 0)
+            return '';
+
+        return $result->fields['value'];
+    }
+
+    function update_stored_hash()
+    {
+        $actual_hash = $this->calculate_hash();
+
+        // Retrieve hash
+        //
+        $query = <<<SQL
+        UPDATE config_values
+        SET value = ?
+        WHERE module = 'db' AND
+              name = 'app_db_hash'
+SQL;
+
+        $params = array($actual_hash);
+
+        $result = $this->query($query, $params);
+        $this->verify($result !== false, 'Failed to update App DB hash');
+    }
+
     function execute($data)
     {
         $this->verify(isset($data['target_version']), 'No target version specified');
@@ -73,6 +164,8 @@ SQL;
 
         $result = $this->query($query, $params);
         $this->verify($result !== false, 'Failed to update App DB version');
+
+        $this->update_stored_hash();
     }
 
     private function create_table($table_name, $fields, $constraints)
