@@ -168,6 +168,57 @@ SQL;
         $this->update_stored_hash();
     }
 
+    private function get_field_statements($table_name, $info, &$field_lines, &$constraint_lines)
+    {
+        $this->verify(isset($info['type']), 'No field type specified');
+        $this->verify(isset($info['name']), 'No field name specified');
+
+        if ($info['type'] == 'foreign_key')
+        {
+            $this->verify(isset($info['foreign_table']), 'No target for foreign table set');
+            $this->verify(isset($info['foreign_field']), 'No target for foreign field set');
+
+            array_push($field_lines, "`{$info['name']}` INT(11) NOT NULL");
+            array_push($constraint_lines, "KEY `foreign_{$table_name}_{$info['name']}` (`{$info['name']}`)");
+            array_push($constraint_lines, "CONSTRAINT `foreign_{$table_name}_{$info['name']}` FOREIGN KEY (`{$info['name']}`) REFERENCES `{$info['foreign_table']}` (`${info['foreign_field']}`)");
+        }
+        else if ($info['type'] == 'varchar')
+        {
+            $this->verify(isset($info['size']), 'No varchar size set');
+
+            array_push($field_lines, "`{$info['name']}` VARCHAR({$info['size']}) NOT NULL");
+        }
+        else if ($info['type'] == 'int')
+        {
+            $str = "`{$info['name']}` INT NOT NULL";
+            if (isset($info['default']))
+                $str .= ' DEFAULT '.$info['default'];
+
+            array_push($field_lines, $str);
+        }
+
+        else
+            $this->verify(false, "Unknown field type '{$info['type']}'");
+    }
+
+    private function get_constraint_statements($table_name, $info, &$constraint_lines)
+    {
+        $this->verify(isset($info['type']), 'No constraint type specified');
+
+        if ($info['type'] == 'unique')
+        {
+            $this->verify(isset($info['values']), 'No values for unique specified');
+            $this->verify(is_array($info['values']), 'Values is not an array');
+
+            $values_fmt = implode('_', $info['values']);
+            $fields_fmt = implode('`, `', $info['values']);
+
+            array_push($constraint_lines, "UNIQUE KEY `unique_{$table_name}_{$values_fmt}` (`{$fields_fmt}`)");
+        }
+        else
+            $this->verify(false, "Unknown constraint type '{$info['type']}'");
+    }
+
     private function create_table($table_name, $fields, $constraints)
     {
         $field_lines = array();
@@ -179,50 +230,10 @@ SQL;
         array_push($constraint_lines, "PRIMARY KEY (`id`)");
 
         foreach ($fields as $info)
-        {
-            $this->verify(isset($info['type']), 'No field type specified');
-            $this->verify(isset($info['name']), 'No field name specified');
-
-            if ($info['type'] == 'foreign_key')
-            {
-                $this->verify(isset($info['foreign_table']), 'No target for foreign table set');
-                $this->verify(isset($info['foreign_field']), 'No target for foreign field set');
-
-                array_push($field_lines, "`{$info['name']}` INT(11) NOT NULL");
-                array_push($constraint_lines, "KEY `foreign_{$table_name}_{$info['name']}` (`{$info['name']}`)");
-                array_push($constraint_lines, "CONSTRAINT `foreign_{$table_name}_{$info['name']}` FOREIGN KEY (`{$info['name']}`) REFERENCES `{$info['foreign_table']}` (`${info['foreign_field']}`)");
-            }
-            else if ($info['type'] == 'varchar')
-            {
-                $this->verify(isset($info['size']), 'No varchar size set');
-
-                array_push($field_lines, "`{$info['name']}` VARCHAR({$info['size']}) NOT NULL");
-            }
-            else if ($info['type'] == 'int')
-            {
-                array_push($field_lines, "`{$info['name']}` INT NOT NULL");
-            }
-            else
-                $this->verify(false, "Unknown field type '{$info['type']}'");
-        }
+            $this->get_field_statements($table_name, $info, $field_lines, $constraint_lines);
 
         foreach ($constraints as $info)
-        {
-            $this->verify(isset($info['type']), 'No constraint type specified');
-
-            if ($info['type'] == 'unique')
-            {
-                $this->verify(isset($info['values']), 'No values for unique specified');
-                $this->verify(is_array($info['values']), 'Values is not an array');
-
-                $values_fmt = implode('_', $info['values']);
-                $fields_fmt = implode('`, `', $info['values']);
-
-                array_push($constraint_lines, "UNIQUE KEY `unique_{$table_name}_{$values_fmt}` (`{$fields_fmt}`)");
-            }
-            else
-                $this->verify(false, "Unknown constraint type '{$info['type']}'");
-        }
+            $this->get_constraint_statements($table_name, $info, $constraint_lines);
 
         $lines = array_merge($field_lines, $constraint_lines);
         $lines_fmt = implode(",\n    ", $lines);
