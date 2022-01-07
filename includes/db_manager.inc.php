@@ -114,6 +114,11 @@ SQL;
 
                 $this->create_table($action['table_name'], $action['fields'], $action['constraints']);
             }
+            else if ($action['type'] == 'add_column')
+            {
+                $this->verify(is_array($action['field']), 'No field array specified');
+                $this->add_column($action['table_name'], $action['field']);
+            }
             else
                 $this->verify(false, "Unknown action type '{$action['type']}'");
         }
@@ -242,6 +247,35 @@ SQL;
 CREATE TABLE `{$table_name}` (
     {$lines_fmt}
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+SQL;
+
+        echo " - Executing:".PHP_EOL.$query.PHP_EOL;
+
+        $params = array();
+        $result = $this->query($query, $params);
+
+        if ($result === false)
+        {
+            echo "   Failed: ";
+            $db = $this->get_db();
+            echo $db->GetLastError().PHP_EOL;
+            exit();
+        }
+    }
+
+    private function add_column($table_name, $info)
+    {
+        $field_lines = array();
+        $constraint_lines = array();
+
+        $this->get_field_statements($table_name, $info, $field_lines, $constraint_lines);
+
+        $lines = array_merge($field_lines, $constraint_lines);
+        $lines_fmt = implode(",\n    ADD ", $lines);
+
+        $query = <<<SQL
+ALTER TABLE `{$table_name}`
+    ADD {$lines_fmt}
 SQL;
 
         echo " - Executing:".PHP_EOL.$query.PHP_EOL;
