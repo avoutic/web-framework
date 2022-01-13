@@ -191,7 +191,11 @@ SQL;
         {
             $this->verify(isset($info['size']), 'No varchar size set');
 
-            array_push($field_lines, "`{$info['name']}` VARCHAR({$info['size']}) NOT NULL");
+            $str = "`{$info['name']}` VARCHAR({$info['size']}) NOT NULL";
+            if (isset($info['default']))
+                $str .= " DEFAULT '{$info['default']}'";
+
+            array_push($field_lines, $str);
         }
         else if ($info['type'] == 'int')
         {
