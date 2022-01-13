@@ -178,7 +178,15 @@ SQL;
         $this->verify(isset($info['type']), 'No field type specified');
         $this->verify(isset($info['name']), 'No field name specified');
 
-        if ($info['type'] == 'foreign_key')
+        if ($info['type'] == 'boolean')
+        {
+            $str = "`{$info['name']}` BOOLEAN NOT NULL";
+            if (isset($info['default']))
+                $str .= " DEFAULT {$info['default']}";
+
+            array_push($field_lines, $str);
+        }
+        else if ($info['type'] == 'foreign_key')
         {
             $this->verify(isset($info['foreign_table']), 'No target for foreign table set');
             $this->verify(isset($info['foreign_field']), 'No target for foreign field set');
