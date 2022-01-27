@@ -184,10 +184,13 @@ class WF
                 $db_error = 'None';
         }
 
-        $auth_array = $this->get_authenticated();
-        WFHelpers::scrub_state($auth_array);
+        if ($this->is_authenticated())
+        {
+            $auth_array = $this->get_authenticated();
+            WFHelpers::scrub_state($auth_array);
 
-        $auth_data = print_r($auth_array, true);
+            $auth_data = print_r($auth_array, true);
+        }
 
         // Filter out error_message to prevent recursion
         //
