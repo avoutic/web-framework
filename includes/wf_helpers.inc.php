@@ -52,6 +52,8 @@ class WFHelpers
 
             if (is_array($value))
                 WFHelpers::scrub_state($item[$key]);
+            else if (!mb_detect_encoding($value, 'ASCII', true))
+                $item[$key] = 'binary';
             else if ($key === 'database')
                 $item[$key] = 'scrubbed';
             else if ($key === 'databases')
