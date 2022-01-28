@@ -212,6 +212,7 @@ SQL;
 
         $null_fmt = $null ? 'NULL' : 'NOT NULL';
         $default_fmt = (isset($info['default'])) ? "DEFAULT {$info['default']}" : '';
+        $after_fmt = (isset($info['after'])) ? "AFTER {$info['after']}" : '';
 
         // Special changes to standard flow
         //
@@ -221,7 +222,7 @@ SQL;
                 $default_fmt = "DEFAULT '{$info['default']}'";
         }
 
-        $str = "`{$info['name']}` {$db_type} {$null_fmt} {$default_fmt}";
+        $str = "`{$info['name']}` {$db_type} {$null_fmt} {$default_fmt} {$after_fmt}";
 
         array_push($field_lines, $str);
 
