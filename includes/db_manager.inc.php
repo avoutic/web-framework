@@ -184,44 +184,54 @@ SQL;
         $this->verify(isset($info['type']), 'No field type specified');
         $this->verify(isset($info['name']), 'No field name specified');
 
-        if ($info['type'] == 'boolean')
-        {
-            $str = "`{$info['name']}` BOOLEAN NOT NULL";
-            if (isset($info['default']))
-                $str .= " DEFAULT {$info['default']}";
+        $db_type = '';
+        $null = (isset($info['null']) && $info['null']);
 
-            array_push($field_lines, $str);
-        }
+        // First get database type and check requirements
+        //
+        if ($info['type'] == 'boolean')
+            $db_type = 'BOOLEAN';
         else if ($info['type'] == 'foreign_key')
         {
             $this->verify(isset($info['foreign_table']), 'No target for foreign table set');
             $this->verify(isset($info['foreign_field']), 'No target for foreign field set');
 
-            array_push($field_lines, "`{$info['name']}` INT(11) NOT NULL");
-            array_push($constraint_lines, "KEY `foreign_{$table_name}_{$info['name']}` (`{$info['name']}`)");
-            array_push($constraint_lines, "CONSTRAINT `foreign_{$table_name}_{$info['name']}` FOREIGN KEY (`{$info['name']}`) REFERENCES `{$info['foreign_table']}` (`${info['foreign_field']}`)");
+            $db_type = 'INT(11)';
+            $null = true;
         }
         else if ($info['type'] == 'varchar')
         {
             $this->verify(isset($info['size']), 'No varchar size set');
 
-            $str = "`{$info['name']}` VARCHAR({$info['size']}) NOT NULL";
-            if (isset($info['default']))
-                $str .= " DEFAULT '{$info['default']}'";
-
-            array_push($field_lines, $str);
+            $db_type = "VARCHAR({$info['size']})";
         }
         else if ($info['type'] == 'int')
-        {
-            $str = "`{$info['name']}` INT NOT NULL";
-            if (isset($info['default']))
-                $str .= ' DEFAULT '.$info['default'];
+            $db_type = 'INT';
+        else
+            $this->verify(false, "Unhandled field type '{$info['type']}'");
 
-            array_push($field_lines, $str);
+        $null_fmt = $null ? 'NULL' : 'NOT NULL';
+        $default_fmt = (isset($info['default'])) ? "DEFAULT {$info['default']}" : '';
+
+        // Special changes to standard flow
+        //
+        if ($info['type'] == 'varchar')
+        {
+            if (isset($info['default']))
+                $default_fmt = "DEFAULT '{$info['default']}'";
         }
 
-        else
-            $this->verify(false, "Unknown field type '{$info['type']}'");
+        $str = "`{$info['name']}` {$db_type} {$null_fmt} {$default_fmt}";
+
+        array_push($field_lines, $str);
+
+        // Special post actions
+        //
+        if ($info['type'] == 'foreign_key')
+        {
+            array_push($constraint_lines, "KEY `foreign_{$table_name}_{$info['name']}` (`{$info['name']}`)");
+            array_push($constraint_lines, "CONSTRAINT `foreign_{$table_name}_{$info['name']}` FOREIGN KEY (`{$info['name']}`) REFERENCES `{$info['foreign_table']}` (`${info['foreign_field']}`)");
+        }
     }
 
     private function get_constraint_statements($table_name, $info, &$constraint_lines)
