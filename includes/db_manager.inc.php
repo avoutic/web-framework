@@ -125,6 +125,11 @@ SQL;
                 $this->verify(isset($action['new_name']), 'No new_name specified');
                 $this->rename_column($action['table_name'], $action['name'], $action['new_name']);
             }
+            else if ($action['type'] == 'rename_table')
+            {
+                $this->verify(isset($action['new_name']), 'No new_name specified');
+                $this->rename_table($action['table_name'], $action['new_name']);
+            }
             else
                 $this->verify(false, "Unknown action type '{$action['type']}'");
         }
@@ -330,6 +335,27 @@ SQL;
         $query = <<<SQL
 ALTER TABLE `{$table_name}`
     RENAME COLUMN `{$current_name}` TO `{$new_name}`
+SQL;
+
+        echo " - Executing:".PHP_EOL.$query.PHP_EOL;
+
+        $params = array();
+        $result = $this->query($query, $params);
+
+        if ($result === false)
+        {
+            echo "   Failed: ";
+            $db = $this->get_db();
+            echo $db->GetLastError().PHP_EOL;
+            exit();
+        }
+    }
+
+    private function rename_table($table_name, $new_name)
+    {
+        $query = <<<SQL
+ALTER TABLE `{$table_name}`
+    RENAME TO `{$new_name}`
 SQL;
 
         echo " - Executing:".PHP_EOL.$query.PHP_EOL;
