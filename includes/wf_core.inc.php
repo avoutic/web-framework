@@ -775,6 +775,14 @@ class FrameworkCore
         $this->database = $this->framework->get_db();
     }
 
+    function __unserialize($arr)
+    {
+        $this->framework = WF::get_framework();
+        $this->security = $this->framework->get_security();
+        $this->cache = $this->framework->get_cache();
+        $this->database = $this->framework->get_db();
+    }
+
     protected function get_config($path)
     {
         return $this->framework->internal_get_config($path);

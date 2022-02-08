@@ -20,6 +20,19 @@ abstract class DataCore extends FrameworkCore
         $this->fill_fields($fill_complex, $obj);
     }
 
+    function __serialize()
+    {
+        return $this->get_base_fields();
+    }
+
+    function __unserialize($data)
+    {
+        parent::__unserialize($data);
+
+        $this->id = $data['id'];
+        $this->fill_base_fields_from_obj($data);
+    }
+
     static function exists($id)
     {
         global $global_cache;
@@ -442,6 +455,16 @@ class FactoryCore extends FrameworkCore
     function __construct()
     {
         parent::__construct();
+    }
+
+    function __serialize()
+    {
+        return array();
+    }
+
+    function __unserialize($data)
+    {
+        parent::__unserialize($data);
     }
 };
 ?>
