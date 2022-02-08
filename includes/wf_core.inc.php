@@ -160,8 +160,13 @@ class WF
                 if (in_array($entry['function'], array('exit_send_error', 'exit_error')))
                     unset($entry['args']);
 
-                $stack_condensed .= $entry['file'].'('.$entry['line'].'): '.
-                                    $entry['class'].$entry['type'].$entry['function']."()\n";
+                $stack_condensed .= $entry['file'].'('.$entry['line'].'): ';
+
+                if (isset($entry['class']))
+                    $stack_condensed .= $entry['class'].$entry['type'];
+
+                $stack_condensed .= $entry['function']."()\n";
+
                 array_push($stack, $entry);
             }
 
