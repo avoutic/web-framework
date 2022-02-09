@@ -238,7 +238,7 @@ abstract class DataCore extends FrameworkCore
 
         WF::verify($result !== false, 'Failed to create object ('.$class.')');
 
-        return new $class($result);
+        return static::get_object_by_id($result);
     }
 
     static function count_objects($filter = array())
@@ -280,6 +280,36 @@ abstract class DataCore extends FrameworkCore
         return $result->fields['cnt'];
     }
 
+    // This is the base retrieval function that all object functions should use
+    // Cache checking is done here
+    //
+    static function get_object_by_id($id)
+    {
+        $cache = WF::get_static_cache();
+
+        if ($cache !== null && static::$is_cacheable)
+        {
+            $obj = $cache->get(static::get_cache_id($id));
+
+            // Cache hit
+            //
+            if ($obj !== false)
+                return $obj;
+        }
+
+        $class = get_called_class();
+
+        $obj = new $class($id);
+
+        // Cache it
+        //
+        $obj->update_in_cache();
+
+        return $obj;
+    }
+
+    // Helper retrieval functions
+    //
     static function get_object($filter = array())
     {
         $query = 'SELECT id FROM '.static::$table_name;
@@ -319,7 +349,7 @@ abstract class DataCore extends FrameworkCore
         if ($result->RecordCount() == 0)
             return false;
 
-        return new $class($result->fields['id']);
+        return static::get_object_by_id($result->fields['id']);
     }
 
     static function get_object_info($filter = array())
@@ -337,14 +367,9 @@ abstract class DataCore extends FrameworkCore
         return $obj->$data_function();
     }
 
-    static function get_object_by_id($id)
-    {
-        return static::get_object(array('id' => $id));
-    }
-
     static function get_object_info_by_id($id)
     {
-        return static::get_object_data('get_info', array('id' => $id));
+        return static::get_object_data_by_id('get_info', $id);
     }
 
     static function get_object_data_by_id($data_function, $id)
@@ -404,9 +429,7 @@ abstract class DataCore extends FrameworkCore
 
         $info = array();
         foreach($result as $k => $row)
-        {
-            $info[$row['id']] = new $class($row['id']);
-        }
+            $info[$row['id']] = static::get_object_by_id($row['id']);
 
         return $info;
     }
