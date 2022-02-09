@@ -30,11 +30,13 @@ abstract class DataCore extends FrameworkCore
 
     static function exists($id)
     {
-        $cache = WF::get_static_cache();
+        if (static::$is_cacheable)
+        {
+            $cache = WF::get_static_cache();
 
-        if ($cache !== null && static::$is_cacheable)
             if ($cache->exists(static::get_cache_id($id)) === true)
                 return true;
+        }
 
         $result = WF::get_main_db()->Query('SELECT id FROM '.static::$table_name.
                                    ' WHERE id = ?', array($id));
@@ -55,13 +57,13 @@ abstract class DataCore extends FrameworkCore
 
     function update_in_cache()
     {
-        if ($this->cache !== null && static::$is_cacheable)
+        if (static::$is_cacheable)
             $this->cache->set(static::get_cache_id($this->id), $this);
     }
 
     function delete_from_cache()
     {
-        if ($this->cache !== null && static::$is_cacheable)
+        if (static::$is_cacheable)
             $this->cache->invalidate(static::get_cache_id($this->id));
     }
 
@@ -304,10 +306,9 @@ abstract class DataCore extends FrameworkCore
     //
     static function get_object_by_id($id)
     {
-        $cache = WF::get_static_cache();
-
-        if ($cache !== null && static::$is_cacheable)
+        if (static::$is_cacheable)
         {
+            $cache = WF::get_static_cache();
             $obj = $cache->get(static::get_cache_id($id));
 
             // Cache hit
@@ -320,7 +321,7 @@ abstract class DataCore extends FrameworkCore
 
         $obj = new $class($id);
 
-        // Cache it
+        // Cache miss
         //
         $obj->update_in_cache();
 
