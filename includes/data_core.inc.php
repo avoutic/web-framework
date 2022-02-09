@@ -30,10 +30,10 @@ abstract class DataCore extends FrameworkCore
 
     static function exists($id)
     {
-        global $global_cache;
+        $cache = WF::get_static_cache();
 
-        if ($global_cache != null && static::$is_cacheable)
-            if (false !== $global_cache->exists(static::get_cache_id($id)))
+        if ($cache !== null && static::$is_cacheable)
+            if ($cache->exists(static::get_cache_id($id)) === true)
                 return true;
 
         $result = WF::get_main_db()->Query('SELECT id FROM '.static::$table_name.
@@ -50,7 +50,19 @@ abstract class DataCore extends FrameworkCore
 
     static function get_cache_id($id)
     {
-       return static::$table_name.'{'.$id.'}';
+       return static::$table_name.'['.$id.']';
+    }
+
+    function update_in_cache()
+    {
+        if ($this->cache !== null && static::$is_cacheable)
+            $this->cache->set(static::get_cache_id($this->id), $this);
+    }
+
+    function delete_from_cache()
+    {
+        if ($this->cache !== null && static::$is_cacheable)
+            $this->cache->invalidate(static::get_cache_id($this->id));
     }
 
     function get_base_fields()
@@ -143,6 +155,8 @@ abstract class DataCore extends FrameworkCore
 
         foreach ($data as $key => $value)
             $this->$key = $value;
+
+        $this->update_in_cache();
     }
 
     function update_field($field, $value)
@@ -159,6 +173,8 @@ abstract class DataCore extends FrameworkCore
         $this->verify($result !== false, 'Failed to update object ('.$class.')');
 
         $this->$field = $value;
+
+        $this->update_in_cache();
     }
 
     function decrease_field($field, $value = 1, $minimum = false)
@@ -185,6 +201,8 @@ abstract class DataCore extends FrameworkCore
         $this->verify($result !== false, 'Failed to decrease field of object ('.$class.')');
 
         $this->$field = $this->get_field($field);
+
+        $this->update_in_cache();
     }
 
     function increase_field($field, $value = 1)
@@ -201,12 +219,13 @@ abstract class DataCore extends FrameworkCore
         $this->verify($result !== false, 'Failed to increase field of object ('.$class.')');
 
         $this->$field = $this->get_field($field);
+
+        $this->update_in_cache();
     }
 
     function delete()
     {
-        if ($this->cache != null && $this->is_cacheable)
-            $this->cache->invalidate(static::get_cache_id($this->id));
+        $this->delete_from_cache();
 
         $result = $this->query(
                     'DELETE FROM '.static::$table_name.' WHERE id = ?',
