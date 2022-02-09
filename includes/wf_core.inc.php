@@ -13,6 +13,7 @@ class WF
 
     private static $framework = null;
     private static $main_db = null;         // Only for DataCore and ConfigValues abstraction
+    private static $static_cache = null;    // Only for DataCore and ConfigValues abstraction
 
     protected $input = array();
     protected $raw_input = array();
@@ -59,7 +60,6 @@ class WF
         'http_mode' => 'https',
         'document_root' => '',              // Set to $_SERVER['DOCUMENT_ROOT'] automatically
         'cache_enabled' => false,
-        'cache_config' => 'main',
         'auth_mode' => 'redirect',            // redirect, www-authenticate, custom (requires auth_module)
         'auth_module' => '',
         'authenticator' => array(
@@ -416,6 +416,13 @@ class WF
         return $this->cache;
     }
 
+    // Only relevant for DataCore and ConfigValues to retrieve main database in static functions
+    //
+    static function get_static_cache()
+    {
+        return WF::$static_cache;
+    }
+
     function get_security()
     {
         return $this->security;
@@ -708,15 +715,13 @@ class WF
 
     private function init_cache()
     {
-        // Start the cache connection
+        // Start the Redis cache connection
         //
-        require_once(WF::$includes.'cache_core.inc.php');
-        require_once(WF::$site_includes.'cache_handler.inc.php');
+        require_once(WF::$includes.'redis_cache.inc.php');
+        $cache_config = $this->security->get_auth_config('redis');
 
-        $cache_tag = $this->internal_get_config('cache_config');
-        $cache_config = $this->security->get_auth_config('cache_config.'.$cache_tag);
-
-        $this->cache = new Cache($cache_config);
+        $this->cache = new RedisCache($cache_config);
+        WF::$static_cache = $this->cache;
     }
 
     function is_authenticated()
