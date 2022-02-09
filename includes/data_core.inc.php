@@ -12,12 +12,7 @@ abstract class DataCore extends FrameworkCore
         parent::__construct();
 
         $this->id = $id;
-        $obj = false;
-
-        if ($this->cache != null && $this->is_cacheable)
-            $obj = $this->cache->get(static::get_cache_id($id));
-
-        $this->fill_fields($fill_complex, $obj);
+        $this->fill_fields($fill_complex);
     }
 
     function __serialize()
@@ -80,17 +75,9 @@ abstract class DataCore extends FrameworkCore
         return $this->get_info();
     }
 
-    function fill_fields($fill_complex, $obj = false)
+    function fill_fields($fill_complex)
     {
-        if ($obj === false)
-        {
-            $this->fill_base_fields_from_db();
-
-            if ($this->cache != null && $this->is_cacheable)
-                $this->cache->add(static::get_cache_id($id), $this->get_base_fields());
-        }
-        else
-            $this->fill_base_fields_from_obj($obj);
+        $this->fill_base_fields_from_db();
 
         if ($fill_complex)
             $this->fill_complex_fields();
