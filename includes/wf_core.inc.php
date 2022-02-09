@@ -527,8 +527,7 @@ class WF
 
         $this->check_compatibility();
 
-        if ($this->internal_get_config('cache_enabled') == true)
-            $this->init_cache();
+        $this->init_cache();
 
         $this->initialized = true;
     }
@@ -715,13 +714,24 @@ class WF
 
     private function init_cache()
     {
-        // Start the Redis cache connection
-        //
-        require_once(WF::$includes.'redis_cache.inc.php');
-        $cache_config = $this->security->get_auth_config('redis');
+        if ($this->internal_get_config('cache_enabled') == true)
+        {
+            // Start the Redis cache connection
+            //
+            require_once(WF::$includes.'redis_cache.inc.php');
+            $cache_config = $this->security->get_auth_config('redis');
 
-        $this->cache = new RedisCache($cache_config);
-        WF::$static_cache = $this->cache;
+            $this->cache = new RedisCache($cache_config);
+            WF::$static_cache = $this->cache;
+        }
+        else
+        {
+            // Initialize NullCache
+            //
+            require_once(WF::$includes.'null_cache.inc.php');
+            $this->cache = new NullCache();
+            WF::$static_cache = $this->cache;
+        }
     }
 
     function is_authenticated()
