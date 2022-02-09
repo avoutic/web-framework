@@ -5,7 +5,7 @@ abstract class DataCore extends FrameworkCore
 
     static protected $table_name;
     static protected $base_fields;
-    static protected $is_cacheable = true;
+    static protected $is_cacheable = false;
 
     function __construct($id, $fill_complex = true)
     {
