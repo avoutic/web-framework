@@ -103,6 +103,9 @@ SQL;
 
         $this->check_version($start_version);
 
+        echo " - Preparing all statements".PHP_EOL;
+        $queries = array();
+
         foreach ($data['actions'] as $action)
         {
             $this->verify(isset($action['type']), 'No action type specified');
@@ -112,26 +115,47 @@ SQL;
                 $this->verify(isset($action['fields']) && is_array($action['fields']), 'No fields array specified');
                 $this->verify(isset($action['constraints']) && is_array($action['constraints']), 'No constraints array specified');
 
-                $this->create_table($action['table_name'], $action['fields'], $action['constraints']);
+                $result = $this->create_table($action['table_name'], $action['fields'], $action['constraints']);
+                array_push($queries, $result);
             }
             else if ($action['type'] == 'add_column')
             {
                 $this->verify(is_array($action['field']), 'No field array specified');
-                $this->add_column($action['table_name'], $action['field']);
+                $result = $this->add_column($action['table_name'], $action['field']);
+                array_push($queries, $result);
             }
             else if ($action['type'] == 'rename_column')
             {
                 $this->verify(isset($action['name']), 'No name specified');
                 $this->verify(isset($action['new_name']), 'No new_name specified');
-                $this->rename_column($action['table_name'], $action['name'], $action['new_name']);
+                $result = $this->rename_column($action['table_name'], $action['name'], $action['new_name']);
+                array_push($queries, $result);
             }
             else if ($action['type'] == 'rename_table')
             {
                 $this->verify(isset($action['new_name']), 'No new_name specified');
-                $this->rename_table($action['table_name'], $action['new_name']);
+                $result = $this->rename_table($action['table_name'], $action['new_name']);
+                array_push($queries, $result);
             }
             else
                 $this->verify(false, "Unknown action type '{$action['type']}'");
+        }
+
+        echo " - Executing queries".PHP_EOL;
+
+        foreach ($queries as $info)
+        {
+            echo "   - Executing:".PHP_EOL.$info['query'].PHP_EOL;
+
+            $result = $this->query($info['query'], $info['params']);
+
+            if ($result === false)
+            {
+                echo "   Failed: ";
+                $db = $this->get_db();
+                echo $db->GetLastError().PHP_EOL;
+                exit();
+            }
         }
 
         echo " - Updating version to {$data['target_version']}".PHP_EOL;
@@ -283,18 +307,12 @@ CREATE TABLE `{$table_name}` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
 SQL;
 
-        echo " - Executing:".PHP_EOL.$query.PHP_EOL;
-
         $params = array();
-        $result = $this->query($query, $params);
 
-        if ($result === false)
-        {
-            echo "   Failed: ";
-            $db = $this->get_db();
-            echo $db->GetLastError().PHP_EOL;
-            exit();
-        }
+        return array(
+            'query' => $query,
+            'params' => $params,
+        );
     }
 
     private function add_column($table_name, $info)
@@ -312,43 +330,27 @@ ALTER TABLE `{$table_name}`
     ADD {$lines_fmt}
 SQL;
 
-        echo " - Executing:".PHP_EOL.$query.PHP_EOL;
-
         $params = array();
-        $result = $this->query($query, $params);
 
-        if ($result === false)
-        {
-            echo "   Failed: ";
-            $db = $this->get_db();
-            echo $db->GetLastError().PHP_EOL;
-            exit();
-        }
+        return array(
+            'query' => $query,
+            'params' => $params,
+        );
     }
 
     private function rename_column($table_name, $current_name, $new_name)
     {
-        $field_lines = array();
-        $constraint_lines = array();
-
-
         $query = <<<SQL
 ALTER TABLE `{$table_name}`
     RENAME COLUMN `{$current_name}` TO `{$new_name}`
 SQL;
 
-        echo " - Executing:".PHP_EOL.$query.PHP_EOL;
-
         $params = array();
-        $result = $this->query($query, $params);
 
-        if ($result === false)
-        {
-            echo "   Failed: ";
-            $db = $this->get_db();
-            echo $db->GetLastError().PHP_EOL;
-            exit();
-        }
+        return array(
+            'query' => $query,
+            'params' => $params,
+        );
     }
 
     private function rename_table($table_name, $new_name)
@@ -358,18 +360,12 @@ ALTER TABLE `{$table_name}`
     RENAME TO `{$new_name}`
 SQL;
 
-        echo " - Executing:".PHP_EOL.$query.PHP_EOL;
-
         $params = array();
-        $result = $this->query($query, $params);
 
-        if ($result === false)
-        {
-            echo "   Failed: ";
-            $db = $this->get_db();
-            echo $db->GetLastError().PHP_EOL;
-            exit();
-        }
+        return array(
+            'query' => $query,
+            'params' => $params,
+        );
     }
 };
 ?>
