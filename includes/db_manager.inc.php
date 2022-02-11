@@ -109,8 +109,8 @@ SQL;
 
             if ($action['type'] == 'create_table')
             {
-                $this->verify(is_array($action['fields']), 'No fields array specified');
-                $this->verify(is_array($action['constraints']), 'No constraints array specified');
+                $this->verify(isset($action['fields']) && is_array($action['fields']), 'No fields array specified');
+                $this->verify(isset($action['constraints']) && is_array($action['constraints']), 'No constraints array specified');
 
                 $this->create_table($action['table_name'], $action['fields'], $action['constraints']);
             }
