@@ -242,6 +242,8 @@ SQL;
         }
         else if ($info['type'] == 'int')
             $db_type = 'INT';
+        else if ($info['type'] == 'text')
+            $db_type = 'TEXT';
         else
             $this->verify(false, "Unhandled field type '{$info['type']}'");
 
