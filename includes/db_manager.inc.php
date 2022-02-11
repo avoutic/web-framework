@@ -118,6 +118,13 @@ SQL;
                 $result = $this->create_table($action['table_name'], $action['fields'], $action['constraints']);
                 array_push($queries, $result);
             }
+            else if ($action['type'] == 'create_trigger')
+            {
+                $this->verify(isset($action['trigger']) && is_array($action['trigger']), 'No trigger array specified');
+
+                $result = $this->create_trigger($action['table_name'], $action['trigger']);
+                array_push($queries, $result);
+            }
             else if ($action['type'] == 'add_column')
             {
                 $this->verify(is_array($action['field']), 'No field array specified');
@@ -305,6 +312,26 @@ SQL;
 CREATE TABLE `{$table_name}` (
     {$lines_fmt}
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+SQL;
+
+        $params = array();
+
+        return array(
+            'query' => $query,
+            'params' => $params,
+        );
+    }
+
+    private function create_trigger($table_name, $info)
+    {
+        $this->verify(isset($info['name']), 'No trigger name specified');
+        $this->verify(isset($info['time']), 'No trigger time specified');
+        $this->verify(isset($info['event']), 'No trigger event specified');
+        $this->verify(isset($info['action']), 'No trigger action specified');
+
+        $query = <<<SQL
+CREATE TRIGGER `{$info['name']}` {$info['time']} {$info['event']} ON `{$table_name}`
+    FOR EACH ROW {$info['action']}
 SQL;
 
         $params = array();
