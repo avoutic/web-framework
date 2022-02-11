@@ -233,7 +233,6 @@ SQL;
             $this->verify(isset($info['foreign_field']), 'No target for foreign field set');
 
             $db_type = 'INT(11)';
-            $null = true;
         }
         else if ($info['type'] == 'varchar')
         {
