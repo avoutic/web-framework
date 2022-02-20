@@ -790,6 +790,11 @@ class FrameworkCore
         $this->database = $this->framework->get_db();
     }
 
+    function __serialize()
+    {
+        return array();
+    }
+
     function __unserialize($arr)
     {
         $this->framework = WF::get_framework();

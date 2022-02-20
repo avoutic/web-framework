@@ -68,6 +68,11 @@ class User extends DataCore
     {
         parent::__unserialize($data);
 
+        if (!is_string($data['rights']))
+        {
+            $this->verify(false, print_r($data, true));
+        }
+
         $this->rights = unserialize($data['rights']);
     }
 
