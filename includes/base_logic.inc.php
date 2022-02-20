@@ -53,6 +53,24 @@ class User extends DataCore
     public $rights = array();
     protected $user_config = null;
 
+    function __serialize()
+    {
+        $arr = parent::__serialize();
+
+        $arr = array_merge($arr, array(
+            'rights' => serialize($this->rights),
+        ));
+
+        return $arr;
+    }
+
+    function __unserialize($data)
+    {
+        parent::__unserialize($data);
+
+        $this->rights = unserialize($data['rights']);
+    }
+
     protected function fill_complex_fields()
     {
         $query = <<<SQL

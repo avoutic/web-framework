@@ -5,28 +5,38 @@ abstract class DataCore extends FrameworkCore
 
     static protected $table_name;
     static protected $base_fields;
-    static protected $is_cacheable = true;
+    static protected $is_cacheable = false;
 
     function __construct($id, $fill_complex = true)
     {
         parent::__construct();
 
         $this->id = $id;
-        $obj = false;
+        $this->fill_fields($fill_complex);
+    }
 
-        if ($this->cache != null && $this->is_cacheable)
-            $obj = $this->cache->get(static::get_cache_id($id));
+    function __serialize()
+    {
+        return $this->get_base_fields();
+    }
 
-        $this->fill_fields($fill_complex, $obj);
+    function __unserialize($data)
+    {
+        parent::__unserialize($data);
+
+        $this->id = $data['id'];
+        $this->fill_base_fields_from_obj($data);
     }
 
     static function exists($id)
     {
-        global $global_cache;
+        if (static::$is_cacheable)
+        {
+            $cache = WF::get_static_cache();
 
-        if ($global_cache != null && static::$is_cacheable)
-            if (false !== $global_cache->exists(static::get_cache_id($id)))
+            if ($cache->exists(static::get_cache_id($id)) === true)
                 return true;
+        }
 
         $result = WF::get_main_db()->Query('SELECT id FROM '.static::$table_name.
                                    ' WHERE id = ?', array($id));
@@ -42,7 +52,19 @@ abstract class DataCore extends FrameworkCore
 
     static function get_cache_id($id)
     {
-       return static::$table_name.'{'.$id.'}';
+       return static::$table_name.'['.$id.']';
+    }
+
+    function update_in_cache()
+    {
+        if (static::$is_cacheable)
+            $this->cache->set(static::get_cache_id($this->id), $this);
+    }
+
+    function delete_from_cache()
+    {
+        if (static::$is_cacheable)
+            $this->cache->invalidate(static::get_cache_id($this->id));
     }
 
     function get_base_fields()
@@ -67,17 +89,9 @@ abstract class DataCore extends FrameworkCore
         return $this->get_info();
     }
 
-    function fill_fields($fill_complex, $obj = false)
+    function fill_fields($fill_complex)
     {
-        if ($obj === false)
-        {
-            $this->fill_base_fields_from_db();
-
-            if ($this->cache != null && $this->is_cacheable)
-                $this->cache->add(static::get_cache_id($id), $this->get_base_fields());
-        }
-        else
-            $this->fill_base_fields_from_obj($obj);
+        $this->fill_base_fields_from_db();
 
         if ($fill_complex)
             $this->fill_complex_fields();
@@ -143,6 +157,8 @@ abstract class DataCore extends FrameworkCore
 
         foreach ($data as $key => $value)
             $this->$key = $value;
+
+        $this->update_in_cache();
     }
 
     function update_field($field, $value)
@@ -159,6 +175,8 @@ abstract class DataCore extends FrameworkCore
         $this->verify($result !== false, 'Failed to update object ('.$class.')');
 
         $this->$field = $value;
+
+        $this->update_in_cache();
     }
 
     function decrease_field($field, $value = 1, $minimum = false)
@@ -185,6 +203,8 @@ abstract class DataCore extends FrameworkCore
         $this->verify($result !== false, 'Failed to decrease field of object ('.$class.')');
 
         $this->$field = $this->get_field($field);
+
+        $this->update_in_cache();
     }
 
     function increase_field($field, $value = 1)
@@ -201,12 +221,13 @@ abstract class DataCore extends FrameworkCore
         $this->verify($result !== false, 'Failed to increase field of object ('.$class.')');
 
         $this->$field = $this->get_field($field);
+
+        $this->update_in_cache();
     }
 
     function delete()
     {
-        if ($this->cache != null && $this->is_cacheable)
-            $this->cache->invalidate(static::get_cache_id($this->id));
+        $this->delete_from_cache();
 
         $result = $this->query(
                     'DELETE FROM '.static::$table_name.' WHERE id = ?',
@@ -238,7 +259,7 @@ abstract class DataCore extends FrameworkCore
 
         WF::verify($result !== false, 'Failed to create object ('.$class.')');
 
-        return new $class($result);
+        return static::get_object_by_id($result);
     }
 
     static function count_objects($filter = array())
@@ -280,6 +301,35 @@ abstract class DataCore extends FrameworkCore
         return $result->fields['cnt'];
     }
 
+    // This is the base retrieval function that all object functions should use
+    // Cache checking is done here
+    //
+    static function get_object_by_id($id)
+    {
+        if (static::$is_cacheable)
+        {
+            $cache = WF::get_static_cache();
+            $obj = $cache->get(static::get_cache_id($id));
+
+            // Cache hit
+            //
+            if ($obj !== false)
+                return $obj;
+        }
+
+        $class = get_called_class();
+
+        $obj = new $class($id);
+
+        // Cache miss
+        //
+        $obj->update_in_cache();
+
+        return $obj;
+    }
+
+    // Helper retrieval functions
+    //
     static function get_object($filter = array())
     {
         $query = 'SELECT id FROM '.static::$table_name;
@@ -319,7 +369,7 @@ abstract class DataCore extends FrameworkCore
         if ($result->RecordCount() == 0)
             return false;
 
-        return new $class($result->fields['id']);
+        return static::get_object_by_id($result->fields['id']);
     }
 
     static function get_object_info($filter = array())
@@ -337,14 +387,9 @@ abstract class DataCore extends FrameworkCore
         return $obj->$data_function();
     }
 
-    static function get_object_by_id($id)
-    {
-        return static::get_object(array('id' => $id));
-    }
-
     static function get_object_info_by_id($id)
     {
-        return static::get_object_data('get_info', array('id' => $id));
+        return static::get_object_data_by_id('get_info', $id);
     }
 
     static function get_object_data_by_id($data_function, $id)
@@ -404,9 +449,7 @@ abstract class DataCore extends FrameworkCore
 
         $info = array();
         foreach($result as $k => $row)
-        {
-            $info[$row['id']] = new $class($row['id']);
-        }
+            $info[$row['id']] = static::get_object_by_id($row['id']);
 
         return $info;
     }
@@ -442,6 +485,16 @@ class FactoryCore extends FrameworkCore
     function __construct()
     {
         parent::__construct();
+    }
+
+    function __serialize()
+    {
+        return array();
+    }
+
+    function __unserialize($data)
+    {
+        parent::__unserialize($data);
     }
 };
 ?>
