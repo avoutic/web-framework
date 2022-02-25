@@ -144,6 +144,14 @@ SQL;
                 $result = $this->rename_table($action['table_name'], $action['new_name']);
                 array_push($queries, $result);
             }
+            else if ($action['type'] == 'raw_query')
+            {
+                $this->verify(isset($action['query']), 'No query specified');
+                $this->verify(isset($action['params']) && is_array($action['params']), 'No params array specified');
+
+                $result = $this->raw_query($action['query'], $action['params']);
+                array_push($queries, $result);
+            }
             else
                 $this->verify(false, "Unknown action type '{$action['type']}'");
         }
@@ -360,6 +368,14 @@ SQL;
 
         $params = array();
 
+        return array(
+            'query' => $query,
+            'params' => $params,
+        );
+    }
+
+    private function raw_query($query, $params)
+    {
         return array(
             'query' => $query,
             'params' => $params,
