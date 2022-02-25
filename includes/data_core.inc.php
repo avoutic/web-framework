@@ -259,7 +259,7 @@ abstract class DataCore extends FrameworkCore
 
         WF::verify($result !== false, 'Failed to create object ('.$class.')');
 
-        return static::get_object_by_id($result);
+        return static::get_object_by_id($result, true);
     }
 
     static function count_objects($filter = array())
@@ -304,7 +304,7 @@ abstract class DataCore extends FrameworkCore
     // This is the base retrieval function that all object functions should use
     // Cache checking is done here
     //
-    static function get_object_by_id($id)
+    static function get_object_by_id($id, $checked_presence = false)
     {
         if (static::$is_cacheable)
         {
@@ -318,6 +318,22 @@ abstract class DataCore extends FrameworkCore
         }
 
         $class = get_called_class();
+
+        if ($checked_presence == false)
+        {
+            $query = 'SELECT id FROM '.static::$table_name;
+            $query .= ' WHERE id = ?';
+
+            $params = array($id);
+
+            $result = WF::get_main_db()->Query($query, $params);
+
+            WF::verify($result !== false, 'Failed to retrieve object ('.$class.')');
+            WF::verify($result->RecordCount() <= 1, 'Non-unique object request ('.$class.')');
+
+            if ($result->RecordCount() == 0)
+                return false;
+        }
 
         $obj = new $class($id);
 
@@ -369,7 +385,7 @@ abstract class DataCore extends FrameworkCore
         if ($result->RecordCount() == 0)
             return false;
 
-        return static::get_object_by_id($result->fields['id']);
+        return static::get_object_by_id($result->fields['id'], true);
     }
 
     static function get_object_info($filter = array())
@@ -449,7 +465,7 @@ abstract class DataCore extends FrameworkCore
 
         $info = array();
         foreach($result as $k => $row)
-            $info[$row['id']] = static::get_object_by_id($row['id']);
+            $info[$row['id']] = static::get_object_by_id($row['id'], true);
 
         return $info;
     }
