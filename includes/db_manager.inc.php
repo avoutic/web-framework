@@ -131,6 +131,12 @@ SQL;
                 $result = $this->add_column($action['table_name'], $action['field']);
                 array_push($queries, $result);
             }
+            else if ($action['type'] == 'modify_column_type')
+            {
+                $this->verify(is_array($action['field']), 'No field array specified');
+                $result = $this->modify_column_type($action['table_name'], $action['field']);
+                array_push($queries, $result);
+            }
             else if ($action['type'] == 'rename_column')
             {
                 $this->verify(isset($action['name']), 'No name specified');
@@ -376,6 +382,29 @@ SQL;
 
     private function raw_query($query, $params)
     {
+        return array(
+            'query' => $query,
+            'params' => $params,
+        );
+    }
+
+    private function modify_column_type($table_name, $info)
+    {
+        $field_lines = array();
+        $constraint_lines = array();
+
+        $this->get_field_statements($table_name, $info, $field_lines, $constraint_lines);
+
+        $lines = array_merge($field_lines, $constraint_lines);
+        $lines_fmt = implode(",\n    MODIFY ", $lines);
+
+        $query = <<<SQL
+ALTER TABLE `{$table_name}`
+    MODIFY {$lines_fmt}
+SQL;
+
+        $params = array();
+
         return array(
             'query' => $query,
             'params' => $params,
