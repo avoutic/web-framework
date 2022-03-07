@@ -80,7 +80,9 @@ class UploadHandler
 
     function move($new_location)
     {
-        return move_uploaded_file($this->tmp_filename, $new_location);
+        $result = move_uploaded_file($this->tmp_filename, $new_location);
+
+        return ($result === true) ? true : 'save_failed';
     }
 };
 ?>
