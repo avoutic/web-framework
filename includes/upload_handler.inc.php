@@ -63,9 +63,19 @@ class UploadHandler
         return $ext;
     }
 
+    function get_mime_type()
+    {
+        return $this->mime_type;
+    }
+
     function get_orig_filename()
     {
         return $this->orig_filename;
+    }
+
+    function get_tmp_filename()
+    {
+        return $this->tmp_filename;
     }
 
     function move($new_location)
