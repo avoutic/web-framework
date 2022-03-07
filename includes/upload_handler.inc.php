@@ -11,7 +11,7 @@ class UploadHandler
         $this->var_name = $var_name;
     }
 
-    function check_upload($max_size, $allowed_mime_types)
+    function check_upload($max_size, $whitelist_mime_types = true)
     {
         $var_name = $this->var_name;
 
@@ -38,8 +38,13 @@ class UploadHandler
         $finfo = new finfo(FILEINFO_MIME_TYPE);
         $this->mime_type = $finfo->file($this->tmp_filename);
 
-        if (!in_array($this->mime_type, $allowed_mime_types))
-            return 'mime_type_not_allowed';
+        if ($whitelist_mime_types !== true)
+        {
+            $this->verify(is_array($whitelist_mime_types), 'whitelist_mime_types not an array');
+
+            if (!in_array($this->mime_type, $whitelist_mime_types))
+                return 'mime_type_not_allowed';
+        }
 
         return true;
     }
@@ -58,14 +63,26 @@ class UploadHandler
         return $ext;
     }
 
+    function get_mime_type()
+    {
+        return $this->mime_type;
+    }
+
     function get_orig_filename()
     {
         return $this->orig_filename;
     }
 
+    function get_tmp_filename()
+    {
+        return $this->tmp_filename;
+    }
+
     function move($new_location)
     {
-        return move_uploaded_file($this->tmp_filename, $new_location);
+        $result = move_uploaded_file($this->tmp_filename, $new_location);
+
+        return ($result === true) ? true : 'save_failed';
     }
 };
 ?>
