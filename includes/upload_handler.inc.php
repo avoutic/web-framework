@@ -11,7 +11,7 @@ class UploadHandler
         $this->var_name = $var_name;
     }
 
-    function check_upload($max_size, $allowed_mime_types)
+    function check_upload($max_size, $whitelist_mime_types = true)
     {
         $var_name = $this->var_name;
 
@@ -38,8 +38,13 @@ class UploadHandler
         $finfo = new finfo(FILEINFO_MIME_TYPE);
         $this->mime_type = $finfo->file($this->tmp_filename);
 
-        if (!in_array($this->mime_type, $allowed_mime_types))
-            return 'mime_type_not_allowed';
+        if ($whitelist_mime_types !== true)
+        {
+            $this->verify(is_array($whitelist_mime_types), 'whitelist_mime_types not an array');
+
+            if (!in_array($this->mime_type, $whitelist_mime_types))
+                return 'mime_type_not_allowed';
+        }
 
         return true;
     }
