@@ -1,5 +1,5 @@
 <?php
-class UploadHandler
+class UploadHandler extends FrameworkCore
 {
     protected $var_name;
     protected $tmp_filename;
@@ -8,6 +8,8 @@ class UploadHandler
 
     function __construct($var_name = 'file')
     {
+        parent::__construct();
+
         $this->var_name = $var_name;
     }
 
