@@ -32,12 +32,14 @@ A simple API view:
 
         function get_user()
         {
+            // Ensure that user_id was present of throw a hard error
+            //
             $user_id = $this->get_input_var('user_id', true);
 
             $user_factory = new UserFactory();
-            $user = $user_factory->get_user($user_id);
+            $user = $user_factory->get_user_info_by_id($user_id);
 
-            $this->output_json(true, $user->username);
+            $this->output_json(true, $user['username']);
         }
     };
     ?>
@@ -47,10 +49,7 @@ In order to redirect the GET requests for */api/users/{user_id}* to *get_user()*
 .. code-block:: php
 
     <?php
-    function register_routes()
-    {
-        register_route('GET /api/users/(\d+)', 'users', 'UsersApi.get_user', array('user_id'));
-    }
+    $framework->register_route('GET /api/users/(\d+)', 'users', 'UsersApi.get_user', array('user_id'));
     ?>
 
 .. tip::
@@ -84,7 +83,7 @@ By default all requests are blocked unless we explicitly allow them in the regis
 
 .. code-block:: php
 
-    register_route('POST /show-user', 'show_user', 'PageShowUser.html_main');
+    $framework->register_route('POST /show-user', 'show_user', 'PageShowUser.html_main');
 
 .. note::
 
@@ -132,7 +131,7 @@ Now we can use this value in the View's logic:
 
         // Actually change the name of user 1
         //
-        $user = new User(1);
+        $user = User::get_object_by_id(1);
         $user->update_field('name', $name);
 
         $this->add_message('success', 'Name changed', 'The name has been changed.');
@@ -141,5 +140,3 @@ Now we can use this value in the View's logic:
 .. note::
 
    It's not very clean to change the name of an object directly from the outside. But for purpose of this example, this will do. Idieally you would add a function to the User object to change the name. This reduces coupling of the code.
-
-
