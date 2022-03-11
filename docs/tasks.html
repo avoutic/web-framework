@@ -184,12 +184,14 @@
 
     <span class="k">function</span> <span class="nf">get_user</span><span class="p">()</span>
     <span class="p">{</span>
+        <span class="c1">// Ensure that user_id was present of throw a hard error</span>
+        <span class="c1">//</span>
         <span class="nv">$user_id</span> <span class="o">=</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">get_input_var</span><span class="p">(</span><span class="s1">&#39;user_id&#39;</span><span class="p">,</span> <span class="k">true</span><span class="p">);</span>
 
         <span class="nv">$user_factory</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">UserFactory</span><span class="p">();</span>
-        <span class="nv">$user</span> <span class="o">=</span> <span class="nv">$user_factory</span><span class="o">-&gt;</span><span class="na">get_user</span><span class="p">(</span><span class="nv">$user_id</span><span class="p">);</span>
+        <span class="nv">$user</span> <span class="o">=</span> <span class="nv">$user_factory</span><span class="o">-&gt;</span><span class="na">get_user_info_by_id</span><span class="p">(</span><span class="nv">$user_id</span><span class="p">);</span>
 
-        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">output_json</span><span class="p">(</span><span class="k">true</span><span class="p">,</span> <span class="nv">$user</span><span class="o">-&gt;</span><span class="na">username</span><span class="p">);</span>
+        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">output_json</span><span class="p">(</span><span class="k">true</span><span class="p">,</span> <span class="nv">$user</span><span class="p">[</span><span class="s1">&#39;username&#39;</span><span class="p">]);</span>
     <span class="p">}</span>
 <span class="p">};</span>
 <span class="cp">?&gt;</span><span class="x"></span>
@@ -197,10 +199,7 @@
 </div>
 <p>In order to redirect the GET requests for <em>/api/users/{user_id}</em> to <em>get_user()</em>, we add a route into the route array (<em>includes/site_logic.inc.php</em>):</p>
 <div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;?</span><span class="nx">php</span>
-<span class="k">function</span> <span class="nf">register_routes</span><span class="p">()</span>
-<span class="p">{</span>
-    <span class="nx">register_route</span><span class="p">(</span><span class="s1">&#39;GET /api/users/(\d+)&#39;</span><span class="p">,</span> <span class="s1">&#39;users&#39;</span><span class="p">,</span> <span class="s1">&#39;UsersApi.get_user&#39;</span><span class="p">,</span> <span class="k">array</span><span class="p">(</span><span class="s1">&#39;user_id&#39;</span><span class="p">));</span>
-<span class="p">}</span>
+<span class="nv">$framework</span><span class="o">-&gt;</span><span class="na">register_route</span><span class="p">(</span><span class="s1">&#39;GET /api/users/(\d+)&#39;</span><span class="p">,</span> <span class="s1">&#39;users&#39;</span><span class="p">,</span> <span class="s1">&#39;UsersApi.get_user&#39;</span><span class="p">,</span> <span class="k">array</span><span class="p">(</span><span class="s1">&#39;user_id&#39;</span><span class="p">));</span>
 <span class="cp">?&gt;</span><span class="x"></span>
 </pre></div>
 </div>
@@ -228,7 +227,7 @@ people in <em>people.inc.php</em> and all functions around tasks in <em>tasks.in
 <p>The <em>token</em> variable contains our CSRF token. Without it, or if a user waits too long, the form will not be accepted. Just as the <em>do</em> variable, <em>token</em> is allowed by default.</p>
 </div>
 <p>By default all requests are blocked unless we explicitly allow them in the registered routes. In <em>includes/site_logic.inc.php</em> we’ll have to register a new route in <cite>register_routes()</cite>:</p>
-<div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="nx">register_route</span><span class="p">(</span><span class="s1">&#39;POST /show-user&#39;</span><span class="p">,</span> <span class="s1">&#39;show_user&#39;</span><span class="p">,</span> <span class="s1">&#39;PageShowUser.html_main&#39;</span><span class="p">);</span>
+<div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="nv">$framework</span><span class="o">-&gt;</span><span class="na">register_route</span><span class="p">(</span><span class="s1">&#39;POST /show-user&#39;</span><span class="p">,</span> <span class="s1">&#39;show_user&#39;</span><span class="p">,</span> <span class="s1">&#39;PageShowUser.html_main&#39;</span><span class="p">);</span>
 </pre></div>
 </div>
 <div class="admonition note">
@@ -271,7 +270,7 @@ people in <em>people.inc.php</em> and all functions around tasks in <em>tasks.in
 
     <span class="c1">// Actually change the name of user 1</span>
     <span class="c1">//</span>
-    <span class="nv">$user</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">User</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+    <span class="nv">$user</span> <span class="o">=</span> <span class="nx">User</span><span class="o">::</span><span class="na">get_object_by_id</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
     <span class="nv">$user</span><span class="o">-&gt;</span><span class="na">update_field</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="nv">$name</span><span class="p">);</span>
 
     <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">add_message</span><span class="p">(</span><span class="s1">&#39;success&#39;</span><span class="p">,</span> <span class="s1">&#39;Name changed&#39;</span><span class="p">,</span> <span class="s1">&#39;The name has been changed.&#39;</span><span class="p">);</span>

@@ -157,46 +157,33 @@
             
   <div class="section" id="routing">
 <h1>Routing<a class="headerlink" href="#routing" title="Permalink to this headline">¶</a></h1>
-<p>If nothing is configured, web-framework will only allow traffic to the default page (<em>main</em> by default). To make sure other pages get handled we have to populate the routing array.</p>
-<p>Routes are configured in <em>includes/site_logic.inc.php</em>. This file is the central switchroom of your application. Without it, web-framework is not called.</p>
-<p>The function <cite>register_routes()</cite> contains all route statements for your application.</p>
+<p>If nothing is configured, web-framework will not allow any traffic. To make sure pages get handled we have to populate the routing array.</p>
+<p>Routes are created by calling functions on the central Framework object. Convention is to create a central file <em>includes/site_logic.inc.php</em> that contains all your routes. This file is then the central switchroom of your application.</p>
 <div class="section" id="adding-a-redirect">
 <h2>Adding a redirect<a class="headerlink" href="#adding-a-redirect" title="Permalink to this headline">¶</a></h2>
 <p>A redirect is an instruction to return a 301 (or other redirect code) to the client and move the communication somewhere else.</p>
 <p>In it’s most basic form, a redirect is nothing more than a statement to redirect a method and URL to another URL, like this:</p>
-<div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="k">function</span> <span class="nf">register_routes</span><span class="p">()</span>
-<span class="p">{</span>
-    <span class="nx">register_redirect</span><span class="p">(</span><span class="s1">&#39;GET /old_page&#39;</span><span class="p">,</span> <span class="s1">&#39;/new-page&#39;</span><span class="p">);</span>
-<span class="p">}</span>
+<div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="nv">$framework</span><span class="o">-&gt;</span><span class="na">register_redirect</span><span class="p">(</span><span class="s1">&#39;GET /old_page&#39;</span><span class="p">,</span> <span class="s1">&#39;/new-page&#39;</span><span class="p">);</span>
 </pre></div>
 </div>
 <p>For a more dynamic redirect, we can also include regex-mapping to our redirect. In the third parameter to <cite>register_redirect()</cite> we tell it what kind of return code should be used. In the fourth parameter we provide a mapping from a name to the index of the regex matches. In this case we map the first match by the regex to the name <cite>slug</cite>.</p>
-<div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="k">function</span> <span class="nf">register_routes</span><span class="p">()</span>
-<span class="p">{</span>
-    <span class="nx">register_redirect</span><span class="p">(</span><span class="s1">&#39;GET /old_category/(\w+)&#39;</span><span class="p">,</span> <span class="s1">&#39;/new-category/{slug}&#39;</span><span class="p">,</span>
+<div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="nv">$framework</span><span class="o">-&gt;</span><span class="na">register_redirect</span><span class="p">(</span><span class="s1">&#39;GET /old_category/(\w+)&#39;</span><span class="p">,</span> <span class="s1">&#39;/new-category/{slug}&#39;</span><span class="p">,</span>
                       <span class="mi">301</span><span class="p">,</span> <span class="k">array</span><span class="p">(</span><span class="s1">&#39;slug&#39;</span> <span class="o">=&gt;</span> <span class="mi">1</span><span class="p">));</span>
-<span class="p">}</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="adding-a-route">
 <h2>Adding a route<a class="headerlink" href="#adding-a-route" title="Permalink to this headline">¶</a></h2>
-<p>A route is a mapping that will result in a specific view Page being called and executed.</p>
+<p>A route is a mapping that will result in a specific view page being called and executed.</p>
 <p>Let’s start with a simple mapping to tell web-framework to send all requests for <em>/dashboard</em> to your View in <em>views/dashboard.inc.php</em> with class name <cite>PageDashboard</cite> and to call <cite>html_main()</cite> on that object. That would look something like:</p>
-<div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="k">function</span> <span class="nf">register_routes</span><span class="p">()</span>
-<span class="p">{</span>
-    <span class="nx">register_route</span><span class="p">(</span><span class="s1">&#39;GET /dashboard&#39;</span><span class="p">,</span> <span class="s1">&#39;dashboard&#39;</span><span class="p">,</span> <span class="s1">&#39;PageDashboard.html_main&#39;</span><span class="p">);</span>
-<span class="p">}</span>
+<div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="nv">$framework</span><span class="o">-&gt;</span><span class="na">register_route</span><span class="p">(</span><span class="s1">&#39;GET /dashboard&#39;</span><span class="p">,</span> <span class="s1">&#39;dashboard&#39;</span><span class="p">,</span> <span class="s1">&#39;PageDashboard.html_main&#39;</span><span class="p">);</span>
 </pre></div>
 </div>
-<p>In some cases the URL already contains relevant information for your View to use as input. In that case we can map regex-matches to input variables (that are filtered with your View’s static <cite>get_filter()</cite> function.</p>
-<div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="k">function</span> <span class="nf">register_routes</span><span class="p">()</span>
-<span class="p">{</span>
-    <span class="nx">register_route</span><span class="p">(</span><span class="s1">&#39;GET /product/(\w+)&#39;</span><span class="p">,</span> <span class="s1">&#39;product&#39;</span><span class="p">,</span> <span class="s1">&#39;PageProduct.html_main&#39;</span><span class="p">,</span> <span class="k">array</span><span class="p">(</span><span class="s1">&#39;slug&#39;</span><span class="p">));</span>
-<span class="p">}</span>
+<p>In some cases the URL already contains relevant information for your view to use as input. In that case we can map regex-matches to input variables (that are filtered with your View’s static <cite>get_filter()</cite> function.</p>
+<div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">register_route</span><span class="p">(</span><span class="s1">&#39;GET /product/(\w+)&#39;</span><span class="p">,</span> <span class="s1">&#39;product&#39;</span><span class="p">,</span> <span class="s1">&#39;PageProduct.html_main&#39;</span><span class="p">,</span> <span class="k">array</span><span class="p">(</span><span class="s1">&#39;slug&#39;</span><span class="p">));</span>
 </pre></div>
 </div>
-<p>This will map part of the URL to the <cite>slug</cite> input variable for your PageProduct View.</p>
+<p>This will map part of the URL to the <cite>slug</cite> input variable for your PageProduct view.</p>
 </div>
 <div class="section" id="handling-404s">
 <h2>Handling 404s<a class="headerlink" href="#handling-404s" title="Permalink to this headline">¶</a></h2>
