@@ -32,6 +32,10 @@ class PageChangePassword extends PageBasic
         return $user;
     }
 
+    function customer_finalize_change()
+    {
+    }
+
     function do_logic()
     {
         // Check if this is a true attempt
@@ -89,6 +93,8 @@ class PageChangePassword extends PageBasic
             $this->add_message('error', 'Unknown errorcode: \''.$result."'", "Please inform the administrator.");
             return;
         }
+
+        $this->custom_finalize_change();
 
         // Invalidate old sessions
         //
