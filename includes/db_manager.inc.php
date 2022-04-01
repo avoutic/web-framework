@@ -258,6 +258,8 @@ SQL;
             $db_type = 'INT';
         else if ($info['type'] == 'text')
             $db_type = 'TEXT';
+        else if ($info['type'] == 'date')
+            $db_type = 'DATE';
         else
             $this->verify(false, "Unhandled field type '{$info['type']}'");
 
