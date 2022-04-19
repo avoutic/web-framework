@@ -296,5 +296,40 @@ abstract class PageService extends PageCore
                         'result' => $output
                         )));
     }
+
+    function output_file($filename, $hash = '')
+    {
+        if (!file_exists($filename))
+            $this->exit_send_404();
+
+        // Check if already cached on client
+        //
+        if (isset($_SERVER['HTTP_IF_NONE_MATCH']))
+        {
+            // Calculate hash if missing but presented by client.
+            //
+            if (!strlen($hash))
+                $hash = sha1_file($filename);
+
+            if ($_SERVER['HTTP_IF_NONE_MATCH'] == '"'.$hash.'"')
+            {
+                header("HTTP/1.1 304 Not modified");
+                header('Cache-Control: public, max-age=604800');
+                header('ETag: "'.$hash.'"');
+                exit();
+            }
+        }
+
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $type = $finfo->file($filename);
+
+        header('Cache-Control: public, max-age=604800');
+        header('ETag: "'.$hash.'"');
+        header('Content-Length: ' . filesize($filename));
+        header("Content-Type: " . $type);
+        header('Content-Transfer-Encoding: Binary');
+        readfile($filename);
+        exit();
+    }
 };
 ?>
