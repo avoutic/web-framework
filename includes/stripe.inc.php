@@ -67,6 +67,18 @@ class StripeFactory extends FactoryCore
         return $customer->toArray(true);
     }
 
+    // Invoice object
+    //
+    function get_invoice_data($invoice_id)
+    {
+        $invoice = \Stripe\Invoice::retrieve(
+            array(
+                "id" => $invoice_id,
+            )
+        );
+        return $invoice->toArray(true);
+    }
+
     // Product object
     //
     function get_products_data($filter = array())
