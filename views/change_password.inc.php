@@ -32,7 +32,7 @@ class PageChangePassword extends PageBasic
         return $user;
     }
 
-    function customer_finalize_change()
+    function custom_finalize_change()
     {
     }
 
