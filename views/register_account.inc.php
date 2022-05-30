@@ -182,7 +182,9 @@ class PageRegister extends Pagebasic
 
             if ($result->RecordCount() == 1)
             {
-                $this->add_message('error', 'E-mail already registered.', 'An account has already been registered with this e-mail address. <a href="/forgot-password">Forgot your password?</a>');
+                $forgot_password_page = $this->get_base_url().$this->get_config('pages.forgot_password.location');
+
+                $this->add_message('error', 'E-mail already registered.', 'An account has already been registered with this e-mail address. <a href="'.$forgot_password_page.'">Forgot your password?</a>');
 
                 return;
             }

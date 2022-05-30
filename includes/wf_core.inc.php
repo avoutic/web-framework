@@ -103,6 +103,7 @@ class WF
                 'bruteforce_protection' => true,
             ),
             'forgot_password' => array(
+                'location' => '/forgot-password',
                 'reset_password_page' => '/reset-password',
             ),
             'change_password' => array(

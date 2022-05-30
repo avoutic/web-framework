@@ -17,7 +17,7 @@ class PageResetPassword extends PageBasic
 
     function do_logic()
     {
-        $forgot_password_page = $this->get_base_url().'/forgot-password';
+        $forgot_password_page = $this->get_base_url().$this->get_config('pages.forgot_password.location');
         $login_page = $this->get_base_url().$this->get_config('pages.login.location');
 
         // Check if code is present

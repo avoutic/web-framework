@@ -29,7 +29,7 @@ class PageVerify extends PageBasic
         $msg = $this->decode_and_verify_array($code);
         if (!$msg)
         {
-            header("Location: ${login_page}?".$this->get_message_for_url('error', 'Verification mail expired', 'Please <a href="/login">request a new one</a> after logging in.'));
+            header("Location: ${login_page}?".$this->get_message_for_url('error', 'Verification mail expired', 'Please <a href="'.$login_page.'">request a new one</a> after logging in.'));
             exit();
         }
 
@@ -38,7 +38,7 @@ class PageVerify extends PageBasic
         if ($msg['timestamp'] + 86400 < time())
         {
             // Expired
-            header("Location: ${login_page}?".$this->get_message_for_url('error', 'Verification mail expired', 'Please <a href="/login">request a new one</a> after logging in.'));
+            header("Location: ${login_page}?".$this->get_message_for_url('error', 'Verification mail expired', 'Please <a href="'.$login_page.'">request a new one</a> after logging in.'));
             exit();
         }
 
