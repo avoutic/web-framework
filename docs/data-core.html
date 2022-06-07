@@ -163,7 +163,7 @@
             
   <div class="section" id="data-core">
 <h1>Data Core<a class="headerlink" href="#data-core" title="Permalink to this headline">¶</a></h1>
-<p>Within web-framework data is abstracted where possible. With a little bit of code you can make simple and more complex object types by just providing an ID or another identifier.</p>
+<p>Within web-framework data and database interaction is abstracted where possible. With a little bit of code you can make simple and more complex object types by just providing an ID or another identifier.</p>
 <p>The core library has two base classes to build from:</p>
 <ul class="simple">
 <li><p>DataCore, an object abstraction that represents a row from a table</p></li>
@@ -186,10 +186,11 @@
 <p class="admonition-title">Note</p>
 <p>For encapsulation with DataCore, each table needs a column named <cite>id</cite> with unique, as primary key values.</p>
 </div>
-<p>Our Person object now has basic capabilities. So if we instantiate a Person (using our global database information), we can take actions, like these:</p>
+<p>Our Person object now has basic capabilities. While we can instantiate an DataCore object with <cite>new</cite>, this is not advised for multiple reasons. You should use <cite>DataCore::get_object_by_id()</cite> and others instead. The main reason is that this gracefully handles non-existing IDs (returning <cite>false</cite>), but also allows intermediate caching and transformations.</p>
+<p>So if we instantiate a Person (using our global database information), we can take actions, like these:</p>
 <div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;?</span><span class="nx">php</span>
 <span class="c1">// Retrieve person with id 5</span>
-<span class="nv">$person</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Person</span><span class="p">(</span><span class="mi">5</span><span class="p">);</span>
+<span class="nv">$person</span> <span class="o">=</span> <span class="nx">Person</span><span class="o">::</span><span class="na">get_object_by_id</span><span class="p">(</span><span class="mi">5</span><span class="p">);</span>
 
 <span class="c1">// Retrieve base fields as object parameters</span>
 <span class="k">echo</span> <span class="s1">&#39;Name: &#39;</span><span class="o">.</span><span class="nv">$person</span><span class="o">-&gt;</span><span class="na">name</span><span class="o">.</span><span class="nx">PHP_EOL</span><span class="p">;</span>
@@ -202,11 +203,11 @@
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>What is <cite>WF::verify()</cite>? <cite>WF::verify()</cite> is like <cite>assert()</cite>. It is used to guard code paths that should never occur, unless something is really wrong. But unlike <cite>assert()</cite> our <cite>WF::verify()</cite> cannot be silently ignored due to PHP settings. For a secure-by-default platform, we want to make sure those guards are always there. In addition it can show a debug trace, debug info and e-mail you in case a verify gate fails.</p>
+<p>What is <cite>WF::verify()</cite>? <cite>WF::verify()</cite> is like <cite>assert()</cite>. It is used to guard code paths that should never occur, unless something is really wrong. But unlike <cite>assert()</cite> our <cite>WF::verify()</cite> cannot be silently ignored due to PHP settings. For a secure-by-default platform, we want to make sure those guards are always there. In addition it can show a debug trace, debug info and e-mail you in case a verify gate fails. In most cases you will use <cite>$this-&gt;verify()</cite> instead, when you work with code in objects.</p>
 </div>
 <div class="section" id="complex-objects">
 <h3>Complex objects<a class="headerlink" href="#complex-objects" title="Permalink to this headline">¶</a></h3>
-<p>There are a lot of cases where you don’t just need to encapsulate a single table, but data from other tables is required as well. Let’s consider that our Person can also own one or more vehicles. We can easily make sure that those vehicles are populated directly at instantiation of a Person.</p>
+<p>There are a lot of cases where you don’t just need to encapsulate a single row from a single table, but data from other tables is required as well. Let’s consider that our Person can also own one or more vehicles. We can easily make sure that those vehicles are populated directly at instantiation of a Person.</p>
 <p>Let’s first create our Vehicle class in <em>includes/vehicles.inc.php</em>:</p>
 <div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;?</span><span class="nx">php</span>
 <span class="k">class</span> <span class="nc">Vehicle</span> <span class="k">extends</span> <span class="nx">DataCore</span>
@@ -233,6 +234,17 @@
 </pre></div>
 </div>
 <p><cite>fill_complex_fields()</cite> is immediately called in the constructor after all base fields have been loaded.</p>
+<p>Keep in mind that <cite>Person-&gt;fill_complex_fields()</cite> runs on every instantiation. In most cases you want to be able to instantiate a bare Person class as well. So it would be better to just implement a <cite>Person-&gt;get_vehicles()</cite> (with optional caching) instead:</p>
+<div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="k">protected</span> <span class="nv">$vehicles</span> <span class="o">=</span> <span class="k">null</span><span class="p">;</span>
+<span class="k">function</span> <span class="nf">get_vehicles</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">vehicles</span> <span class="o">===</span> <span class="k">null</span><span class="p">)</span>
+        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">vehicles</span> <span class="o">=</span> <span class="nx">Vehicles</span><span class="o">::</span><span class="na">get_objects</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="k">array</span><span class="p">(</span><span class="s1">&#39;owner_id&#39;</span> <span class="o">=&gt;</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">id</span><span class="p">));</span>
+
+    <span class="k">return</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">vehicles</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 </div>
 </div>
 <div class="section" id="object-documentation">
@@ -255,17 +267,10 @@
 <dd><p>An array with fields that should always be loaded into the object</p>
 </dd></dl>
 
-<dl class="staticmethod">
-<dt id="DataCore::exists">
-<em class="property">static </em><code class="sig-name descname">exists</code><span class="sig-paren">(</span><em class="sig-param">$id</em><span class="sig-paren">)</span><a class="headerlink" href="#DataCore::exists" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check if an object with that id exists.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>$id</strong> (<em>int</em>) – ID of the object to check</p></li>
-</ul>
-</dd>
-</dl>
+<dl class="method">
+<dt id="DataCore::get_base_fields">
+<code class="sig-name descname">get_base_fields</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#DataCore::get_base_fields" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve all raw database fields</p>
 </dd></dl>
 
 <dl class="method">
@@ -341,6 +346,174 @@
 <dt id="DataCore::delete">
 <code class="sig-name descname">delete</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#DataCore::delete" title="Permalink to this definition">¶</a></dt>
 <dd><p>Delete this item</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="DataCore::create">
+<em class="property">static </em><code class="sig-name descname">create</code><span class="sig-paren">(</span><em class="sig-param">$fields</em><span class="sig-paren">)</span><a class="headerlink" href="#DataCore::create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new Database entry with these fields</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>$fields</strong> (<em>array</em>) – Array of all (required) database fields for this table</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="DataCore::exists">
+<em class="property">static </em><code class="sig-name descname">exists</code><span class="sig-paren">(</span><em class="sig-param">$id</em><span class="sig-paren">)</span><a class="headerlink" href="#DataCore::exists" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if an object with that id exists.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>$id</strong> (<em>int</em>) – ID of the object to check</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="DataCore::count_objects">
+<em class="property">static </em><code class="sig-name descname">count_objects</code><span class="sig-paren">(</span><em class="sig-param">$filter</em><span class="sig-paren">)</span><a class="headerlink" href="#DataCore::count_objects" title="Permalink to this definition">¶</a></dt>
+<dd><p>Count the number of entries that match the filter</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>$filter</strong> (<em>array</em>) – Array of fields that should match</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="DataCore::get_object_by_id">
+<em class="property">static </em><code class="sig-name descname">get_object_by_id</code><span class="sig-paren">(</span><em class="sig-param">$id</em><span class="sig-paren">)</span><a class="headerlink" href="#DataCore::get_object_by_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve an object by id</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>$id</strong> (<em>array</em>) – The id of the object to retrieve</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="DataCore::get_object">
+<em class="property">static </em><code class="sig-name descname">get_object</code><span class="sig-paren">(</span><em class="sig-param">$filter</em><span class="sig-paren">)</span><a class="headerlink" href="#DataCore::get_object" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve a single object based on a filter array. Fails if more than one entries match.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>$filter</strong> (<em>array</em>) – Array of fields that should match</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="DataCore::get_object_info">
+<em class="property">static </em><code class="sig-name descname">get_object_info</code><span class="sig-paren">(</span><em class="sig-param">$filter</em><span class="sig-paren">)</span><a class="headerlink" href="#DataCore::get_object_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve a single object’s get_info() based on a filter array. Fails if more than one entries match.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>$filter</strong> (<em>array</em>) – Array of fields that should match</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="DataCore::get_object_data">
+<em class="property">static </em><code class="sig-name descname">get_object_data</code><span class="sig-paren">(</span><em class="sig-param">$data_function</em>, <em class="sig-param">$filter</em><span class="sig-paren">)</span><a class="headerlink" href="#DataCore::get_object_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve a single object’s data via the data_function specified based on a filter array. Fails if more than one entries match.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>$data_function</strong> (<em>array</em>) – Data function to call</p></li>
+<li><p><strong>$filter</strong> (<em>array</em>) – Array of fields that should match</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="DataCore::get_object_info_by_id">
+<em class="property">static </em><code class="sig-name descname">get_object_info_by_id</code><span class="sig-paren">(</span><em class="sig-param">$id</em><span class="sig-paren">)</span><a class="headerlink" href="#DataCore::get_object_info_by_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve a single object’s get_info() based on id.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>$id</strong> (<em>array</em>) – The id of the object to retrieve.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="DataCore::get_object_data_by_id">
+<em class="property">static </em><code class="sig-name descname">get_object_data_by_id</code><span class="sig-paren">(</span><em class="sig-param">$data_function</em>, <em class="sig-param">$id</em><span class="sig-paren">)</span><a class="headerlink" href="#DataCore::get_object_data_by_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve a single object’s data via the data_function specified.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>$data_function</strong> (<em>array</em>) – Data function to call</p></li>
+<li><p><strong>$id</strong> (<em>array</em>) – The id of the object to retrieve</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="DataCore::get_objects">
+<em class="property">static </em><code class="sig-name descname">get_objects</code><span class="sig-paren">(</span><em class="sig-param">$offset</em>, <em class="sig-param">$results</em>, <em class="sig-param">$filter</em>, <em class="sig-param">$order</em><span class="sig-paren">)</span><a class="headerlink" href="#DataCore::get_objects" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve an array of objects based on a filter array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>$offset</strong> (<em>array</em>) – Start offset for paging</p></li>
+<li><p><strong>$results</strong> (<em>array</em>) – Amount of objects for paging</p></li>
+<li><p><strong>$filter</strong> (<em>array</em>) – Array of fields that should match</p></li>
+<li><p><strong>$order</strong> (<em>array</em>) – String of SQL order</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="DataCore::get_objects_info">
+<em class="property">static </em><code class="sig-name descname">get_objects_info</code><span class="sig-paren">(</span><em class="sig-param">$offset</em>, <em class="sig-param">$results</em>, <em class="sig-param">$filter</em>, <em class="sig-param">$order</em><span class="sig-paren">)</span><a class="headerlink" href="#DataCore::get_objects_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve an array filled with objects’ get_info() based on a filter array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>$offset</strong> (<em>array</em>) – Start offset for paging</p></li>
+<li><p><strong>$results</strong> (<em>array</em>) – Amount of objects for paging</p></li>
+<li><p><strong>$filter</strong> (<em>array</em>) – Array of fields that should match</p></li>
+<li><p><strong>$order</strong> (<em>array</em>) – String of SQL order</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="DataCore::get_objects_data">
+<em class="property">static </em><code class="sig-name descname">get_objects_data</code><span class="sig-paren">(</span><em class="sig-param">$data_function</em>, <em class="sig-param">$offset</em>, <em class="sig-param">$results</em>, <em class="sig-param">$filter</em>, <em class="sig-param">$order</em><span class="sig-paren">)</span><a class="headerlink" href="#DataCore::get_objects_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve an array filled fill objects’ data via the data_function specified based on a filter array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>$data_function</strong> (<em>array</em>) – Data function to call</p></li>
+<li><p><strong>$offset</strong> (<em>array</em>) – Start offset for paging</p></li>
+<li><p><strong>$results</strong> (<em>array</em>) – Amount of objects for paging</p></li>
+<li><p><strong>$filter</strong> (<em>array</em>) – Array of fields that should match</p></li>
+<li><p><strong>$order</strong> (<em>array</em>) – String of SQL order</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>

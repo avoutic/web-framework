@@ -1,7 +1,7 @@
 Data Core
 =========
 
-Within web-framework data is abstracted where possible. With a little bit of code you can make simple and more complex object types by just providing an ID or another identifier.
+Within web-framework data and database interaction is abstracted where possible. With a little bit of code you can make simple and more complex object types by just providing an ID or another identifier.
 
 The core library has two base classes to build from:
 
@@ -29,13 +29,15 @@ If we have a table *persons* in our database, with fields like name, address and
 
    For encapsulation with DataCore, each table needs a column named `id` with unique, as primary key values.
 
-Our Person object now has basic capabilities. So if we instantiate a Person (using our global database information), we can take actions, like these:
+Our Person object now has basic capabilities. While we can instantiate an DataCore object with `new`, this is not advised for multiple reasons. You should use `DataCore::get_object_by_id()` and others instead. The main reason is that this gracefully handles non-existing IDs (returning `false`), but also allows intermediate caching and transformations.
+
+So if we instantiate a Person (using our global database information), we can take actions, like these:
 
 .. code-block:: php
 
     <?php
     // Retrieve person with id 5
-    $person = new Person(5);
+    $person = Person::get_object_by_id(5);
 
     // Retrieve base fields as object parameters
     echo 'Name: '.$person->name.PHP_EOL;
@@ -47,12 +49,12 @@ Our Person object now has basic capabilities. So if we instantiate a Person (usi
 
 .. note::
 
-   What is `WF::verify()`? `WF::verify()` is like `assert()`. It is used to guard code paths that should never occur, unless something is really wrong. But unlike `assert()` our `WF::verify()` cannot be silently ignored due to PHP settings. For a secure-by-default platform, we want to make sure those guards are always there. In addition it can show a debug trace, debug info and e-mail you in case a verify gate fails.
+   What is `WF::verify()`? `WF::verify()` is like `assert()`. It is used to guard code paths that should never occur, unless something is really wrong. But unlike `assert()` our `WF::verify()` cannot be silently ignored due to PHP settings. For a secure-by-default platform, we want to make sure those guards are always there. In addition it can show a debug trace, debug info and e-mail you in case a verify gate fails. In most cases you will use `$this->verify()` instead, when you work with code in objects.
 
 Complex objects
 ***************
 
-There are a lot of cases where you don't just need to encapsulate a single table, but data from other tables is required as well. Let's consider that our Person can also own one or more vehicles. We can easily make sure that those vehicles are populated directly at instantiation of a Person.
+There are a lot of cases where you don't just need to encapsulate a single row from a single table, but data from other tables is required as well. Let's consider that our Person can also own one or more vehicles. We can easily make sure that those vehicles are populated directly at instantiation of a Person.
 
 Let's first create our Vehicle class in *includes/vehicles.inc.php*:
 
@@ -87,6 +89,19 @@ And we'll add a method called `fill_complex_fields()` in our Person class:
 
 `fill_complex_fields()` is immediately called in the constructor after all base fields have been loaded.
 
+Keep in mind that `Person->fill_complex_fields()` runs on every instantiation. In most cases you want to be able to instantiate a bare Person class as well. So it would be better to just implement a `Person->get_vehicles()` (with optional caching) instead:
+
+.. code-block:: php
+
+    protected $vehicles = null;
+    function get_vehicles()
+    {
+        if ($this->vehicles === null)
+            $this->vehicles = Vehicles::get_objects(0, -1, array('owner_id' => $this->id));
+
+        return $this->vehicles;
+    }
+
 Object Documentation
 --------------------
 
@@ -105,11 +120,9 @@ DataCore Object
 
       An array with fields that should always be loaded into the object
 
-   .. php:staticmethod:: exists ($id)
+   .. php:method:: get_base_fields ()
 
-      Check if an object with that id exists.
-
-      :param int $id: ID of the object to check
+      Retrieve all raw database fields
 
    .. php:method:: get_field ($field)
 
@@ -138,7 +151,6 @@ DataCore Object
       :param $value: Decrease by this value
       :param $minimum: If set, value will not reduce below this minimu,
 
-
    .. php:method:: increase_field ($field, $value = 1)
 
       Increase the value of a field
@@ -149,3 +161,88 @@ DataCore Object
    .. php:method:: delete()
 
       Delete this item
+
+   .. php:staticmethod:: create ($fields)
+
+      Create a new Database entry with these fields
+
+      :param array $fields: Array of all (required) database fields for this table
+
+   .. php:staticmethod:: exists ($id)
+
+      Check if an object with that id exists.
+
+      :param int $id: ID of the object to check
+
+   .. php:staticmethod:: count_objects ($filter)
+
+      Count the number of entries that match the filter
+
+      :param array $filter: Array of fields that should match
+
+   .. php:staticmethod:: get_object_by_id ($id)
+
+      Retrieve an object by id
+
+      :param array $id: The id of the object to retrieve
+
+   .. php:staticmethod:: get_object ($filter)
+
+      Retrieve a single object based on a filter array. Fails if more than one entries match.
+
+      :param array $filter: Array of fields that should match
+
+   .. php:staticmethod:: get_object_info ($filter)
+
+      Retrieve a single object's get_info() based on a filter array. Fails if more than one entries match.
+
+      :param array $filter: Array of fields that should match
+
+   .. php:staticmethod:: get_object_data ($data_function, $filter)
+
+      Retrieve a single object's data via the data_function specified based on a filter array. Fails if more than one entries match.
+
+      :param array $data_function: Data function to call
+      :param array $filter: Array of fields that should match
+
+   .. php:staticmethod:: get_object_info_by_id ($id)
+
+      Retrieve a single object's get_info() based on id.
+
+      :param array $id: The id of the object to retrieve.
+
+   .. php:staticmethod:: get_object_data_by_id ($data_function, $id)
+
+      Retrieve a single object's data via the data_function specified.
+
+      :param array $data_function: Data function to call
+      :param array $id: The id of the object to retrieve
+
+   .. php:staticmethod:: get_objects ($offset, $results, $filter, $order)
+
+      Retrieve an array of objects based on a filter array.
+
+      :param array $offset: Start offset for paging
+      :param array $results: Amount of objects for paging
+      :param array $filter: Array of fields that should match
+      :param array $order: String of SQL order
+
+   .. php:staticmethod:: get_objects_info ($offset, $results, $filter, $order)
+
+      Retrieve an array filled with objects' get_info() based on a filter array.
+
+      :param array $offset: Start offset for paging
+      :param array $results: Amount of objects for paging
+      :param array $filter: Array of fields that should match
+      :param array $order: String of SQL order
+
+   .. php:staticmethod:: get_objects_data ($data_function, $offset, $results, $filter, $order)
+
+      Retrieve an array filled fill objects' data via the data_function specified based on a filter array.
+
+      :param array $data_function: Data function to call
+      :param array $offset: Start offset for paging
+      :param array $results: Amount of objects for paging
+      :param array $filter: Array of fields that should match
+      :param array $order: String of SQL order
+
