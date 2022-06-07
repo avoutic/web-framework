@@ -131,6 +131,12 @@ SQL;
                 $result = $this->add_column($action['table_name'], $action['field']);
                 array_push($queries, $result);
             }
+            else if ($action['type'] == 'add_constraint')
+            {
+                $this->verify(is_array($action['constraint']), 'No constraint array specified');
+                $result = $this->add_constraint($action['table_name'], $action['constraint']);
+                array_push($queries, $result);
+            }
             else if ($action['type'] == 'modify_column_type')
             {
                 $this->verify(is_array($action['field']), 'No field array specified');
@@ -365,6 +371,29 @@ SQL;
         $constraint_lines = array();
 
         $this->get_field_statements($table_name, $info, $field_lines, $constraint_lines);
+
+        $lines = array_merge($field_lines, $constraint_lines);
+        $lines_fmt = implode(",\n    ADD ", $lines);
+
+        $query = <<<SQL
+ALTER TABLE `{$table_name}`
+    ADD {$lines_fmt}
+SQL;
+
+        $params = array();
+
+        return array(
+            'query' => $query,
+            'params' => $params,
+        );
+    }
+
+    private function add_constraint($table_name, $info)
+    {
+        $field_lines = array();
+        $constraint_lines = array();
+
+        $this->get_constraint_statements($table_name, $info, $constraint_lines);
 
         $lines = array_merge($field_lines, $constraint_lines);
         $lines_fmt = implode(",\n    ADD ", $lines);
