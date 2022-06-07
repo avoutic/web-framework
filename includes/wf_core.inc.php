@@ -718,10 +718,10 @@ class WF
                     "{$required_wf_db_version} of the scheme are applied.");
         }
 
-        if ($this->check_app_db_version && $required_app_db_version != $current_app_db_version)
+        if ($this->check_app_db_version && $required_app_db_version > $current_app_db_version)
         {
-            $this->exit_error('App DB version mismatch',
-                    "Please make sure that the app DB scheme matches {$required_app_db_version}.");
+            $this->exit_error('Outdated version of the app DB',
+                    "Please make sure that the app DB scheme is at least {$required_app_db_version}.");
         }
     }
 
