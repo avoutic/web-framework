@@ -16,20 +16,30 @@ $framework->init();
 $db_manager = new DBManager();
 
 $current_version = $db_manager->get_current_version();
+$required_version =  WF::get_config('versions.required_app_db');
+
+if ($required_version <= $current_version)
+    exit();
 
 // Retrieve relevant change set
 //
 $next_version = $current_version + 1;
-$version_file = __DIR__ . "/../../db_scheme/{$next_version}.inc.php";
 
-if (!file_exists($version_file))
+while ($next_version <= $required_version)
 {
-    echo " - No changeset for {$next_version} available".PHP_EOL;
-    exit();
+    $version_file = __DIR__ . "/../../db_scheme/{$next_version}.inc.php";
+
+    if (!file_exists($version_file))
+    {
+        echo " - No changeset for {$next_version} available".PHP_EOL;
+        exit();
+    }
+
+    $change_set = require($version_file);
+    WF::verify(is_array($change_set), 'No change set array found');
+
+    $db_manager->execute($change_set);
+    $current_version = $db_manager->get_current_version();
+    $next_version = $current_version + 1;
 }
-
-$change_set = require($version_file);
-WF::verify(is_array($change_set), 'No change set array found');
-
-$db_manager->execute($change_set);
 ?>
