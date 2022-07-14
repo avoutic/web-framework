@@ -97,7 +97,14 @@ class PageRegister extends Pagebasic
         // Check if already logged in
         //
         if ($this->is_authenticated())
-            return;
+        {
+            // Redirect to default page
+            //
+            $return_page = $this->get_config('pages.login.default_return_page');
+            header("Location: ".$this->get_base_url().$return_page."?".
+                            $this->get_message_for_url('info', 'Already logged in'));
+            exit();
+        }
 
         // Check if this is a true attempt
         //
