@@ -63,7 +63,7 @@ CREATE TABLE `user_config_values` (
 CREATE TABLE `blacklist_entries` (
   `id` INT(11) NOT NULL AUTO_INCREMENT,
   `ip` VARCHAR(40) NOT NULL,
-  `user_id` INT(11) NOT NULL DEFAULT '0',
+  `user_id` INT(11) DEFAULT NULL,
   `severity` INT(11) NOT NULL,
   `reason` VARCHAR(100) NOT NULL,
   `timestamp` INT(11) NOT NULL,
