@@ -260,10 +260,14 @@ SQL;
 
             $db_type = "VARCHAR({$info['size']})";
         }
+        else if ($info['type'] == 'float')
+            $db_type = 'FLOAT';
         else if ($info['type'] == 'int')
             $db_type = 'INT';
         else if ($info['type'] == 'text')
             $db_type = 'TEXT';
+        else if ($info['type'] == 'timestamp')
+            $db_type = 'TIMESTAMP';
         else if ($info['type'] == 'date')
             $db_type = 'DATE';
         else
