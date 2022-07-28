@@ -107,14 +107,15 @@ class Helpers
 
     public static function mysql_datetime_to_timestamp($time_str)
     {
-        $ftime = strptime($time_str, '%F %T');
+        $ftime = date_parse_from_format('Y-m-d H:i:s', $time_str);
+
         return mktime(
-                $ftime['tm_hour'],
-                $ftime['tm_min'],
-                $ftime['tm_sec'],
-                1 ,
-                $ftime['tm_yday'] + 1,
-                $ftime['tm_year'] + 1900);
+                $ftime['hour'],
+                $ftime['minute'],
+                $ftime['second'],
+                $ftime['month'],
+                $ftime['day'],
+                $ftime['year']);
     }
 
     public static function mysql_date_to_timestamp($time_str)
@@ -122,14 +123,15 @@ class Helpers
         if ($time_str === null)
             return "";
 
-        $ftime = strptime($time_str, '%F');
+        $ftime = date_parse_from_format('Y-m-d', $time_str);
+
         return mktime(
-                $ftime['tm_hour'],
-                $ftime['tm_min'],
-                $ftime['tm_sec'],
-                1 ,
-                $ftime['tm_yday'] + 1,
-                $ftime['tm_year'] + 1900);
+                $ftime['hour'],
+                $ftime['minute'],
+                $ftime['second'],
+                $ftime['month'],
+                $ftime['day'],
+                $ftime['year']);
     }
 
     public static function time_elapsed_string($ptime)
