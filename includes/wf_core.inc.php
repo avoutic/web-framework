@@ -608,7 +608,25 @@ class WF
             $merge_config = array_replace_recursive($merge_config, $local_config);
         }
 
-        $merge_config['server_name'] = isset($_SERVER['SERVER_NAME'])?$_SERVER['SERVER_NAME']:'app';
+        // Force server_name and host_name to 'app' if run locally.
+        // Otherwise only set dynamically to SERVER_NAME if not defined in the merged config.
+        // server_name is meant to be used in urls and can contain port information.
+        // host_name is meant to be used as host and cannot contain port information.
+        //
+        if (!isset($_SERVER['SERVER_NAME']))
+        {
+            $merge_config['server_name'] = 'app';
+            $merge_config['host_name'] = 'app';
+        }
+        else
+        {
+            if (!strlen($merge_config['server_name']))
+                $merge_config['server_name'] = $_SERVER['SERVER_NAME'];
+
+            if (!strlen($merge_config['host_name']))
+                $merge_config['host_name'] = $_SERVER['SERVER_NAME'];
+        }
+
         $merge_config['document_root'] = $_SERVER['DOCUMENT_ROOT'];
 
         $this->global_config = $merge_config;
