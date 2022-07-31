@@ -47,6 +47,9 @@ class WFHelpers
 
         foreach ($item as $key => $value)
         {
+            if (is_null($value))
+                continue;
+
             if (is_object($value))
                 $value = $item[$key] = get_object_vars($value);
 
