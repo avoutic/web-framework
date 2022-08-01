@@ -30,10 +30,18 @@ abstract class SenderCore extends FrameworkCore
         WF::verify(strlen($handler_class), 'No handler for sending configured');
 
         $handler = new $handler_class();
-        WF::verify(method_exists($handler, $template_name), 'No template handler available');
 
-        return $handler->$template_name($to, $params);
+        return $handler->dispatch_template_email($template_name, $to, $params);
     }
+
+    function dispatch_template_email($template_name, $to, $params = array())
+    {
+        WF::verify(method_exists($this, $template_name), 'No template handler available');
+
+        return $this->$template_name($to, $params);
+    }
+
+    abstract function send_raw_email($to, $subject, $message);
 
     // Functions called by the base framework
     //
