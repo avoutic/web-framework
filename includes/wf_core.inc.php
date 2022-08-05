@@ -59,6 +59,10 @@ class WF
         ),
         'site_name' => 'Unknown',
         'server_name' => '',                // Set to $_SERVER['SERVER_NAME'] or 'app' automatically
+                                            // For use in URLs. Is allowed to contain colon with port
+                                            // number at the end.
+        'host_name' => '',                  // Set to $_SERVER['SERVER_NAME'] or 'app' automatically
+                                            // Pure host name. Cannot include port number information.
         'http_mode' => 'https',
         'document_root' => '',              // Set to $_SERVER['DOCUMENT_ROOT'] automatically
         'cache_enabled' => false,
