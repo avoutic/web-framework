@@ -15,6 +15,17 @@ class PageResetPassword extends PageBasic
         return "Reset password";
     }
 
+    // Can be overriden for project specific user factories and user classes
+    //
+    function get_user($username)
+    {
+        $factory = new BaseFactory();
+
+        $user = $factory->get_user_by_username($username);
+
+        return $user;
+    }
+
     function do_logic()
     {
         $forgot_password_page = $this->get_base_url().$this->get_config('pages.forgot_password.location');
@@ -38,11 +49,7 @@ class PageResetPassword extends PageBasic
             exit();
         }
 
-        $factory = new BaseFactory();
-
-        // Check user status
-        //
-        $user = $factory->get_user_by_username($msg['username']);
+        $user = $this->get_user($msg['username']);
 
         if ($user === FALSE)
             return;
