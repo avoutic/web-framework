@@ -49,6 +49,8 @@ class WFSecurity
     //
     function urlencode_and_auth_array($array)
     {
+        trigger_error("WFSecurity->urlencode_and_auth_array()", E_USER_DEPRECATED);
+
         return $this->encode_and_auth_array($array);
     }
 
@@ -77,6 +79,8 @@ class WFSecurity
     //
     function urldecode_and_verify_array($str)
     {
+        trigger_error("WFSecurity->urldecode_and_verify_array()", E_USER_DEPRECATED);
+
         return $this->decode_and_verify_array(urldecode($str));
     }
 

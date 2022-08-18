@@ -923,6 +923,8 @@ class FrameworkCore
     //
     protected function urlencode_and_auth_array($array)
     {
+        trigger_error("FrameworkCode->urlencode_and_auth_array()", E_USER_DEPRECATED);
+
         return $this->security->encode_and_auth_array($array);
     }
 
@@ -935,6 +937,8 @@ class FrameworkCore
     //
     protected function urldecode_and_verify_array($str)
     {
+        trigger_error("FrameworkCode->urldecode_and_verify_array()", E_USER_DEPRECATED);
+
         return $this->security->urldecode_and_verify_array($str);
     }
 
