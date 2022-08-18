@@ -8,6 +8,17 @@ class Right extends DataCore
     static protected $base_fields = array('short_name', 'name');
 };
 
+class UserRight extends DataCore
+{
+    static protected $table_name = 'user_rights';
+    static protected $base_fields = array('right_id', 'user_id');
+
+    function get_right()
+    {
+        return Right::get_object_by_id($this->right_id);
+    }
+};
+
 function pbkdf2($algorithm, $password, $salt, $count, $key_length, $raw_output = false)
 {
     $algorithm = strtolower($algorithm);
@@ -73,18 +84,11 @@ class User extends DataCore
 
     protected function fill_complex_fields()
     {
-        $query = <<<SQL
-        SELECT right_id
-        FROM user_rights AS ur
-        WHERE ur.user_id = ?
-SQL;
+        $user_rights = UserRight::get_objects(0, -1, array('user_id' => $this->id));
 
-        $result = $this->query($query, array($this->id));
-        $this->verify($result !== false, 'Failed to retrieve user rights.');
-
-        foreach($result as $k => $row)
+        foreach($user_rights as $user_right)
         {
-            $right = Right::get_object_by_id($row['right_id']);
+            $right = $user_right->get_right();
             $this->verify($right !== false, 'Failed to retrieve right');
 
             $this->rights[$right->short_name] = $right;
