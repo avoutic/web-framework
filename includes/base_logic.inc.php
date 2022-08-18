@@ -305,25 +305,19 @@ SQL;
         if (!isset($this->rights[$short_name]))
             return true;
 
-        $query = <<<SQL
-        DELETE FROM user_rights
-        WHERE right_id = ( SELECT id
-                           FROM rights
-                           WHERE short_name = ?
-                         ) AND
-              user_id = ?
-SQL;
+        $right = Right::get_object(array('short_name' => $short_name));
+        $this->verify($right !== false, 'Failed to locate right');
 
+        $user_right = UserRight::get_object(array(
+            'user_id' => $this->id,
+            'right_id' => $right->id,
+        ));
 
-        $result = $this->query($query,
-                array(
-                    $short_name,
-                    $this->id
-                    ));
-
-        $this->verify($result !== false, 'Failed to delete user right');
-
-        unset($this->rights[$short_name]);
+        if ($user_right !== false)
+        {
+            $user_right->delete();
+            unset($this->rights[$short_name]);
+        }
 
         return true;
     }
