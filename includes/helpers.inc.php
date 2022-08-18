@@ -18,7 +18,7 @@ class Helpers
 
 	/**
 	 * Replace any accents in the string with ASCII characters
-	 * 
+	 *
 	 * @param string
 	 * @return string
 	 */
@@ -71,7 +71,7 @@ class Helpers
 			array_values($uppercase),
 			$str
 		);
-		
+
 		return $str;
 	}
 
@@ -81,7 +81,7 @@ class Helpers
      * @param string $str
      * @return string
      */
-    public static function title( $str )
+    public static function title($str)
     {
         // Convert HTML entities to normal characters
         $str = html_entity_decode($str, ENT_QUOTES, 'UTF-8');
