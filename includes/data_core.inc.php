@@ -38,7 +38,7 @@ abstract class DataCore extends FrameworkCore
                 return true;
         }
 
-        $result = WF::get_main_db()->Query('SELECT id FROM '.static::$table_name.
+        $result = WF::get_main_db()->query('SELECT id FROM '.static::$table_name.
                                    ' WHERE id = ?', array($id));
 
         if ($result === false)
@@ -253,7 +253,7 @@ abstract class DataCore extends FrameworkCore
 
         $args = $data;
 
-        $result = WF::get_main_db()->InsertQuery($query, $args);
+        $result = WF::get_main_db()->insert_query($query, $args);
 
         $class = get_called_class();
 
@@ -291,7 +291,7 @@ abstract class DataCore extends FrameworkCore
             }
         }
 
-        $result = WF::get_main_db()->Query($query, $params);
+        $result = WF::get_main_db()->query($query, $params);
 
         $class = get_called_class();
 
@@ -326,7 +326,7 @@ abstract class DataCore extends FrameworkCore
 
             $params = array($id);
 
-            $result = WF::get_main_db()->Query($query, $params);
+            $result = WF::get_main_db()->query($query, $params);
 
             WF::verify($result !== false, 'Failed to retrieve object ('.$class.')');
             WF::verify($result->RecordCount() <= 1, 'Non-unique object request ('.$class.')');
@@ -375,7 +375,7 @@ abstract class DataCore extends FrameworkCore
             }
         }
 
-        $result = WF::get_main_db()->Query($query, $params);
+        $result = WF::get_main_db()->query($query, $params);
 
         $class = get_called_class();
 
@@ -457,7 +457,7 @@ abstract class DataCore extends FrameworkCore
             array_push($params, (int) $results);
         }
 
-        $result = WF::get_main_db()->Query($query, $params);
+        $result = WF::get_main_db()->query($query, $params);
 
         $class = get_called_class();
 

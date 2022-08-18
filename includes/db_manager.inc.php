@@ -180,7 +180,7 @@ SQL;
             {
                 echo "   Failed: ";
                 $db = $this->get_db();
-                echo $db->GetLastError().PHP_EOL;
+                echo $db->get_last_error().PHP_EOL;
                 exit();
             }
         }

@@ -1,3 +1,9 @@
+Migration changes Pending for next version:
+* Database->Connect() deprecated. Use Database->connect() instead
+* Database->GetLastError() deprecated. Use Database->get_last_error() instead
+* Database->InsertQuery() deprecated. Use Database->insert_query() instead
+* Database->Query() deprecated. User Database->query() instead
+
 Deprecated items that should be removed prior to v4 of web-framework
 
 * urldecode_and_verify_array() -> decode_and_verify_array()

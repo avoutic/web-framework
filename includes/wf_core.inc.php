@@ -191,7 +191,7 @@ class WF
 
         if ($main_db != null)
         {
-            $db_error = $main_db->GetLastError();
+            $db_error = $main_db->get_last_error();
             if ($db_error === false || $db_error === '')
                 $db_error = 'None';
         }
@@ -679,7 +679,7 @@ class WF
         $main_db_tag = $this->internal_get_config('database_config');
         $main_config = $this->security->get_auth_config('db_config.'.$main_db_tag);
 
-        if ($this->main_database->Connect($main_config) === false)
+        if ($this->main_database->connect($main_config) === false)
         {
             $this->exit_error('Database server connection failed',
                     'The connection to the database server failed.');
@@ -692,7 +692,7 @@ class WF
             $database = new Database();
             $tag_config = $this->security->get_auth_config('db_config.'.$tag);
 
-            if ($database->Connect($tag_config) === false)
+            if ($database->connect($tag_config) === false)
             {
                 $this->exit_error('Databases server connection failed',
                         'The connection to the database server failed.');
@@ -852,12 +852,12 @@ class FrameworkCore
 
     protected function query($query, $params)
     {
-        return $this->database->Query($query, $params);
+        return $this->database->query($query, $params);
     }
 
     protected function insert_query($query, $params)
     {
-        return $this->database->InsertQuery($query, $params);
+        return $this->database->insert_query($query, $params);
     }
 
     // Input related

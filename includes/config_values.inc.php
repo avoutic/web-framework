@@ -26,7 +26,7 @@ class ConfigValues
         if ($module == "")
             $module = $this->default_module;
 
-        $result = $this->database->Query('SELECT name, value FROM config_values WHERE module = ?',
+        $result = $this->database->query('SELECT name, value FROM config_values WHERE module = ?',
             array($module));
 
         if ($result === FALSE)
@@ -45,7 +45,7 @@ class ConfigValues
         if ($module == "")
             $module = $this->default_module;
 
-        $result = $this->database->Query('SELECT value FROM config_values WHERE module = ? AND name = ?',
+        $result = $this->database->query('SELECT value FROM config_values WHERE module = ? AND name = ?',
             array($module, $name));
 
         if ($result === FALSE)
@@ -65,7 +65,7 @@ class ConfigValues
         if ($module == "")
             $module = $this->default_module;
 
-        $result = $this->database->Query('INSERT INTO config_values SET module = ?, name = ?, value = ? ON DUPLICATE KEY UPDATE value = ?',
+        $result = $this->database->query('INSERT INTO config_values SET module = ?, name = ?, value = ? ON DUPLICATE KEY UPDATE value = ?',
             array($module, $name, $value, $value));
 
         if ($result === FALSE)
@@ -77,7 +77,7 @@ class ConfigValues
         if ($module == "")
             $module = $this->default_module;
 
-        $result = $this->database->Query('DELETE config_values WHERE module = ? AND name = ?',
+        $result = $this->database->query('DELETE config_values WHERE module = ? AND name = ?',
             array($module, $name));
 
         if ($result === FALSE)
@@ -114,7 +114,7 @@ class UserConfigValues
         if ($module == "")
             $module == $this->default_module;
 
-        $result = $this->database->Query('SELECT name, value FROM user_config_values WHERE user_id = ? AND module = ?',
+        $result = $this->database->query('SELECT name, value FROM user_config_values WHERE user_id = ? AND module = ?',
             array($this->user_id, $module));
 
         if ($result === FALSE)
@@ -133,7 +133,7 @@ class UserConfigValues
         if ($module == "")
             $module == $this->default_module;
 
-        $result = $this->database->Query('SELECT value FROM user_config_values WHERE user_id = ? AND module = ? AND name = ?',
+        $result = $this->database->query('SELECT value FROM user_config_values WHERE user_id = ? AND module = ? AND name = ?',
             array($this->user_id, $module, $name));
 
         if ($result === FALSE)
@@ -150,7 +150,7 @@ class UserConfigValues
         if ($module == "")
             $module == $this->default_module;
 
-        $result = $this->database->Query('SELECT value FROM user_config_values WHERE user_id = ? AND module = ? AND name = ?',
+        $result = $this->database->query('SELECT value FROM user_config_values WHERE user_id = ? AND module = ? AND name = ?',
             array($this->user_id, $module, $name));
 
         if ($result === FALSE)
@@ -170,7 +170,7 @@ class UserConfigValues
         if ($module == "")
             $module == $this->default_module;
 
-        $result = $this->database->Query('INSERT user_config_values SET user_id = ?, module = ?, name = ?, value = ? ON DUPLICATE KEY UPDATE value = ?',
+        $result = $this->database->query('INSERT user_config_values SET user_id = ?, module = ?, name = ?, value = ? ON DUPLICATE KEY UPDATE value = ?',
             array($this->user_id, $module, $name, $value, $value));
 
         if ($result === FALSE)
@@ -182,7 +182,7 @@ class UserConfigValues
         if ($module == "")
             $module == $this->default_module;
 
-        $result = $this->database->Query('DELETE user_config_values WHERE user_id = ? AND module = ? AND name = ?',
+        $result = $this->database->query('DELETE user_config_values WHERE user_id = ? AND module = ? AND name = ?',
             array($this->user_id, $module, $name));
 
         if ($result === FALSE)
