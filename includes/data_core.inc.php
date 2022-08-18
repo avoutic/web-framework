@@ -315,24 +315,9 @@ SQL;
 
         if (count($filter))
         {
-            $where_fmt = 'WHERE ';
-            $first = true;
-
-            foreach ($filter as $key => $value)
-            {
-                if (!$first)
-                    $where_fmt .= ' AND ';
-                else
-                    $first = false;
-
-                if ($value === null)
-                    $where_fmt .= "`{$key}` IS NULL";
-                else
-                {
-                    $where_fmt .= "`{$key}` = ?";
-                    array_push($params, $value);
-                }
-            }
+            $filter_array = static::get_filter_array($filter);
+            $where_fmt = "WHERE {$filter_array['query']}";
+            $params = $filter_array['params'];
         }
 
         $query = <<<SQL
@@ -408,24 +393,9 @@ SQL;
 
         if (count($filter))
         {
-            $where_fmt = 'WHERE ';
-            $first = true;
-
-            foreach ($filter as $key => $value)
-            {
-                if (!$first)
-                    $where_fmt .= ' AND ';
-                else
-                    $first = false;
-
-                if ($value === null)
-                    $where_fmt .= "`{$key}` IS NULL";
-                else
-                {
-                    $where_fmt .= "`{$key}` = ?";
-                    array_push($params, $value);
-                }
-            }
+            $filter_array = static::get_filter_array($filter);
+            $where_fmt = "WHERE {$filter_array['query']}";
+            $params = $filter_array['params'];
         }
 
         $query = <<<SQL
@@ -484,24 +454,9 @@ SQL;
 
         if (count($filter))
         {
-            $where_fmt = 'WHERE ';
-            $first = true;
-
-            foreach ($filter as $key => $value)
-            {
-                if (!$first)
-                    $where_fmt .= ' AND ';
-                else
-                    $first = false;
-
-                if ($value === null)
-                    $where_fmt .= "`{$key}` IS NULL";
-                else
-                {
-                    $where_fmt .= "`{$key}` = ?";
-                    array_push($params, $value);
-                }
-            }
+            $filter_array = static::get_filter_array($filter);
+            $where_fmt = "WHERE {$filter_array['query']}";
+            $params = $filter_array['params'];
         }
 
         $order_fmt = (strlen($order)) ? "ORDER BY {$order}" : '';
@@ -547,6 +502,52 @@ SQL;
             array_push($data, $obj->$data_function());
 
         return $data;
+    }
+
+    static function get_set_fmt($values)
+    {
+        $set_fmt = '';
+        $first = true;
+
+        foreach ($values as $key => $value)
+        {
+            if (!$first)
+                $set_fmt .= ', ';
+            else
+                $first = false;
+
+            $set_fmt .= ' `'.$key.'` = ? ';
+        }
+
+        return $set_fmt;
+    }
+
+    static function get_filter_array($filter)
+    {
+        $filter_fmt = '';
+        $params = array();
+        $first = true;
+
+        foreach ($filter as $key => $value)
+        {
+            if (!$first)
+                $filter_fmt .= ' AND ';
+            else
+                $first = false;
+
+            if ($value === null)
+                $filter_fmt .= "`{$key}` IS NULL";
+            else
+            {
+                $filter_fmt .= "`{$key}` = ?";
+                array_push($params, $value);
+            }
+        }
+
+        return array(
+            'query' => $filter_fmt,
+            'params' => $params,
+        );
     }
 
     function to_string()
