@@ -287,23 +287,15 @@ SQL;
         if (isset($this->rights[$short_name]))
             return true;
 
-        $query = <<<SQL
-        INSERT INTO user_rights
-        SET user_id = ?,
-            right_id = ( SELECT id
-                         FROM rights
-                         WHERE short_name = ?
-                       )
-SQL;
+        $right = Right::get_object(array('short_name' => $short_name));
+        $this->verify($right !== false, 'Failed to locate right');
 
-        $result = $this->insert_query($query,
-                array(
-                    $this->id,
-                    $short_name
-                    ));
-        $this->verify($result !== false, 'Failed to insert user right');
+        UserRight::create(array(
+            'user_id' => $this->id,
+            'right_id' => $right->id,
+        ));
 
-        $this->rights[$short_name] = Right::get_object(array('short_name' => $short_name));
+        $this->rights[$short_name] = $right;
 
         return true;
     }
