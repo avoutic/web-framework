@@ -99,12 +99,20 @@ abstract class DataCore extends FrameworkCore
 
     private function fill_base_fields_from_db()
     {
-        $result = $this->query(
-                'SELECT `'.implode('`, `', static::$base_fields).'` '.
-                'FROM '.static::$table_name.' WHERE id = ?', array($this->id));
+        $fields_fmt = implode('`, `', static::$base_fields);
+        $table_name = static::$table_name;
 
-        $this->verify($result !== false, 'Failed to retrieve base fields for '.static::$table_name);
-        $this->verify($result->RecordCount() == 1, 'Failed to select single item. ('.$result->RecordCount().' for '.$this->id.' in '.static::$table_name.')');
+        $query = <<<SQL
+        SELECT `{$fields_fmt}`
+        FROM {$table_name}
+        WHERE id = ?
+SQL;
+
+        $params = array($this->id);
+
+        $result = $this->query($query, $params);
+        $this->verify($result !== false, "Failed to retrieve base fields for {$table_name}");
+        $this->verify($result->RecordCount() == 1, "Failed to select single item for {$this->id} in {$table_name}");
 
         $row = $result->fields;
 
@@ -124,36 +132,50 @@ abstract class DataCore extends FrameworkCore
 
     function get_field($field)
     {
-        $result = $this->query('SELECT `'.$field.'` FROM '.static::$table_name.
-                                         ' WHERE id = ?', array($this->id));
-        $this->verify($result !== false, 'Failed to retrieve '.$field.' for '.static::$table_name);
+        $table_name = static::$table_name;
+
+        $query = <<<SQL
+        SELECT `{$field}`
+        FROM {$table_name}
+        WHERE id = ?
+SQL;
+
+        $params = array($this->id);
+
+        $result = $this->query($query, $params);
+        $this->verify($result !== false, "Failed to retrieve {$field} for {$table_name}");
 
         return $result->fields[$field];
     }
 
     function update($data)
     {
-        $query = 'UPDATE '.static::$table_name;
-        $query .= ' SET ';
+        $table_name = static::$table_name;
 
+        $fields_fmt = '';
         $first = true;
+
         foreach ($data as $key => $value)
         {
             if (!$first)
-                $query .= ', ';
+                $fields_fmt .= ', ';
+            else
+                $first = false;
 
-            $query .= ' `'.$key.'` = ? ';
-
-            $first = false;
+            $fields_fmt .= ' `'.$key.'` = ? ';
         }
-        $args = $data;
 
-        $query .= 'WHERE id = ?';
-        $args[] = $this->id;
+        $query = <<<SQL
+        UPDATE {$table_name}
+        SET {$fields_fmt}
+        WHERE id = ?
+SQL;
 
-        $result = $this->query($query, $args);
+        $data[] = $this->id;
+
+        $result = $this->query($query, $data);
         $class = get_called_class();
-        $this->verify($result !== false, 'Failed to update object ('.$class.')');
+        $this->verify($result !== false, "Failed to update object ({$class})");
 
         foreach ($data as $key => $value)
             $this->$key = $value;
@@ -163,16 +185,19 @@ abstract class DataCore extends FrameworkCore
 
     function update_field($field, $value)
     {
-        $query = 'UPDATE '.static::$table_name;
-        $query .= ' SET `'.$field.'` = ? ';
-        $args[] = $value;
+        $table_name = static::$table_name;
 
-        $query .= 'WHERE id = ?';
-        $args[] = $this->id;
+        $query = <<<SQL
+        UPDATE {$table_name}
+        SET `{$field}` = ?
+        WHERE id = ?
+SQL;
 
-        $result = $this->query($query, $args);
+        $params = array($value, $this->id);
+
+        $result = $this->query($query, $params);
         $class = get_called_class();
-        $this->verify($result !== false, 'Failed to update object ('.$class.')');
+        $this->verify($result !== false, "Failed to update object ({$class})");
 
         $this->$field = $value;
 
@@ -181,26 +206,33 @@ abstract class DataCore extends FrameworkCore
 
     function decrease_field($field, $value = 1, $minimum = false)
     {
-        $query = 'UPDATE '.static::$table_name;
+        $table_name = static::$table_name;
 
-        if ($minimum === false)
+        $new_value_fmt = '';
+        $params = array();
+
+        if ($minimum)
         {
-            $query .= ' SET `'.$field.'` = `'.$field.'` - ? ';
-            $args[] = $value;
+            $new_value_fmt = "GREATEST(?, `{$field}` - ?)";
+            $params = array($minimum, $value);
         }
         else
         {
-            $query .= ' SET `'.$field.'` = GREATEST(?, `'.$field.'` - ?) ';
-            $args[] = $minimum;
-            $args[] = $value;
+            $new_value_fmt = "`{$field}` - ?";
+            $params = array($value);
         }
 
-        $query .= 'WHERE id = ?';
-        $args[] = $this->id;
+        $query = <<<SQL
+        UPDATE {$table_name}
+        SET `{$field}` = {$new_value_fmt}
+        WHERE id = ?
+SQL;
 
-        $result = $this->query($query, $args);
+        $params[] = $this->id;
+
+        $result = $this->query($query, $params);
         $class = get_called_class();
-        $this->verify($result !== false, 'Failed to decrease field of object ('.$class.')');
+        $this->verify($result !== false, "Failed to decrease field of object ({$class})");
 
         $this->$field = $this->get_field($field);
 
@@ -209,16 +241,19 @@ abstract class DataCore extends FrameworkCore
 
     function increase_field($field, $value = 1)
     {
-        $query = 'UPDATE '.static::$table_name;
-        $query .= ' SET `'.$field.'` = `'.$field.'` + ? ';
-        $args[] = $value;
+        $table_name = static::$table_name;
 
-        $query .= 'WHERE id = ?';
-        $args[] = $this->id;
+        $query = <<<SQL
+        UPDATE {$table_name}
+        SET `{$field}` = `{$field}` + ?
+        WHERE id = ?
+SQL;
 
-        $result = $this->query($query, $args);
+        $params = array($value, $this->id);
+
+        $result = $this->query($query, $params);
         $class = get_called_class();
-        $this->verify($result !== false, 'Failed to increase field of object ('.$class.')');
+        $this->verify($result !== false, "Failed to increase field of object ({$class})");
 
         $this->$field = $this->get_field($field);
 
@@ -227,76 +262,89 @@ abstract class DataCore extends FrameworkCore
 
     function delete()
     {
+        $table_name = static::$table_name;
+
         $this->delete_from_cache();
 
-        $result = $this->query(
-                    'DELETE FROM '.static::$table_name.' WHERE id = ?',
-                    array($this->id));
+        $query = <<<SQL
+        DELETE FROM {$table_name}
+        WHERE id = ?
+SQL;
+
+        $params = array($this->id);
+
+        $result = $this->query($query, $params);
         $this->verify($result !== false, 'Failed to delete item');
     }
 
     static function create($data)
     {
-        $query = 'INSERT INTO '.static::$table_name;
-        $query .= ' SET ';
+        $table_name = static::$table_name;
 
+        $fields_fmt = '';
         $first = true;
+
         foreach ($data as $key => $value)
         {
             if (!$first)
-                $query .= ', ';
+                $fields_fmt .= ', ';
+            else
+                $first = false;
 
-            $query .= ' `'.$key.'` = ? ';
-
-            $first = false;
+            $fields_fmt .= ' `'.$key.'` = ? ';
         }
 
-        $args = $data;
+        $query = <<<SQL
+        INSERT INTO {$table_name}
+        SET {$fields_fmt}
+SQL;
 
-        $result = WF::get_main_db()->insert_query($query, $args);
-
+        $result = WF::get_main_db()->insert_query($query, $data);
         $class = get_called_class();
-
-        WF::verify($result !== false, 'Failed to create object ('.$class.')');
+        WF::verify($result !== false, "Failed to create object ({$class})");
 
         return static::get_object_by_id($result, true);
     }
 
     static function count_objects($filter = array())
     {
-        $query = 'SELECT COUNT(id) AS cnt FROM '.static::$table_name;
+        $table_name = static::$table_name;
+
         $params = array();
+        $where_fmt = '';
 
         if (count($filter))
         {
-            $query .= ' WHERE ';
+            $where_fmt = 'WHERE ';
             $first = true;
 
             foreach ($filter as $key => $value)
             {
                 if (!$first)
-                    $query .= ' AND ';
+                    $where_fmt .= ' AND ';
+                else
+                    $first = false;
 
                 if ($value === null)
-                {
-                    $query .= ' `'.$key.'` IS NULL ';
-                }
+                    $where_fmt .= "`{$key}` IS NULL";
                 else
                 {
-                    $query .= ' `'.$key.'` = ? ';
+                    $where_fmt .= "`{$key}` = ?";
                     array_push($params, $value);
                 }
-
-                $first = false;
             }
         }
 
+        $query = <<<SQL
+        SELECT COUNT(id) AS cnt
+        FROM {$table_name}
+        {$where_fmt}
+SQL;
+
         $result = WF::get_main_db()->query($query, $params);
-
         $class = get_called_class();
-
-        WF::verify($result !== false, 'Failed to count objects ('.$class.')');
-        WF::verify($result->RecordCount() == 1, 'Failed to count objects ('.$class.')');
+        WF::verify($result !== false, "Failed to count objects ({$class})");
+        WF::verify($result->RecordCount() == 1, "Failed to count objects ({$class})");
 
         return $result->fields['cnt'];
     }
@@ -321,15 +369,20 @@ abstract class DataCore extends FrameworkCore
 
         if ($checked_presence == false)
         {
-            $query = 'SELECT id FROM '.static::$table_name;
-            $query .= ' WHERE id = ?';
+            $table_name = static::$table_name;
+
+            $query = <<<SQL
+            SELECT id
+            FROM {$table_name}
+            WHERE id = ?
+SQL;
 
             $params = array($id);
 
             $result = WF::get_main_db()->query($query, $params);
 
-            WF::verify($result !== false, 'Failed to retrieve object ('.$class.')');
-            WF::verify($result->RecordCount() <= 1, 'Non-unique object request ('.$class.')');
+            WF::verify($result !== false, "Failed to retrieve object ({$class})");
+            WF::verify($result->RecordCount() <= 1, "Non-unique object request ({$class})");
 
             if ($result->RecordCount() == 0)
                 return false;
@@ -348,39 +401,43 @@ abstract class DataCore extends FrameworkCore
     //
     static function get_object($filter = array())
     {
-        $query = 'SELECT id FROM '.static::$table_name;
+        $table_name = static::$table_name;
+
         $params = array();
+        $where_fmt = '';
 
         if (count($filter))
         {
-            $query .= ' WHERE ';
+            $where_fmt = 'WHERE ';
             $first = true;
 
             foreach ($filter as $key => $value)
             {
                 if (!$first)
-                    $query .= ' AND ';
+                    $where_fmt .= ' AND ';
+                else
+                    $first = false;
 
                 if ($value === null)
-                {
-                    $query .= ' `'.$key.'` IS NULL ';
-                }
+                    $where_fmt .= "`{$key}` IS NULL";
                 else
                 {
-                    $query .= ' `'.$key.'` = ? ';
+                    $where_fmt .= "`{$key}` = ?";
                     array_push($params, $value);
                 }
-
-                $first = false;
             }
         }
 
+        $query = <<<SQL
+        SELECT id
+        FROM {$table_name}
+        {$where_fmt}
+SQL;
+
         $result = WF::get_main_db()->query($query, $params);
-
         $class = get_called_class();
-
-        WF::verify($result !== false, 'Failed to retrieve object ('.$class.')');
-        WF::verify($result->RecordCount() <= 1, 'Non-unique object request ('.$class.')');
+        WF::verify($result !== false, "Failed to retrieve object ({$class})");
+        WF::verify($result->RecordCount() <= 1, "Non-unique object request ({$class})");
 
         if ($result->RecordCount() == 0)
             return false;
@@ -420,48 +477,54 @@ abstract class DataCore extends FrameworkCore
 
     static function get_objects($offset = 0, $results = 10, $filter = array(), $order = '')
     {
-        $query = 'SELECT id FROM '.static::$table_name;
+        $table_name = static::$table_name;
+
         $params = array();
+        $where_fmt = '';
 
         if (count($filter))
         {
-            $query .= ' WHERE ';
+            $where_fmt = 'WHERE ';
             $first = true;
 
             foreach ($filter as $key => $value)
             {
                 if (!$first)
-                    $query .= ' AND ';
+                    $where_fmt .= ' AND ';
+                else
+                    $first = false;
 
                 if ($value === null)
-                {
-                    $query .= ' `'.$key.'` IS NULL ';
-                }
+                    $where_fmt .= "`{$key}` IS NULL";
                 else
                 {
-                    $query .= ' `'.$key.'` = ? ';
+                    $where_fmt .= "`{$key}` = ?";
                     array_push($params, $value);
                 }
-
-                $first = false;
             }
         }
 
-        if (strlen($order))
-            $query .= ' ORDER BY '.$order;
+        $order_fmt = (strlen($order)) ? "ORDER BY {$order}" : '';
+        $limit_fmt = '';
 
-        if($results != -1)
+        if ($results != -1)
         {
-            $query .= ' LIMIT ?,?';
+            $limit_fmt = 'LIMIT ?,?';
             array_push($params, (int) $offset);
             array_push($params, (int) $results);
         }
 
+        $query = <<<SQL
+        SELECT id
+        FROM {$table_name}
+        {$where_fmt}
+        {$order_fmt}
+        {$limit_fmt}
+SQL;
+
         $result = WF::get_main_db()->query($query, $params);
-
         $class = get_called_class();
-
-        WF::verify($result !== false, 'Failed to retrieve objects ('.$class.')');
+        WF::verify($result !== false, "Failed to retrieve objects ({$class})");
 
         $info = array();
         foreach($result as $k => $row)
