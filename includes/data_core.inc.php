@@ -151,19 +151,7 @@ SQL;
     function update($data)
     {
         $table_name = static::$table_name;
-
-        $fields_fmt = '';
-        $first = true;
-
-        foreach ($data as $key => $value)
-        {
-            if (!$first)
-                $fields_fmt .= ', ';
-            else
-                $first = false;
-
-            $fields_fmt .= ' `'.$key.'` = ? ';
-        }
+        $fields_fmt = static::get_set_fmt($data);
 
         $query = <<<SQL
         UPDATE {$table_name}
@@ -280,19 +268,7 @@ SQL;
     static function create($data)
     {
         $table_name = static::$table_name;
-
-        $fields_fmt = '';
-        $first = true;
-
-        foreach ($data as $key => $value)
-        {
-            if (!$first)
-                $fields_fmt .= ', ';
-            else
-                $first = false;
-
-            $fields_fmt .= ' `'.$key.'` = ? ';
-        }
+        $fields_fmt = static::get_set_fmt($data);
 
         $query = <<<SQL
         INSERT INTO {$table_name}
