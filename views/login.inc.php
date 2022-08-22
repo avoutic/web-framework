@@ -67,6 +67,11 @@ class PageLogin extends PageBasic
         return $user;
     }
 
+    function custom_value_check($user)
+    {
+        return true;
+    }
+
     function do_logic()
     {
         $return_page = $this->get_input_var('return_page');
@@ -160,6 +165,9 @@ class PageLogin extends PageBasic
             $this->add_blacklist_entry('wrong-password');
             return;
         }
+
+        if ($this->custom_value_check($user) !== true)
+            return;
 
         // Check if verified
         //
