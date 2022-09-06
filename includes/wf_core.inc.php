@@ -141,6 +141,37 @@ class WF
     {
         $error_type = WFHelpers::get_error_type_string($error_type);
 
+        // Retrieve request
+        //
+        $server_name = $this->internal_get_config('server_name');
+
+        $request = 'app';
+        if ($server_name !== 'app')
+        {
+            $request = "{$_SERVER['REQUEST_METHOD']} ";
+            $request .= (isset($_SERVER['REDIRECT_URL'])) ? $_SERVER['REDIRECT_URL'] : '/';
+        }
+
+        // Construct base message
+        //
+        $this->low_info_message .= <<<TXT
+File: {$file}
+Line: {$line}
+
+TXT;
+
+        $this->debug_message .= <<<TXT
+File: {$file}
+Line: {$line}
+Message: {$message}
+
+Server: {$server_name}
+Request: {$request}
+
+TXT;
+
+        // Construct stack trace
+        //
         $trace = debug_backtrace(0);
         $stack = array();
         $stack_condensed = '';
@@ -175,16 +206,12 @@ class WF
 
             WFHelpers::scrub_state($stack);
         }
+        $stack_fmt = print_r($stack, true);
 
-        $this->low_info_message .= "File '$file'\nLine '$line'\n";
-
+        // Retrieve database error
+        //
         $db_error = 'Not initialized yet';
-        $auth_data = 'Not authenticated';
-        $input_data = '';
-        $raw_input_data = '';
-
         $main_db = $this->get_db();
-
         if ($main_db != null)
         {
             $db_error = $main_db->get_last_error();
@@ -192,6 +219,9 @@ class WF
                 $db_error = 'None';
         }
 
+        // Retrieve auth data
+        //
+        $auth_data = 'Not authenticated';
         if ($this->is_authenticated())
         {
             $auth_array = $this->get_authenticated();
@@ -200,7 +230,7 @@ class WF
             $auth_data = print_r($auth_array, true);
         }
 
-        // Filter out error_message to prevent recursion
+        // Retrieve inputs
         //
         $inputs = $this->get_input();
         unset($inputs['error_message']);
@@ -208,15 +238,23 @@ class WF
 
         $raw_input_data = print_r($this->get_raw_input(), true);
 
-        $this->debug_message .= "File '$file'\nLine '$line'\nMessage '$message'\n";
+        $server_fmt = print_r($_SERVER, true);
 
-        $this->debug_data = "\n";
-        $this->debug_data .= "Condensed backtrace:\n".$stack_condensed."\n";
-        $this->debug_data .= "Last Database error: ".$db_error."\n\n";
-        $this->debug_data .= "Input:\n".$input_data."\n";
-        $this->debug_data .= "Raw Input:\n".$raw_input_data."\n";
-        $this->debug_data .= "Auth:\n".$auth_data."\n";
-        $this->debug_data .= "Backtrace:\n".print_r($stack, true);
+        // Construct debug data
+        //
+        $this->debug_data = <<<TXT
+
+Condensed backtrace:
+{$stack_condensed}
+Last Database error: {$db_error}
+
+Input: {$input_data}
+Raw Input: {$raw_input_data}
+Auth: {$auth_data}
+Backtrace:
+{$stack_fmt}
+{$server_fmt}
+TXT;
 
         if ($this->initialized && $this->internal_get_config('debug_mail') == true)
         {
@@ -224,13 +262,10 @@ class WF
             //
             SenderCore::send_raw(
                 $this->internal_get_config('sender_core.assert_recipient'),
-                'Assertion failed',
-                "Failure information: $error_type\n\nServer: ".
-                $this->internal_get_config('server_name')."\n".
+                "Assertion failed: {$message}",
+                "Failure information: $error_type\n\n".
                 $this->debug_message.
-                $this->debug_data.
-                "\n----------------------------\n\n".
-                "Server variables:\n".print_r($_SERVER, true)
+                $this->debug_data
             );
         }
 
@@ -239,7 +274,7 @@ class WF
             $this->exit_error(
                 "Oops, something went wrong",
                 "Debug information: $error_type<br/>".
-                "<pre>".
+                "<br/><pre>".
                 $this->debug_message.
                 $this->debug_data.
                 "</pre>"
