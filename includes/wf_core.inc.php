@@ -139,9 +139,6 @@ class WF
 
     function internal_assert_handler($file, $line, $message, $error_type, $silent = false)
     {
-        $path_parts = pathinfo($file);
-        $file = $path_parts['filename'];
-
         $error_type = WFHelpers::get_error_type_string($error_type);
 
         $trace = debug_backtrace(0);
@@ -156,8 +153,7 @@ class WF
             {
                 if ($skipping &&
                     in_array($entry['function'], array('internal_assert_handler', 'assert_handler',
-                                                       'internal_verify', 'verify',
-                                                       'silent_verify')))
+                                                       'internal_verify')))
                 {
                     continue;
                 }
@@ -298,7 +294,7 @@ class WF
             $caller = $entry;
 
             if (in_array($entry['function'], array('internal_assert_handler', 'assert_handler',
-                                                   'internal_verify', 'verify', 'silent_verify')))
+                                                   'internal_verify')))
                 continue;
 
             break;
