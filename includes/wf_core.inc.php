@@ -366,6 +366,31 @@ TXT;
         return $caller;
     }
 
+    // Send a triggered error message but continue running
+    //
+    static function report_error($message, $stack = null)
+    {
+        $framework = WF::get_framework();
+        $framework->internal_report_error($message, $stack);
+    }
+
+    function internal_report_error($message, $stack = null)
+    {
+        // Cannot report if we cannot mail
+        //
+        if ($this->internal_get_config('debug_mail') == false)
+            return;
+
+        if ($stack === null)
+            $stack = debug_backtrace(0);
+
+        $caller = $this->find_caller($stack, array('internal_report_error'));
+
+        $debug_info = $this->get_debug_info($caller['file'], $caller['line'], $message, $stack);
+
+        $this->mail_debug_info($message, 'Error reported', $debug_info);
+    }
+
     static function blacklist_verify($bool, $reason, $severity = 1)
     {
         $framework = WF::get_framework();
@@ -950,6 +975,11 @@ class FrameworkCore
 
     // Assert related
     //
+    function report_error($message, $stack = null)
+    {
+        WF::report_error($message, $stack);
+    }
+
     // Deprecated (Remove for v4)
     //
     function silent_verify($bool, $message)
