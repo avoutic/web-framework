@@ -294,8 +294,12 @@ TXT;
             exit();
     }
 
+    // Deprecated (Remove for v4)
+    //
     static function silent_verify($bool, $message)
     {
+        trigger_error("WF::silent_verify()", E_USER_DEPRECATED);
+
         WF::verify($bool, $message, true);
     }
 
@@ -923,8 +927,12 @@ class FrameworkCore
 
     // Assert related
     //
+    // Deprecated (Remove for v4)
+    //
     function silent_verify($bool, $message)
     {
+        trigger_error("FrameworkCore->silent_verify()", E_USER_DEPRECATED);
+
         WF::silent_verify($bool, $message);
     }
 
