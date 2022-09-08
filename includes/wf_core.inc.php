@@ -342,21 +342,28 @@ TXT;
 
         $this->in_verify++;
         $stack = debug_backtrace(0);
+        $caller = $this->find_caller($stack, array('internal_assert_handler', 'assert_handler',
+                                                   'internal_verify'));
+
+        $this->internal_assert_handler($caller['file'], $caller['line'], $message, 'verify', $silent);
+        exit();
+    }
+
+    private function find_caller($stack, $exclude_functions)
+    {
         $caller = false;
 
-        foreach($stack as $entry)
+        foreach ($stack as $entry)
         {
             $caller = $entry;
 
-            if (in_array($entry['function'], array('internal_assert_handler', 'assert_handler',
-                                                   'internal_verify')))
+            if (in_array($entry['function'], $exclude_functions))
                 continue;
 
             break;
         }
 
-        $this->internal_assert_handler($caller['file'], $caller['line'], $message, 'verify', $silent);
-        exit();
+        return $caller;
     }
 
     static function blacklist_verify($bool, $reason, $severity = 1)
