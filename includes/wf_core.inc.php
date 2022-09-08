@@ -139,7 +139,52 @@ class WF
 
     function internal_assert_handler($file, $line, $message, $error_type, $silent = false)
     {
+        $debug_info = $this->get_debug_info($file, $line, $message);
+
+        // In case a second verify fails, make sure this data is added to that die()
+        //
+        $this->low_info_message .= $debug_info['low_info_message'];
+        $this->debug_message .= $debug_info['debug_message'];
+        $this->debug_data .= $debug_info['debug_data'];
+
+        $this->mail_debug_info($message, 'Assertion failed', $debug_info);
+
+        $use_message = ($this->internal_get_config('debug') == true) ?
+            $debug_info['debug_message'].$debug_info['debug_data'] : $debug_info['low_info_message'];
+
         $error_type = WFHelpers::get_error_type_string($error_type);
+
+        $this->exit_error(
+            "Oops, something went wrong",
+            "Debug information: $error_type<br/>".
+            "<br/><pre>".
+            $use_message.
+            "</pre>"
+        );
+    }
+
+    protected function mail_debug_info($message, $error_type, $debug_info)
+    {
+        if (!$this->initialized || $this->internal_get_config('debug_mail') == false)
+            return;
+
+        $server_name = $this->internal_get_config('server_name');
+
+        SenderCore::send_raw(
+            $this->internal_get_config('sender_core.assert_recipient'),
+            "{$server_name} - {$error_type}: {$message}\n\n",
+            $debug_info['debug_message'].
+            $debug_info['debug_data']
+        );
+    }
+
+    protected function get_debug_info($file, $line, $message, $trace = null)
+    {
+        $info = array(
+            'low_info_message' => '',
+            'debug_message' => '',
+            'debug_data' => '',
+        );
 
         // Retrieve request
         //
@@ -154,13 +199,13 @@ class WF
 
         // Construct base message
         //
-        $this->low_info_message .= <<<TXT
+        $info['low_info_message'] = <<<TXT
 File: {$file}
 Line: {$line}
 
 TXT;
 
-        $this->debug_message .= <<<TXT
+        $info['debug_message'] = <<<TXT
 File: {$file}
 Line: {$line}
 Message: {$message}
@@ -172,7 +217,9 @@ TXT;
 
         // Construct stack trace
         //
-        $trace = debug_backtrace(0);
+        if ($trace === null)
+            $trace = debug_backtrace(0);
+
         $stack = array();
         $stack_condensed = '';
 
@@ -183,8 +230,12 @@ TXT;
             foreach($trace as $entry)
             {
                 if ($skipping &&
-                    in_array($entry['function'], array('internal_assert_handler', 'assert_handler',
-                                                       'internal_verify')))
+                    in_array($entry['function'], array(
+                        'get_debug_info',
+                        'internal_assert_handler',
+                        'assert_handler',
+                        'internal_verify',
+                    )))
                 {
                     continue;
                 }
@@ -242,7 +293,7 @@ TXT;
 
         // Construct debug data
         //
-        $this->debug_data = <<<TXT
+        $info['debug_data'] = <<<TXT
 
 Condensed backtrace:
 {$stack_condensed}
@@ -256,42 +307,7 @@ Backtrace:
 {$server_fmt}
 TXT;
 
-        if ($this->initialized && $this->internal_get_config('debug_mail') == true)
-        {
-            // If available and configured, send a debug e-mail with server variables as well
-            //
-            SenderCore::send_raw(
-                $this->internal_get_config('sender_core.assert_recipient'),
-                "Assertion failed: {$message}",
-                "Failure information: $error_type\n\n".
-                $this->debug_message.
-                $this->debug_data
-            );
-        }
-
-        if ($this->internal_get_config('debug') == true)
-        {
-            $this->exit_error(
-                "Oops, something went wrong",
-                "Debug information: $error_type<br/>".
-                "<br/><pre>".
-                $this->debug_message.
-                $this->debug_data.
-                "</pre>"
-            );
-        }
-        else if (!$silent)
-        {
-            $this->exit_error(
-                "Oops, something went wrong",
-                "Failure information: $error_type\n".
-                "<pre>\n".
-                $this->low_info_message.
-                "</pre>\n"
-            );
-        }
-        else
-            exit();
+        return $info;
     }
 
     // Deprecated (Remove for v4)
