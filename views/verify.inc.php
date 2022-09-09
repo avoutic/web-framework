@@ -1,23 +1,26 @@
 <?php
 class PageVerify extends PageBasic
 {
-    static function get_filter()
+    static function get_filter(): array
     {
         return array(
                 'code' => '.*',
                 );
     }
 
-    function get_title()
+    protected function get_title(): string
     {
         return "Mail address verification";
     }
 
-    function custom_after_verify_actions($user, $data)
+    /**
+     * @param array<mixed> $data
+     */
+    protected function custom_after_verify_actions(User $user, array $data): void
     {
     }
 
-    function do_logic()
+    protected function do_logic(): void
     {
         $login_page = $this->get_base_url().$this->get_config('pages.login.location');
 

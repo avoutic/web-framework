@@ -5,25 +5,27 @@ use Cache\Adapter\Redis\RedisCachePool;
 
 class RedisCache implements CacheInterface
 {
-    private $client;
-    private $pool;
+    private RedisCachePool $pool;
 
-    function __construct($config)
+    /**
+     * @param array<string> $config
+     */
+    function __construct(array $config)
     {
         WF::verify(isset($config['hostname']), 'No hostname set');
         WF::verify(isset($config['port']), 'No port set');
 
         $client = new Redis();
-        $client->pconnect($config['hostname'], $config['port']);
+        $client->pconnect($config['hostname'], (int) $config['port']);
         $this->pool = new RedisCachePool($client);
     }
 
-    function exists($path)
+    public function exists(string $path): bool
     {
         return $this->pool->hasItem($path);
     }
 
-    function get($path)
+    public function get(string $path): mixed
     {
         $item = $this->pool->getItem($path);
 
@@ -33,7 +35,7 @@ class RedisCache implements CacheInterface
         return $item->get();
     }
 
-    function set($path, $obj, $expires_after = null)
+    public function set(string $path, mixed $obj, ?int $expires_after = null): void
     {
         $item = $this->pool->getItem($path);
         $item->set($obj);
@@ -41,7 +43,10 @@ class RedisCache implements CacheInterface
         $this->pool->save($item);
     }
 
-    function set_with_tags($path, $obj, $tags, $expires_after = null)
+    /**
+     * @param array<string> $tags
+     */
+    public function set_with_tags(string $path, mixed $obj, array $tags, ?int $expires_after = null): void
     {
         $item = $this->pool->getItem($path);
         $item->set($obj)->setTags($tags);
@@ -49,17 +54,20 @@ class RedisCache implements CacheInterface
         $this->pool->save($item);
     }
 
-    function invalidate($path)
+    public function invalidate(string $path): void
     {
         $this->pool->deleteItem($path);
     }
 
-    function invalidate_tags($tags)
+    /**
+     * @param array<string> $tags
+     */
+    public function invalidate_tags(array $tags): void
     {
         $this->pool->invalidateTags($tags);
     }
 
-    function flush()
+    public function flush(): void
     {
         $this->pool->clear();
     }

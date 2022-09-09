@@ -1,8 +1,17 @@
 <?php
 class Recaptcha extends FrameworkCore
 {
-    protected $secret_key;
-    protected $error_codes = array();
+    protected string $secret_key;
+
+    /**
+     * @var array<string>
+     */
+    protected array $error_codes = array();
+
+    /**
+     * @var array<string>
+     */
+    protected array $module_config;
 
     function __construct()
     {
@@ -16,17 +25,20 @@ class Recaptcha extends FrameworkCore
         $this->secret_key = $this->module_config['secret_key'];
     }
 
-    function set_secret_key($secret_key)
+    public function set_secret_key(string $secret_key): void
     {
         $this->secret_key = $secret_key;
     }
 
-    function get_error_codes()
+    /**
+     * @return array<string>
+     */
+    public function get_error_codes(): array
     {
         return $this->error_codes;
     }
 
-    function verify_response($recaptcha_response)
+    public function verify_response(string $recaptcha_response): bool
     {
         if (!strlen($recaptcha_response))
             return false;
@@ -47,7 +59,8 @@ class Recaptcha extends FrameworkCore
         $response = curl_exec($verify);
         curl_close($verify);
 
-        $response = json_decode($response, true);
+        if (is_string($response))
+            $response = json_decode($response, true);
 
         if (isset($response['error_codes']))
         {

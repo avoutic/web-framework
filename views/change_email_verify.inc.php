@@ -1,28 +1,28 @@
 <?php
 class PageChangeEmailVerify extends PageBasic
 {
-    static function get_filter()
+    static function get_filter(): array
     {
         return array(
                 'code' => '.*',
                 );
     }
 
-    static function get_permissions()
+    static function get_permissions(): array
     {
         return array(
                 'logged_in'
                 );
     }
 
-    function get_title()
+    protected function get_title(): string
     {
         return "Change email address verification";
     }
 
     // Can be overriden for project specific user factories and user classes
     //
-    function get_user($username)
+    protected function get_user(string $username): User|false
     {
         $factory = new BaseFactory();
         $user = $factory->get_user_by_username($username);
@@ -30,7 +30,7 @@ class PageChangeEmailVerify extends PageBasic
         return $user;
     }
 
-    function do_logic()
+    protected function do_logic(): void
     {
         $change_page = $this->get_base_url().$this->get_config('pages.change_email.location');
 
@@ -69,6 +69,8 @@ class PageChangeEmailVerify extends PageBasic
         // Change email
         //
         $user = $this->get_user($this->get_authenticated('username'));
+        $this->verify($user !== false, 'Failed to retrieve user');
+
         $old_email = $user->email;
 
         if (!isset($msg['params']) || !isset($msg['params']['iterator']) ||

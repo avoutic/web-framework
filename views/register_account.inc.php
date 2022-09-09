@@ -1,14 +1,20 @@
 <?php
 require_once(WF::$includes.'recaptcha.inc.php');
 
-class PageRegister extends Pagebasic
+class PageRegister extends PageBasic
 {
-    static function custom_get_filter()
+    /**
+     * @return array<string, string>
+     */
+    static function custom_get_filter(): array
     {
         return array();
     }
 
-    static function get_filter()
+    /**
+     * @return array<string, string>
+     */
+    static function get_filter(): array
     {
         $custom_filter = static::custom_get_filter();
 
@@ -24,44 +30,47 @@ class PageRegister extends Pagebasic
         return array_merge($base_filter, $custom_filter);
     }
 
-    function check_sanity()
+    protected function check_sanity(): void
     {
         $recaptcha_config = $this->get_config('security.recaptcha');
         $this->verify(strlen($recaptcha_config['site_key']), 'Missing reCAPTCHA Site Key');
         $this->verify(strlen($recaptcha_config['secret_key']), 'Missing reCAPTCHA Secret Key');
     }
 
-    function get_title()
+    protected function get_title(): string
     {
         return "Register new account";
     }
 
-    function get_onload()
+    protected function get_onload(): string
     {
         return "$('#username').focus();";
     }
 
-    function get_after_verify_data()
+    /**
+     * @return array<mixed>
+     */
+    protected function get_after_verify_data(): array
     {
         return array();
     }
 
-    function custom_prepare_page_content()
+    protected function custom_prepare_page_content(): void
     {
     }
 
-    function custom_value_check()
+    protected function custom_value_check(): bool
     {
         return true;
     }
 
-    function custom_finalize_create($user)
+    protected function custom_finalize_create(User $user): void
     {
     }
 
     // Can be overriden for project specific user factories and user classes
     //
-    function create_user($username, $password, $email)
+    protected function create_user(string $username, string $password, string $email): User
     {
         $factory = new BaseFactory();
         $user = $factory->create_user($username, $password, $email, time());
@@ -70,7 +79,7 @@ class PageRegister extends Pagebasic
         return $user;
     }
 
-    function do_logic()
+    protected function do_logic(): void
     {
         $identifier = $this->get_config('authenticator.unique_identifier');
 
@@ -219,7 +228,10 @@ class PageRegister extends Pagebasic
         $this->post_create_actions($result);
     }
 
-    function post_create_actions($user)
+    /**
+     * @return never
+     */
+    protected function post_create_actions(User $user): void
     {
         // Send mail to administrator
         //
@@ -238,14 +250,14 @@ class PageRegister extends Pagebasic
         exit();
     }
 
-    function display_header()
+    protected function display_header(): void
     {
         echo <<<HTML
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 HTML;
     }
 
-    function display_content()
+    protected function display_content(): void
     {
         $this->load_template('register_account.tpl', $this->page_content);
     }

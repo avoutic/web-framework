@@ -1,13 +1,17 @@
 <?php
 abstract class DataCore extends FrameworkCore
 {
-    public $id;
+    public int $id;
 
-    static protected $table_name;
-    static protected $base_fields;
-    static protected $is_cacheable = false;
+    static protected string $table_name;
 
-    function __construct($id, $fill_complex = true)
+    /**
+     * @var array<string>
+     */
+    static protected array $base_fields;
+    static protected bool $is_cacheable = false;
+
+    function __construct(int $id, bool $fill_complex = true)
     {
         parent::__construct();
 
@@ -15,20 +19,26 @@ abstract class DataCore extends FrameworkCore
         $this->fill_fields($fill_complex);
     }
 
-    function __serialize()
+    /**
+     * @return array<string>
+     */
+    public function __serialize(): array
     {
         return $this->get_base_fields();
     }
 
-    function __unserialize($data)
+    /**
+     * @param array<string> $data
+     */
+    public function __unserialize(array $data): void
     {
         parent::__unserialize($data);
 
-        $this->id = $data['id'];
+        $this->id = (int)  $data['id'];
         $this->fill_base_fields_from_obj($data);
     }
 
-    static function exists($id)
+    static function exists(int $id): bool
     {
         if (static::$is_cacheable)
         {
@@ -50,24 +60,27 @@ abstract class DataCore extends FrameworkCore
         return true;
     }
 
-    static function get_cache_id($id)
+    static function get_cache_id(int $id): string
     {
        return static::$table_name.'['.$id.']';
     }
 
-    function update_in_cache()
+    protected function update_in_cache(): void
     {
         if (static::$is_cacheable)
             $this->cache->set(static::get_cache_id($this->id), $this);
     }
 
-    function delete_from_cache()
+    protected function delete_from_cache(): void
     {
         if (static::$is_cacheable)
             $this->cache->invalidate(static::get_cache_id($this->id));
     }
 
-    function get_base_fields()
+    /**
+     * @return array<string>
+     */
+    public function get_base_fields(): array
     {
         $info = array(
             'id' => $this->id,
@@ -79,17 +92,23 @@ abstract class DataCore extends FrameworkCore
         return $info;
     }
 
-    function get_info()
+    /**
+     * @return array<mixed>
+     */
+    public function get_info(): array
     {
         return $this->get_base_fields();
     }
 
-    function get_admin_info()
+    /**
+     * @return array<mixed>
+     */
+    public function get_admin_info(): array
     {
         return $this->get_info();
     }
 
-    function fill_fields($fill_complex)
+    private function fill_fields(bool $fill_complex): void
     {
         $this->fill_base_fields_from_db();
 
@@ -97,7 +116,7 @@ abstract class DataCore extends FrameworkCore
             $this->fill_complex_fields();
     }
 
-    private function fill_base_fields_from_db()
+    private function fill_base_fields_from_db(): void
     {
         $fields_fmt = implode('`, `', static::$base_fields);
         $table_name = static::$table_name;
@@ -120,17 +139,20 @@ SQL;
             $this->$name = $row[$name];
     }
 
-    private function fill_base_fields_from_obj($fields)
+    /**
+     * @param array<string> $fields
+     */
+    private function fill_base_fields_from_obj(array $fields): void
     {
         foreach (static::$base_fields as $name)
             $this->$name = $fields[$name];
     }
 
-    protected function fill_complex_fields()
+    protected function fill_complex_fields(): void
     {
     }
 
-    function get_field($field)
+    public function get_field(string $field): string
     {
         $table_name = static::$table_name;
 
@@ -148,20 +170,24 @@ SQL;
         return $result->fields[$field];
     }
 
-    function update($data)
+    /**
+     * @param array<bool|string|int|null> $data
+     */
+    public function update(array $data): void
     {
         $table_name = static::$table_name;
-        $fields_fmt = static::get_set_fmt($data);
+        $set_array = static::get_set_fmt($data);
+        $params = $set_array['params'];
 
         $query = <<<SQL
         UPDATE {$table_name}
-        SET {$fields_fmt}
+        SET {$set_array['query']}
         WHERE id = ?
 SQL;
 
-        $data[] = $this->id;
+        $params[] = $this->id;
 
-        $result = $this->query($query, $data);
+        $result = $this->query($query, $params);
         $class = get_called_class();
         $this->verify($result !== false, "Failed to update object ({$class})");
 
@@ -171,7 +197,7 @@ SQL;
         $this->update_in_cache();
     }
 
-    function update_field($field, $value)
+    public function update_field(string $field, string|int|bool $value): void
     {
         $table_name = static::$table_name;
 
@@ -192,7 +218,7 @@ SQL;
         $this->update_in_cache();
     }
 
-    function decrease_field($field, $value = 1, $minimum = false)
+    public function decrease_field(string $field, int $value = 1, bool $minimum = false): void
     {
         $table_name = static::$table_name;
 
@@ -227,7 +253,7 @@ SQL;
         $this->update_in_cache();
     }
 
-    function increase_field($field, $value = 1)
+    public function increase_field(string $field, int $value = 1): void
     {
         $table_name = static::$table_name;
 
@@ -248,7 +274,7 @@ SQL;
         $this->update_in_cache();
     }
 
-    function delete()
+    public function delete(): void
     {
         $table_name = static::$table_name;
 
@@ -265,24 +291,36 @@ SQL;
         $this->verify($result !== false, 'Failed to delete item');
     }
 
-    static function create($data)
+    /**
+     * @param array<null|string|int|bool> $data
+     *
+     * @return static
+     */
+    static function create(array $data): DataCore
     {
         $table_name = static::$table_name;
-        $fields_fmt = static::get_set_fmt($data);
+        $set_array = static::get_set_fmt($data);
+        $params = $set_array['params'];
 
         $query = <<<SQL
         INSERT INTO {$table_name}
-        SET {$fields_fmt}
+        SET {$set_array['query']}
 SQL;
 
-        $result = WF::get_main_db()->insert_query($query, $data);
+        $result = WF::get_main_db()->insert_query($query, $params);
         $class = get_called_class();
         WF::verify($result !== false, "Failed to create object ({$class})");
 
-        return static::get_object_by_id($result, true);
+        $obj = static::get_object_by_id($result, true);
+        WF::verify($obj !== false, "Failed to retrieve created object ({$class})");
+
+        return $obj;
     }
 
-    static function count_objects($filter = array())
+    /**
+     * @param array<string, null|string|int|bool> $filter
+     */
+    static function count_objects(array $filter = array()): int
     {
         $table_name = static::$table_name;
 
@@ -313,7 +351,10 @@ SQL;
     // This is the base retrieval function that all object functions should use
     // Cache checking is done here
     //
-    static function get_object_by_id($id, $checked_presence = false)
+    /**
+     * @return static|false
+     */
+    static function get_object_by_id(int $id, bool $checked_presence = false): false|DataCore
     {
         if (static::$is_cacheable)
         {
@@ -360,7 +401,12 @@ SQL;
 
     // Helper retrieval functions
     //
-    static function get_object($filter = array())
+    /**
+     * @param array<null|bool|string|int> $filter
+     *
+     * @return static|false
+     */
+    static function get_object(array $filter = array()): false|DataCore
     {
         $table_name = static::$table_name;
 
@@ -391,12 +437,20 @@ SQL;
         return static::get_object_by_id($result->fields['id'], true);
     }
 
-    static function get_object_info($filter = array())
+    /**
+     * @param array<null|int|string|int> $filter
+     * @return array<mixed>
+     */
+    static function get_object_info(array $filter = array()): false|array
     {
         return static::get_object_data('get_info', $filter);
     }
 
-    static function get_object_data($data_function, $filter = array())
+    /**
+     * @param array<null|int|string|int> $filter
+     * @return false|array<mixed>
+     */
+    static function get_object_data(string $data_function, array $filter = array()): false|array
     {
         $obj = static::get_object($filter);
 
@@ -406,12 +460,18 @@ SQL;
         return $obj->$data_function();
     }
 
-    static function get_object_info_by_id($id)
+    /**
+     * @return false|array<mixed>
+     */
+    static function get_object_info_by_id(int $id): false|array
     {
         return static::get_object_data_by_id('get_info', $id);
     }
 
-    static function get_object_data_by_id($data_function, $id)
+    /**
+     * @return false|array<mixed>
+     */
+    static function get_object_data_by_id(string $data_function, int $id): false|array
     {
         $obj = static::get_object_by_id($id);
 
@@ -421,7 +481,11 @@ SQL;
         return $obj->$data_function();
     }
 
-    static function get_objects($offset = 0, $results = 10, $filter = array(), $order = '')
+    /**
+     * @param array<null|bool|string|int> $filter
+     * @return array<static>
+     */
+    static function get_objects(int $offset = 0, int $results = 10, array $filter = array(), string $order = ''): array
     {
         $table_name = static::$table_name;
 
@@ -459,17 +523,30 @@ SQL;
 
         $info = array();
         foreach($result as $k => $row)
-            $info[$row['id']] = static::get_object_by_id($row['id'], true);
+        {
+            $obj = static::get_object_by_id($row['id'], true);
+            WF::verify($obj !== false, 'Failed to retrieve {$class}');
+
+            $info[$row['id']] = $obj;
+        }
 
         return $info;
     }
 
-    static function get_objects_info($offset = 0, $results = 10, $filter = array(), $order = '')
+    /**
+     * @param array<null|bool|string|int> $filter
+     * @return array<mixed>
+     */
+    static function get_objects_info(int $offset = 0, int $results = 10, array $filter = array(), string $order = ''): array
     {
         return static::get_objects_data('get_info', $offset, $results, $filter, $order);
     }
 
-    static function get_objects_data($data_function, $offset = 0, $results = 10, $filter = array(), $order = '')
+    /**
+     * @param array<null|bool|string|int> $filter
+     * @return array<mixed>
+     */
+    static function get_objects_data(string $data_function, int $offset = 0, int $results = 10, array $filter = array(), string $order = ''): array
     {
         $objs = static::get_objects($offset, $results, $filter, $order);
 
@@ -480,9 +557,14 @@ SQL;
         return $data;
     }
 
-    static function get_set_fmt($values)
+    /**
+     * @param array<null|string|int|bool> $values
+     * @return array{query: string, params: array<bool|int|string>}
+     */
+    static function get_set_fmt(array $values): array
     {
         $set_fmt = '';
+        $params = array();
         $first = true;
 
         foreach ($values as $key => $value)
@@ -492,13 +574,26 @@ SQL;
             else
                 $first = false;
 
-            $set_fmt .= ' `'.$key.'` = ? ';
+            if ($value === null)
+                $set_fmt .= "`{$key}` = NULL";
+            else
+            {
+                $set_fmt .= "`{$key}` = ?";
+                array_push($params, $value);
+            }
         }
 
-        return $set_fmt;
+        return array(
+            'query' => $set_fmt,
+            'params' => $params,
+        );
     }
 
-    static function get_filter_array($filter)
+    /**
+     * @param array<null|bool|string|int> $filter
+     * @return array{query: string, params: array<bool|int|string>}
+     */
+    static function get_filter_array(array $filter): array
     {
         $filter_fmt = '';
         $params = array();
@@ -526,10 +621,10 @@ SQL;
         );
     }
 
-    function to_string()
+    public function to_string(): string
     {
         $vars = call_user_func('get_object_vars', $this);
-        scrub_state($vars);
+        WFHelpers::scrub_state($vars);
         return $vars;
     }
 };
@@ -543,12 +638,18 @@ class FactoryCore extends FrameworkCore
         parent::__construct();
     }
 
-    function __serialize()
+    /**
+     * @return array<string>
+     */
+    public function __serialize(): array
     {
         return array();
     }
 
-    function __unserialize($data)
+    /**
+     * @param array<string> $data
+     */
+    public function __unserialize(array $data): void
     {
         parent::__unserialize($data);
     }

@@ -2,13 +2,20 @@
 require_once(WF::$includes.'helpers.inc.php');
 require_once(WF::$includes.'base_logic.inc.php');
 
-
+/**
+ * @property array<string> $base_fields
+ */
 class Session extends DataCore
 {
-    static protected $table_name = 'sessions';
-    static protected $base_fields = array('user_id', 'session_id', 'start', 'last_active');
+    static protected string $table_name = 'sessions';
+    static protected array $base_fields = array('user_id', 'session_id', 'start', 'last_active');
 
-    function is_valid()
+    public string $user_id;
+    public string $session_id;
+    public string $start;
+    public string $last_active;
+
+    public function is_valid(): bool
     {
         // Check for session timeout
         $current = time();
@@ -17,7 +24,7 @@ class Session extends DataCore
         if ($current - $last_active_timestamp >
             $this->get_config('authenticator.session_timeout'))
         {
-            return FALSE;
+            return false;
         }
 
         $timestamp = date('Y-m-d H:i:s');
@@ -36,18 +43,25 @@ class Session extends DataCore
             $this->update_field('start', $timestamp);
         }
 
-        return TRUE;
+        return true;
     }
 };
 
 abstract class Authenticator extends FrameworkCore
 {
-    abstract function set_logged_in($user);
-    abstract function get_logged_in();
-    abstract function logoff();
-    abstract function cleanup();
+    abstract public function set_logged_in(User $user): void;
 
-    function redirect_login($type, $target)
+    /**
+     * @return bool|array<mixed>
+    */
+    abstract public function get_logged_in(): bool|array;
+    abstract public function logoff(): void;
+    abstract public function cleanup(): void;
+    abstract public function auth_invalidate_sessions(int $user_id): void;
+
+    protected string $realm;
+
+    public function redirect_login(string $type, string $target): void
     {
         if ($type == '401')
         {
@@ -59,7 +73,7 @@ abstract class Authenticator extends FrameworkCore
 
         else if ($type == 'redirect')
         {
-            $query = $_SERVER['QUERY_STRING'];
+            $query = (isset($_SERVER['QUERY_STRING'])) ? $_SERVER['QUERY_STRING'] : '';
 
             header('Location: '.$this->get_config('page.base_url').$this->get_config('pages.login.location').'?return_page='.urlencode($target).'&return_query='.urlencode($query).'&'.$this->get_message_for_url('info', $this->get_config('authenticator.auth_required_message')), true, 302);
         }
@@ -74,16 +88,25 @@ abstract class Authenticator extends FrameworkCore
         exit(0);
     }
 
-    function show_disabled()
+
+    // Deprecated (Remove for v4)
+    //
+    public function show_disabled(): void
     {
+        trigger_error("Authenticator->show_disabled()", E_USER_DEPRECATED);
+
         header('HTTP/1.0 403 Page disabled');
         print '<h1>Page has been disabled</h1>';
         print 'This page has been disabled. Please return to the main page.';
         exit(0);
     }
 
-    function access_denied($login_page)
+    // Deprecated (Remove for v4)
+    //
+    public function access_denied(string $login_page): void
     {
+        trigger_error("Authenticator->access_denied()", E_USER_DEPRECATED);
+
         # Access denied
         header('HTTP/1.0 403 Access Denied');
         print '<h1>Access Denied</h1>';
@@ -91,11 +114,11 @@ abstract class Authenticator extends FrameworkCore
         exit(0);
     }
 
-    function get_auth_array($user)
+    /**
+     * @return array{user: User, user_id: int, username: string, email: string}
+     */
+    public function get_auth_array(User $user): array
     {
-        if ($user === FALSE)
-            return FALSE;
-
         $info = array(
             'user' => $user,
             'user_id' => $user->id,
@@ -108,7 +131,7 @@ abstract class Authenticator extends FrameworkCore
 
 class AuthRedirect extends Authenticator
 {
-    function cleanup()
+    public function cleanup(): void
     {
         if (isset($_SESSION['last_session_cleanup']) &&
             $_SESSION['last_session_cleanup'] + 60 * 60 > time())
@@ -125,33 +148,34 @@ class AuthRedirect extends Authenticator
         $_SESSION['last_session_cleanup'] = time();
     }
 
-    function register_session($user_id, $session_id)
+    protected function register_session(int $user_id, string|false $session_id): Session
     {
         $timestamp = date('Y-m-d H:i:s');
 
         $session = Session::create(array(
-                                            'user_id' => $user_id,
-                                            'session_id' => $session_id,
-                                            'last_active' => $timestamp));
+            'user_id' => $user_id,
+            'session_id' => $session_id,
+            'last_active' => $timestamp,
+        ));
 
-        $this->verify($session !== FALSE, 'Failed to create Session');
+        $this->verify($session !== false, 'Failed to create Session');
 
         return $session;
     }
 
-    function auth_invalidate_sessions($user_id)
+    public function auth_invalidate_sessions(int $user_id): void
     {
         $result = $this->query('DELETE FROM sessions WHERE user_id = ?', array($user_id));
-        $this->verify($result !== FALSE, 'Failed to delete all user\'s sessions');
+        $this->verify($result !== false, 'Failed to delete all user\'s sessions');
     }
 
-    function set_logged_in($user)
+    public function set_logged_in(User $user): void
     {
         // Destroy running session
         if (isset($_SESSION['session_id']))
         {
             $session = Session::get_object_by_id($_SESSION['session_id']);
-            if ($session !== FALSE)
+            if ($session !== false)
                 $session->delete();
         }
 
@@ -163,42 +187,46 @@ class AuthRedirect extends Authenticator
         $_SESSION['session_id'] = $session->id;
     }
 
-    function is_valid()
+    protected function is_valid(): bool
     {
         if (!isset($_SESSION['session_id']))
-            return FALSE;
+            return false;
 
         $session = Session::get_object_by_id($_SESSION['session_id']);
-        if ($session === FALSE)
-            return FALSE;
+        if ($session === false)
+            return false;
 
         if (!$session->is_valid())
         {
             $this->logoff();
             $this->add_message('info', 'Session timed out', '');
-            return FALSE;
+            return false;
         }
 
-        return TRUE;
+        return true;
     }
 
-    function get_logged_in()
+    /**
+     * @return array<mixed>|false
+     */
+    public function get_logged_in(): array|false
     {
         if (!isset($_SESSION['logged_in']))
-            return FALSE;
+            return false;
 
         if (!$this->is_valid())
-            return FALSE;
+            return false;
 
         return $_SESSION['auth'];
     }
 
-    function logoff()
+    public function logoff(): void
     {
         if (isset($_SESSION['session_id']))
         {
             $session = Session::get_object_by_id($_SESSION['session_id']);
-            $session->delete();
+            if ($session)
+                $session->delete();
         }
 
         unset($_SESSION['logged_in']);
@@ -212,33 +240,36 @@ class AuthRedirect extends Authenticator
 
 class AuthWwwAuthenticate extends Authenticator
 {
-    protected $realm = 'Unknown realm';
-
     function __construct()
     {
         parent::__construct();
 
         if (strlen($this->get_config('realm')))
-            $this->realm = $this->get_config['realm'];
+            $this->realm = $this->get_config('realm');
+        else
+            $this->realm = 'Unknown realm';
     }
 
-    function cleanup()
+    public function cleanup(): void
     {
         # Nothing to cleanup
     }
 
-    function set_logged_in($user)
+    public function set_logged_in(User $user): void
     {
         # Cannot specifically log in on this authentication method
         # Done every get_logged_in() call
     }
 
-    function get_logged_in()
+    /**
+     * @return false|array{user: User, user_id: int, username: string, email: string}
+     */
+    public function get_logged_in(): false|array
     {
         if (!isset($_SERVER['PHP_AUTH_USER']) ||
             !isset($_SERVER['PHP_AUTH_PW']))
         {
-            return FALSE;
+            return false;
         }
 
         $username = $_SERVER['PHP_AUTH_USER'];
@@ -248,15 +279,20 @@ class AuthWwwAuthenticate extends Authenticator
 
         $user = $factory->get_user_by_username($username);
 
-        if ($user === FALSE || !$user->check_password($password))
-            return FALSE;
+        if ($user === false || !$user->check_password($password))
+            return false;
 
         $info = $this->get_auth_array($user);
 
         return $info;
     }
 
-    function logoff()
+    public function logoff(): void
+    {
+        # Cannot deauthenticate from server side on this authentication method
+    }
+
+    public function auth_invalidate_sessions(int $user_id): void
     {
         # Cannot deauthenticate from server side on this authentication method
     }

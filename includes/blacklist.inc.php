@@ -1,12 +1,17 @@
 <?php
-class BlackListEntry extends DataCore
+class BlacklistEntry extends DataCore
 {
-    static protected $table_name = 'blacklist_entries';
-    static protected $base_fields = array('ip', 'user_id', 'severity', 'reason', 'timestamp');
+    static protected string $table_name = 'blacklist_entries';
+    static protected array $base_fields = array('ip', 'user_id', 'severity', 'reason', 'timestamp');
 };
 
 class Blacklist extends FrameworkCore
 {
+    /**
+     * @var array<mixed>
+     */
+    private array $module_config;
+
     function __construct()
     {
         parent::__construct();
@@ -14,7 +19,7 @@ class Blacklist extends FrameworkCore
         $this->module_config = $this->get_config('security.blacklist');
     }
 
-    function cleanup()
+    public function cleanup(): void
     {
         $query = <<<SQL
         DELETE FROM blacklist_entries
@@ -27,7 +32,7 @@ SQL;
         $this->verify($result !== false, 'Failed to clean up blacklist entries');
     }
 
-    function add_entry($ip, $user_id, $reason, $severity = 1)
+    public function add_entry(string $ip, int $user_id, string $reason, int $severity = 1): void
     {
         // Auto cleanup old entries (Over 30 days old)
         //
@@ -45,9 +50,21 @@ SQL;
                 break;
         }
 
-        $path_parts = pathinfo($caller['file']);
-        $file = $path_parts['filename'];
-        $full_reason = $file.':'.$caller['line'].':'.$reason;
+        $file = 'unknown';
+        $line = 'unknown';
+
+        if ($caller !== false)
+        {
+            if (isset($caller['file']))
+            {
+                $path_parts = pathinfo($caller['file']);
+                $file = $path_parts['filename'];
+            }
+
+            $line = (isset($caller['line'])) ? $caller['line'] : 'unknown';
+        }
+
+        $full_reason = $file.':'.$line.':'.$reason;
 
         $entry = BlacklistEntry::create(array(
                         'ip' => $ip,
@@ -59,7 +76,7 @@ SQL;
         $this->verify($entry !== false, 'Failed to add blacklist entry');
     }
 
-    function is_blacklisted($ip, $user_id)
+    public function is_blacklisted(string $ip, ?int $user_id): bool
     {
         if ($this->module_config['enabled'] == false)
             return false;

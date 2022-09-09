@@ -1,19 +1,22 @@
 <?php
 class PageLogoff extends PageBasic
 {
-    static function get_filter()
+    /**
+     * @return array<string, string>
+     */
+    static function get_filter(): array
     {
         return array(
                 'return_page' => FORMAT_RETURN_PAGE,
                 );
     }
 
-    function get_title()
+    protected function get_title(): string
     {
         return "Logoff";
     }
 
-    function do_logic()
+    protected function do_logic(): void
     {
         $this->deauthenticate();
 
@@ -29,7 +32,7 @@ class PageLogoff extends PageBasic
         exit();
     }
 
-    function display_content()
+    protected function display_content(): void
     {
         echo <<<HTML
 <div>

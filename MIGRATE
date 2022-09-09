@@ -1,3 +1,6 @@
+In case 8.2 images become available:
+* Change UploadHandler->move() and UploadHandler->check_upload() to use true instead of bool
+
 Required changes for v4:
 * Database->Connect() deprecated. Use Database->connect() instead
 * Database->GetLastError() deprecated. Use Database->get_last_error() instead

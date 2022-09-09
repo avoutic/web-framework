@@ -1,7 +1,7 @@
 <?php
 class DBManager extends FrameworkCore
 {
-    function calculate_hash()
+    public function calculate_hash(): string
     {
         // Get tables
         //
@@ -43,7 +43,7 @@ SQL;
         return sha1($db_def);
     }
 
-    function verify_hash()
+    public function verify_hash(): bool
     {
         $stored_hash = $this->get_stored_hash();
         $actual_hash = $this->calculate_hash();
@@ -51,7 +51,7 @@ SQL;
         return $stored_hash === $actual_hash;
     }
 
-    function get_stored_hash()
+    public function get_stored_hash(): string
     {
         // Retrieve hash
         //
@@ -73,7 +73,7 @@ SQL;
         return $result->fields['value'];
     }
 
-    function update_stored_hash()
+    public function update_stored_hash(): void
     {
         $actual_hash = $this->calculate_hash();
 
@@ -92,7 +92,10 @@ SQL;
         $this->verify($result !== false, 'Failed to update App DB hash');
     }
 
-    function execute($data)
+    /**
+     * @param array{target_version: int, actions: array<array<mixed>>} $data
+     */
+    public function execute(array $data): void
     {
         $this->verify(isset($data['target_version']), 'No target version specified');
         $this->verify(is_array($data['actions']), 'No action array specified');
@@ -190,7 +193,7 @@ SQL;
         $this->set_version($data['target_version']);
     }
 
-    function get_current_version()
+    public function get_current_version(): int
     {
         // Check version
         //
@@ -206,17 +209,17 @@ SQL;
         $result = $this->query($query, $params);
         $this->verify($result !== false, 'Failed to retrieve App DB version');
 
-        return $result->fields['value'];
+        return (int) $result->fields['value'];
     }
 
-    private function check_version($app_db_version)
+    private function check_version(int $app_db_version): void
     {
         $current_version = $this->get_current_version();
 
         $this->verify($current_version == $app_db_version, "DB version '{$current_version}' does not match requested version '{$app_db_version}'");
     }
 
-    private function set_version($to)
+    private function set_version(int $to): void
     {
         // Update version
         //
@@ -235,7 +238,12 @@ SQL;
         $this->update_stored_hash();
     }
 
-    private function get_field_statements($table_name, $info, &$field_lines, &$constraint_lines)
+    /**
+     * @param array<string> $info
+     * @param array<string> $field_lines
+     * @param array<string> $constraint_lines
+     */
+    private function get_field_statements(string $table_name, array $info, array &$field_lines, array &$constraint_lines): void
     {
         $this->verify(isset($info['type']), 'No field type specified');
         $this->verify(isset($info['name']), 'No field name specified');
@@ -298,7 +306,11 @@ SQL;
         }
     }
 
-    private function get_constraint_statements($table_name, $info, &$constraint_lines)
+    /**
+     * @param array<mixed> $info
+     * @param array<string> $constraint_lines
+     */
+    private function get_constraint_statements(string $table_name, array $info, array &$constraint_lines): void
     {
         $this->verify(isset($info['type']), 'No constraint type specified');
 
@@ -316,7 +328,12 @@ SQL;
             $this->verify(false, "Unknown constraint type '{$info['type']}'");
     }
 
-    private function create_table($table_name, $fields, $constraints)
+    /**
+     * @param array<array<string>> $fields
+     * @param array<array<string>> $constraints
+     * @return array{query: string, params: array<string>}
+     */
+    private function create_table(string $table_name, array $fields, array $constraints): array
     {
         $field_lines = array();
         $constraint_lines = array();
@@ -349,7 +366,11 @@ SQL;
         );
     }
 
-    private function create_trigger($table_name, $info)
+    /**
+     * @param array<string> $info
+     * @return array{query: string, params: array<string>}
+     */
+    private function create_trigger(string $table_name, array $info): array
     {
         $this->verify(isset($info['name']), 'No trigger name specified');
         $this->verify(isset($info['time']), 'No trigger time specified');
@@ -369,7 +390,11 @@ SQL;
         );
     }
 
-    private function add_column($table_name, $info)
+    /**
+     * @param array<string> $info
+     * @return array{query: string, params: array<string>}
+     */
+    private function add_column(string $table_name, array $info): array
     {
         $field_lines = array();
         $constraint_lines = array();
@@ -392,7 +417,11 @@ SQL;
         );
     }
 
-    private function add_constraint($table_name, $info)
+    /**
+     * @param array<string> $info
+     * @return array{query: string, params: array<string>}
+     */
+    private function add_constraint(string $table_name, array $info): array
     {
         $field_lines = array();
         $constraint_lines = array();
@@ -415,7 +444,11 @@ SQL;
         );
     }
 
-    private function raw_query($query, $params)
+    /**
+     * @param array<string> $params
+     * @return array{query: string, params: array<string>}
+     */
+    private function raw_query(string $query, array $params): array
     {
         return array(
             'query' => $query,
@@ -423,7 +456,11 @@ SQL;
         );
     }
 
-    private function modify_column_type($table_name, $info)
+    /**
+     * @param array<string> $info
+     * @return array{query: string, params: array<string>}
+     */
+    private function modify_column_type(string $table_name, array $info): array
     {
         $field_lines = array();
         $constraint_lines = array();
@@ -446,7 +483,10 @@ SQL;
         );
     }
 
-    private function rename_column($table_name, $current_name, $new_name)
+    /**
+     * @return array{query: string, params: array<string>}
+     */
+    private function rename_column(string $table_name, string $current_name, string $new_name): array
     {
         $query = <<<SQL
 ALTER TABLE `{$table_name}`
@@ -461,7 +501,10 @@ SQL;
         );
     }
 
-    private function rename_table($table_name, $new_name)
+    /**
+     * @return array{query: string, params: array<string>}
+     */
+    private function rename_table(string $table_name, string $new_name): array
     {
         $query = <<<SQL
 ALTER TABLE `{$table_name}`

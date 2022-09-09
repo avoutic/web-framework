@@ -1,11 +1,15 @@
 <?php
 class Webhook extends FrameworkCore
 {
-    static function trigger($webhook_name, $data)
+    /**
+     * @param array<mixed> $data
+     */
+    static function trigger(string $webhook_name, array $data): void
     {
         $url = WF::get_config('webhooks.'.$webhook_name);
 
         $jsonEncodedData = json_encode($data);
+        WF::verify($jsonEncodedData !== false, 'Failed to encode data');
 
         $opts = array(
             CURLOPT_URL             => $url,
@@ -13,7 +17,7 @@ class Webhook extends FrameworkCore
             CURLOPT_CUSTOMREQUEST   => 'POST',
             CURLOPT_POST            => 1,
             CURLOPT_POSTFIELDS      => json_encode($data),
-            CURLOPT_HTTPHEADER      => array('Content-Type: application/json','Content-Length: ' . strlen($jsonEncodedData))
+            CURLOPT_HTTPHEADER      => array('Content-Type: application/json','Content-Length: ' . strlen($jsonEncodedData)),
         );
 
         $curl = curl_init();

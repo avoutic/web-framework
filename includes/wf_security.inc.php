@@ -1,14 +1,20 @@
 <?php
 class WFSecurity
 {
-    private $module_config;
+    /**
+     * @var array<string> $module_config
+     */
+    private array $module_config;
 
-    function __construct($module_config)
+    /**
+     * @param array<string> $module_config
+     */
+    function __construct(array $module_config)
     {
         $this->module_config = $module_config;
     }
 
-    function get_csrf_token()
+    public function get_csrf_token(): string
     {
         if (!isset($_SESSION['csrf_token']) || strlen($_SESSION['csrf_token']) != 16)
             $_SESSION['csrf_token'] = openssl_random_pseudo_bytes(16);
@@ -21,15 +27,15 @@ class WFSecurity
         return bin2hex($xor).bin2hex($token);
     }
 
-    function validate_csrf_token($token)
+    public function validate_csrf_token(string $token): bool
     {
         if(!isset($_SESSION['csrf_token']))
-            return FALSE;
+            return false;
 
         $check = $_SESSION['csrf_token'];
         $value = $token;
         if (strlen($value) != 16 * 4 || strlen($check) != 16)
-            return;
+            return false;
 
         $xor = pack("H*" , substr($value, 0, 16 * 2));
         $token = pack("H*", substr($value, 16 * 2, 16 * 2));
@@ -45,7 +51,10 @@ class WFSecurity
         return ($diff === 0);
     }
 
-    function encode_and_auth_array($array)
+    /**
+     * @param array<mixed> $array
+     */
+    public function encode_and_auth_array(array $array): string
     {
         $str = json_encode($array);
 
@@ -66,7 +75,10 @@ class WFSecurity
         return $iv."-".$str."-".$str_hmac;
     }
 
-    function decode_and_verify_array($str)
+    /**
+     * @return array<mixed>|false
+     */
+    public function decode_and_verify_array(string $str): array|false
     {
         $idx = strpos($str, "-");
         if ($idx === false)
@@ -99,7 +111,7 @@ class WFSecurity
         $msg = base64_decode(strtr($part_msg, '._~', '+/='));
         $json_encoded = openssl_decrypt($msg, $cipher, $key, 0, $iv);
 
-        if (!strlen($json_encoded))
+        if ($json_encoded === false || !strlen($json_encoded))
             return false;
 
         $array = json_decode($json_encoded, true);
@@ -109,7 +121,10 @@ class WFSecurity
         return $array;
     }
 
-    function get_auth_config($name)
+    /**
+     * @return mixed
+     */
+    public function get_auth_config(string $name): mixed
     {
         $auth_config_file = WF::$site_includes.'/auth/'.$name.'.php';
         if (!file_exists($auth_config_file))

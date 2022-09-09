@@ -3,21 +3,21 @@ require_once(WF::$includes.'base_logic.inc.php');
 
 class PageResetPassword extends PageBasic
 {
-    static function get_filter()
+    static function get_filter(): array
     {
         return array(
                 'code' => '.*',
                 );
     }
 
-    function get_title()
+    protected function get_title(): string
     {
         return "Reset password";
     }
 
     // Can be overriden for project specific user factories and user classes
     //
-    function get_user($username)
+    protected function get_user(string $username): User|false
     {
         $factory = new BaseFactory();
 
@@ -26,7 +26,7 @@ class PageResetPassword extends PageBasic
         return $user;
     }
 
-    function do_logic()
+    protected function do_logic(): void
     {
         $forgot_password_page = $this->get_base_url().$this->get_config('pages.forgot_password.location');
         $login_page = $this->get_base_url().$this->get_config('pages.login.location');

@@ -1,7 +1,7 @@
 <?php
 class PageChangePassword extends PageBasic
 {
-    static function get_filter()
+    static function get_filter(): array
     {
         return array(
                 'orig_password' => FORMAT_PASSWORD,
@@ -10,21 +10,21 @@ class PageChangePassword extends PageBasic
         );
     }
 
-    static function get_permissions()
+    static function get_permissions(): array
     {
         return array(
                 'logged_in'
                 );
     }
 
-    function get_title()
+    protected function get_title(): string
     {
         return "Change password";
     }
 
     // Can be overriden for project specific user factories and user classes
     //
-    function get_user($username)
+    protected function get_user(string $username): User|false
     {
         $factory = new BaseFactory();
         $user = $factory->get_user_by_username($username);
@@ -32,11 +32,11 @@ class PageChangePassword extends PageBasic
         return $user;
     }
 
-    function custom_finalize_change()
+    protected function custom_finalize_change(): void
     {
     }
 
-    function do_logic()
+    protected function do_logic(): void
     {
         // Check if this is a true attempt
         //
@@ -74,6 +74,8 @@ class PageChangePassword extends PageBasic
         }
 
         $user = $this->get_user($this->get_authenticated('username'));
+        $this->verify($user !== false, 'Failed to retrieve user');
+
         $result = $user->change_password($orig_password, $password);
 
         if ($result == User::ERR_ORIG_PASSWORD_MISMATCH)
@@ -108,7 +110,7 @@ class PageChangePassword extends PageBasic
         exit();
     }
 
-    function display_content()
+    protected function display_content(): void
     {
         $this->load_template('change_password.tpl', $this->page_content);
     }

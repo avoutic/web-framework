@@ -1,7 +1,7 @@
 <?php
 class PageForgotPassword extends PageBasic
 {
-    static function get_filter()
+    static function get_filter(): array
     {
         $username_format = FORMAT_USERNAME;
         if (WF::get_config('authenticator.unique_identifier') == 'email')
@@ -12,12 +12,12 @@ class PageForgotPassword extends PageBasic
                 );
     }
 
-    function get_title()
+    protected function get_title(): string
     {
         return "Forgot password";
     }
 
-    function do_logic()
+    protected function do_logic(): void
     {
         // Check if this is a true attempt
         //
@@ -49,7 +49,7 @@ class PageForgotPassword extends PageBasic
         exit();
     }
 
-    function display_content()
+    protected function display_content(): void
     {
         $this->load_template('forgot_password.tpl', $this->page_content);
     }

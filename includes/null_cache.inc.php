@@ -7,25 +7,25 @@ class NullCache implements CacheInterface
     {
     }
 
-    function exists($path)
+    public function exists(string $path): bool
     {
         return false;
     }
 
-    function get($path)
+    public function get(string $path): mixed
     {
         return false;
     }
 
-    function set($path, $obj, $expires_after = null)
+    public function set(string $path, mixed $obj, ?int $expires_after = null): void
     {
     }
 
-    function invalidate($path)
+    public function invalidate(string $path): void
     {
     }
 
-    function flush()
+    public function flush(): void
     {
     }
 };

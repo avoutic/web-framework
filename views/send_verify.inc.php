@@ -3,19 +3,19 @@ require_once(WF::$includes.'base_logic.inc.php');
 
 class PageSendVerify extends PageBasic
 {
-    static function get_filter()
+    static function get_filter(): array
     {
         return array(
                 'code' => '.*',
                 );
     }
 
-    function get_title()
+    protected function get_title(): string
     {
         return "Request verification mail.";
     }
 
-    function do_logic()
+    protected function do_logic(): void
     {
         // Check if code is present
         //
@@ -46,8 +46,6 @@ class PageSendVerify extends PageBasic
         if ($user !== false && !$user->is_verified())
             $user->send_verify_mail($msg['params']);
 
-        $this->page_content['email'] = $user->email;
-
         // Redirect to main sceen
         //
         $after_verify_page = $this->get_base_url().$this->get_config('pages.send_verify.after_verify_page');
@@ -56,7 +54,7 @@ class PageSendVerify extends PageBasic
         exit();
     }
 
-    function display_content()
+    protected function display_content(): void
     {
         $this->load_template('send_verify.tpl', $this->page_content);
     }

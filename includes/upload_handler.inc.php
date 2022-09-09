@@ -1,19 +1,22 @@
 <?php
 class UploadHandler extends FrameworkCore
 {
-    protected $var_name;
-    protected $tmp_filename;
-    protected $orig_filename;
-    protected $mime_type;
+    protected string $var_name;
+    protected string $tmp_filename = '';
+    protected string $orig_filename = '';
+    protected string $mime_type = '';
 
-    function __construct($var_name = 'file')
+    function __construct(string $var_name = 'file')
     {
         parent::__construct();
 
         $this->var_name = $var_name;
     }
 
-    function check_upload($max_size, $whitelist_mime_types = true)
+    /**
+     * @param true|array<string> $whitelist_mime_types
+     */
+    public function check_upload(int $max_size, bool|array $whitelist_mime_types = true): string|bool
     {
         $var_name = $this->var_name;
 
@@ -38,7 +41,9 @@ class UploadHandler extends FrameworkCore
         $this->orig_filename = $_FILES[$var_name]['name'];
 
         $finfo = new finfo(FILEINFO_MIME_TYPE);
-        $this->mime_type = $finfo->file($this->tmp_filename);
+        $mime_type = $finfo->file($this->tmp_filename);
+        if (is_string($mime_type))
+            $this->mime_type = $mime_type;
 
         if ($whitelist_mime_types !== true)
         {
@@ -51,7 +56,7 @@ class UploadHandler extends FrameworkCore
         return true;
     }
 
-    function get_extension()
+    public function get_extension(): false|string
     {
         $ext = array_search($this->mime_type, array(
                     'jpg' => 'image/jpeg',
@@ -65,22 +70,22 @@ class UploadHandler extends FrameworkCore
         return $ext;
     }
 
-    function get_mime_type()
+    public function get_mime_type(): string
     {
         return $this->mime_type;
     }
 
-    function get_orig_filename()
+    public function get_orig_filename(): string
     {
         return $this->orig_filename;
     }
 
-    function get_tmp_filename()
+    public function get_tmp_filename(): string
     {
         return $this->tmp_filename;
     }
 
-    function move($new_location)
+    public function move(string $new_location): string|bool
     {
         $result = move_uploaded_file($this->tmp_filename, $new_location);
 

@@ -1,13 +1,20 @@
 <?php
 class InputHelpers
 {
-    static function load_template($name, $args = array())
+    /**
+     * @param array<mixed> $args
+     */
+    static function load_template(string $name, array $args = array()): void
     {
         WF::verify(file_exists(WF::$site_templates.$name.'.inc.php'), 'Requested template not present');
         include(WF::$site_templates.$name.'.inc.php');
     }
 
-    static function print_input_field($template, $template_parameters, $parameters)
+    /**
+     * @param array<mixed> $template_parameters
+     * @param array<mixed> $parameters
+     */
+    static function print_input_field(string $template, array $template_parameters, array $parameters): void
     {
         $base_parameters = array(
             'extra_label' => '',
@@ -36,7 +43,11 @@ class InputHelpers
         );
     }
 
-    static function print_input_area($template, $template_parameters, $parameters)
+    /**
+     * @param array<mixed> $template_parameters
+     * @param array<mixed> $parameters
+     */
+    static function print_input_area(string $template, array $template_parameters, array $parameters): void
     {
         $base_parameters = array(
             'extra_label' => '',
@@ -62,7 +73,11 @@ class InputHelpers
         );
     }
 
-    static function print_input_checkbox($template, $template_parameters, $parameters)
+    /**
+     * @param array<mixed> $template_parameters
+     * @param array<mixed> $parameters
+     */
+    static function print_input_checkbox(string $template, array $template_parameters, array $parameters): void
     {
         $base_parameters = array(
             'checked' => false,
@@ -86,7 +101,11 @@ class InputHelpers
         );
     }
 
-    static function print_input_toggle($template, $template_parameters, $parameters)
+    /**
+     * @param array<mixed> $template_parameters
+     * @param array<mixed> $parameters
+     */
+    static function print_input_toggle(string $template, array $template_parameters, array $parameters): void
     {
         $base_parameters = array(
             'checked' => false,
@@ -110,7 +129,11 @@ class InputHelpers
         );
     }
 
-    static function print_input_selection($template, $template_parameters, $parameters)
+    /**
+     * @param array<mixed> $template_parameters
+     * @param array<mixed> $parameters
+     */
+    static function print_input_selection(string $template, array $template_parameters, array $parameters): void
     {
         $base_parameters = array(
             'checked' => false,
@@ -136,7 +159,11 @@ class InputHelpers
         );
     }
 
-    static function print_input_upload($template, $template_parameters, $parameters)
+    /**
+     * @param array<mixed> $template_parameters
+     * @param array<mixed> $parameters
+     */
+    static function print_input_upload(string $template, array $template_parameters, array $parameters): void
     {
         $base_parameters = array(
             'extra_label' => '',
@@ -162,7 +189,11 @@ class InputHelpers
         );
     }
 
-    static function print_input_datepicker($template, $template_parameters, $parameters)
+    /**
+     * @param array<mixed> $template_parameters
+     * @param array<mixed> $parameters
+     */
+    static function print_input_datepicker(string $template, array $template_parameters, array $parameters): void
     {
         $base_parameters = array(
             'extra_label' => '',
@@ -186,7 +217,11 @@ class InputHelpers
         );
     }
 
-    static function print_input_timepicker($template, $template_parameters, $parameters)
+    /**
+     * @param array<mixed> $template_parameters
+     * @param array<mixed> $parameters
+     */
+    static function print_input_timepicker(string $template, array $template_parameters, array $parameters): void
     {
         $base_parameters = array(
             'extra_label' => '',
@@ -210,7 +245,11 @@ class InputHelpers
         );
     }
 
-    static function print_input_signature($template, $template_parameters, $parameters)
+    /**
+     * @param array<mixed> $template_parameters
+     * @param array<mixed> $parameters
+     */
+    static function print_input_signature(string $template, array $template_parameters, array $parameters): void
     {
         $base_parameters = array(
             'id' => '',

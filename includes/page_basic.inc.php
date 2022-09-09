@@ -1,9 +1,17 @@
 <?php
 abstract class PageCore extends FrameworkCore
 {
-    protected $web_handler = null;
-    private $input = array();
-    private $raw_input = array();
+    protected WFWebHandler $web_handler;
+
+    /**
+     * @var array<string|array<string>>
+     */
+    protected array $input = array();
+
+    /**
+     * @var array<string|array<string>>
+     */
+    protected array $raw_input = array();
 
     function __construct()
     {
@@ -14,21 +22,30 @@ abstract class PageCore extends FrameworkCore
         $this->raw_input = $this->framework->get_raw_input();
     }
 
-    static function get_filter()
+    /**
+     * @return array<string>
+     */
+    static function get_filter(): array
     {
         return array();
     }
 
-    function get_input_var($name, $content_required = false)
+    /**
+     * @return string|array<string>
+     */
+    protected function get_input_var(string $name, bool $content_required = false): string|array
     {
         $this->verify(isset($this->input[$name]), 'Missing input variable: '.$name);
         if ($content_required)
-            $this->verify(strlen($this->input[$name]), 'Missing input variable: '.$name);
+            $this->verify(is_string($this->input[$name]) && strlen($this->input[$name]), 'Missing input variable: '.$name);
 
         return $this->input[$name];
     }
 
-    function get_input_vars()
+    /**
+     * @return array<string|array<string>>
+     */
+    protected function get_input_vars(): array
     {
         $fields = array();
 
@@ -38,24 +55,33 @@ abstract class PageCore extends FrameworkCore
         return $fields;
     }
 
-    function get_raw_input_var($name)
+    /**
+     * @return string|array<string>
+     */
+    protected function get_raw_input_var(string $name): string|array
     {
         $this->verify(isset($this->raw_input[$name]), 'Missing input variable: '.$name);
 
         return $this->raw_input[$name];
     }
 
-    function exit_send_403($type = 'generic')
+    /**
+     * @return never
+     */
+    protected function exit_send_403(string $type = 'generic'): void
     {
         $this->web_handler->exit_send_403($type);
     }
 
-    function exit_send_404($type = 'generic')
+    /**
+     * @return never
+     */
+    protected function exit_send_404(string $type = 'generic'): void
     {
         $this->web_handler->exit_send_404($type);
     }
 
-    function blacklist_404($bool, $reason, $type = 'generic')
+    protected function blacklist_404(bool|int $bool, string $reason, string $type = 'generic'): void
     {
         if ($bool)
             return;
@@ -65,17 +91,20 @@ abstract class PageCore extends FrameworkCore
         $this->exit_send_404($type);
     }
 
-    static function get_permissions()
+    /**
+     * @return array<string>
+     */
+    static function get_permissions(): array
     {
         return array();
     }
 
-    static function redirect_login_type()
+    static function redirect_login_type(): string
     {
         return 'redirect';
     }
 
-    static function encode($input, $double_encode = true)
+    static function encode(mixed $input, bool $double_encode = true): string
     {
         WF::verify(( is_string($input) || is_bool($input) || is_int($input) || is_float($input) || is_null($input)) && is_bool($double_encode), 'Not valid for encoding');
 
@@ -88,8 +117,16 @@ abstract class PageCore extends FrameworkCore
 
 abstract class PageBasic extends PageCore
 {
-    protected $frame_file;
-    protected $page_content = array();
+    protected string $frame_file;
+
+    /**
+     * @var array<mixed>
+     */
+    protected array $page_content = array();
+
+    /**
+     * @var array<iPageModule>
+     */
     private $mods = array();
 
     function __construct()
@@ -126,108 +163,108 @@ abstract class PageBasic extends PageCore
         }
     }
 
-    protected function get_csrf_token()
+    protected function get_csrf_token(): string
     {
         return $this->web_handler->get_csrf_token();
     }
 
-    protected function get_base_url()
+    protected function get_base_url(): string
     {
         return $this->get_config('page.base_url');
     }
 
-    function add_page_mod($tag, iPageModule $mod)
+    protected function add_page_mod(string $tag, iPageModule $mod): void
     {
         $this->mods[$tag] = $mod;
     }
 
-    function get_page_mod($tag)
+    protected function get_page_mod(string $tag): iPageModule
     {
         return $this->mods[$tag];
     }
 
-    function get_title()
+    protected function get_title(): string
     {
         return "No Title Defined";
     }
 
-    function get_content_title()
+    protected function get_content_title(): string
     {
         return $this->get_title();
     }
 
-    function get_canonical()
+    protected function get_canonical(): string
     {
         return "";
     }
 
-    function get_onload()
+    protected function get_onload(): string
     {
         return "";
     }
 
-    function get_keywords()
+    protected function get_keywords(): string
     {
         return "";
     }
 
-    function get_description()
+    protected function get_description(): string
     {
         return "";
     }
 
-    function get_meta_robots()
+    protected function get_meta_robots(): string
     {
         // Default behaviour is "index,follow"
         //
         return "index,follow";
     }
 
-    function get_frame_file()
+    protected function get_frame_file(): string
     {
         return $this->frame_file;
     }
 
-    function load_template($name, $args = array())
+    /**
+     * @param array<mixed> $args
+     */
+    protected function load_template(string $name, array $args = array()): void
     {
         $this->verify(file_exists(WF::$site_templates.$name.'.inc.php'), 'Requested template not present');
         include(WF::$site_templates.$name.'.inc.php');
     }
 
-    function load_file($name)
+    protected function load_file(string $name): void
     {
         include($this->get_config('document_root').'/'.$name);
     }
 
-    function is_blocked($name)
+    protected function is_blocked(string $name): bool
     {
         return $this->input[$name] != $this->raw_input[$name];
     }
 
-    function check_sanity()
+    protected function check_sanity(): void
     {
     }
 
-    function do_logic()
+    protected function do_logic(): void
     {
     }
 
-    function display_header()
+    protected function display_header(): void
     {
-        return "";
     }
 
-    function display_footer()
+    protected function display_footer(): void
     {
-        return "";
     }
 
-    function display_content()
+    protected function display_content(): void
     {
-        return "No content.";
     }
 
-    function display_frame()
+    protected function display_frame(): void
     {
         // Unset availability of input in display
         // Forces explicit handling in do_logic()
@@ -254,7 +291,7 @@ abstract class PageBasic extends PageCore
         print($content);
     }
 
-    function html_main()
+    public function html_main(): void
     {
         $this->check_sanity();
         $this->do_logic();
@@ -262,7 +299,7 @@ abstract class PageBasic extends PageCore
     }
 };
 
-function arrayify_datacore(&$item, $key)
+function arrayify_datacore(mixed &$item, string $key): void
 {
     if (is_object($item) && is_subclass_of($item, 'DataCore'))
     {
@@ -272,12 +309,12 @@ function arrayify_datacore(&$item, $key)
 
 abstract class PageService extends PageCore
 {
-    static function redirect_login_type()
+    static function redirect_login_type(): string
     {
         return '403';
     }
 
-    function output_json($success, $output, $direct = false)
+    protected function output_json(bool $success, mixed $output, bool $direct = false): void
     {
         header('Content-type: application/json');
 
@@ -297,7 +334,7 @@ abstract class PageService extends PageCore
                         )));
     }
 
-    function output_file($filename, $hash = '')
+    protected function output_file(string $filename, string $hash = ''): void
     {
         if (!file_exists($filename))
             $this->exit_send_404();

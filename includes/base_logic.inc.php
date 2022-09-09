@@ -4,22 +4,22 @@ require_once(WF::$includes.'config_values.inc.php');
 
 class Right extends DataCore
 {
-    static protected $table_name = 'rights';
-    static protected $base_fields = array('short_name', 'name');
+    static protected string $table_name = 'rights';
+    static protected array $base_fields = array('short_name', 'name');
 };
 
 class UserRight extends DataCore
 {
-    static protected $table_name = 'user_rights';
-    static protected $base_fields = array('right_id', 'user_id');
+    static protected string $table_name = 'user_rights';
+    static protected array $base_fields = array('right_id', 'user_id');
 
-    function get_right()
+    public function get_right(): Right|false
     {
         return Right::get_object_by_id($this->right_id);
     }
 };
 
-function pbkdf2($algorithm, $password, $salt, $count, $key_length, $raw_output = false)
+function pbkdf2(string $algorithm, string $password, string $salt, int $count, int $key_length, bool $raw_output = false): string
 {
     $algorithm = strtolower($algorithm);
     if(!in_array($algorithm, hash_algos(), true))
@@ -58,13 +58,27 @@ class User extends DataCore
     const ERR_ORIG_PASSWORD_MISMATCH = 2;
     const ERR_NEW_PASSWORD_TOO_WEAK = 3;
 
-    static protected $table_name = 'users';
-    static protected $base_fields = array('username', 'email', 'terms_accepted', 'verified', 'last_login', 'failed_login');
+    static protected string $table_name = 'users';
+    static protected array $base_fields = array('username', 'email', 'terms_accepted', 'verified', 'last_login', 'failed_login');
 
-    public $rights = array();
-    protected $user_config = null;
+    public string $username;
+    public string $email;
+    public int $terms_accepted;
+    public bool $verified;
+    public int $last_login;
+    public int $failed_login;
 
-    function __serialize()
+    /**
+     * @var array<Right>
+     */
+    public array $rights = array();
+
+    protected UserConfigValues $user_config;
+
+    /**
+     * @return array<string>
+     */
+    public function __serialize(): array
     {
         $arr = parent::__serialize();
 
@@ -75,14 +89,17 @@ class User extends DataCore
         return $arr;
     }
 
-    function __unserialize($data)
+    /**
+     * @param array<string> $data
+     */
+    public function __unserialize(array $data): void
     {
         parent::__unserialize($data);
 
         $this->rights = unserialize($data['rights']);
     }
 
-    protected function fill_complex_fields()
+    protected function fill_complex_fields(): void
     {
         $user_rights = UserRight::get_objects(0, -1, array('user_id' => $this->id));
 
@@ -95,19 +112,23 @@ class User extends DataCore
         }
     }
 
-    static function new_hash_from_password($password)
+    static function new_hash_from_password(string $password): string
     {
         $salt = base64_encode(openssl_random_pseudo_bytes(24));
         return 'sha256:1000:'.$salt.':'.
                 pbkdf2('sha256', $password, $salt, 1000, 24, false);
     }
 
-    protected function get_custom_hash($params, $password)
+    /**
+     * @param array<mixed> $params
+     * @return array{calculated_hash: string, stored_hash: string}
+     */
+    protected function get_custom_hash(array $params, string $password): false|array
     {
         return false;
     }
 
-    function check_password($password)
+    public function check_password(string $password): bool
     {
         $solid_password = $this->get_field('solid_password');
         $stored_hash = 'stored';
@@ -122,7 +143,7 @@ class User extends DataCore
 
             $stored_hash = $params[3];
             $calculated_hash = pbkdf2('sha256', $password, $params[2], (int) $params[1],
-                                 strlen($stored_hash) / 2, false);
+                                 (int) (strlen($stored_hash) / 2), false);
         }
         else if ($params[0] == 'bootstrap')
         {
@@ -178,7 +199,7 @@ class User extends DataCore
         return $result;
     }
 
-    function change_password($old_password, $new_password)
+    public function change_password(string $old_password, string $new_password): int
     {
         // Check if original password is correct
         //
@@ -196,7 +217,7 @@ class User extends DataCore
         return User::RESULT_SUCCESS;
     }
 
-    function update_password($new_password)
+    public function update_password(string $new_password): int
     {
         // Change password
         //
@@ -209,7 +230,7 @@ class User extends DataCore
         return User::RESULT_SUCCESS;
     }
 
-    function change_email($email, $require_unique = true)
+    public function change_email(string $email, bool $require_unique = true): int
     {
         if ($require_unique)
         {
@@ -222,6 +243,7 @@ class User extends DataCore
 SQL;
 
             $result = $this->query($query, array($email));
+            $this->verify($result !== false, 'Failed to search email');
 
             if ($result->RecordCount() > 0)
                 return User::ERR_DUPLICATE_EMAIL;
@@ -241,13 +263,14 @@ SQL;
         return User::RESULT_SUCCESS;
     }
 
-    function send_change_email_verify($email, $require_unique = true)
+    public function send_change_email_verify(string $email, bool $require_unique = true): false|int
     {
         if ($require_unique)
         {
             // Check if unique
             //
             $result = $this->query('SELECT id FROM users WHERE LOWER(email) = LOWER(?)', array($email));
+            $this->verify($result !== false, 'Failed to check email');
 
             if ($result->RecordCount() > 0)
                 return User::ERR_DUPLICATE_EMAIL;
@@ -267,25 +290,25 @@ SQL;
                                     'verify_url' => $verify_url,
                                 ));
         if ($result == true)
-            return USER::RESULT_SUCCESS;
+            return User::RESULT_SUCCESS;
 
         return false;
     }
 
-    function is_verified()
+    public function is_verified(): bool
     {
         return $this->verified == 1;
     }
 
-    function set_verified()
+    public function set_verified(): void
     {
         $this->update_field('verified', 1);
     }
 
-    function add_right($short_name)
+    public function add_right(string $short_name): void
     {
         if (isset($this->rights[$short_name]))
-            return true;
+            return;
 
         $right = Right::get_object(array('short_name' => $short_name));
         $this->verify($right !== false, 'Failed to locate right');
@@ -296,14 +319,12 @@ SQL;
         ));
 
         $this->rights[$short_name] = $right;
-
-        return true;
     }
 
-    function delete_right($short_name)
+    public function delete_right(string $short_name): void
     {
         if (!isset($this->rights[$short_name]))
-            return true;
+            return;
 
         $right = Right::get_object(array('short_name' => $short_name));
         $this->verify($right !== false, 'Failed to locate right');
@@ -318,16 +339,17 @@ SQL;
             $user_right->delete();
             unset($this->rights[$short_name]);
         }
-
-        return true;
     }
 
-    function has_right($short_name)
+    public function has_right(string $short_name): bool
     {
         return isset($this->rights[$short_name]);
     }
 
-    function generate_verify_code($action = '', $params = array())
+    /**
+     * @param array<mixed> $params
+     */
+    public function generate_verify_code(string $action = '', array $params = array()): string
     {
         $msg = array('id' => $this->id,
                      'username' => $this->username,
@@ -338,7 +360,10 @@ SQL;
         return $this->encode_and_auth_array($msg);
     }
 
-    function send_verify_mail($after_verify_data = array())
+    /**
+     * @param array<mixed> $after_verify_data
+     */
+    public function send_verify_mail(array $after_verify_data = array()): bool|string
     {
         $code = $this->generate_verify_code('verify', $after_verify_data);
         $verify_url = $this->get_config('http_mode').'://'.$this->get_config('server_name').
@@ -353,7 +378,7 @@ SQL;
                                 ));
     }
 
-    function increase_security_iterator()
+    protected function increase_security_iterator(): int
     {
         $security_iterator = (int) $this->get_config_value('account', 'security_iterator', 0);
         $security_iterator += 1;
@@ -362,12 +387,12 @@ SQL;
         return $security_iterator;
     }
 
-    function get_security_iterator()
+    public function get_security_iterator(): int
     {
-        return $this->get_config_value('account', 'security_iterator', 0);
+        return (int) $this->get_config_value('account', 'security_iterator', 0);
     }
 
-    function send_password_reset_mail()
+    public function send_password_reset_mail(): bool|string
     {
         $security_iterator = $this->increase_security_iterator();
 
@@ -384,7 +409,7 @@ SQL;
                                 ));
     }
 
-    function send_new_password()
+    public function send_new_password(): bool|string
     {
         // Generate and store password
         //
@@ -399,7 +424,7 @@ SQL;
                                 ));
     }
 
-    protected function get_config_store()
+    protected function get_config_store(): UserConfigValues
     {
         if ($this->user_config == null)
             $this->user_config = new UserConfigValues($this->id);
@@ -407,66 +432,94 @@ SQL;
         return $this->user_config;
     }
 
-    function get_config_values($module = "")
+    /**
+     * @return array<string>
+     */
+    public function get_config_values(string $module = ""): array
     {
         $config = $this->get_config_store();
 
         return $config->get_values($module);
     }
 
-    function get_config_value($module, $name, $default = '')
+    public function get_config_value(string $module, string $name, string|int $default = ''): string
     {
         $config = $this->get_config_store();
 
-        return $config->get_value($name, $default, $module);
+        return $config->get_value($name, (string) $default, $module);
     }
 
-    function set_config_value($module, $name, $value)
+    public function set_config_value(string $module, string $name, string|int $value): void
     {
         $config = $this->get_config_store();
 
-        return $config->set_value($name, $value, $module);
+        $config->set_value($name, (string) $value, $module);
     }
 
-    function delete_config_value($module, $name)
+    public function delete_config_value(string $module, string $name): void
     {
         $config = $this->get_config_store();
 
-        return $config->delete_value($name, $module);
+        $config->delete_value($name, $module);
     }
 }
 
 class BaseFactory extends FactoryCore
 {
-    function get_user($user_id, $type = 'User')
+    /**
+     * @template T of User
+     * @param class-string<T> $type
+     * @return T|false
+     */
+    public function get_user(int $user_id, string $type = 'User'): User|false
     {
         $this->verify(class_exists($type), 'Class does not exist');
 
         return $type::get_object_by_id($user_id);
     }
 
-    function get_users($offset = 0, $results = 10, $type = 'User')
+    /**
+     * @template T of User
+     * @param class-string<T> $type
+     * @return array<T>
+     */
+    public function get_users(int $offset = 0, int $results = 10, string $type = 'User'): array
     {
         $this->verify(class_exists($type), 'Class does not exist');
 
         return $type::get_objects($offset, $results);
     }
 
-    function get_user_by_username($username, $type = 'User')
+    /**
+     * @template T of User
+     * @param class-string<T> $type
+     * @return T|false
+     */
+    public function get_user_by_username(string $username, string $type = 'User'): User|false
     {
         $this->verify(class_exists($type), 'Class does not exist');
 
         return $type::get_object(array('username' => $username));
     }
 
-    function get_user_by_email($email, $type = 'User')
+    /**
+     * @template T of User
+     * @param class-string<T> $type
+     * @return T|false
+     */
+    public function get_user_by_email(string $email, string $type = 'User'): User|false
     {
         $this->verify(class_exists($type), 'Class does not exist');
 
         return $type::get_object(array('email' => $email));
     }
 
-    function search_users($string, $type = 'User')
+    /**
+     * @template T of User
+     * @param class-string<T> $type
+     * @return array<T>
+     */
+    public function search_users(string $string, string $type = 'User'): array
     {
         $query = <<<SQL
         SELECT id
@@ -487,13 +540,20 @@ SQL;
         foreach ($result as $row)
         {
             $user = $this->get_user($row['id'], $type);
+            $this->verify($user !== false, 'Failed to retrieve user');
+
             array_push($data, $user);
         }
 
         return $data;
     }
 
-    function create_user($username, $password, $email, $terms_accepted, $type = 'User')
+    /**
+     * @template T of User
+     * @param class-string<T> $type
+     * @return T
+     */
+    public function create_user(string $username, string $password, string $email, int $terms_accepted, string $type = 'User'): User
     {
         $this->verify(class_exists($type), 'Class does not exist');
 

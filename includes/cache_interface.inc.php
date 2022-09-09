@@ -1,6 +1,9 @@
 <?php
 interface CacheInterface
 {
+    /**
+     * @param array<mixed> $config
+     */
     function __construct(array $config);
     public function exists(string $path): bool;
     public function get(string $path): mixed;

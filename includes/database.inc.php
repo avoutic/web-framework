@@ -1,12 +1,17 @@
 <?php
 class Database {
-	private $database;
+	private ADOConnection $database;
 
-    function connect($config)
+    /**
+     * @param array<string> $config
+     */
+    public function connect(array $config): bool
     {
-        $this->database = ADONewConnection($config['database_type']);
-        if (!$this->database)
+        $database = ADONewConnection($config['database_type']);
+        if (!$database)
             return false;
+
+        $this->database = $database;
 
         $result = $this->database->PConnect(
             $config['database_host'],
@@ -21,9 +26,12 @@ class Database {
         return true;
 	}
 
-	function query($query_str, $value_array)
+    /**
+     * @param array<bool|int|string> $value_array
+     */
+	public function query(string $query_str, array $value_array): mixed
 	{
-		if (!$this->database || !$this->database->IsConnected())
+		if (!$this->database->IsConnected())
 			die('Database connection not available. Exiting.');
 
 		$query = $this->database->Prepare($query_str);
@@ -31,7 +39,10 @@ class Database {
 		return $this->database->Execute($query, $value_array);
 	}
 
-    function insert_query($query, $params)
+    /**
+     * @param array<bool|int|string> $params
+     */
+    public function insert_query(string $query, array $params): mixed
 	{
 		$result = $this->query($query, $params);
 
@@ -41,7 +52,7 @@ class Database {
 		return false;
 	}
 
-    function get_last_error()
+    public function get_last_error(): string
     {
         return $this->database->errorMsg();
     }

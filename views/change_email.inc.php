@@ -3,28 +3,28 @@ require_once(WF::$includes.'base_logic.inc.php');
 
 class PageChangeEmail extends PageBasic
 {
-    static function get_filter()
+    static function get_filter(): array
     {
         return array(
                 'email' => FORMAT_EMAIL,
                 );
     }
 
-    static function get_permissions()
+    static function get_permissions(): array
     {
         return array(
                 'logged_in'
                 );
     }
 
-    function get_title()
+    protected function get_title(): string
     {
         return "Change email address";
     }
 
     // Can be overriden for project specific user factories and user classes
     //
-    function get_user($username)
+    protected function get_user(string $username): User|false
     {
         $factory = new BaseFactory();
         $user = $factory->get_user_by_username($username);
@@ -32,7 +32,7 @@ class PageChangeEmail extends PageBasic
         return $user;
     }
 
-    function do_logic()
+    protected function do_logic(): void
     {
         $email = $this->get_input_var('email');
         $this->page_content['email'] = $this->get_raw_input_var('email');
@@ -52,6 +52,8 @@ class PageChangeEmail extends PageBasic
         // Change email
         //
         $user = $this->get_user($this->get_authenticated('username'));
+        $this->verify($user !== false, 'Failed to retrieve user');
+
         $old_email = $user->email;
 
         // Send verification mail
@@ -77,7 +79,7 @@ class PageChangeEmail extends PageBasic
         exit();
     }
 
-    function display_content()
+    protected function display_content(): void
     {
         $this->load_template('change_email.tpl', $this->page_content);
     }

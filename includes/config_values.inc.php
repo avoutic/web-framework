@@ -12,16 +12,19 @@ CREATE TABLE IF NOT EXISTS config_values (
 //
 class ConfigValues
 {
-    private $database;
-    private $default_module;
+    private Database $database;
+    private string $default_module;
 
-    function __construct($default_module = "")
+    function __construct(string $default_module = "")
     {
         $this->database = WF::get_main_db();
         $this->default_module = $default_module;
     }
 
-    function get_values($module = "")
+    /**
+     * @return array<string>
+     */
+    public function get_values(string $module = ""): array
     {
         if ($module == "")
             $module = $this->default_module;
@@ -40,7 +43,7 @@ class ConfigValues
         return $info;
     }
 
-    function get_value($name, $default = "", $module = "")
+    public function get_value(string $name, string $default = "", string $module = ""): string
     {
         if ($module == "")
             $module = $this->default_module;
@@ -60,7 +63,7 @@ class ConfigValues
         return $result->fields['value'];
     }
 
-    function set_value($name, $value, $module = "")
+    public function set_value(string $name, string $value, string $module = ""): void
     {
         if ($module == "")
             $module = $this->default_module;
@@ -72,7 +75,7 @@ class ConfigValues
             die('Failed to store config value.');
     }
 
-    function delete_value($name, $module = "")
+    public function delete_value(string $name, string $module = ""): void
     {
         if ($module == "")
             $module = $this->default_module;
@@ -82,8 +85,6 @@ class ConfigValues
 
         if ($result === false)
             die('Failed to delete config value.');
-
-        return TRUE;
     }
 };
 
@@ -98,18 +99,21 @@ CREATE TABLE IF NOT EXISTS user_config_values (
 */
 class UserConfigValues
 {
-    private $database;
-    private $user_id;
-    private $default_module;
+    private Database $database;
+    private int $user_id;
+    private string $default_module;
 
-    function __construct($user_id, $default_module = "")
+    function __construct(int $user_id, string $default_module = "")
     {
         $this->database = WF::get_main_db();
         $this->user_id = $user_id;
         $this->default_module = $default_module;
     }
 
-    function get_values($module = "")
+    /**
+     * @return array<string>
+     */
+    public function get_values(string $module = ""): array
     {
         if ($module == "")
             $module == $this->default_module;
@@ -121,14 +125,14 @@ class UserConfigValues
             die('Failed to retrieve config values.');
 
         $info = array();
-        
+
         foreach ($result as $row)
             $info[$row['name']] = $row['value'];
 
         return $info;
     }
 
-    function value_exists($name, $module = "")
+    public function value_exists(string $name, string $module = ""): bool
     {
         if ($module == "")
             $module == $this->default_module;
@@ -136,7 +140,7 @@ class UserConfigValues
         $result = $this->database->query('SELECT value FROM user_config_values WHERE user_id = ? AND module = ? AND name = ?',
             array($this->user_id, $module, $name));
 
-        if ($result === FALSE)
+        if ($result === false)
             die('Failed to retrieve config value.');
 
         if ($result->RecordCount() == 0)
@@ -145,7 +149,7 @@ class UserConfigValues
         return true;
     }
 
-    function get_value($name, $default = "", $module = "")
+    public function get_value(string $name, string $default = "", string $module = ""): string
     {
         if ($module == "")
             $module == $this->default_module;
@@ -153,7 +157,7 @@ class UserConfigValues
         $result = $this->database->query('SELECT value FROM user_config_values WHERE user_id = ? AND module = ? AND name = ?',
             array($this->user_id, $module, $name));
 
-        if ($result === FALSE)
+        if ($result === false)
             die('Failed to retrieve config value.');
 
         if ($result->RecordCount() == 0)
@@ -165,7 +169,7 @@ class UserConfigValues
         return $result->fields['value'];
     }
 
-    function set_value($name, $value, $module = "")
+    public function set_value(string $name, string $value, string $module = ""): void
     {
         if ($module == "")
             $module == $this->default_module;
@@ -177,7 +181,7 @@ class UserConfigValues
             die('Failed to store config value.');
     }
 
-    function delete_value($name, $module = "")
+    public function delete_value(string $name, string $module = ""): void
     {
         if ($module == "")
             $module == $this->default_module;
@@ -187,8 +191,6 @@ class UserConfigValues
 
         if ($result === false)
             die('Failed to delete config value.');
-
-        return TRUE;
     }
 };
 ?>

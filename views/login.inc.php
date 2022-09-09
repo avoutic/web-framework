@@ -4,7 +4,7 @@ require_once(WF::$includes.'recaptcha.inc.php');
 
 class PageLogin extends PageBasic
 {
-    protected $unique_identifier = '';
+    protected string $unique_identifier = '';
 
     function __construct()
     {
@@ -13,7 +13,7 @@ class PageLogin extends PageBasic
         $this->unique_identifier = $this->get_config('authenticator.unique_identifier');
     }
 
-    static function get_filter()
+    static function get_filter(): array
     {
         $username_format = FORMAT_USERNAME;
         if (WF::get_config('authenticator.unique_identifier') == 'email')
@@ -28,7 +28,7 @@ class PageLogin extends PageBasic
                 );
     }
 
-    function check_sanity()
+    protected function check_sanity(): void
     {
         $login_config = $this->get_config('pages.login');
         $bruteforce_protection = $login_config['bruteforce_protection'];
@@ -41,24 +41,24 @@ class PageLogin extends PageBasic
         }
     }
 
-    function get_title()
+    protected function get_title(): string
     {
         return "Login";
     }
 
-    function get_canonical()
+    protected function get_canonical(): string
     {
         return $this->page_content['login_page'];
     }
 
-    function get_onload()
+    protected function get_onload(): string
     {
         return "$('#inputUsername').focus();";
     }
 
     // Can be overriden for project specific user factories and user classes
     //
-    function get_user($username)
+    protected function get_user(string $username): User|false
     {
         $factory = new BaseFactory();
 
@@ -67,12 +67,12 @@ class PageLogin extends PageBasic
         return $user;
     }
 
-    function custom_value_check($user)
+    protected function custom_value_check(User $user): bool
     {
         return true;
     }
 
-    function do_logic()
+    protected function do_logic(): void
     {
         $return_page = $this->get_input_var('return_page');
         $return_query = $this->get_input_var('return_query');
@@ -181,20 +181,20 @@ class PageLogin extends PageBasic
 
         // Log in user
         //
-        $info = $this->authenticate($user);
+        $this->authenticate($user);
 
         header("Location: ".$this->get_base_url().$return_page."?".$return_query."&".$this->get_message_for_url('success', 'Login successful.'));
         exit();
     }
 
-    function display_header()
+    protected function display_header(): void
     {
         echo <<<HTML
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 HTML;
     }
 
-    function display_content()
+    protected function display_content(): void
     {
         $this->load_template('login.tpl', $this->page_content);
     }

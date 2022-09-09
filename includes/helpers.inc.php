@@ -4,10 +4,10 @@ class Helpers
     /**
      * Valid email adress?
      *
-     * @param string
-     * @return boolean
+     * @param string $string
+     * @return bool
      */
-    public static function valid_email($string)
+    public static function valid_email(string $string): bool
     {
         // filter_var has the weird tendency to accept emails like yourname or test@test
         return
@@ -19,10 +19,10 @@ class Helpers
 	/**
 	 * Replace any accents in the string with ASCII characters
 	 *
-	 * @param string
+	 * @param string $str
 	 * @return string
 	 */
-	public static function remove_accents($str)
+	public static function remove_accents(string $str): string
 	{
 		$lowercase = array(
 			'à' => 'a',  'ô' => 'o',  'ď' => 'd',  'ḟ' => 'f',  'ë' => 'e',  'š' => 's',  'ơ' => 'o',
@@ -81,7 +81,7 @@ class Helpers
      * @param string $str
      * @return string
      */
-    public static function title($str)
+    public static function title(string $str): string|null
     {
         // Convert HTML entities to normal characters
         $str = html_entity_decode($str, ENT_QUOTES, 'UTF-8');
@@ -105,7 +105,7 @@ class Helpers
         return preg_replace("/\s+/s", "-", trim(preg_replace("/\W/s", " ", $str)));
     }
 
-    public static function mysql_datetime_to_timestamp($time_str)
+    public static function mysql_datetime_to_timestamp(string $time_str): int|false
     {
         $ftime = date_parse_from_format('Y-m-d H:i:s', $time_str);
 
@@ -118,11 +118,8 @@ class Helpers
                 $ftime['year']);
     }
 
-    public static function mysql_date_to_timestamp($time_str)
+    public static function mysql_date_to_timestamp(string $time_str): int|false
     {
-        if ($time_str === null)
-            return "";
-
         $ftime = date_parse_from_format('Y-m-d', $time_str);
 
         return mktime(
@@ -134,7 +131,7 @@ class Helpers
                 $ftime['year']);
     }
 
-    public static function time_elapsed_string($ptime)
+    public static function time_elapsed_string(int $ptime): string
     {
         $etime = time() - $ptime;
 
@@ -166,5 +163,9 @@ class Helpers
                 return $r . ' ' . ($r > 1 ? $a_plural[$str] : $str);
             }
         }
+
+        // Should never happen
+        //
+        return '';
     }
 };

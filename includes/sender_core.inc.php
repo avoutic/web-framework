@@ -1,7 +1,7 @@
 <?php
 abstract class SenderCore extends FrameworkCore
 {
-    function get_sender_email()
+    public function get_sender_email(): string
     {
         $default_sender = $this->get_config('sender_core.default_sender');
         $this->verify(strlen($default_sender), 'No default sender e-mail address defined');
@@ -9,7 +9,7 @@ abstract class SenderCore extends FrameworkCore
         return $default_sender;
     }
 
-    static function send_raw($to, $subject, $message)
+    static function send_raw(string $to, string $subject, string $message): bool|string
     {
         // Instantiate correct handler
         //
@@ -22,7 +22,10 @@ abstract class SenderCore extends FrameworkCore
         return $handler->send_raw_email($to, $subject, $message);
     }
 
-    static function send($template_name, $to, $params = array())
+    /**
+     * @param array<mixed> $params
+     */
+    static function send(string $template_name, string $to, array $params = array()): bool|string
     {
         // Instantiate correct handler
         //
@@ -34,29 +37,44 @@ abstract class SenderCore extends FrameworkCore
         return $handler->dispatch_template_email($template_name, $to, $params);
     }
 
-    function dispatch_template_email($template_name, $to, $params = array())
+    /**
+     * @param array<mixed> $params
+     */
+    public function dispatch_template_email(string $template_name, string $to, array $params = array()): bool|string
     {
         WF::verify(method_exists($this, $template_name), 'No template handler available');
 
         return $this->$template_name($to, $params);
     }
 
-    abstract function send_raw_email($to, $subject, $message);
+    abstract public function send_raw_email(string $to, string $subject, string $message): bool|string;
 
     // Functions called by the base framework
     //
 
     // In User::send_verify_mail()
-    abstract function email_verification_link($to, $params);
+    /**
+     * @param array<mixed> $params
+     */
+    abstract public function email_verification_link(string $to, array $params): bool|string;
 
     // In User::send_change_verify_mail()
-    abstract function change_email_verification_link($to, $params);
+    /**
+     * @param array<mixed> $params
+     */
+    abstract public function change_email_verification_link(string $to, array $params): bool|string;
 
     // In User::send_password_reset_mail()
-    abstract function password_reset($to, $params);
+    /**
+     * @param array<mixed> $params
+     */
+    abstract public function password_reset(string $to, array $params): bool|string;
 
     // In User::send_new_password()
-    abstract function new_password($to, $params);
+    /**
+     * @param array<mixed> $params
+     */
+    abstract public function new_password(string $to, array $params): bool|string;
 };
 
 require_once(WF::$site_includes.'sender_handler.inc.php');

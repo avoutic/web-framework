@@ -1,7 +1,7 @@
 <?php
 class WFHelpers
 {
-    static function get_error_type_string($type)
+    static function get_error_type_string(int|string $type): string
     {
         switch($type)
         {
@@ -37,10 +37,10 @@ class WFHelpers
             return 'E_USER_DEPRECATED';
         }
 
-        return $type;
+        return (string) $type;
     }
 
-    static function scrub_state(&$item)
+    static function scrub_state(mixed &$item): void
     {
         if (!is_array($item))
             return;
