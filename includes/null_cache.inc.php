@@ -1,9 +1,10 @@
 <?php
-class NullCache extends FrameworkCore
+require_once(WF::$includes.'cache_interface.inc.php');
+
+class NullCache implements CacheInterface
 {
-    function __construct()
+    function __construct(array $config)
     {
-        parent::__construct();
     }
 
     function exists($path)

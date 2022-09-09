@@ -1,17 +1,17 @@
 <?php
+require_once(WF::$includes.'cache_interface.inc.php');
+
 use Cache\Adapter\Redis\RedisCachePool;
 
-class RedisCache extends FrameworkCore
+class RedisCache implements CacheInterface
 {
     private $client;
     private $pool;
 
     function __construct($config)
     {
-        parent::__construct();
-
-        $this->verify(isset($config['hostname']), 'No hostname set');
-        $this->verify(isset($config['port']), 'No port set');
+        WF::verify(isset($config['hostname']), 'No hostname set');
+        WF::verify(isset($config['port']), 'No port set');
 
         $client = new Redis();
         $client->pconnect($config['hostname'], $config['port']);
