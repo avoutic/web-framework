@@ -289,7 +289,9 @@ TXT;
 
         $raw_input_data = print_r($this->get_raw_input(), true);
 
-        $server_fmt = print_r($_SERVER, true);
+        $server_info = $_SERVER;
+        $server_info['HTTP_COOKIE'] = 'scrubbed';
+        $server_fmt = print_r($server_info, true);
 
         // Construct debug data
         //
