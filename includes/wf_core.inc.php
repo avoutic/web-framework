@@ -891,6 +891,27 @@ TXT;
     {
         return $this->raw_input;
     }
+
+    // Build info
+    //
+    function get_build_info()
+    {
+        if (!file_exists(__DIR__.'/../../build_commit'))
+        {
+            return array(
+                'commit' => null,
+                'timestamp' => time(),
+            );
+        }
+
+        $commit = substr(file_get_contents(__DIR__.'/../../build_commit'), 0, 8);
+        $build_time = file_get_contents(__DIR__.'/../../build_timestamp');
+
+        return array(
+            'commit' => $commit,
+            'timestamp' => $build_time,
+        );
+    }
 }
 
 class FrameworkCore
@@ -1069,6 +1090,13 @@ class FrameworkCore
     protected function user_has_permissions($permissions)
     {
         return $this->framework->user_has_permissions($permissions);
+    }
+
+    // Build info
+    //
+    protected function get_build_info()
+    {
+        return $this->framework->get_build_info();
     }
 };
 ?>
