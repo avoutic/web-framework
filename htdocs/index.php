@@ -13,6 +13,10 @@ try
     $framework = new WFWebHandler();
     $framework->init();
 
+    // Allow app to check data and config sanity
+    //
+    $framework->check_sanity();
+
     // Load route and hooks array and site specific logic if available
     //
     if (is_file(WF::$site_includes."site_logic.inc.php"))

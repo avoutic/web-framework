@@ -852,6 +852,56 @@ TXT;
         }
     }
 
+    function get_sanity_check()
+    {
+        require_once(WF::$includes.'sanity_check_interface.inc.php');
+        require_once(WF::$site_includes."sanity_check.inc.php");
+        $this->verify(class_exists('SanityCheck'), 'SanityCheck class not found');
+        $this->verify(method_exists('SanityCheck', 'perform_checks'), 'SanityCheck->perform_checks() not found');
+
+        return new SanityCheck();
+    }
+
+    function check_sanity()
+    {
+        if (!is_file(WF::$site_includes."sanity_check.inc.php"))
+            return true;
+
+        $config_values = new ConfigValues('sanity_check');
+        $build_info = $this->get_build_info();
+        $commit = $build_info['commit'];
+
+        if ($commit == null)
+        {
+            // We are in live code. Prevent flooding. Only start check once per minute.
+            //
+            $last_timestamp = $config_values->get_value('last_check', '0');
+
+            if (time() - $last_timestamp < 60)
+                return true;
+
+            $config_values->set_value('last_check', time());
+        }
+        else
+        {
+            // Only check if this commit was not yet successfully checked
+            //
+            $checked = $config_values->get_value('checked_'.$commit, '0');
+            if ($checked !== '0')
+                return true;
+        }
+
+        $sanity_check = $this->get_sanity_check();
+        $result = $sanity_check->perform_checks();
+
+        $this->verify($result, 'Sanity check failed');
+
+        // Register successful check of this commit
+        //
+        if ($commit !== null)
+            $config_values->set_value('checked_'.$commit, '1');
+    }
+
     function is_authenticated()
     {
         return false;
