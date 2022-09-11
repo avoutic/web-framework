@@ -10,7 +10,6 @@ Migration changes Pending for next version:
 Before v4 release:
 
 * Remove deprecated functions
-* Remove includes/contact.inc.php
 * Remove includes/locale_base.inc.php
 * Remove includes/shortener.inc.php
 * Remove includes/translation_base.inc.php
@@ -18,7 +17,6 @@ Before v4 release:
 * Remove views/grab_identity.inc.php
 * Remove views/manager_user.inc.php
 * Remove views/user_overview.inc.php
-* Remove templates/contact.tpl.inc.php
 * Remove templates/manage_user.tpl.inc.php
 * Remove templates/user_overview.tpl.inc.php
 
