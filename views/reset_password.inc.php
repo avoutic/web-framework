@@ -51,7 +51,7 @@ class PageResetPassword extends PageBasic
 
         $user = $this->get_user($msg['username']);
 
-        if ($user === FALSE)
+        if ($user === false)
             return;
 
         if (!isset($msg['params']) || !isset($msg['params']['iterator']) ||

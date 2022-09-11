@@ -102,7 +102,7 @@ abstract class PageBasic extends PageCore
         $page_mods = $this->get_config('page.mods');
         foreach ($page_mods as $mod_info)
         {
-            $mod_obj = FALSE;
+            $mod_obj = false;
 
             $class = $mod_info['class'];
             $include_file = $mod_info['include_file'];
@@ -112,7 +112,7 @@ abstract class PageBasic extends PageCore
             if ($this->cache != null && $class::is_cacheable)
                 $mod_obj = $this->cache->get($tag);
 
-            if ($mod_obj === FALSE)
+            if ($mod_obj === false)
             {
                 require_once($include_file);
 

@@ -20,7 +20,7 @@ $this->display_content();
 
 if ($this->user_has_permissions(array('debug')))
 {
-    $state = print_r($this->state, TRUE);
+    $state = print_r($this->state, true);
 
     echo <<<HTML
 <hr/>

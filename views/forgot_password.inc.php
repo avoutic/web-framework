@@ -39,7 +39,7 @@ class PageForgotPassword extends PageBasic
         //
         $user = $base_factory->get_user_by_username($username);
 
-        if ($user !== FALSE)
+        if ($user !== false)
             $user->send_password_reset_mail();
 
         // Redirect to main sceen

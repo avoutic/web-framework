@@ -189,7 +189,7 @@ class WFWebHandler extends WF
                 foreach ($target_info['args'] as $name => $match_index)
                     $url = preg_replace("!\{$name\}!", $matches[$match_index], $url);
 
-                header('Location: '.$url, TRUE, $target_info['redir_type']);
+                header('Location: '.$url, true, $target_info['redir_type']);
                 return;
             }
 

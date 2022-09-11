@@ -78,7 +78,7 @@ class WFSecurity
         $str = substr($str, $idx + 1);
 
         $idx = strpos($str, "-");
-        if ($idx === FALSE)
+        if ($idx === false)
             return false;
 
         $part_msg = substr($str, 0, $idx);

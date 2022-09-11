@@ -48,7 +48,7 @@ class PageVerify extends PageBasic
         //
         $user = $base_factory->get_user_by_username($msg['username']);
 
-        if ($user === FALSE)
+        if ($user === false)
             return;
 
         if (!$user->is_verified())

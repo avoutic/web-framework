@@ -126,7 +126,7 @@ class PageLogin extends PageBasic
         //
         $user = $this->get_user($this->get_input_var('username'));
 
-        if ($user === FALSE)
+        if ($user === false)
         {
             if ($this->unique_identifier == 'email')
                 $this->add_message('error', 'E-mail and password do not match.', 'Please check if you entered the e-mail and/or password correctly.');

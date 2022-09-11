@@ -29,7 +29,7 @@ class ConfigValues
         $result = $this->database->query('SELECT name, value FROM config_values WHERE module = ?',
             array($module));
 
-        if ($result === FALSE)
+        if ($result === false)
             die('Failed to retrieve config values.');
 
         $info = array();
@@ -48,7 +48,7 @@ class ConfigValues
         $result = $this->database->query('SELECT value FROM config_values WHERE module = ? AND name = ?',
             array($module, $name));
 
-        if ($result === FALSE)
+        if ($result === false)
             die('Failed to retrieve config value.');
 
         if ($result->RecordCount() == 0)
@@ -68,7 +68,7 @@ class ConfigValues
         $result = $this->database->query('INSERT INTO config_values SET module = ?, name = ?, value = ? ON DUPLICATE KEY UPDATE value = ?',
             array($module, $name, $value, $value));
 
-        if ($result === FALSE)
+        if ($result === false)
             die('Failed to store config value.');
     }
 
@@ -80,7 +80,7 @@ class ConfigValues
         $result = $this->database->query('DELETE config_values WHERE module = ? AND name = ?',
             array($module, $name));
 
-        if ($result === FALSE)
+        if ($result === false)
             die('Failed to delete config value.');
 
         return TRUE;
@@ -117,7 +117,7 @@ class UserConfigValues
         $result = $this->database->query('SELECT name, value FROM user_config_values WHERE user_id = ? AND module = ?',
             array($this->user_id, $module));
 
-        if ($result === FALSE)
+        if ($result === false)
             die('Failed to retrieve config values.');
 
         $info = array();
@@ -173,7 +173,7 @@ class UserConfigValues
         $result = $this->database->query('INSERT user_config_values SET user_id = ?, module = ?, name = ?, value = ? ON DUPLICATE KEY UPDATE value = ?',
             array($this->user_id, $module, $name, $value, $value));
 
-        if ($result === FALSE)
+        if ($result === false)
             die('Failed to store config value.');
     }
 
@@ -185,7 +185,7 @@ class UserConfigValues
         $result = $this->database->query('DELETE user_config_values WHERE user_id = ? AND module = ? AND name = ?',
             array($this->user_id, $module, $name));
 
-        if ($result === FALSE)
+        if ($result === false)
             die('Failed to delete config value.');
 
         return TRUE;
