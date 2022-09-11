@@ -10,9 +10,7 @@ Migration changes Pending for next version:
 Before v4 release:
 
 * Remove deprecated functions
-* Remove views/manager_user.inc.php
 * Remove views/user_overview.inc.php
-* Remove templates/manage_user.tpl.inc.php
 * Remove templates/user_overview.tpl.inc.php
 
 Actions to take to migrate from v1/v2 to v3 of web-framework
