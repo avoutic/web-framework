@@ -26,7 +26,14 @@ try
 }
 catch (Throwable $e)
 {
-    print('Unhandled exception');
+    print('Unhandled exception'.PHP_EOL);
+
+    if ($framework->get_config('debug') == true)
+    {
+        print($e->getMessage().PHP_EOL);
+        print_r($e->getTrace());
+    }
+
     WF::report_error($e->getMessage(), $e->getTrace());
     exit();
 }
