@@ -10,7 +10,6 @@ Migration changes Pending for next version:
 Before v4 release:
 
 * Remove deprecated functions
-* Remove htdocs/sha1.js
 * Remove includes/contact.inc.php
 * Remove includes/locale_base.inc.php
 * Remove includes/shortener.inc.php
