@@ -534,8 +534,6 @@ TXT;
                 $info = $this->raw_post[$item];
             else if (isset($_POST[$item]))
                 $info = $_POST[$item];
-            else if (isset($_PUT[$item]))
-                $info = $_PUT[$item];
             else if (isset($_GET[$item]))
                 $info = $_GET[$item];
 
@@ -555,8 +553,6 @@ TXT;
                 $str = $this->raw_post[$item];
             else if (isset($_POST[$item]))
                 $str = $_POST[$item];
-            else if (isset($_PUT[$item]))
-                $str = $_PUT[$item];
             else if (isset($_GET[$item]))
                 $str = $_GET[$item];
 
