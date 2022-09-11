@@ -31,13 +31,6 @@ class Database {
 		return $this->database->Execute($query, $value_array);
 	}
 
-	function InsertQuery($query, $params)
-    {
-        trigger_error("Database->InsertQuery()", E_USER_DEPRECATED);
-
-        return $this->insert_query($query, $params);
-    }
-
     function insert_query($query, $params)
 	{
 		$result = $this->query($query, $params);
@@ -47,13 +40,6 @@ class Database {
 
 		return false;
 	}
-
-    function GetLastError()
-    {
-        trigger_error("Database->GetLastError()", E_USER_DEPRECATED);
-
-        return $this->get_last_error();
-    }
 
     function get_last_error()
     {

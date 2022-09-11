@@ -312,15 +312,6 @@ TXT;
         return $info;
     }
 
-    // Deprecated (Remove for v4)
-    //
-    static function silent_verify($bool, $message)
-    {
-        trigger_error("WF::silent_verify()", E_USER_DEPRECATED);
-
-        WF::verify($bool, $message, true);
-    }
-
     static function verify($bool, $message, $silent = false)
     {
         $framework = WF::get_framework();
@@ -1053,15 +1044,6 @@ class FrameworkCore
         WF::report_error($message, $stack);
     }
 
-    // Deprecated (Remove for v4)
-    //
-    function silent_verify($bool, $message)
-    {
-        trigger_error("FrameworkCore->silent_verify()", E_USER_DEPRECATED);
-
-        WF::silent_verify($bool, $message);
-    }
-
     function verify($bool, $message, $silent = false)
     {
         $this->framework->internal_verify($bool, $message, $silent);
@@ -1084,27 +1066,9 @@ class FrameworkCore
         $this->framework->add_blacklist_entry($reason, $severity);
     }
 
-    // Deprecated (Remove for v4)
-    //
-    protected function urlencode_and_auth_array($array)
-    {
-        trigger_error("FrameworkCode->urlencode_and_auth_array()", E_USER_DEPRECATED);
-
-        return $this->security->encode_and_auth_array($array);
-    }
-
     protected function encode_and_auth_array($array)
     {
         return $this->security->encode_and_auth_array($array);
-    }
-
-    // Deprecated (Remove for v4)
-    //
-    protected function urldecode_and_verify_array($str)
-    {
-        trigger_error("FrameworkCode->urldecode_and_verify_array()", E_USER_DEPRECATED);
-
-        return $this->security->urldecode_and_verify_array($str);
     }
 
     protected function decode_and_verify_array($str)

@@ -45,15 +45,6 @@ class WFSecurity
         return ($diff === 0);
     }
 
-    // Deprecated (Remove for v4)
-    //
-    function urlencode_and_auth_array($array)
-    {
-        trigger_error("WFSecurity->urlencode_and_auth_array()", E_USER_DEPRECATED);
-
-        return $this->encode_and_auth_array($array);
-    }
-
     function encode_and_auth_array($array)
     {
         $str = json_encode($array);
@@ -73,15 +64,6 @@ class WFSecurity
                               $this->module_config['hmac_key']);
 
         return $iv."-".$str."-".$str_hmac;
-    }
-
-    // Deprecated (Remove for v4)
-    //
-    function urldecode_and_verify_array($str)
-    {
-        trigger_error("WFSecurity->urldecode_and_verify_array()", E_USER_DEPRECATED);
-
-        return $this->decode_and_verify_array(urldecode($str));
     }
 
     function decode_and_verify_array($str)
