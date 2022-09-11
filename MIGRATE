@@ -10,7 +10,6 @@ Migration changes Pending for next version:
 Before v4 release:
 
 * Remove deprecated functions
-* Remove views/grab_identity.inc.php
 * Remove views/manager_user.inc.php
 * Remove views/user_overview.inc.php
 * Remove templates/manage_user.tpl.inc.php
