@@ -1,0 +1,46 @@
+parameters:
+    level: 8
+    phpVersion: 80100
+    paths:
+        - includes
+        - views
+        - scripts
+        - htdocs
+    excludePaths:
+        analyse:
+            - ../vendor
+    universalObjectCratesClasses:
+        - DataCore
+    ignoreErrors:
+        -
+            message: '#^Instantiated class DataCore is abstract\.$#'
+            path: includes/data_core.inc.php
+        -
+            message: '#^Constructor of class NullCache has an unused parameter \$config\.$#'
+            path: includes/null_cache.inc.php
+        -
+            message: '#^Call to an undefined method object\:\:send_raw_email\(\)\.$#'
+            path: includes/sender_core.inc.php
+        -
+            message: '#^Call to an undefined method object\:\:dispatch_template_email\(\)\.$#'
+            path: includes/sender_core.inc.php
+        -
+            message: '#^Instantiated class SanityCheck not found\.$#'
+            path: includes/wf_core.inc.php
+        -
+            message: '#^Instantiated class AuthCustom not found\.$#'
+            path: includes/wf_web_handler.inc.php
+
+services:
+    -
+        class: WebFramework\PHPStan\VerifyMethodTypeSpecifyingExtension
+        tags:
+            - phpstan.typeSpecifier.methodTypeSpecifyingExtension
+    -
+        class: WebFramework\PHPStan\WFVerifyMethodTypeSpecifyingExtension
+        tags:
+            - phpstan.typeSpecifier.methodTypeSpecifyingExtension
+    -
+        class: WebFramework\PHPStan\VerifyStaticMethodTypeSpecifyingExtension
+        tags:
+            - phpstan.typeSpecifier.staticMethodTypeSpecifyingExtension
