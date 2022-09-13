@@ -30,14 +30,24 @@ abstract class PageCore extends FrameworkCore
         return array();
     }
 
-    /**
-     * @return string|array<string>
-     */
-    protected function get_input_var(string $name, bool $content_required = false): string|array
+    protected function get_input_var(string $name, bool $content_required = false): string
     {
         $this->verify(isset($this->input[$name]), 'Missing input variable: '.$name);
+        $this->verify(is_string($this->input[$name]), 'Not a string');
+
         if ($content_required)
-            $this->verify(is_string($this->input[$name]) && strlen($this->input[$name]), 'Missing input variable: '.$name);
+            $this->verify(strlen($this->input[$name]), 'Missing input variable: '.$name);
+
+        return $this->input[$name];
+    }
+
+    /**
+     * @return array<string>
+     */
+    protected function get_input_array(string $name): array
+    {
+        $this->verify(isset($this->input[$name]), 'Missing input variable: '.$name);
+        $this->verify(is_array($this->input[$name]), 'Not an array');
 
         return $this->input[$name];
     }
@@ -55,12 +65,21 @@ abstract class PageCore extends FrameworkCore
         return $fields;
     }
 
-    /**
-     * @return string|array<string>
-     */
-    protected function get_raw_input_var(string $name): string|array
+    protected function get_raw_input_var(string $name): string
     {
         $this->verify(isset($this->raw_input[$name]), 'Missing input variable: '.$name);
+        $this->verify(is_string($this->input[$name]), 'Not a string');
+
+        return $this->raw_input[$name];
+    }
+
+    /**
+     * @return array<string>
+     */
+    protected function get_raw_input_array(string $name): array
+    {
+        $this->verify(isset($this->raw_input[$name]), 'Missing input variable: '.$name);
+        $this->verify(is_array($this->input[$name]), 'Not an array');
 
         return $this->raw_input[$name];
     }

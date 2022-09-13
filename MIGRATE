@@ -10,6 +10,12 @@ Required changes for v4:
 * FrameworkCore-silent_verify() deprecated. Use report_error() instead
 * FrameworkCore->urldecode_and_verify_array() deprecated. Use decode_and_verify_array() instead
 * FrameworkCore->urlencode_and_auth_array() deprecated. Use encode_and_auth_array() instead
+* PageCore->get_input_var() only returns filtered string values now.
+* PageCore->get_input_array() should be used to retrieve filtered array input.
+* PageCore->get_raw_input_var() only returns raw string values now.
+* PageCore->get_raw_input_array() should be used to retrieve raw array input.
+
+Files / classes fully removed in v4:
 * htdocs/sha1.js removed from framework
 * PageContactBase and template removed from framework
 * LocaleFactory and CountryLocaleFactory removed from framework
