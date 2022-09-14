@@ -154,10 +154,11 @@ class WFWebHandler extends WF
         else if ($auth_mode == 'custom' &&
                 strlen($this->internal_get_config('auth_module')))
         {
-            require_once(WF::$site_includes.$this->internal_get_config('auth_module'));
+            $class_name = $this->internal_get_config('auth_module');
+            $this->verify(class_exists($class_name), "Custom auth module '{$class_name}' not found");
 
-            $obj = new \App\Core\AuthCustom();
-            $this->verify($obj instanceof Authenticator, 'AuthCustom() not an Authenticator');
+            $obj = new $class_name();
+            $this->verify($obj instanceof Authenticator, 'Custom authentication module not derived from Authenticator');
 
             $this->authenticator = $obj;
         }

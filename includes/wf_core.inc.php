@@ -87,8 +87,9 @@ class WF
         'http_mode' => 'https',
         'document_root' => '',              // Set to $_SERVER['DOCUMENT_ROOT'] automatically
         'cache_enabled' => false,
-        'auth_mode' => 'redirect',            // redirect, www-authenticate, custom (requires auth_module)
-        'auth_module' => '',
+        'auth_mode' => 'redirect',          // redirect, www-authenticate, custom (requires auth_module)
+        'auth_module' => '',                // class name with full namespace
+        'sanity_check_module' => '',        // class name with full namespace
         'authenticator' => array(
             'unique_identifier' => 'email',
             'auth_required_message' => 'Authentication required. Please login.',
@@ -894,18 +895,19 @@ TXT;
 
     public function get_sanity_check(): SanityCheckInterface
     {
-        $this->verify(class_exists('\\App\\Core\\SanityCheck'), 'SanityCheck class not found');
+        $class_name = $this->internal_get_config('sanity_check_module');
+        $this->verify(class_exists($class_name), "Sanity check module '{$class_name}' not found");
 
-        $obj = new \App\Core\SanityCheck();
-
-        $this->verify($obj instanceof SanityCheckInterface, 'SanityCheck->perform_checks() not found');
+        $obj = new $class_name;
+        $this->verify($obj instanceof SanityCheckInterface, 'Sanity check module does not implement SanityCheckInterface');
 
         return $obj;
     }
 
     public function check_sanity(): bool
     {
-        if (!is_file(WF::$site_includes."sanity_check.inc.php"))
+        $class_name = $this->internal_get_config('sanity_check_module');
+        if (!strlen($class_name))
             return true;
 
         $stored_values = new StoredValues('sanity_check');
