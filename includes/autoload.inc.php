@@ -28,7 +28,7 @@ class WFAutoLoader
      */
     protected array $wf_namespaces = array(
         'WebFramework\\Core' => '/',
-        'WebFramework\\Actions' => '/../views/',
+        'WebFramework\\Actions' => '/../actions/',
     );
 
     public function register(): void
