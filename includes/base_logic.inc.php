@@ -1,6 +1,6 @@
 <?php
 require_once(WF::$includes.'data_core.inc.php');
-require_once(WF::$includes.'config_values.inc.php');
+require_once(WF::$includes.'stored_values.inc.php');
 
 class Right extends DataCore
 {
@@ -73,7 +73,10 @@ class User extends DataCore
      */
     public array $rights = array();
 
-    protected UserConfigValues $user_config;
+    /**
+     * @var array<string, StoredUserValues>
+     */
+    protected array $stored_values;
 
     /**
      * @return array<string>
@@ -380,16 +383,20 @@ SQL;
 
     protected function increase_security_iterator(): int
     {
-        $security_iterator = (int) $this->get_config_value('account', 'security_iterator', 0);
+        $stored_values = $this->get_stored_values('account');
+
+        $security_iterator = (int) $stored_values->get_value('security_iterator', 0);
         $security_iterator += 1;
-        $this->set_config_value('account', 'security_iterator', $security_iterator);
+        $stored_values->set_value('security_iterator', $security_iterator);
 
         return $security_iterator;
     }
 
     public function get_security_iterator(): int
     {
-        return (int) $this->get_config_value('account', 'security_iterator', 0);
+        $stored_values = $this->get_stored_values('account');
+
+        return (int) $stored_values->get_value('security_iterator', 0);
     }
 
     public function send_password_reset_mail(): bool|string
@@ -424,43 +431,12 @@ SQL;
                                 ));
     }
 
-    protected function get_config_store(): UserConfigValues
+    public function get_stored_values(string $module): StoredUserValues
     {
-        if ($this->user_config == null)
-            $this->user_config = new UserConfigValues($this->id);
+        if (!isset($this->stored_values[$module]))
+            $this->stored_values[$module] = new StoredUserValues($this->id, $module);
 
-        return $this->user_config;
-    }
-
-    /**
-     * @return array<string>
-     */
-    public function get_config_values(string $module = ""): array
-    {
-        $config = $this->get_config_store();
-
-        return $config->get_values($module);
-    }
-
-    public function get_config_value(string $module, string $name, string|int $default = ''): string
-    {
-        $config = $this->get_config_store();
-
-        return $config->get_value($name, (string) $default, $module);
-    }
-
-    public function set_config_value(string $module, string $name, string|int $value): void
-    {
-        $config = $this->get_config_store();
-
-        $config->set_value($name, (string) $value, $module);
-    }
-
-    public function delete_config_value(string $module, string $name): void
-    {
-        $config = $this->get_config_store();
-
-        $config->delete_value($name, $module);
+        return $this->stored_values[$module];
     }
 }
 

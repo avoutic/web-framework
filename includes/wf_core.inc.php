@@ -12,8 +12,8 @@ class WF
     static string $site_templates = __DIR__.'/../../templates/';
 
     private static WF $framework;
-    private static Database $main_db;         // Only for DataCore and ConfigValues abstraction
-    private static CacheInterface $static_cache;    // Only for DataCore and ConfigValues abstraction
+    private static Database $main_db;         // Only for DataCore and StoredValues abstraction
+    private static CacheInterface $static_cache;    // Only for DataCore and StoredValues abstraction
 
     /**
      * @var array<mixed>
@@ -540,7 +540,7 @@ TXT;
         return $this->aux_databases[$tag];
     }
 
-    // Only relevant for DataCore and ConfigValues to retrieve main database in static functions
+    // Only relevant for DataCore and StoredValues to retrieve main database in static functions
     //
     static function get_main_db(): Database
     {
@@ -552,7 +552,7 @@ TXT;
         return $this->cache;
     }
 
-    // Only relevant for DataCore and ConfigValues to retrieve main database in static functions
+    // Only relevant for DataCore and StoredValues to retrieve main database in static functions
     //
     static function get_static_cache(): CacheInterface
     {
@@ -713,7 +713,7 @@ TXT;
         }
 
         require_once(WF::$includes."base_logic.inc.php");
-        require_once(WF::$includes."config_values.inc.php");
+        require_once(WF::$includes."stored_values.inc.php");
 
         if (is_file(WF::$site_includes."site_defines.inc.php"))
             include_once(WF::$site_includes."site_defines.inc.php");
@@ -852,9 +852,9 @@ TXT;
         $required_wf_db_version = FRAMEWORK_DB_VERSION;
         $required_app_db_version = $this->internal_get_config('versions.required_app_db');
 
-        $config_values = new ConfigValues('db');
-        $current_wf_db_version = $config_values->get_value('wf_db_version', '0');
-        $current_app_db_version = $config_values->get_value('app_db_version', '1');
+        $stored_values = new StoredValues('db');
+        $current_wf_db_version = $stored_values->get_value('wf_db_version', '0');
+        $current_app_db_version = $stored_values->get_value('app_db_version', '1');
 
         if ($required_wf_db_version != $current_wf_db_version)
         {
@@ -910,7 +910,7 @@ TXT;
         if (!is_file(WF::$site_includes."sanity_check.inc.php"))
             return true;
 
-        $config_values = new ConfigValues('sanity_check');
+        $stored_values = new StoredValues('sanity_check');
         $build_info = $this->get_build_info();
         $commit = $build_info['commit'];
 
@@ -918,18 +918,18 @@ TXT;
         {
             // We are in live code. Prevent flooding. Only start check once per minute.
             //
-            $last_timestamp = (int) $config_values->get_value('last_check', '0');
+            $last_timestamp = (int) $stored_values->get_value('last_check', '0');
 
             if (time() - $last_timestamp < 60)
                 return true;
 
-            $config_values->set_value('last_check', (string) time());
+            $stored_values->set_value('last_check', (string) time());
         }
         else
         {
             // Only check if this commit was not yet successfully checked
             //
-            $checked = $config_values->get_value('checked_'.$commit, '0');
+            $checked = $stored_values->get_value('checked_'.$commit, '0');
             if ($checked !== '0')
                 return true;
         }
@@ -942,7 +942,7 @@ TXT;
         // Register successful check of this commit
         //
         if ($commit !== null)
-            $config_values->set_value('checked_'.$commit, '1');
+            $stored_values->set_value('checked_'.$commit, '1');
 
         return true;
     }

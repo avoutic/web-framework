@@ -1,6 +1,11 @@
 <?php
 class DBManager extends FrameworkCore
 {
+    protected function get_stored_values()
+    {
+        return new StoredValues('db');
+    }
+
     public function calculate_hash(): string
     {
         // Get tables
@@ -55,41 +60,18 @@ SQL;
     {
         // Retrieve hash
         //
-        $query = <<<SQL
-        SELECT value
-        FROM config_values
-        WHERE module = 'db' AND
-              name = 'app_db_hash'
-SQL;
+        $db_values = $this->get_stored_values();
 
-        $params = array();
-
-        $result = $this->query($query, $params);
-        $this->verify($result !== false, 'Failed to retrieve App DB hash');
-
-        if ($result->RecordCount() == 0)
-            return '';
-
-        return $result->fields['value'];
+        return $db_values->get('app_db_hash', '');
     }
 
     public function update_stored_hash(): void
     {
         $actual_hash = $this->calculate_hash();
 
-        // Retrieve hash
-        //
-        $query = <<<SQL
-        UPDATE config_values
-        SET value = ?
-        WHERE module = 'db' AND
-              name = 'app_db_hash'
-SQL;
+        $db_values = $this->get_stored_values();
 
-        $params = array($actual_hash);
-
-        $result = $this->query($query, $params);
-        $this->verify($result !== false, 'Failed to update App DB hash');
+        $db_values->set('app_db_hash', $actual_hash);
     }
 
     /**
@@ -195,21 +177,9 @@ SQL;
 
     public function get_current_version(): int
     {
-        // Check version
-        //
-        $query = <<<SQL
-        SELECT value
-        FROM config_values
-        WHERE module = 'db' AND
-              name = 'app_db_version'
-SQL;
+        $db_values = $this->get_stored_values();
 
-        $params = array();
-
-        $result = $this->query($query, $params);
-        $this->verify($result !== false, 'Failed to retrieve App DB version');
-
-        return (int) $result->fields['value'];
+        return (int) $db_values->get_value('app_db_version', 0);
     }
 
     private function check_version(int $app_db_version): void
@@ -221,19 +191,9 @@ SQL;
 
     private function set_version(int $to): void
     {
-        // Update version
-        //
-        $query = <<<SQL
-        UPDATE config_values
-        SET value = ?
-        WHERE module = 'db' AND
-              name = 'app_db_version'
-SQL;
+        $db_values = $this->get_stored_values();
 
-        $params = array($to);
-
-        $result = $this->query($query, $params);
-        $this->verify($result !== false, 'Failed to update App DB version');
+        $db_values->set_value('app_db_version', $to);
 
         $this->update_stored_hash();
     }
