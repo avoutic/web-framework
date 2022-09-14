@@ -175,6 +175,9 @@ class WF
 
         $error_type = WFHelpers::get_error_type_string($error_type);
 
+        if (!$this->initialized)
+            die($use_message);
+
         $this->exit_error(
             "Oops, something went wrong",
             "Debug information: $error_type<br/>".
