@@ -88,6 +88,11 @@ abstract class PageCore extends FrameworkCore
         return $this->raw_input[$name];
     }
 
+    protected function get_base_url(): string
+    {
+        return $this->get_config('page.base_url');
+    }
+
     /**
      * @return never
      */
@@ -158,11 +163,6 @@ abstract class PageBasic extends PageCore
     protected function get_csrf_token(): string
     {
         return $this->web_handler->get_csrf_token();
-    }
-
-    protected function get_base_url(): string
-    {
-        return $this->get_config('page.base_url');
     }
 
     protected function get_title(): string
