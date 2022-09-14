@@ -18,6 +18,7 @@ Required changes for v4:
 Files / classes fully removed in v4:
 * htdocs/sha1.js removed from framework
 * PageContactBase and template removed from framework
+* iPageModule, UrlConfig and Translator removed from framework
 * LocaleFactory and CountryLocaleFactory removed from framework
 * ShortenerCore and GoogleShortener removed from framework
 * TranslationFactory removed from framework

@@ -143,43 +143,12 @@ abstract class PageBasic extends PageCore
      */
     protected array $page_content = array();
 
-    /**
-     * @var array<iPageModule>
-     */
-    private $mods = array();
-
     function __construct()
     {
         parent::__construct();
 
         $this->frame_file = $this->get_config('page.default_frame_file');
         $this->page_content['base_url'] = $this->get_base_url();
-
-        $page_mods = $this->get_config('page.mods');
-        foreach ($page_mods as $mod_info)
-        {
-            $mod_obj = false;
-
-            $class = $mod_info['class'];
-            $include_file = $mod_info['include_file'];
-
-            $tag = sha1($mod_info);
-
-            if ($this->cache != null && $class::is_cacheable)
-                $mod_obj = $this->cache->get($tag);
-
-            if ($mod_obj === false)
-            {
-                require_once($include_file);
-
-                $mod_obj = new $class($mod_info);
-
-                if ($this->cache != null && $class::is_cacheable)
-                    $this->cache->set($tag, $mod_obj);
-            }
-
-            array_push($this->mods, $mod_obj);
-        }
     }
 
     protected function get_csrf_token(): string
@@ -190,16 +159,6 @@ abstract class PageBasic extends PageCore
     protected function get_base_url(): string
     {
         return $this->get_config('page.base_url');
-    }
-
-    protected function add_page_mod(string $tag, iPageModule $mod): void
-    {
-        $this->mods[$tag] = $mod;
-    }
-
-    protected function get_page_mod(string $tag): iPageModule
-    {
-        return $this->mods[$tag];
     }
 
     protected function get_title(): string
@@ -303,9 +262,6 @@ abstract class PageBasic extends PageCore
             $this->display_content();
 
         $content = ob_get_clean();
-
-        foreach ($this->mods as $mod)
-            $content = $mod->callback($content);
 
         print($content);
     }

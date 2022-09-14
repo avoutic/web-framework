@@ -99,7 +99,6 @@ class WF
             'base_url' => '',               // Add a base_url to be used in templates
             'default_frame_file' => 'default_frame.inc.php',
             'default_page' => 'main',
-            'mods' => array(),              // Should at least contain class, and include_file of mod!
         ),
         'security' => array(
             'blacklist' => array(
