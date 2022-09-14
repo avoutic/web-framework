@@ -14,6 +14,7 @@ Required changes for v4:
 * PageCore->get_input_array() should be used to retrieve filtered array input.
 * PageCore->get_raw_input_var() only returns raw string values now.
 * PageCore->get_raw_input_array() should be used to retrieve raw array input.
+* PageBasic->load_file() deprecated.
 
 Files / classes fully removed in v4:
 * htdocs/sha1.js removed from framework

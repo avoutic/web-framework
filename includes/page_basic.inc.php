@@ -212,11 +212,6 @@ abstract class PageBasic extends PageCore
         include(WF::$site_templates.$name.'.inc.php');
     }
 
-    protected function load_file(string $name): void
-    {
-        include($this->get_config('document_root').'/'.$name);
-    }
-
     protected function is_blocked(string $name): bool
     {
         return $this->input[$name] != $this->raw_input[$name];
