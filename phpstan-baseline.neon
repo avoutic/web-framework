@@ -1,0 +1,221 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Offset 'calculated_hash' on array\\{calculated_hash\\: string, stored_hash\\: string\\} in isset\\(\\) always exists and is not nullable\\.$#"
+			count: 1
+			path: includes/base_logic.inc.php
+
+		-
+			message: "#^Offset 'stored_hash' on array\\{calculated_hash\\: string, stored_hash\\: string\\} in isset\\(\\) always exists and is not nullable\\.$#"
+			count: 1
+			path: includes/base_logic.inc.php
+
+		-
+			message: "#^Parameter \\#2 \\$default of method StoredUserValues\\:\\:get_value\\(\\) expects string, int given\\.$#"
+			count: 2
+			path: includes/base_logic.inc.php
+
+		-
+			message: "#^Parameter \\#2 \\$value of method StoredUserValues\\:\\:set_value\\(\\) expects string, int given\\.$#"
+			count: 1
+			path: includes/base_logic.inc.php
+
+		-
+			message: "#^Method DataCore\\:\\:get_object_by_id\\(\\) should return static\\(DataCore\\)\\|false but returns DataCore\\.$#"
+			count: 1
+			path: includes/data_core.inc.php
+
+		-
+			message: "#^Call to method FrameworkCore\\:\\:verify\\(\\) with false and non\\-falsy\\-string will always evaluate to false\\.$#"
+			count: 3
+			path: includes/db_manager.inc.php
+
+		-
+			message: "#^Method DBManager\\:\\:get_stored_values\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: includes/db_manager.inc.php
+
+		-
+			message: "#^Offset 'target_version' on array\\{target_version\\: int, actions\\: array\\<array\\>\\} in isset\\(\\) always exists and is not nullable\\.$#"
+			count: 1
+			path: includes/db_manager.inc.php
+
+		-
+			message: "#^Parameter \\#1 \\$hour of function mktime expects int, int\\|false given\\.$#"
+			count: 2
+			path: includes/helpers.inc.php
+
+		-
+			message: "#^Parameter \\#1 \\$string of function trim expects string, string\\|null given\\.$#"
+			count: 1
+			path: includes/helpers.inc.php
+
+		-
+			message: "#^Parameter \\#2 \\$minute of function mktime expects int\\|null, int\\|false given\\.$#"
+			count: 2
+			path: includes/helpers.inc.php
+
+		-
+			message: "#^Parameter \\#3 \\$second of function mktime expects int\\|null, int\\|false given\\.$#"
+			count: 2
+			path: includes/helpers.inc.php
+
+		-
+			message: "#^Parameter \\#4 \\$month of function mktime expects int\\|null, int\\|false given\\.$#"
+			count: 2
+			path: includes/helpers.inc.php
+
+		-
+			message: "#^Parameter \\#5 \\$day of function mktime expects int\\|null, int\\|false given\\.$#"
+			count: 2
+			path: includes/helpers.inc.php
+
+		-
+			message: "#^Parameter \\#6 \\$year of function mktime expects int\\|null, int\\|false given\\.$#"
+			count: 2
+			path: includes/helpers.inc.php
+
+		-
+			message: "#^Left side of && is always true\\.$#"
+			count: 3
+			path: includes/image.inc.php
+
+		-
+			message: "#^Parameter \\#1 \\$string of function substr expects string, string\\|false given\\.$#"
+			count: 1
+			path: includes/image.inc.php
+
+		-
+			message: "#^Parameter \\#6 \\$color of function imagefilledrectangle expects int, int\\|false given\\.$#"
+			count: 1
+			path: includes/image.inc.php
+
+		-
+			message: "#^Method PageCore\\:\\:get_input_var\\(\\) should return string but returns array\\<string\\>\\|string\\.$#"
+			count: 1
+			path: includes/page_basic.inc.php
+
+		-
+			message: "#^Method PageCore\\:\\:get_raw_input_array\\(\\) should return array\\<string\\> but returns array\\<string\\>\\|string\\.$#"
+			count: 1
+			path: includes/page_basic.inc.php
+
+		-
+			message: "#^Method PageCore\\:\\:get_raw_input_var\\(\\) should return string but returns array\\<string\\>\\|string\\.$#"
+			count: 1
+			path: includes/page_basic.inc.php
+
+		-
+			message: "#^Call to method FrameworkCore\\:\\:verify\\(\\) with false and non\\-falsy\\-string will always evaluate to false\\.$#"
+			count: 1
+			path: includes/sender_postmark.inc.php
+
+		-
+			message: "#^Call to method WF\\:\\:internal_verify\\(\\) with false and 'Cannot authenticate…' will always evaluate to false\\.$#"
+			count: 1
+			path: includes/wf_core.inc.php
+
+		-
+			message: "#^Call to method WF\\:\\:internal_verify\\(\\) with false and 'Cannot invalidate…' will always evaluate to false\\.$#"
+			count: 1
+			path: includes/wf_core.inc.php
+
+		-
+			message: "#^Call to method WF\\:\\:internal_verify\\(\\) with false and 'Cannot retrieve…' will always evaluate to false\\.$#"
+			count: 1
+			path: includes/wf_core.inc.php
+
+		-
+			message: "#^Call to method WF\\:\\:internal_verify\\(\\) with false and 'Cannot…' will always evaluate to false\\.$#"
+			count: 1
+			path: includes/wf_core.inc.php
+
+		-
+			message: "#^Call to method WF\\:\\:internal_verify\\(\\) with false and 'No blacklist…' will always evaluate to false\\.$#"
+			count: 1
+			path: includes/wf_core.inc.php
+
+		-
+			message: "#^Method WF\\:\\:get_sanity_check\\(\\) should return SanityCheckInterface but returns SanityCheck\\.$#"
+			count: 1
+			path: includes/wf_core.inc.php
+
+		-
+			message: "#^Parameter \\#1 \\$string of function substr expects string, string\\|false given\\.$#"
+			count: 1
+			path: includes/wf_core.inc.php
+
+		-
+			message: "#^Parameter \\#1 \\$data of function openssl_encrypt expects string, string\\|false given\\.$#"
+			count: 1
+			path: includes/wf_security.inc.php
+
+		-
+			message: "#^Parameter \\#1 \\$length of function openssl_random_pseudo_bytes expects int, int\\|false given\\.$#"
+			count: 1
+			path: includes/wf_security.inc.php
+
+		-
+			message: "#^Parameter \\#1 \\$string of function base64_encode expects string, string\\|false given\\.$#"
+			count: 1
+			path: includes/wf_security.inc.php
+
+		-
+			message: "#^Call to method WF\\:\\:internal_verify\\(\\) with false and 'No valid…' will always evaluate to false\\.$#"
+			count: 1
+			path: includes/wf_web_handler.inc.php
+
+		-
+			message: "#^Cannot access offset 'user' on array\\|bool\\.$#"
+			count: 1
+			path: includes/wf_web_handler.inc.php
+
+		-
+			message: "#^Cannot access offset string on array\\|bool\\.$#"
+			count: 1
+			path: includes/wf_web_handler.inc.php
+
+		-
+			message: "#^Offset 'class' does not exist on array\\{type\\: string, regex\\: string, include_file\\?\\: string, class\\?\\: string, redirect\\?\\: string, redir_type\\?\\: string, args\\: array\\<string\\>\\}\\.$#"
+			count: 1
+			path: includes/wf_web_handler.inc.php
+
+		-
+			message: "#^Offset 'include_file' does not exist on array\\{type\\: string, regex\\: string, include_file\\?\\: string, class\\?\\: string, redirect\\?\\: string, redir_type\\?\\: string, args\\: array\\<string\\>\\}\\.$#"
+			count: 1
+			path: includes/wf_web_handler.inc.php
+
+		-
+			message: "#^Offset 'redir_type' does not exist on array\\{type\\: 'redirect', regex\\: string, include_file\\?\\: string, class\\?\\: string, redirect\\?\\: string, redir_type\\?\\: string, args\\: array\\{\\}\\}\\|array\\{type\\: 'redirect', regex\\: string, include_file\\?\\: string, class\\?\\: string, redirect\\?\\: string, redir_type\\?\\: string, args\\: non\\-empty\\-array\\<string\\>\\}\\.$#"
+			count: 1
+			path: includes/wf_web_handler.inc.php
+
+		-
+			message: "#^Offset 'redirect' does not exist on array\\{type\\: 'redirect', regex\\: string, include_file\\?\\: string, class\\?\\: string, redirect\\?\\: string, redir_type\\?\\: string, args\\: array\\<string\\>\\}\\.$#"
+			count: 1
+			path: includes/wf_web_handler.inc.php
+
+		-
+			message: "#^Parameter \\#1 \\$object_name of method WFWebHandler\\:\\:call_obj_func\\(\\) expects string, string\\|null given\\.$#"
+			count: 2
+			path: includes/wf_web_handler.inc.php
+
+		-
+			message: "#^Parameter \\#3 \\$response_code of function header expects int, string given\\.$#"
+			count: 1
+			path: includes/wf_web_handler.inc.php
+
+		-
+			message: "#^Parameter \\#3 \\$subject of function preg_replace expects array\\|string, string\\|null given\\.$#"
+			count: 1
+			path: includes/wf_web_handler.inc.php
+
+		-
+			message: "#^Property WFWebHandler\\:\\:\\$authenticator \\(Authenticator\\) does not accept AuthCustom\\.$#"
+			count: 1
+			path: includes/wf_web_handler.inc.php
+
+		-
+			message: "#^Parameter \\#1 \\$data of method DBManager\\:\\:execute\\(\\) expects array\\{target_version\\: int, actions\\: array\\<array\\>\\}, array given\\.$#"
+			count: 1
+			path: scripts/db_update.php
