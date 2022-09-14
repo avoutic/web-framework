@@ -1,4 +1,6 @@
 <?php
+namespace WebFramework\Core;
+
 class WFHelpers
 {
     static function get_error_type_string(int|string $type): string

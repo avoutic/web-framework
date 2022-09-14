@@ -1,5 +1,5 @@
 <?php
-require_once(WF::$includes.'cache_interface.inc.php');
+namespace WebFramework\Core;
 
 class NullCache implements CacheInterface
 {

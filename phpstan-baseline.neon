@@ -11,28 +11,13 @@ parameters:
 			path: includes/base_logic.inc.php
 
 		-
-			message: "#^Parameter \\#2 \\$default of method StoredUserValues\\:\\:get_value\\(\\) expects string, int given\\.$#"
-			count: 2
-			path: includes/base_logic.inc.php
-
-		-
-			message: "#^Parameter \\#2 \\$value of method StoredUserValues\\:\\:set_value\\(\\) expects string, int given\\.$#"
-			count: 1
-			path: includes/base_logic.inc.php
-
-		-
-			message: "#^Method DataCore\\:\\:get_object_by_id\\(\\) should return static\\(DataCore\\)\\|false but returns DataCore\\.$#"
+			message: "#^Method WebFramework\\\\Core\\\\DataCore\\:\\:get_object_by_id\\(\\) should return static\\(WebFramework\\\\Core\\\\DataCore\\)\\|false but returns WebFramework\\\\Core\\\\DataCore\\.$#"
 			count: 1
 			path: includes/data_core.inc.php
 
 		-
-			message: "#^Call to method FrameworkCore\\:\\:verify\\(\\) with false and non\\-falsy\\-string will always evaluate to false\\.$#"
+			message: "#^Call to method WebFramework\\\\Core\\\\FrameworkCore\\:\\:verify\\(\\) with false and non\\-falsy\\-string will always evaluate to false\\.$#"
 			count: 3
-			path: includes/db_manager.inc.php
-
-		-
-			message: "#^Method DBManager\\:\\:get_stored_values\\(\\) has no return type specified\\.$#"
-			count: 1
 			path: includes/db_manager.inc.php
 
 		-
@@ -91,52 +76,62 @@ parameters:
 			path: includes/image.inc.php
 
 		-
-			message: "#^Method PageCore\\:\\:get_input_var\\(\\) should return string but returns array\\<string\\>\\|string\\.$#"
+			message: "#^Method WebFramework\\\\Core\\\\PageCore\\:\\:get_input_var\\(\\) should return string but returns array\\<string\\>\\|string\\.$#"
 			count: 1
 			path: includes/page_basic.inc.php
 
 		-
-			message: "#^Method PageCore\\:\\:get_raw_input_array\\(\\) should return array\\<string\\> but returns array\\<string\\>\\|string\\.$#"
+			message: "#^Method WebFramework\\\\Core\\\\PageCore\\:\\:get_raw_input_array\\(\\) should return array\\<string\\> but returns array\\<string\\>\\|string\\.$#"
 			count: 1
 			path: includes/page_basic.inc.php
 
 		-
-			message: "#^Method PageCore\\:\\:get_raw_input_var\\(\\) should return string but returns array\\<string\\>\\|string\\.$#"
+			message: "#^Method WebFramework\\\\Core\\\\PageCore\\:\\:get_raw_input_var\\(\\) should return string but returns array\\<string\\>\\|string\\.$#"
 			count: 1
 			path: includes/page_basic.inc.php
 
 		-
-			message: "#^Call to method FrameworkCore\\:\\:verify\\(\\) with false and non\\-falsy\\-string will always evaluate to false\\.$#"
+			message: "#^Call to method WebFramework\\\\Core\\\\FrameworkCore\\:\\:verify\\(\\) with false and non\\-falsy\\-string will always evaluate to false\\.$#"
 			count: 1
 			path: includes/sender_postmark.inc.php
 
 		-
-			message: "#^Call to method WF\\:\\:internal_verify\\(\\) with false and 'Cannot authenticate…' will always evaluate to false\\.$#"
+			message: "#^Method WebFramework\\\\Core\\\\StoredUserValues\\:\\:get_value\\(\\) should return string but returns int\\|string\\.$#"
+			count: 1
+			path: includes/stored_values.inc.php
+
+		-
+			message: "#^Method WebFramework\\\\Core\\\\StoredValues\\:\\:get_value\\(\\) should return string but returns int\\|string\\.$#"
+			count: 1
+			path: includes/stored_values.inc.php
+
+		-
+			message: "#^Call to method WebFramework\\\\Core\\\\WF\\:\\:internal_verify\\(\\) with false and 'Cannot authenticate…' will always evaluate to false\\.$#"
 			count: 1
 			path: includes/wf_core.inc.php
 
 		-
-			message: "#^Call to method WF\\:\\:internal_verify\\(\\) with false and 'Cannot invalidate…' will always evaluate to false\\.$#"
+			message: "#^Call to method WebFramework\\\\Core\\\\WF\\:\\:internal_verify\\(\\) with false and 'Cannot invalidate…' will always evaluate to false\\.$#"
 			count: 1
 			path: includes/wf_core.inc.php
 
 		-
-			message: "#^Call to method WF\\:\\:internal_verify\\(\\) with false and 'Cannot retrieve…' will always evaluate to false\\.$#"
+			message: "#^Call to method WebFramework\\\\Core\\\\WF\\:\\:internal_verify\\(\\) with false and 'Cannot retrieve…' will always evaluate to false\\.$#"
 			count: 1
 			path: includes/wf_core.inc.php
 
 		-
-			message: "#^Call to method WF\\:\\:internal_verify\\(\\) with false and 'Cannot…' will always evaluate to false\\.$#"
+			message: "#^Call to method WebFramework\\\\Core\\\\WF\\:\\:internal_verify\\(\\) with false and 'Cannot…' will always evaluate to false\\.$#"
 			count: 1
 			path: includes/wf_core.inc.php
 
 		-
-			message: "#^Call to method WF\\:\\:internal_verify\\(\\) with false and 'No blacklist…' will always evaluate to false\\.$#"
+			message: "#^Call to method WebFramework\\\\Core\\\\WF\\:\\:internal_verify\\(\\) with false and 'No blacklist…' will always evaluate to false\\.$#"
 			count: 1
 			path: includes/wf_core.inc.php
 
 		-
-			message: "#^Method WF\\:\\:get_sanity_check\\(\\) should return SanityCheckInterface but returns SanityCheck\\.$#"
+			message: "#^Method WebFramework\\\\Core\\\\WF\\:\\:get_sanity_check\\(\\) should return WebFramework\\\\Core\\\\SanityCheckInterface but returns App\\\\Core\\\\SanityCheck\\.$#"
 			count: 1
 			path: includes/wf_core.inc.php
 
@@ -161,7 +156,12 @@ parameters:
 			path: includes/wf_security.inc.php
 
 		-
-			message: "#^Call to method WF\\:\\:internal_verify\\(\\) with false and 'No valid…' will always evaluate to false\\.$#"
+			message: "#^Call to method WebFramework\\\\Core\\\\WF\\:\\:internal_verify\\(\\) with false and 'No valid…' will always evaluate to false\\.$#"
+			count: 1
+			path: includes/wf_web_handler.inc.php
+
+		-
+			message: "#^Cannot access offset 'WebFramework\\\\\\\\Core…' on array\\<string, class\\-string\\>\\|false\\.$#"
 			count: 1
 			path: includes/wf_web_handler.inc.php
 
@@ -181,11 +181,6 @@ parameters:
 			path: includes/wf_web_handler.inc.php
 
 		-
-			message: "#^Offset 'include_file' does not exist on array\\{type\\: string, regex\\: string, include_file\\?\\: string, class\\?\\: string, redirect\\?\\: string, redir_type\\?\\: string, args\\: array\\<string\\>\\}\\.$#"
-			count: 1
-			path: includes/wf_web_handler.inc.php
-
-		-
 			message: "#^Offset 'redir_type' does not exist on array\\{type\\: 'redirect', regex\\: string, include_file\\?\\: string, class\\?\\: string, redirect\\?\\: string, redir_type\\?\\: string, args\\: array\\{\\}\\}\\|array\\{type\\: 'redirect', regex\\: string, include_file\\?\\: string, class\\?\\: string, redirect\\?\\: string, redir_type\\?\\: string, args\\: non\\-empty\\-array\\<string\\>\\}\\.$#"
 			count: 1
 			path: includes/wf_web_handler.inc.php
@@ -193,11 +188,6 @@ parameters:
 		-
 			message: "#^Offset 'redirect' does not exist on array\\{type\\: 'redirect', regex\\: string, include_file\\?\\: string, class\\?\\: string, redirect\\?\\: string, redir_type\\?\\: string, args\\: array\\<string\\>\\}\\.$#"
 			count: 1
-			path: includes/wf_web_handler.inc.php
-
-		-
-			message: "#^Parameter \\#1 \\$object_name of method WFWebHandler\\:\\:call_obj_func\\(\\) expects string, string\\|null given\\.$#"
-			count: 2
 			path: includes/wf_web_handler.inc.php
 
 		-
@@ -211,11 +201,11 @@ parameters:
 			path: includes/wf_web_handler.inc.php
 
 		-
-			message: "#^Property WFWebHandler\\:\\:\\$authenticator \\(Authenticator\\) does not accept AuthCustom\\.$#"
+			message: "#^Property WebFramework\\\\Core\\\\WFWebHandler\\:\\:\\$authenticator \\(WebFramework\\\\Core\\\\Authenticator\\) does not accept App\\\\Core\\\\AuthCustom\\.$#"
 			count: 1
 			path: includes/wf_web_handler.inc.php
 
 		-
-			message: "#^Parameter \\#1 \\$data of method DBManager\\:\\:execute\\(\\) expects array\\{target_version\\: int, actions\\: array\\<array\\>\\}, array given\\.$#"
+			message: "#^Parameter \\#1 \\$data of method WebFramework\\\\Core\\\\DBManager\\:\\:execute\\(\\) expects array\\{target_version\\: int, actions\\: array\\<array\\>\\}, array given\\.$#"
 			count: 1
 			path: scripts/db_update.php

@@ -1,5 +1,11 @@
 <?php
-class PageVerify extends PageBasic
+namespace WebFramework\Actions;
+
+use WebFramework\Core\BaseFactory;
+use WebFramework\Core\PageBasic;
+use WebFramework\Core\User;
+
+class Verify extends PageBasic
 {
     static function get_filter(): array
     {

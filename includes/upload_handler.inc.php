@@ -1,4 +1,8 @@
 <?php
+namespace WebFramework\Core;
+
+use finfo;
+
 class UploadHandler extends FrameworkCore
 {
     protected string $var_name;

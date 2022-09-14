@@ -1,4 +1,6 @@
 <?php
+namespace WebFramework\Core;
+
 /*
 CREATE TABLE IF NOT EXISTS config_values (
      module VARCHAR(255) NOT NULL,

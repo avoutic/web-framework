@@ -1,4 +1,6 @@
 <?php
+namespace WebFramework\Core;
+
 abstract class SenderCore extends FrameworkCore
 {
     public function get_sender_email(): string
@@ -76,6 +78,4 @@ abstract class SenderCore extends FrameworkCore
      */
     abstract public function new_password(string $to, array $params): bool|string;
 };
-
-require_once(WF::$site_includes.'sender_handler.inc.php');
 ?>

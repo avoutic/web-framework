@@ -1,7 +1,13 @@
 <?php
-require_once(WF::$includes.'recaptcha.inc.php');
+namespace WebFramework\Actions;
 
-class PageRegister extends PageBasic
+use WebFramework\Core\BaseFactory;
+use WebFramework\Core\PageBasic;
+use WebFramework\Core\Recaptcha;
+use WebFramework\Core\SenderCore;
+use WebFramework\Core\User;
+
+class Register extends PageBasic
 {
     /**
      * @return array<string, string>

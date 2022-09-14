@@ -1,5 +1,8 @@
 <?php
-require_once(WF::$includes.'sender_core.inc.php');
+namespace WebFramework\Core;
+
+use Exception;
+use Postmark\Models\PostmarkException;
 use Postmark\PostmarkClient;
 
 class PostmarkSender extends SenderCore
@@ -72,7 +75,7 @@ class PostmarkSender extends SenderCore
                 $reply_to           // replyTo
             );
         }
-        catch (Postmark\Models\PostmarkException $e)
+        catch (PostmarkException $e)
         {
             if ($e->postmarkApiErrorCode == 406)
                 return 'inactive_address';

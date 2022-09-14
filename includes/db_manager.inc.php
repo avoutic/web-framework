@@ -1,7 +1,9 @@
 <?php
+namespace WebFramework\Core;
+
 class DBManager extends FrameworkCore
 {
-    protected function get_stored_values()
+    protected function get_stored_values(): StoredValues
     {
         return new StoredValues('db');
     }
@@ -62,7 +64,7 @@ SQL;
         //
         $db_values = $this->get_stored_values();
 
-        return $db_values->get('app_db_hash', '');
+        return $db_values->get_value('app_db_hash', '');
     }
 
     public function update_stored_hash(): void
@@ -71,7 +73,7 @@ SQL;
 
         $db_values = $this->get_stored_values();
 
-        $db_values->set('app_db_hash', $actual_hash);
+        $db_values->set_value('app_db_hash', $actual_hash);
     }
 
     /**

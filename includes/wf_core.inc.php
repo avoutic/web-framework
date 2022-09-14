@@ -1,6 +1,5 @@
 <?php
-require_once(WF::$includes.'wf_helpers.inc.php');
-require_once(WF::$includes.'wf_security.inc.php');
+namespace WebFramework\Core;
 
 class WF
 {
@@ -35,7 +34,7 @@ class WF
     private string $debug_data = '';
     private string $low_info_message = '';
 
-    private bool $initialized = false;
+    protected bool $initialized = false;
     private Database $main_database;
 
     /**
@@ -98,7 +97,8 @@ class WF
         'page' => array(
             'base_url' => '',               // Add a base_url to be used in templates
             'default_frame_file' => 'default_frame.inc.php',
-            'default_page' => 'main',
+            'default_page' => 'Main.html_main',
+            'actions_namespace' => 'App\\Actions\\',
         ),
         'security' => array(
             'blacklist' => array(
@@ -421,6 +421,9 @@ TXT;
 
         $caller = $this->find_caller($stack, array('internal_report_error'));
 
+        if (!$this->initialized)
+            die($message.PHP_EOL);
+
         $debug_info = $this->get_debug_info($caller['file'], $caller['line'], $message, $stack);
 
         $this->mail_debug_info($message, 'Error reported', $debug_info);
@@ -487,6 +490,7 @@ TXT;
     {
         print('Fatal error: '.$short_message.PHP_EOL);
         print($message.PHP_EOL);
+
         exit();
     }
 
@@ -708,15 +712,12 @@ TXT;
         // Load global and site specific defines
         //
         require_once(WF::$includes."defines.inc.php");
-        require_once(WF::$includes."sender_core.inc.php");
+
         if (!class_exists($this->internal_get_config('sender_core.handler_class')))
         {
             $this->exit_error('Handler class does not exist',
                               'The class configured in "sender_core.handler_class" is not provided by includes/sender_handler.inc.php.');
         }
-
-        require_once(WF::$includes."base_logic.inc.php");
-        require_once(WF::$includes."stored_values.inc.php");
 
         if (is_file(WF::$site_includes."site_defines.inc.php"))
             include_once(WF::$site_includes."site_defines.inc.php");
@@ -797,8 +798,6 @@ TXT;
     {
         // Start the database connection(s)
         //
-        require_once(WF::$includes.'database.inc.php');
-
         $this->main_database = new Database();
         WF::$main_db = $this->main_database;
 
@@ -879,7 +878,6 @@ TXT;
         {
             // Start the Redis cache connection
             //
-            require_once(WF::$includes.'redis_cache.inc.php');
             $cache_config = $this->security->get_auth_config('redis');
 
             $this->cache = new RedisCache($cache_config);
@@ -889,7 +887,6 @@ TXT;
         {
             // Initialize NullCache
             //
-            require_once(WF::$includes.'null_cache.inc.php');
             $this->cache = new NullCache(array());
             WF::$static_cache = $this->cache;
         }
@@ -897,15 +894,13 @@ TXT;
 
     public function get_sanity_check(): SanityCheckInterface
     {
-        require_once(WF::$includes.'sanity_check_interface.inc.php');
-        require_once(WF::$site_includes."sanity_check.inc.php");
-        $this->verify(class_exists('SanityCheck'), 'SanityCheck class not found');
+        $this->verify(class_exists('\\App\\Core\\SanityCheck'), 'SanityCheck class not found');
 
-        $obj = new SanityCheck();
+        $obj = new \App\Core\SanityCheck();
 
         $this->verify($obj instanceof SanityCheckInterface, 'SanityCheck->perform_checks() not found');
 
-        return new SanityCheck();
+        return $obj;
     }
 
     public function check_sanity(): bool

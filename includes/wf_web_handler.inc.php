@@ -1,5 +1,5 @@
 <?php
-require_once('wf_core.inc.php');
+namespace WebFramework\Core;
 
 class WFWebHandler extends WF
 {
@@ -28,10 +28,7 @@ class WFWebHandler extends WF
         }
 
         if ($this->internal_get_config('security.blacklist.enabled') == true)
-        {
-            require_once(WF::$includes.'blacklist.inc.php');
             $this->blacklist = new Blacklist();
-        }
     }
 
     protected function exit_error(string $short_message, string $message): void
@@ -49,8 +46,6 @@ class WFWebHandler extends WF
 
         // Run WebHandler
         //
-        require_once(WF::$includes.'page_basic.inc.php');
-
         session_name(preg_replace('/\./', '_', $this->internal_get_config('host_name')));
         session_set_cookie_params(60 * 60 * 24, '/', $this->internal_get_config('host_name'),
                                   $this->internal_get_config('http_mode') === 'https', true);
@@ -150,9 +145,8 @@ class WFWebHandler extends WF
     {
         // Create Authenticator
         //
-        require(WF::$includes.'auth.inc.php');
-
         $auth_mode = $this->internal_get_config('auth_mode');
+
         if ($auth_mode == 'redirect')
             $this->authenticator = new AuthRedirect();
         else if ($auth_mode == 'www-authenticate')
@@ -162,7 +156,7 @@ class WFWebHandler extends WF
         {
             require_once(WF::$site_includes.$this->internal_get_config('auth_module'));
 
-            $obj = new AuthCustom();
+            $obj = new \App\Core\AuthCustom();
             $this->verify($obj instanceof Authenticator, 'AuthCustom() not an Authenticator');
 
             $this->authenticator = $obj;
@@ -186,7 +180,6 @@ class WFWebHandler extends WF
 
         // Check if there is a route to follow
         //
-        $include_page = '';
         $target_info = null;
         $matches = null;
 
@@ -199,6 +192,11 @@ class WFWebHandler extends WF
                 break;
             }
         }
+
+        if ($target_info === null && $full_request_uri !== 'GET /')
+            $this->exit_send_404();
+
+        $class = '';
 
         if ($target_info !== null && $matches !== null)
         {
@@ -214,44 +212,21 @@ class WFWebHandler extends WF
                 return;
             }
 
-            $include_page = $target_info['include_file'];
-        }
-        else if ($full_request_uri == 'GET /')
-            $include_page = $this->internal_get_config('page.default_page');
-
-        if (!strlen($include_page))
-            $this->exit_send_404();
-
-        $include_page_file = WF::$site_views.$include_page.".inc.php";
-        $this->internal_verify(is_file($include_page_file), 'Page file for configured route not present');
-
-        require_once($include_page_file);
-
-        $object_name = "";
-        $function_name = "";
-
-        if ($target_info != null)
-        {
-            $target = explode('.', $target_info['class']);
-            if (count($target) != 2)
-                die('Illegal target name.');
-
-            $object_name = $target[0];
-            $function_name = $target[1];
-
             for ($i = 0; $i < count($target_info['args']); $i++)
                 $this->raw_post[$target_info['args'][$i]] = $matches[$i + 1];
-        }
-        else
-        {
-            $object_name = preg_replace_callback('/(?:^|[_\-\.])(.?)/',
-                    function($m) {
-                        return strtoupper($m[1]);
-                    }, 'page_'.$include_page);
-            $function_name = "html_main";
 
-            $this->verify($object_name !== null, 'Failed to generate object name');
+            $class = $target_info['class'];
         }
+        else if ($full_request_uri == 'GET /')
+            $class = $this->internal_get_config('page.default_page');
+
+        $this->internal_verify(strlen($class), 'No class to handle');
+
+        $target = explode('.', $class);
+        $this->internal_verify(count($target) === 2, "Target name {$class} illegal");
+
+        $object_name = $this->internal_get_config('page.actions_namespace').$target[0];
+        $function_name = $target[1];
 
         $this->call_obj_func($object_name, $function_name);
     }
@@ -278,25 +253,20 @@ class WFWebHandler extends WF
 
     private function call_obj_func(string $object_name, string $function_name): void
     {
-        $include_page_filter = NULL;
-        $page_permissions = NULL;
-        $page_obj = NULL;
+        $this->internal_verify(class_exists($object_name), "Requested object {$object_name} could not be located");
+        $parents = class_parents($object_name);
+        $this->internal_verify(isset($parents['WebFramework\Core\PageCore']), "Requested object {$object_name} does not derive from PageCore");
 
-        $this->internal_verify(class_exists($object_name), 'Requested object could not be located.');
-
-        $include_page_filter = $object_name::get_filter();
+        $page_filter = $object_name::get_filter();
         $page_permissions = $object_name::get_permissions();
 
-        $this->internal_verify(is_array($include_page_filter), 'Filter does not have correct form');
-
-        array_walk($include_page_filter, array($this, 'validate_input'));
+        array_walk($page_filter, array($this, 'validate_input'));
 
         $this->enforce_permissions($object_name, $page_permissions);
 
-        $this->internal_verify(class_exists($object_name), 'Registered route class does not exist');
         $page_obj = new $object_name();
 
-        $this->internal_verify(method_exists($page_obj, $function_name), 'Registered route function does not exist');
+        $this->internal_verify(method_exists($page_obj, $function_name), "Registered route function {$object_name}->{$function_name} does not exist");
         $page_obj->$function_name();
     }
 
@@ -347,19 +317,22 @@ class WFWebHandler extends WF
      */
     public function exit_send_error(int $code, string $title, string $type = 'generic', string $message = ''): void
     {
+        if (!$this->initialized)
+            die($title.PHP_EOL.$message.PHP_EOL);
+
         $mapping = $this->internal_get_config('error_handlers.'.$code);
-        $include_page = '';
+        $class = '';
 
         if (is_array($mapping))
         {
             if (isset($mapping[$type]))
-                $include_page = $mapping[$type];
+                $class = $mapping[$type];
         }
         else if (strlen($mapping))
-            $include_page = $mapping;
+            $class = $mapping;
 
         http_response_code($code);
-        if (!strlen($include_page))
+        if (!strlen($class))
         {
             print("<h1>$title</h1>");
             print($message.'<br/>');
@@ -372,18 +345,8 @@ class WFWebHandler extends WF
             $this->input['error_message'] = $message;
         }
 
-        $include_page_file = WF::$site_views.$include_page.".inc.php";
-        $this->verify(file_exists($include_page_file), 'Missing error page: '.$include_page_file);
-
-        require_once($include_page_file);
-
-        $object_name = preg_replace_callback('/(?:^|[_\-\.])(.?)/',
-                    function($m) {
-                        return strtoupper($m[1]);
-                    }, 'page_'.$include_page);
+        $object_name = $this->internal_get_config('page.actions_namespace').$class;
         $function_name = "html_main";
-
-        $this->verify($object_name !== null, 'Failed to generate object name');
 
         $this->call_obj_func($object_name, $function_name);
         exit();

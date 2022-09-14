@@ -4,14 +4,17 @@
 if (!file_exists(__DIR__ . '/../../vendor/autoload.php'))
     die('Composer not initialized');
 require_once(__DIR__ . '/../../vendor/autoload.php');
-require_once(__DIR__ .'/../includes/wf_core.inc.php');
-require_once(__DIR__ .'/../includes/db_manager.inc.php');
+require_once(__DIR__ . '/../includes/autoload.inc.php');
+
+use WebFramework\Core\WF;
+use WebFramework\Core\DBManager;
+
+$framework = new WF();
 
 try
 {
     // Initialize WF
     //
-    $framework = new WF();
     $framework->skip_app_db_version_check();
     $framework->init();
 
@@ -26,6 +29,13 @@ try
 catch (Throwable $e)
 {
     print('Unhandled exception');
+
+    if ($framework->get_config('debug') == true)
+    {
+        print($e->getMessage().PHP_EOL);
+        print_r($e->getTrace());
+    }
+
     WF::report_error($e->getMessage(), $e->getTrace());
     exit();
 }

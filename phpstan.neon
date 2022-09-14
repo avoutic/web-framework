@@ -13,13 +13,13 @@ parameters:
         analyse:
             - ../vendor
     universalObjectCratesClasses:
-        - DataCore
+        - WebFramework\Core\DataCore
     ignoreErrors:
         -
-            message: '#^Instantiated class DataCore is abstract\.$#'
+            message: '#^Instantiated class WebFramework\\Core\\DataCore is abstract\.$#'
             path: includes/data_core.inc.php
         -
-            message: '#^Constructor of class NullCache has an unused parameter \$config\.$#'
+            message: '#^Constructor of class WebFramework\\Core\\NullCache has an unused parameter \$config\.$#'
             path: includes/null_cache.inc.php
         -
             message: '#^Call to an undefined method object\:\:send_raw_email\(\)\.$#'
@@ -28,10 +28,10 @@ parameters:
             message: '#^Call to an undefined method object\:\:dispatch_template_email\(\)\.$#'
             path: includes/sender_core.inc.php
         -
-            message: '#^Instantiated class SanityCheck not found\.$#'
+            message: '#^Instantiated class App\\Core\\SanityCheck not found\.$#'
             path: includes/wf_core.inc.php
         -
-            message: '#^Instantiated class AuthCustom not found\.$#'
+            message: '#^Instantiated class App\\Core\\AuthCustom not found\.$#'
             path: includes/wf_web_handler.inc.php
 
 services:

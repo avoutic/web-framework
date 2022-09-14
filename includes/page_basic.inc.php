@@ -1,4 +1,8 @@
 <?php
+namespace WebFramework\Core;
+
+use finfo;
+
 abstract class PageCore extends FrameworkCore
 {
     protected WFWebHandler $web_handler;
@@ -289,7 +293,7 @@ abstract class PageService extends PageCore
         header('Content-type: application/json');
 
         if (is_array($output))
-            array_walk_recursive($output, 'arrayify_datacore');
+            array_walk_recursive($output, '\\WebFramework\\Core\\arrayify_datacore');
 
         if ($direct && $success)
         {

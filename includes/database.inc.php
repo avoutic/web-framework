@@ -1,4 +1,8 @@
 <?php
+namespace WebFramework\Core;
+
+use ADOConnection;
+
 class Database {
 	private ADOConnection $database;
 

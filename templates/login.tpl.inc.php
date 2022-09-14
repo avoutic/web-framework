@@ -1,3 +1,6 @@
+<?php
+use WebFramework\Core\PageCore;
+?>
 <form method="post" action="/<?=$args['login_page']?>">
   <fieldset>
     <input type="hidden" name="do" value="yes"/>

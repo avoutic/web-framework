@@ -1,4 +1,6 @@
 <?php
+namespace WebFramework\Core;
+
 class Recaptcha extends FrameworkCore
 {
     protected string $secret_key;

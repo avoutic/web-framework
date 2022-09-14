@@ -1,8 +1,13 @@
 <?php
-require_once(WF::$includes.'base_logic.inc.php');
-require_once(WF::$includes.'recaptcha.inc.php');
+namespace WebFramework\Actions;
 
-class PageLogin extends PageBasic
+use WebFramework\Core\BaseFactory;
+use WebFramework\Core\PageBasic;
+use WebFramework\Core\Recaptcha;
+use WebFramework\Core\User;
+use WebFramework\Core\WF;
+
+class Login extends PageBasic
 {
     protected string $unique_identifier = '';
 

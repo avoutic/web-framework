@@ -4,13 +4,17 @@
 if (!file_exists(__DIR__ . '/../../vendor/autoload.php'))
     die('Composer not initialized');
 require_once(__DIR__ . '/../../vendor/autoload.php');
-require_once(__DIR__ .'/../includes/wf_web_handler.inc.php');
+require_once(__DIR__ . '/../includes/autoload.inc.php');
+
+use WebFramework\Core\WF;
+use WebFramework\Core\WFWebHandler;
+
+$framework = new WFWebHandler();
 
 try
 {
     // Initialize WF
     //
-    $framework = new WFWebHandler();
     $framework->init();
 
     // Allow app to check data and config sanity

@@ -1,4 +1,8 @@
 <?php
+namespace WebFramework\Core;
+
+use \GdImage;
+
 /**
  * Image class with support for GIF, JPEG and PNG images.
  */

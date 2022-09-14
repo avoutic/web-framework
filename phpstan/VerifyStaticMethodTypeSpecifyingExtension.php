@@ -17,7 +17,7 @@ class VerifyStaticMethodTypeSpecifyingExtension implements StaticMethodTypeSpeci
 
     public function getClass(): string
     {
-        return "WF";
+        return "WebFramework\Core\WF";
     }
 
     public function isStaticMethodSupported(MethodReflection $methodReflection, StaticCall $node, TypeSpecifierContext $context): bool

@@ -1,4 +1,6 @@
 <?php
+namespace WebFramework\Core;
+
 class BlacklistEntry extends DataCore
 {
     static protected string $table_name = 'blacklist_entries';

@@ -1,6 +1,5 @@
 <?php
-require_once(WF::$includes.'data_core.inc.php');
-require_once(WF::$includes.'stored_values.inc.php');
+namespace WebFramework\Core;
 
 class Right extends DataCore
 {
@@ -447,7 +446,7 @@ class BaseFactory extends FactoryCore
      * @param class-string<T> $type
      * @return T|false
      */
-    public function get_user(int $user_id, string $type = 'User'): User|false
+    public function get_user(int $user_id, string $type = '\\WebFramework\\Core\\User'): User|false
     {
         $this->verify(class_exists($type), 'Class does not exist');
 
@@ -459,7 +458,7 @@ class BaseFactory extends FactoryCore
      * @param class-string<T> $type
      * @return array<T>
      */
-    public function get_users(int $offset = 0, int $results = 10, string $type = 'User'): array
+    public function get_users(int $offset = 0, int $results = 10, string $type = '\\WebFramework\\Core\\User'): array
     {
         $this->verify(class_exists($type), 'Class does not exist');
 
@@ -471,7 +470,7 @@ class BaseFactory extends FactoryCore
      * @param class-string<T> $type
      * @return T|false
      */
-    public function get_user_by_username(string $username, string $type = 'User'): User|false
+    public function get_user_by_username(string $username, string $type = '\\WebFramework\\Core\\User'): User|false
     {
         $this->verify(class_exists($type), 'Class does not exist');
 
@@ -483,7 +482,7 @@ class BaseFactory extends FactoryCore
      * @param class-string<T> $type
      * @return T|false
      */
-    public function get_user_by_email(string $email, string $type = 'User'): User|false
+    public function get_user_by_email(string $email, string $type = '\\WebFramework\\Core\\User'): User|false
     {
         $this->verify(class_exists($type), 'Class does not exist');
 
@@ -495,7 +494,7 @@ class BaseFactory extends FactoryCore
      * @param class-string<T> $type
      * @return array<T>
      */
-    public function search_users(string $string, string $type = 'User'): array
+    public function search_users(string $string, string $type = '\\WebFramework\\Core\\User'): array
     {
         $query = <<<SQL
         SELECT id
@@ -529,7 +528,7 @@ SQL;
      * @param class-string<T> $type
      * @return T
      */
-    public function create_user(string $username, string $password, string $email, int $terms_accepted, string $type = 'User'): User
+    public function create_user(string $username, string $password, string $email, int $terms_accepted, string $type = '\\WebFramework\\Core\\User'): User
     {
         $this->verify(class_exists($type), 'Class does not exist');
 

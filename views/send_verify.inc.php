@@ -1,7 +1,10 @@
 <?php
-require_once(WF::$includes.'base_logic.inc.php');
+namespace WebFramework\Actions;
 
-class PageSendVerify extends PageBasic
+use WebFramework\Core\BaseFactory;
+use WebFramework\Core\PageBasic;
+
+class SendVerify extends PageBasic
 {
     static function get_filter(): array
     {

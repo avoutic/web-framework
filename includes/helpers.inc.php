@@ -1,4 +1,6 @@
 <?php
+namespace WebFramework\Core;
+
 class Helpers
 {
     /**

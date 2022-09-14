@@ -1,4 +1,6 @@
 <?php
+namespace WebFramework\Core;
+
 abstract class DataCore extends FrameworkCore
 {
     public int $id;

@@ -1,4 +1,7 @@
 <?php
+use WebFramework\Core\PageCore;
+use WebFramework\Core\WF;
+
 WF::verify(isset($args['template_parameters']['colors']), 'No colors defined');
 $colors = $args['template_parameters']['colors'];
 $required_colors = array('focus:ring', 'focus:border');

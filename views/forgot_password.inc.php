@@ -1,5 +1,11 @@
 <?php
-class PageForgotPassword extends PageBasic
+namespace WebFramework\Actions;
+
+use WebFramework\Core\BaseFactory;
+use WebFramework\Core\PageBasic;
+use WebFramework\Core\WF;
+
+class ForgotPassword extends PageBasic
 {
     static function get_filter(): array
     {

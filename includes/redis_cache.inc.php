@@ -1,6 +1,7 @@
 <?php
-require_once(WF::$includes.'cache_interface.inc.php');
+namespace WebFramework\Core;
 
+use Redis;
 use Cache\Adapter\Redis\RedisCachePool;
 
 class RedisCache implements CacheInterface

@@ -1,6 +1,5 @@
 <?php
-require_once(WF::$includes.'helpers.inc.php');
-require_once(WF::$includes.'base_logic.inc.php');
+namespace WebFramework\Core;
 
 /**
  * @property array<string> $base_fields

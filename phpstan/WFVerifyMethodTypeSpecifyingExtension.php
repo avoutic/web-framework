@@ -17,7 +17,7 @@ class WFVerifyMethodTypeSpecifyingExtension implements MethodTypeSpecifyingExten
 
     public function getClass(): string
     {
-        return "WF";
+        return "WebFramework\Core\WF";
     }
 
     public function isMethodSupported(MethodReflection $methodReflection, MethodCall $node, TypeSpecifierContext $context): bool

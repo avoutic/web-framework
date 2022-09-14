@@ -1,7 +1,11 @@
 <?php
-require_once(WF::$includes.'base_logic.inc.php');
+namespace WebFramework\Actions;
 
-class PageResetPassword extends PageBasic
+use WebFramework\Core\BaseFactory;
+use WebFramework\Core\PageBasic;
+use WebFramework\Core\User;
+
+class ResetPassword extends PageBasic
 {
     static function get_filter(): array
     {

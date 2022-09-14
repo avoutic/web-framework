@@ -1,4 +1,6 @@
 <?php
+namespace WebFramework\Core;
+
 interface SanityCheckInterface
 {
     public function allow_fixing(): void;
