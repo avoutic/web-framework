@@ -717,9 +717,6 @@ TXT;
             $this->exit_error('Handler class does not exist',
                               'The class configured in "sender_core.handler_class" is not provided by includes/sender_handler.inc.php.');
         }
-
-        if (is_file(WF::$site_includes."site_defines.inc.php"))
-            include_once(WF::$site_includes."site_defines.inc.php");
     }
 
     private function merge_configs(): void

@@ -23,6 +23,7 @@ Required changes for v4:
 * PageBasic->delete_config_value() deprecated. Use stored values directly.
 * WF::$views deprecated.
 * WF::$site_views deprecated.
+* WF does not load WF::$site_includes/site_defines.inc.php anymore. Use preloader instead.
 
 Files / classes fully removed in v4:
 * htdocs/sha1.js removed from framework
