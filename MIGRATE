@@ -21,6 +21,8 @@ Required changes for v4:
 * PageBasic->get_config_value() deprecated. Use stored values directly.
 * PageBasic->set_config_values() deprecated. Use stored values directly.
 * PageBasic->delete_config_value() deprecated. Use stored values directly.
+* WF::$views deprecated.
+* WF::$site_views deprecated.
 
 Files / classes fully removed in v4:
 * htdocs/sha1.js removed from framework

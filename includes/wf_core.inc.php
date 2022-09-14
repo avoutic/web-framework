@@ -4,9 +4,7 @@ namespace WebFramework\Core;
 class WF
 {
     static string $includes = __DIR__.'/';
-    static string $views = __DIR__.'/../views/';
     static string $site_includes = __DIR__.'/../../includes/';
-    static string $site_views = __DIR__.'/../../views/';
     static string $site_frames = __DIR__.'/../../frames/';
     static string $site_templates = __DIR__.'/../../templates/';
 
