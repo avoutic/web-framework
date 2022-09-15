@@ -9,12 +9,9 @@ class WFAutoLoader
      * @var array<string, string>
      */
     protected array $wf_exceptions = array(
-        'ActionCore' => 'page_basic',
-        'ApiAction' => 'page_basic',
         'AuthRedirect' => 'auth',
         'AuthWwwAuthenticate' => 'auth',
         'DBManager' => 'db_manager',
-        'PageAction' => 'page_basic',
         'PostmarkSender' => 'sender_postmark',
         'StripeFactory' => 'stripe',
         'User' => 'base_logic',
