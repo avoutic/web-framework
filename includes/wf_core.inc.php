@@ -149,6 +149,14 @@ class WF
         ),
     );
 
+    function __construct()
+    {
+        // Immediately initialize cache with NullCache so that a cache is always available
+        //
+        $this->cache = new NullCache(array());
+        WF::$static_cache = $this->cache;
+    }
+
     static function assert_handler(string $file, int $line, string $message, string $error_type): void
     {
          $framework = WF::get_framework();
@@ -875,13 +883,6 @@ TXT;
             $cache_config = $this->security->get_auth_config('redis');
 
             $this->cache = new RedisCache($cache_config);
-            WF::$static_cache = $this->cache;
-        }
-        else
-        {
-            // Initialize NullCache
-            //
-            $this->cache = new NullCache(array());
             WF::$static_cache = $this->cache;
         }
     }
