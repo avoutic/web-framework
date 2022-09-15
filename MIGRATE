@@ -13,6 +13,7 @@ Required changes for v4:
 * FrameworkCore-silent_verify() deprecated. Use report_error() instead
 * FrameworkCore->urldecode_and_verify_array() deprecated. Use decode_and_verify_array() instead
 * FrameworkCore->urlencode_and_auth_array() deprecated. Use encode_and_auth_array() instead
+* FrameworkCore->verify() does not support $silent anymore, use FrameworkCore->report_error() instead
 * PageCore->get_input_var() only returns filtered string values now.
 * PageCore->get_input_array() should be used to retrieve filtered array input.
 * PageCore->get_raw_input_var() only returns raw string values now.

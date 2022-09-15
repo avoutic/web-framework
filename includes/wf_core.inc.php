@@ -149,13 +149,13 @@ class WF
         ),
     );
 
-    static function assert_handler(string $file, int $line, string $message, string $error_type, bool $silent = false): void
+    static function assert_handler(string $file, int $line, string $message, string $error_type): void
     {
          $framework = WF::get_framework();
-         $framework->internal_assert_handler($file, $line, $message, $error_type, $silent);
+         $framework->internal_assert_handler($file, $line, $message, $error_type);
     }
 
-    public function internal_assert_handler(string$file, int $line, string $message, string $error_type, bool $silent = false): void
+    public function internal_assert_handler(string $file, int $line, string $message, string $error_type): void
     {
         $debug_info = $this->get_debug_info($file, $line, $message);
 
@@ -340,13 +340,13 @@ TXT;
         return $info;
     }
 
-    static function verify(bool|int $bool, string $message, bool $silent = false): void
+    static function verify(bool|int $bool, string $message): void
     {
         $framework = WF::get_framework();
-        $framework->internal_verify($bool, $message, $silent);
+        $framework->internal_verify($bool, $message);
     }
 
-    public function internal_verify(bool|int $bool, string $message, bool $silent = false): void
+    public function internal_verify(bool|int $bool, string $message): void
     {
         if ($bool)
             return;
@@ -366,7 +366,7 @@ TXT;
         $caller = $this->find_caller($stack, array('internal_assert_handler', 'assert_handler',
                                                    'internal_verify'));
 
-        $this->internal_assert_handler($caller['file'], $caller['line'], $message, 'verify', $silent);
+        $this->internal_assert_handler($caller['file'], $caller['line'], $message, 'verify');
         exit();
     }
 
@@ -474,7 +474,7 @@ TXT;
             break;
         default:
             $this->internal_assert_handler($last_error['file'], $last_error['line'],
-                                  $last_error['message'], (string) $last_error['type'], true);
+                                  $last_error['message'], (string) $last_error['type']);
             break;
         }
 
@@ -1124,12 +1124,12 @@ class FrameworkCore
      */
     protected function report_error(string $message, array $stack = null): void
     {
-        WF::report_error($message, $stack);
+        $this->framework->internal_report_error($message, $stack);
     }
 
-    protected function verify(bool|int $bool, string $message, bool $silent = false): void
+    protected function verify(bool|int $bool, string $message): void
     {
-        $this->framework->internal_verify($bool, $message, $silent);
+        $this->framework->internal_verify($bool, $message);
     }
 
     protected function blacklist_verify(bool|int $bool, string $reason, int $severity = 1): void
