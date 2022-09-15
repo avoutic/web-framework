@@ -27,12 +27,6 @@ parameters:
         -
             message: '#^Call to an undefined method object\:\:dispatch_template_email\(\)\.$#'
             path: includes/sender_core.inc.php
-        -
-            message: '#^Instantiated class App\\Core\\SanityCheck not found\.$#'
-            path: includes/wf_core.inc.php
-        -
-            message: '#^Instantiated class App\\Core\\AuthCustom not found\.$#'
-            path: includes/wf_web_handler.inc.php
 
 services:
     -

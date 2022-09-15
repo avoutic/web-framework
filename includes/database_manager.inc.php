@@ -181,7 +181,7 @@ SQL;
     {
         $db_values = $this->get_stored_values();
 
-        return (int) $db_values->get_value('app_db_version', 0);
+        return (int) $db_values->get_value('app_db_version', '0');
     }
 
     private function check_version(int $app_db_version): void
@@ -195,7 +195,7 @@ SQL;
     {
         $db_values = $this->get_stored_values();
 
-        $db_values->set_value('app_db_version', $to);
+        $db_values->set_value('app_db_version', (string) $to);
 
         $this->update_stored_hash();
     }

@@ -892,7 +892,7 @@ TXT;
         $this->verify(class_exists($class_name), "Sanity check module '{$class_name}' not found");
 
         $obj = new $class_name;
-        $this->verify($obj instanceof SanityCheckInterface, 'Sanity check module does not implement SanityCheckInterface');
+        $this->internal_verify($obj instanceof SanityCheckInterface, 'Sanity check module does not implement SanityCheckInterface');
 
         return $obj;
     }

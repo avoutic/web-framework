@@ -158,7 +158,7 @@ class WFWebHandler extends WF
             $this->verify(class_exists($class_name), "Custom auth module '{$class_name}' not found");
 
             $obj = new $class_name();
-            $this->verify($obj instanceof Authenticator, 'Custom authentication module not derived from Authenticator');
+            $this->internal_verify($obj instanceof Authenticator, 'Custom authentication module not derived from Authenticator');
 
             $this->authenticator = $obj;
         }

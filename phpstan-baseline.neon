@@ -3,12 +3,12 @@ parameters:
 		-
 			message: "#^Offset 'calculated_hash' on array\\{calculated_hash\\: string, stored_hash\\: string\\} in isset\\(\\) always exists and is not nullable\\.$#"
 			count: 1
-			path: includes/base_logic.inc.php
+			path: includes/user.inc.php
 
 		-
 			message: "#^Offset 'stored_hash' on array\\{calculated_hash\\: string, stored_hash\\: string\\} in isset\\(\\) always exists and is not nullable\\.$#"
 			count: 1
-			path: includes/base_logic.inc.php
+			path: includes/user.inc.php
 
 		-
 			message: "#^Method WebFramework\\\\Core\\\\DataCore\\:\\:get_object_by_id\\(\\) should return static\\(WebFramework\\\\Core\\\\DataCore\\)\\|false but returns WebFramework\\\\Core\\\\DataCore\\.$#"
@@ -18,12 +18,12 @@ parameters:
 		-
 			message: "#^Call to method WebFramework\\\\Core\\\\FrameworkCore\\:\\:verify\\(\\) with false and non\\-falsy\\-string will always evaluate to false\\.$#"
 			count: 3
-			path: includes/db_manager.inc.php
+			path: includes/database_manager.inc.php
 
 		-
 			message: "#^Offset 'target_version' on array\\{target_version\\: int, actions\\: array\\<array\\>\\} in isset\\(\\) always exists and is not nullable\\.$#"
 			count: 1
-			path: includes/db_manager.inc.php
+			path: includes/database_manager.inc.php
 
 		-
 			message: "#^Parameter \\#1 \\$hour of function mktime expects int, int\\|false given\\.$#"
@@ -78,32 +78,22 @@ parameters:
 		-
 			message: "#^Method WebFramework\\\\Core\\\\ActionCore\\:\\:get_input_var\\(\\) should return string but returns array\\<string\\>\\|string\\.$#"
 			count: 1
-			path: includes/page_basic.inc.php
+			path: includes/action_core.inc.php
 
 		-
 			message: "#^Method WebFramework\\\\Core\\\\ActionCore\\:\\:get_raw_input_array\\(\\) should return array\\<string\\> but returns array\\<string\\>\\|string\\.$#"
 			count: 1
-			path: includes/page_basic.inc.php
+			path: includes/action_core.inc.php
 
 		-
 			message: "#^Method WebFramework\\\\Core\\\\ActionCore\\:\\:get_raw_input_var\\(\\) should return string but returns array\\<string\\>\\|string\\.$#"
 			count: 1
-			path: includes/page_basic.inc.php
+			path: includes/action_core.inc.php
 
 		-
 			message: "#^Call to method WebFramework\\\\Core\\\\FrameworkCore\\:\\:verify\\(\\) with false and non\\-falsy\\-string will always evaluate to false\\.$#"
 			count: 1
-			path: includes/sender_postmark.inc.php
-
-		-
-			message: "#^Method WebFramework\\\\Core\\\\StoredUserValues\\:\\:get_value\\(\\) should return string but returns int\\|string\\.$#"
-			count: 1
-			path: includes/stored_values.inc.php
-
-		-
-			message: "#^Method WebFramework\\\\Core\\\\StoredValues\\:\\:get_value\\(\\) should return string but returns int\\|string\\.$#"
-			count: 1
-			path: includes/stored_values.inc.php
+			path: includes/postmark_sender.inc.php
 
 		-
 			message: "#^Call to method WebFramework\\\\Core\\\\WF\\:\\:internal_verify\\(\\) with false and 'Cannot authenticate…' will always evaluate to false\\.$#"
@@ -127,11 +117,6 @@ parameters:
 
 		-
 			message: "#^Call to method WebFramework\\\\Core\\\\WF\\:\\:internal_verify\\(\\) with false and 'No blacklist…' will always evaluate to false\\.$#"
-			count: 1
-			path: includes/wf_core.inc.php
-
-		-
-			message: "#^Method WebFramework\\\\Core\\\\WF\\:\\:get_sanity_check\\(\\) should return WebFramework\\\\Core\\\\SanityCheckInterface but returns App\\\\Core\\\\SanityCheck\\.$#"
 			count: 1
 			path: includes/wf_core.inc.php
 
@@ -197,11 +182,6 @@ parameters:
 
 		-
 			message: "#^Parameter \\#3 \\$subject of function preg_replace expects array\\|string, string\\|null given\\.$#"
-			count: 1
-			path: includes/wf_web_handler.inc.php
-
-		-
-			message: "#^Property WebFramework\\\\Core\\\\WFWebHandler\\:\\:\\$authenticator \\(WebFramework\\\\Core\\\\Authenticator\\) does not accept App\\\\Core\\\\AuthCustom\\.$#"
 			count: 1
 			path: includes/wf_web_handler.inc.php
 

@@ -367,9 +367,9 @@ SQL;
     {
         $stored_values = $this->get_stored_values('account');
 
-        $security_iterator = (int) $stored_values->get_value('security_iterator', 0);
+        $security_iterator = (int) $stored_values->get_value('security_iterator', '0');
         $security_iterator += 1;
-        $stored_values->set_value('security_iterator', $security_iterator);
+        $stored_values->set_value('security_iterator', (string) $security_iterator);
 
         return $security_iterator;
     }
@@ -378,7 +378,7 @@ SQL;
     {
         $stored_values = $this->get_stored_values('account');
 
-        return (int) $stored_values->get_value('security_iterator', 0);
+        return (int) $stored_values->get_value('security_iterator', '0');
     }
 
     public function send_password_reset_mail(): bool|string
