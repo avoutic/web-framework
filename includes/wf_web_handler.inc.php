@@ -321,6 +321,20 @@ class WFWebHandler extends WF
         if (!$this->initialized)
             die($title.PHP_EOL.$message.PHP_EOL);
 
+        if (isset($_SERVER["CONTENT_TYPE"]) && $_SERVER['CONTENT_TYPE'] == 'application/json')
+        {
+            http_response_code($code);
+            header('Content-type: application/json');
+
+            print(json_encode(
+                array(
+                    'success' => false,
+                    'title' => $title,
+                    'details' => $message,
+                )));
+            exit();
+        }
+
         $mapping = $this->internal_get_config('error_handlers.'.$code);
         $class = '';
 
