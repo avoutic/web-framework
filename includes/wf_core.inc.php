@@ -193,11 +193,36 @@ class WF
     }
 
     /**
-     * @param array{debug_message: string, debug_data: string, low_info_message: string} $debug_info
+     * @param array{debug_message: string, debug_data: string, low_info_message: string, hash:string} $debug_info
      */
     protected function mail_debug_info(string $message, string $error_type, array $debug_info): void
     {
         if (!$this->initialized || $this->internal_get_config('debug_mail') == false)
+            return;
+
+        // Make sure we are not spamming the same error en masse
+        //
+        $cache_id = "errors[{$debug_info['hash']}]";
+        $cached = $this->cache->get($cache_id);
+
+        if ($cached === false)
+        {
+            $cached = array(
+                'count' => 1,
+                'last_timestamp' => time(),
+            );
+        }
+        else
+        {
+            $cached['count']++;
+            $cached['last_timestamp'] = time();
+        }
+
+        $this->cache->set($cache_id, $cached, time() + 10 * 60);
+
+        // More than 3 in the last 10 minutes, update timestamp, and skip mail
+        //
+        if ($cached['count'] > 3)
             return;
 
         $server_name = $this->internal_get_config('server_name');
@@ -212,7 +237,7 @@ class WF
 
     /**
      * @param array<mixed> $trace
-     * @return array{debug_message: string, debug_data: string, low_info_message: string}
+     * @return array{debug_message: string, debug_data: string, low_info_message: string, hash: string}
      */
     protected function get_debug_info(string $file, int $line, string $message, array $trace = null): array
     {
@@ -220,6 +245,7 @@ class WF
             'low_info_message' => '',
             'debug_message' => '',
             'debug_data' => '',
+            'hash' => '',
         );
 
         // Retrieve request
@@ -250,6 +276,8 @@ Server: {$server_name}
 Request: {$request}
 
 TXT;
+
+        $info['hash'] = sha1("{$server_name}:{$request}:{$file}:{$line}:{$message}");
 
         // Construct stack trace
         //
