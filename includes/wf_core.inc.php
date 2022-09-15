@@ -872,14 +872,14 @@ TXT;
         {
             $this->exit_error('No supported Framework version configured',
                     'There is no supported framework version provided in "versions.supported_framework". '.
-                    'The current version is {$required_wf_version} of this Framework.');
+                    "The current version is {$required_wf_version} of this Framework.");
         }
 
         if ($required_wf_version != $supported_wf_version)
         {
             $this->exit_error('Framework version mismatch',
                     'Please make sure that this app is upgraded to support version '.
-                    '{$required_wf_version} of this Framework.');
+                    "{$required_wf_version} of this Framework.");
         }
 
         if ($this->internal_get_config('database_enabled') != true)
