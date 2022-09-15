@@ -282,8 +282,8 @@ SQL;
 
         $code = $this->generate_verify_code('change_email', array('email' => $email, 'iterator' => $security_iterator));
         $verify_url = $this->get_config('http_mode').'://'.$this->get_config('server_name').
-                      $this->get_config('page.base_url').
-                      $this->get_config('pages.change_email.verify_page').
+                      $this->get_config('base_url').
+                      $this->get_config('actions.change_email.verify_page').
                       '?code='.$code;
 
         $result = SenderCore::send('change_email_verification_link', $email,
@@ -369,8 +369,8 @@ SQL;
     {
         $code = $this->generate_verify_code('verify', $after_verify_data);
         $verify_url = $this->get_config('http_mode').'://'.$this->get_config('server_name').
-                      $this->get_config('page.base_url').
-                      $this->get_config('pages.login.verify_page').
+                      $this->get_config('base_url').
+                      $this->get_config('actions.login.verify_page').
                       '?code='.$code;
 
         return SenderCore::send('email_verification_link', $this->email,
@@ -404,8 +404,8 @@ SQL;
 
         $code = $this->generate_verify_code('reset_password', array('iterator' => $security_iterator));
         $reset_url = $this->get_config('http_mode').'://'.$this->get_config('server_name').
-                     $this->get_config('page.base_url').
-                     $this->get_config('pages.forgot_password.reset_password_page').
+                     $this->get_config('base_url').
+                     $this->get_config('actions.forgot_password.reset_password_page').
                      '?code='.$code;
 
         return SenderCore::send('password_reset', $this->email,

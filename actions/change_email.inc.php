@@ -2,10 +2,10 @@
 namespace WebFramework\Actions;
 
 use WebFramework\Core\BaseFactory;
-use WebFramework\Core\PageBasic;
+use WebFramework\Core\PageAction;
 use WebFramework\Core\User;
 
-class ChangeEmail extends PageBasic
+class ChangeEmail extends PageAction
 {
     static function get_filter(): array
     {
@@ -78,7 +78,7 @@ class ChangeEmail extends PageBasic
 
         // Redirect to verification request screen
         //
-        $return_page = $this->get_base_url().$this->get_config('pages.change_email.return_page');
+        $return_page = $this->get_base_url().$this->get_config('actions.change_email.return_page');
         header("Location: ${return_page}?".$this->get_message_for_url('success', 'Verification mail has been sent.','A verification mail has been sent. Please wait for the e-mail in your inbox and follow the instructions.'));
         exit();
     }

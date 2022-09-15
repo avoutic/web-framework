@@ -2,10 +2,10 @@
 namespace WebFramework\Actions;
 
 use WebFramework\Core\BaseFactory;
-use WebFramework\Core\PageBasic;
+use WebFramework\Core\PageAction;
 use WebFramework\Core\User;
 
-class ChangeEmailVerify extends PageBasic
+class ChangeEmailVerify extends PageAction
 {
     static function get_filter(): array
     {
@@ -38,7 +38,7 @@ class ChangeEmailVerify extends PageBasic
 
     protected function do_logic(): void
     {
-        $change_page = $this->get_base_url().$this->get_config('pages.change_email.location');
+        $change_page = $this->get_base_url().$this->get_config('actions.change_email.location');
 
         // Check if code is present
         //
@@ -67,7 +67,7 @@ class ChangeEmailVerify extends PageBasic
         if ($user_id != $this->get_authenticated('user_id'))
         {
             $this->deauthenticate();
-            $login_page = $this->get_base_url().$this->get_config('pages.login.location');
+            $login_page = $this->get_base_url().$this->get_config('actions.login.location');
             header("Location: {$login_page}?".$this->get_message_for_url('error', 'Other account', 'The link you used is meant for a different account. The current account has been logged off. Please try the link again.'));
             exit();
         }
@@ -102,7 +102,7 @@ class ChangeEmailVerify extends PageBasic
 
         // Redirect to verification request screen
         //
-        $return_page = $this->get_base_url().$this->get_config('pages.change_email.return_page');
+        $return_page = $this->get_base_url().$this->get_config('actions.change_email.return_page');
         header("Location: ${return_page}?".$this->get_message_for_url('success', 'E-mail address changed successfully'));
         exit();
     }

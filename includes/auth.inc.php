@@ -74,7 +74,7 @@ abstract class Authenticator extends FrameworkCore
         {
             $query = (isset($_SERVER['QUERY_STRING'])) ? $_SERVER['QUERY_STRING'] : '';
 
-            header('Location: '.$this->get_config('page.base_url').$this->get_config('pages.login.location').'?return_page='.urlencode($target).'&return_query='.urlencode($query).'&'.$this->get_message_for_url('info', $this->get_config('authenticator.auth_required_message')), true, 302);
+            header('Location: '.$this->get_config('base_url').$this->get_config('actions.login.location').'?return_page='.urlencode($target).'&return_query='.urlencode($query).'&'.$this->get_message_for_url('info', $this->get_config('authenticator.auth_required_message')), true, 302);
         }
         else if ($type == '403')
         {

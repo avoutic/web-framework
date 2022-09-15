@@ -2,12 +2,12 @@
 namespace WebFramework\Actions;
 
 use WebFramework\Core\BaseFactory;
-use WebFramework\Core\PageBasic;
+use WebFramework\Core\PageAction;
 use WebFramework\Core\Recaptcha;
 use WebFramework\Core\SenderCore;
 use WebFramework\Core\User;
 
-class Register extends PageBasic
+class Register extends PageAction
 {
     /**
      * @return array<string, string>
@@ -115,7 +115,7 @@ class Register extends PageBasic
         {
             // Redirect to default page
             //
-            $return_page = $this->get_config('pages.login.default_return_page');
+            $return_page = $this->get_config('actions.login.default_return_page');
             header("Location: ".$this->get_base_url().$return_page."?".
                             $this->get_message_for_url('info', 'Already logged in'));
             exit();
@@ -204,7 +204,7 @@ class Register extends PageBasic
 
             if ($result->RecordCount() == 1)
             {
-                $forgot_password_page = $this->get_base_url().$this->get_config('pages.forgot_password.location');
+                $forgot_password_page = $this->get_base_url().$this->get_config('actions.forgot_password.location');
 
                 $this->add_message('error', 'E-mail already registered.', 'An account has already been registered with this e-mail address. <a href="'.$forgot_password_page.'">Forgot your password?</a>');
 
@@ -247,7 +247,7 @@ class Register extends PageBasic
                 "E-mail is: '".$user->email."'.");
 
         $code = $user->generate_verify_code('send_verify', $this->get_after_verify_data());
-        $send_verify_page = $this->get_config('pages.login.send_verify_page');
+        $send_verify_page = $this->get_config('actions.login.send_verify_page');
         $send_verify_url = $send_verify_page.'?code='.$code;
 
         // Redirect to verification request screen

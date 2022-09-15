@@ -74,7 +74,7 @@ class WFWebHandler extends WF
         $this->load_raw_input();
         $this->add_security_headers();
         $this->handle_fixed_input();
-        $this->handle_page_routing();
+        $this->handle_action_routing();
     }
 
     private function load_raw_input(): void
@@ -111,13 +111,13 @@ class WFWebHandler extends WF
 
     private function handle_fixed_input(): void
     {
-        $fixed_page_filter = array(
+        $fixed_action_filter = array(
                 'msg' => '.*',
                 'token' => '.*',
                 'do' => 'yes|preview',
             );
 
-        array_walk($fixed_page_filter, array($this, 'validate_input'));
+        array_walk($fixed_action_filter, array($this, 'validate_input'));
 
         if (strlen($this->input['msg']))
             $this->add_message_from_url($this->input['msg']);
@@ -166,9 +166,9 @@ class WFWebHandler extends WF
             $this->internal_verify(false, 'No valid authenticator found.');
     }
 
-    private function handle_page_routing(): void
+    private function handle_action_routing(): void
     {
-        // Check page requested
+        // Check action requested
         //
         $full_request_uri = '';
         if (isset($_SERVER['REQUEST_METHOD']))
@@ -219,14 +219,14 @@ class WFWebHandler extends WF
             $class = $target_info['class'];
         }
         else if ($full_request_uri == 'GET /')
-            $class = $this->internal_get_config('page.default_page');
+            $class = $this->internal_get_config('actions.default_action');
 
         $this->internal_verify(strlen($class), 'No class to handle');
 
         $target = explode('.', $class);
         $this->internal_verify(count($target) === 2, "Target name {$class} illegal");
 
-        $object_name = $this->internal_get_config('page.actions_namespace').$target[0];
+        $object_name = $this->internal_get_config('actions.app_namespace').$target[0];
         $function_name = $target[1];
 
         $this->call_obj_func($object_name, $function_name);
@@ -256,19 +256,19 @@ class WFWebHandler extends WF
     {
         $this->internal_verify(class_exists($object_name), "Requested object {$object_name} could not be located");
         $parents = class_parents($object_name);
-        $this->internal_verify(isset($parents['WebFramework\Core\PageCore']), "Requested object {$object_name} does not derive from PageCore");
+        $this->internal_verify(isset($parents['WebFramework\Core\ActionCore']), "Requested object {$object_name} does not derive from ActionCore");
 
-        $page_filter = $object_name::get_filter();
-        $page_permissions = $object_name::get_permissions();
+        $action_filter = $object_name::get_filter();
+        $action_permissions = $object_name::get_permissions();
 
-        array_walk($page_filter, array($this, 'validate_input'));
+        array_walk($action_filter, array($this, 'validate_input'));
 
-        $this->enforce_permissions($object_name, $page_permissions);
+        $this->enforce_permissions($object_name, $action_permissions);
 
-        $page_obj = new $object_name();
+        $action_obj = new $object_name();
 
-        $this->internal_verify(method_exists($page_obj, $function_name), "Registered route function {$object_name}->{$function_name} does not exist");
-        $page_obj->$function_name();
+        $this->internal_verify(method_exists($action_obj, $function_name), "Registered route function {$object_name}->{$function_name} does not exist");
+        $action_obj->$function_name();
     }
 
     /**
@@ -346,7 +346,7 @@ class WFWebHandler extends WF
             $this->input['error_message'] = $message;
         }
 
-        $object_name = $this->internal_get_config('page.actions_namespace').$class;
+        $object_name = $this->internal_get_config('actions.app_namespace').$class;
         $function_name = "html_main";
 
         $this->call_obj_func($object_name, $function_name);

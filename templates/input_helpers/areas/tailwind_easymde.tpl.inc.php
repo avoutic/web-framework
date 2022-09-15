@@ -1,5 +1,5 @@
 <?php
-use WebFramework\Core\PageCore;
+use WebFramework\Core\ActionCore;
 use WebFramework\Core\WF;
 
 WF::verify(isset($args['template_parameters']['colors']), 'No colors defined');
@@ -22,7 +22,7 @@ $value_json_fmt = '';
 if ($parameters['enable_editor'])
     $value_json_fmt = json_encode($parameters['value']);
 else
-    $value_fmt = PageCore::encode($parameters['value']);
+    $value_fmt = ActionCore::encode($parameters['value']);
 
 echo <<<HTML
 <div {$show_fmt} class="{$width_fmt}">

@@ -76,17 +76,17 @@ parameters:
 			path: includes/image.inc.php
 
 		-
-			message: "#^Method WebFramework\\\\Core\\\\PageCore\\:\\:get_input_var\\(\\) should return string but returns array\\<string\\>\\|string\\.$#"
+			message: "#^Method WebFramework\\\\Core\\\\ActionCore\\:\\:get_input_var\\(\\) should return string but returns array\\<string\\>\\|string\\.$#"
 			count: 1
 			path: includes/page_basic.inc.php
 
 		-
-			message: "#^Method WebFramework\\\\Core\\\\PageCore\\:\\:get_raw_input_array\\(\\) should return array\\<string\\> but returns array\\<string\\>\\|string\\.$#"
+			message: "#^Method WebFramework\\\\Core\\\\ActionCore\\:\\:get_raw_input_array\\(\\) should return array\\<string\\> but returns array\\<string\\>\\|string\\.$#"
 			count: 1
 			path: includes/page_basic.inc.php
 
 		-
-			message: "#^Method WebFramework\\\\Core\\\\PageCore\\:\\:get_raw_input_var\\(\\) should return string but returns array\\<string\\>\\|string\\.$#"
+			message: "#^Method WebFramework\\\\Core\\\\ActionCore\\:\\:get_raw_input_var\\(\\) should return string but returns array\\<string\\>\\|string\\.$#"
 			count: 1
 			path: includes/page_basic.inc.php
 

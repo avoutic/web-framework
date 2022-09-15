@@ -3,7 +3,7 @@ namespace WebFramework\Core;
 
 use finfo;
 
-abstract class PageCore extends FrameworkCore
+abstract class ActionCore extends FrameworkCore
 {
     protected WFWebHandler $web_handler;
 
@@ -90,7 +90,7 @@ abstract class PageCore extends FrameworkCore
 
     protected function get_base_url(): string
     {
-        return $this->get_config('page.base_url');
+        return $this->get_config('base_url');
     }
 
     /**
@@ -143,7 +143,7 @@ abstract class PageCore extends FrameworkCore
     }
 };
 
-abstract class PageBasic extends PageCore
+abstract class PageAction extends ActionCore
 {
     protected string $frame_file;
 
@@ -156,7 +156,7 @@ abstract class PageBasic extends PageCore
     {
         parent::__construct();
 
-        $this->frame_file = $this->get_config('page.default_frame_file');
+        $this->frame_file = $this->get_config('actions.default_frame_file');
         $this->page_content['base_url'] = $this->get_base_url();
     }
 
@@ -281,7 +281,7 @@ function arrayify_datacore(mixed &$item, string $key): void
     }
 }
 
-abstract class PageService extends PageCore
+abstract class ApiAction extends ActionCore
 {
     static function redirect_login_type(): string
     {

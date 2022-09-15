@@ -2,10 +2,10 @@
 namespace WebFramework\Actions;
 
 use WebFramework\Core\BaseFactory;
-use WebFramework\Core\PageBasic;
+use WebFramework\Core\PageAction;
 use WebFramework\Core\WF;
 
-class ForgotPassword extends PageBasic
+class ForgotPassword extends PageAction
 {
     static function get_filter(): array
     {
@@ -50,7 +50,7 @@ class ForgotPassword extends PageBasic
 
         // Redirect to main sceen
         //
-        $login_page = $this->get_base_url().$this->get_config('pages.login.location');
+        $login_page = $this->get_base_url().$this->get_config('actions.login.location');
         header("Location: ${login_page}?".$this->get_message_for_url('success', 'Reset link mailed to registered email account.'));
         exit();
     }

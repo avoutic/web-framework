@@ -2,10 +2,10 @@
 namespace WebFramework\Actions;
 
 use WebFramework\Core\BaseFactory;
-use WebFramework\Core\PageBasic;
+use WebFramework\Core\PageAction;
 use WebFramework\Core\User;
 
-class ChangePassword extends PageBasic
+class ChangePassword extends PageAction
 {
     static function get_filter(): array
     {
@@ -111,7 +111,7 @@ class ChangePassword extends PageBasic
 
         // Redirect to main sceen
         //
-        $return_page = $this->get_base_url().$this->get_config('pages.change_password.return_page');
+        $return_page = $this->get_base_url().$this->get_config('actions.change_password.return_page');
         header("Location: ${return_page}?".$this->get_message_for_url('success', 'Password changed successfully.'));
         exit();
     }

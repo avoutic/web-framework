@@ -2,12 +2,12 @@
 namespace WebFramework\Actions;
 
 use WebFramework\Core\BaseFactory;
-use WebFramework\Core\PageBasic;
+use WebFramework\Core\PageAction;
 use WebFramework\Core\Recaptcha;
 use WebFramework\Core\User;
 use WebFramework\Core\WF;
 
-class Login extends PageBasic
+class Login extends PageAction
 {
     protected string $unique_identifier = '';
 
@@ -35,7 +35,7 @@ class Login extends PageBasic
 
     protected function check_sanity(): void
     {
-        $login_config = $this->get_config('pages.login');
+        $login_config = $this->get_config('actions.login');
         $bruteforce_protection = $login_config['bruteforce_protection'];
 
         if ($bruteforce_protection)
@@ -88,14 +88,14 @@ class Login extends PageBasic
         $this->page_content['recaptcha_site_key'] = $this->get_config('security.recaptcha.site_key');
 
         if (!strlen($return_page) || substr($return_page, 0, 2) == '//')
-            $return_page = $this->get_config('pages.login.default_return_page');
+            $return_page = $this->get_config('actions.login.default_return_page');
 
         if (substr($return_page, 0, 1) != '/')
             $return_page = '/'.$return_page;
 
         $this->page_content['return_page'] = $return_page;
-        $this->page_content['login_page'] = $this->get_config('pages.login.location');
-        $send_verify_page = $this->get_config('pages.login.send_verify_page');
+        $this->page_content['login_page'] = $this->get_config('actions.login.location');
+        $send_verify_page = $this->get_config('actions.login.send_verify_page');
 
         // Check if already logged in and redirect immediately
         if ($this->is_authenticated())
@@ -142,7 +142,7 @@ class Login extends PageBasic
             return;
         }
 
-        $bruteforce_protection = $this->get_config('pages.login.bruteforce_protection');
+        $bruteforce_protection = $this->get_config('actions.login.bruteforce_protection');
         if ($user->failed_login > 5 && $bruteforce_protection)
         {
             $recaptcha_response = $this->get_input_var('g-recaptcha-response');

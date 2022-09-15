@@ -83,6 +83,7 @@ class WF
         'host_name' => '',                  // Set to $_SERVER['SERVER_NAME'] or 'app' automatically
                                             // Pure host name. Cannot include port number information.
         'http_mode' => 'https',
+        'base_url' => '',                   // Add a base_url to be used in external urls
         'document_root' => '',              // Set to $_SERVER['DOCUMENT_ROOT'] automatically
         'cache_enabled' => false,
         'auth_mode' => 'redirect',          // redirect, www-authenticate, custom (requires auth_module)
@@ -92,12 +93,6 @@ class WF
             'unique_identifier' => 'email',
             'auth_required_message' => 'Authentication required. Please login.',
             'session_timeout' => 900,
-        ),
-        'page' => array(
-            'base_url' => '',               // Add a base_url to be used in templates
-            'default_frame_file' => 'default_frame.inc.php',
-            'default_page' => 'Main.html_main',
-            'actions_namespace' => 'App\\Actions\\',
         ),
         'security' => array(
             'blacklist' => array(
@@ -119,7 +114,10 @@ class WF
             '404' => '',
             '500' => '',
         ),
-        'pages' => array(
+        'actions' => array(
+            'default_action' => 'Main.html_main',
+            'default_frame_file' => 'default_frame.inc.php',
+            'app_namespace' => 'App\\Actions\\',
             'login' => array(
                 'location' => '/login',
                 'send_verify_page' => '/send-verify',

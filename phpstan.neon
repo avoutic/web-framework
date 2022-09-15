@@ -6,7 +6,7 @@ parameters:
     phpVersion: 80100
     paths:
         - includes
-        - views
+        - actions
         - scripts
         - htdocs
     excludePaths:

@@ -2,10 +2,10 @@
 namespace WebFramework\Actions;
 
 use WebFramework\Core\BaseFactory;
-use WebFramework\Core\PageBasic;
+use WebFramework\Core\PageAction;
 use WebFramework\Core\User;
 
-class ResetPassword extends PageBasic
+class ResetPassword extends PageAction
 {
     static function get_filter(): array
     {
@@ -32,8 +32,8 @@ class ResetPassword extends PageBasic
 
     protected function do_logic(): void
     {
-        $forgot_password_page = $this->get_base_url().$this->get_config('pages.forgot_password.location');
-        $login_page = $this->get_base_url().$this->get_config('pages.login.location');
+        $forgot_password_page = $this->get_base_url().$this->get_config('actions.forgot_password.location');
+        $login_page = $this->get_base_url().$this->get_config('actions.login.location');
 
         // Check if code is present
         //

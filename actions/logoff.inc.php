@@ -1,9 +1,9 @@
 <?php
 namespace WebFramework\Actions;
 
-use WebFramework\Core\PageBasic;
+use WebFramework\Core\PageAction;
 
-class Logoff extends PageBasic
+class Logoff extends PageAction
 {
     /**
      * @return array<string, string>
