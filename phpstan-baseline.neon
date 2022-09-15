@@ -206,6 +206,6 @@ parameters:
 			path: includes/wf_web_handler.inc.php
 
 		-
-			message: "#^Parameter \\#1 \\$data of method WebFramework\\\\Core\\\\DBManager\\:\\:execute\\(\\) expects array\\{target_version\\: int, actions\\: array\\<array\\>\\}, array given\\.$#"
+			message: "#^Parameter \\#1 \\$data of method WebFramework\\\\Core\\\\DatabaseManager\\:\\:execute\\(\\) expects array\\{target_version\\: int, actions\\: array\\<array\\>\\}, array given\\.$#"
 			count: 1
 			path: scripts/db_update.php

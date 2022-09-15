@@ -9,7 +9,6 @@ class WFAutoLoader
      * @var array<string, string>
      */
     protected array $wf_exceptions = array(
-        'DBManager' => 'db_manager',
         'WF' => 'wf_core',
         'WFHelpers' => 'wf_helpers',
         'WFSecurity' => 'wf_security',

@@ -1,7 +1,7 @@
 <?php
 namespace WebFramework\Core;
 
-class DBManager extends FrameworkCore
+class DatabaseManager extends FrameworkCore
 {
     protected function get_stored_values(): StoredValues
     {

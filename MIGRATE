@@ -29,6 +29,7 @@ Required changes for v4:
 * WF does not load WF::$site_includes/site_defines.inc.php anymore. Use preloader instead.
 * Use the WebFramework namespace to address classes
 * Rename Page related items to Action (See below)
+* DBManager renamed to DatabaseManager
 
 Files / classes fully removed in v4:
 * htdocs/sha1.js removed from framework

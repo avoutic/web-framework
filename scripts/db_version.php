@@ -7,7 +7,7 @@ require_once(__DIR__ . '/../../vendor/autoload.php');
 require_once(__DIR__ . '/../includes/autoload.inc.php');
 
 use WebFramework\Core\WF;
-use WebFramework\Core\DBManager;
+use WebFramework\Core\DatabaseManager;
 
 $framework = new WF();
 
@@ -18,7 +18,7 @@ try
     $framework->skip_app_db_version_check();
     $framework->init();
 
-    $db_manager = new DBManager();
+    $db_manager = new DatabaseManager();
 
     $current_version = $db_manager->get_current_version();
 
