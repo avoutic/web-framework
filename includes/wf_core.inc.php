@@ -222,14 +222,18 @@ class WF
 
         // More than 3 in the last 10 minutes, update timestamp, and skip mail
         //
-        if ($cached['count'] > 3)
+        if ($cached['count'] > 3 && $cached['count'] % 25 !== 0)
             return;
 
         $server_name = $this->internal_get_config('server_name');
+        $title = "{$server_name} - {$error_type}: {$message}";
+
+        if ($cached['count'] % 25 === 0)
+            $title = "[{$cached['count']} times]: {$title}";
 
         SenderCore::send_raw(
             $this->internal_get_config('sender_core.assert_recipient'),
-            "{$server_name} - {$error_type}: {$message}\n\n",
+            "{$title}\n\n",
             $debug_info['debug_message'].
             $debug_info['debug_data']
         );
