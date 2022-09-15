@@ -11,8 +11,6 @@ class WFAutoLoader
     protected array $wf_exceptions = array(
         'DBManager' => 'db_manager',
         'PostmarkSender' => 'sender_postmark',
-        'StripeFactory' => 'stripe',
-        'User' => 'base_logic',
         'WF' => 'wf_core',
         'WFHelpers' => 'wf_helpers',
         'WFSecurity' => 'wf_security',
