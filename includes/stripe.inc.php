@@ -13,6 +13,8 @@ class StripeFactory extends FactoryCore
      */
     private array $event_handlers = array();
 
+    protected \Stripe\StripeClient $stripe;
+
     function __construct()
     {
         parent::__construct();
@@ -22,6 +24,7 @@ class StripeFactory extends FactoryCore
         $this->verify(isset($this->config['endpoint_secret']), 'Stripe Endpoint Secret missing');
 
         \Stripe\Stripe::setApiKey($this->config['api_key']);
+        $this->stripe = new \Stripe\StripeClient($this->config['api_key']);
     }
 
     public function verify_request(string $payload, string $sig_header): bool
@@ -58,6 +61,14 @@ class StripeFactory extends FactoryCore
     protected function add_event_handler(string $event_type, string $handler_function): void
     {
         $this->event_handlers[$event_type] = $handler_function;
+    }
+
+    /**
+     * @return array<string>
+     */
+    public function get_handled_events(): array
+    {
+        return array_keys($this->event_handlers);
     }
 
     // Customer object
@@ -101,8 +112,32 @@ class StripeFactory extends FactoryCore
         return $invoice->toArray();
     }
 
+    // Price object
+    //
+    /**
+     * @param array<mixed> $data
+     * @return array<mixed>
+     */
+    public function create_price(array $data): array
+    {
+        $price = $this->stripe->prices->create($data);
+
+        return $price->toArray();
+    }
+
     // Product object
     //
+    /**
+     * @param array<mixed> $data
+     * @return array<mixed>
+     */
+    public function create_product(array $data): array
+    {
+        $product = $this->stripe->products->create($data);
+
+        return $product->toArray();
+    }
+
     /**
      * @param array<mixed> $filter
      * @return array<mixed>
@@ -118,6 +153,19 @@ class StripeFactory extends FactoryCore
 
     // Subscription object
     //
+    public function cancel_subscription(string $subscription_id): bool
+    {
+            $subscription = \Stripe\Subscription::retrieve(
+                array(
+                    "id" => $subscription_id,
+                )
+            );
+
+            $subscription->cancel();
+
+            return true;
+    }
+
     /**
      * @param array<string> $expand
      * @return array<mixed>
@@ -133,18 +181,17 @@ class StripeFactory extends FactoryCore
         return $subscription->toArray();
     }
 
-    public function cancel_subscription(string $subscription_id): bool
+    // Webhook related
+    //
+    /**
+     * @return array<string>
+     */
+    public function get_webhook_events(): array
     {
-            $subscription = \Stripe\Subscription::retrieve(
-                array(
-                    "id" => $subscription_id,
-                )
-            );
+        $webhooks = $this->stripe->webhookEndpoints->all();
+        $this->verify(count($webhooks) == 1, 'Not exactly 1 webhook in place');
 
-            $subscription->cancel();
-
-            return true;
+        return $webhooks->data[0]->enabled_events;
     }
-
 };
 ?>
