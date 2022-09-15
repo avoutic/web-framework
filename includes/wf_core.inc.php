@@ -723,12 +723,6 @@ TXT;
             $this->exit_error('Missing base requirement',
                               'One of the required files (includes/config.php) is not found on the server.');
         }
-
-        if (!is_file(WF::$site_includes."sender_handler.inc.php"))
-        {
-            $this->exit_error('Sender Handler missing',
-                              'One of the required files (includes/sender_handler.inc.php) is not found on the server.');
-        }
     }
 
     private function load_requirements(): void
@@ -753,7 +747,7 @@ TXT;
         if (!class_exists($this->internal_get_config('sender_core.handler_class')))
         {
             $this->exit_error('Handler class does not exist',
-                              'The class configured in "sender_core.handler_class" is not provided by includes/sender_handler.inc.php.');
+                'The class configured in "sender_core.handler_class" cannot be found');
         }
     }
 
