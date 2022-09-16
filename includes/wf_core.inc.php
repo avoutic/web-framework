@@ -1025,7 +1025,7 @@ TXT;
      */
     public function get_build_info(): array
     {
-        if (!file_exists(__DIR__.'/../../build_commit'))
+        if (!file_exists(__DIR__.'/../../build_commit') || !file_exists(__DIR__.'/../../build_timestamp'))
         {
             return array(
                 'commit' => null,
@@ -1033,8 +1033,12 @@ TXT;
             );
         }
 
-        $commit = substr(file_get_contents(__DIR__.'/../../build_commit'), 0, 8);
+        $commit = file_get_contents(__DIR__.'/../../build_commit');
+        $this->internal_verify($commit !== false, 'Failed to retrieve build_commit');
+        $commit = substr($commit, 0, 8);
+
         $build_time = file_get_contents(__DIR__.'/../../build_timestamp');
+        $this->internal_verify($build_time !== false, 'Failed to retrieve build_timestamp');
 
         return array(
             'commit' => $commit,

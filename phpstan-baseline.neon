@@ -1,24 +1,24 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Offset 'calculated_hash' on array\\{calculated_hash\\: string, stored_hash\\: string\\} in isset\\(\\) always exists and is not nullable\\.$#"
+			message: "#^Method WebFramework\\\\Core\\\\ActionCore\\:\\:get_input_var\\(\\) should return string but returns array\\<string\\>\\|string\\.$#"
 			count: 1
-			path: includes/user.inc.php
+			path: includes/action_core.inc.php
 
 		-
-			message: "#^Offset 'stored_hash' on array\\{calculated_hash\\: string, stored_hash\\: string\\} in isset\\(\\) always exists and is not nullable\\.$#"
+			message: "#^Method WebFramework\\\\Core\\\\ActionCore\\:\\:get_raw_input_array\\(\\) should return array\\<string\\> but returns array\\<string\\>\\|string\\.$#"
 			count: 1
-			path: includes/user.inc.php
+			path: includes/action_core.inc.php
+
+		-
+			message: "#^Method WebFramework\\\\Core\\\\ActionCore\\:\\:get_raw_input_var\\(\\) should return string but returns array\\<string\\>\\|string\\.$#"
+			count: 1
+			path: includes/action_core.inc.php
 
 		-
 			message: "#^Method WebFramework\\\\Core\\\\DataCore\\:\\:get_object_by_id\\(\\) should return static\\(WebFramework\\\\Core\\\\DataCore\\)\\|false but returns WebFramework\\\\Core\\\\DataCore\\.$#"
 			count: 1
 			path: includes/data_core.inc.php
-
-		-
-			message: "#^Call to method WebFramework\\\\Core\\\\FrameworkCore\\:\\:verify\\(\\) with false and non\\-falsy\\-string will always evaluate to false\\.$#"
-			count: 3
-			path: includes/database_manager.inc.php
 
 		-
 			message: "#^Offset 'target_version' on array\\{target_version\\: int, actions\\: array\\<array\\>\\} in isset\\(\\) always exists and is not nullable\\.$#"
@@ -76,54 +76,19 @@ parameters:
 			path: includes/image.inc.php
 
 		-
-			message: "#^Method WebFramework\\\\Core\\\\ActionCore\\:\\:get_input_var\\(\\) should return string but returns array\\<string\\>\\|string\\.$#"
+			message: "#^Method Redis\\:\\:pconnect\\(\\) invoked with 7 parameters, 1\\-5 required\\.$#"
 			count: 1
-			path: includes/action_core.inc.php
+			path: includes/redis_cache.inc.php
 
 		-
-			message: "#^Method WebFramework\\\\Core\\\\ActionCore\\:\\:get_raw_input_array\\(\\) should return array\\<string\\> but returns array\\<string\\>\\|string\\.$#"
+			message: "#^Offset 'calculated_hash' on array\\{calculated_hash\\: string, stored_hash\\: string\\} in isset\\(\\) always exists and is not nullable\\.$#"
 			count: 1
-			path: includes/action_core.inc.php
+			path: includes/user.inc.php
 
 		-
-			message: "#^Method WebFramework\\\\Core\\\\ActionCore\\:\\:get_raw_input_var\\(\\) should return string but returns array\\<string\\>\\|string\\.$#"
+			message: "#^Offset 'stored_hash' on array\\{calculated_hash\\: string, stored_hash\\: string\\} in isset\\(\\) always exists and is not nullable\\.$#"
 			count: 1
-			path: includes/action_core.inc.php
-
-		-
-			message: "#^Call to method WebFramework\\\\Core\\\\FrameworkCore\\:\\:verify\\(\\) with false and non\\-falsy\\-string will always evaluate to false\\.$#"
-			count: 1
-			path: includes/postmark_sender.inc.php
-
-		-
-			message: "#^Call to method WebFramework\\\\Core\\\\WF\\:\\:internal_verify\\(\\) with false and 'Cannot authenticate…' will always evaluate to false\\.$#"
-			count: 1
-			path: includes/wf_core.inc.php
-
-		-
-			message: "#^Call to method WebFramework\\\\Core\\\\WF\\:\\:internal_verify\\(\\) with false and 'Cannot invalidate…' will always evaluate to false\\.$#"
-			count: 1
-			path: includes/wf_core.inc.php
-
-		-
-			message: "#^Call to method WebFramework\\\\Core\\\\WF\\:\\:internal_verify\\(\\) with false and 'Cannot retrieve…' will always evaluate to false\\.$#"
-			count: 1
-			path: includes/wf_core.inc.php
-
-		-
-			message: "#^Call to method WebFramework\\\\Core\\\\WF\\:\\:internal_verify\\(\\) with false and 'Cannot…' will always evaluate to false\\.$#"
-			count: 1
-			path: includes/wf_core.inc.php
-
-		-
-			message: "#^Call to method WebFramework\\\\Core\\\\WF\\:\\:internal_verify\\(\\) with false and 'No blacklist…' will always evaluate to false\\.$#"
-			count: 1
-			path: includes/wf_core.inc.php
-
-		-
-			message: "#^Parameter \\#1 \\$string of function substr expects string, string\\|false given\\.$#"
-			count: 1
-			path: includes/wf_core.inc.php
+			path: includes/user.inc.php
 
 		-
 			message: "#^Parameter \\#1 \\$data of function openssl_encrypt expects string, string\\|false given\\.$#"
@@ -139,11 +104,6 @@ parameters:
 			message: "#^Parameter \\#1 \\$string of function base64_encode expects string, string\\|false given\\.$#"
 			count: 1
 			path: includes/wf_security.inc.php
-
-		-
-			message: "#^Call to method WebFramework\\\\Core\\\\WF\\:\\:internal_verify\\(\\) with false and 'No valid…' will always evaluate to false\\.$#"
-			count: 1
-			path: includes/wf_web_handler.inc.php
 
 		-
 			message: "#^Cannot access offset 'WebFramework\\\\\\\\Core…' on array\\<string, class\\-string\\>\\|false\\.$#"
