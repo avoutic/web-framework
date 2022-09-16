@@ -45,7 +45,7 @@ RewriteEngine on
 
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ /index.php [L,NC,QSA]
+RewriteRule ^(.*)$ /index.php [END,NC,QSA]
 ```
 
 These rewrite conditions and rule make sure that Apache will call web-framework for any and all files and directories that do not exist as a static file in _htdocs/_.
