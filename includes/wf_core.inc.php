@@ -1021,7 +1021,7 @@ TXT;
     /**
      * Get build info
      *
-     * @return array{commit: null|string, timestamp: int}
+     * @return array{commit: null|string, timestamp: string}
      */
     public function get_build_info(): array
     {
@@ -1029,7 +1029,7 @@ TXT;
         {
             return array(
                 'commit' => null,
-                'timestamp' => time(),
+                'timestamp' => date('Y-m-d H:i'),
             );
         }
 
@@ -1038,7 +1038,7 @@ TXT;
 
         return array(
             'commit' => $commit,
-            'timestamp' => (int) $build_time,
+            'timestamp' => $build_time,
         );
     }
 }

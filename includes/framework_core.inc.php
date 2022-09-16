@@ -191,7 +191,7 @@ class FrameworkCore
     // Build info
     //
     /**
-     * @return array{commit: null|string, timestamp: int}
+     * @return array{commit: null|string, timestamp: string}
      */
     protected function get_build_info(): array
     {
