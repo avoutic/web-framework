@@ -414,8 +414,19 @@ class WFWebHandler extends WF
             if ($permission == 'logged_in')
                 continue;
 
-            if (!$this->auth_array['user']->has_right($permission))
+            try
+            {
+                if (!$this->auth_array['user']->has_right($permission))
+                    return false;
+            }
+            catch (\Throwable $e)
+            {
+                // In case the user object changed (in name / namespace) an exception for
+                // deserialization will be thrown. Deauthenticate instead.
+                //
+                $this->deauthenticate();
                 return false;
+            }
         }
 
         return true;
