@@ -15,10 +15,31 @@ class RedisCache implements CacheInterface
     {
         WF::verify(isset($config['hostname']), 'No hostname set');
         WF::verify(isset($config['port']), 'No port set');
+        WF::verify(isset($config['password']), 'No password set');
 
         $client = new Redis();
-        $client->pconnect($config['hostname'], (int) $config['port']);
+        $result = $client->pconnect(
+            $config['hostname'],
+            (int) $config['port'],
+            1,
+            "wf",
+            0,
+            0,
+            ['auth' => $config['password']]
+        );
+        WF::verify($result === true, 'Failed to connect to Redis cache');
+
         $this->pool = new RedisCachePool($client);
+
+        try {
+            // Workaround: Without trying to check something, the connection is not yet verified.
+            //
+            $this->pool->hasItem('errors');
+        }
+        catch (\Throwable $e)
+        {
+            WF::verify(false, 'Failed to connect to Redis cache');
+        }
     }
 
     public function exists(string $path): bool
