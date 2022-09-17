@@ -1,26 +1,20 @@
 <?php
 namespace WebFramework\Core;
 
-class WFAutoLoader
+class CamelCaseAutoLoader
 {
-    private static ?WFAutoLoader $loader = null;
+    private static ?CamelCaseAutoLoader $loader = null;
 
     /**
      * @var array<string, string>
      */
     protected array $wf_exceptions = array(
-        'WF' => 'wf_core',
-        'WFHelpers' => 'wf_helpers',
-        'WFSecurity' => 'wf_security',
-        'WFWebHandler' => 'wf_web_handler',
     );
 
     /**
      * @var array<string, string>
      */
     protected array $wf_namespaces = array(
-        'WebFramework\\Core' => '/',
-        'WebFramework\\Actions' => '/../actions/',
     );
 
     public function register(): void
@@ -86,11 +80,11 @@ class WFAutoLoader
         }
     }
 
-    static function get_loader(): WFAutoLoader
+    static function get_loader(): CamelCaseAutoLoader
     {
         if (self::$loader === null)
         {
-            self::$loader = new WFAutoLoader();
+            self::$loader = new CamelCaseAutoLoader();
             self::$loader->register();
 
         }
@@ -99,5 +93,5 @@ class WFAutoLoader
     }
 }
 
-WFAutoLoader::get_loader();
+CamelCaseAutoLoader::get_loader();
 ?>
