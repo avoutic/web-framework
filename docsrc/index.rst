@@ -18,7 +18,7 @@ web-framework: Simple Secure PHP Framework
    routing
 
 Secure-by-default
-    web-framework is built from the ground up as a secure PHP framework in it's default state. You have to enable individual input variables with an allowed regex for them to be available to your views.
+    web-framework is built from the ground up as a secure PHP framework in it's default state. You have to enable individual input variables with an allowed regex for them to be available to your actions.
 
 Core database abstraction
     Objects are automatically constructed from database tables and standard operations are available in code. Complex queries can still be built in SQL from the ground up.

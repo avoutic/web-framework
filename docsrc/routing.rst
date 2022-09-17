@@ -26,21 +26,21 @@ For a more dynamic redirect, we can also include regex-mapping to our redirect. 
 Adding a route
 --------------
 
-A route is a mapping that will result in a specific view page being called and executed.
+A route is a mapping that will result in a specific action being called and executed.
 
-Let's start with a simple mapping to tell web-framework to send all requests for */dashboard* to your View in *views/dashboard.inc.php* with class name `PageDashboard` and to call `html_main()` on that object. That would look something like:
-
-.. code-block:: php
-
-    $framework->register_route('GET /dashboard', 'dashboard', 'PageDashboard.html_main');
-
-In some cases the URL already contains relevant information for your view to use as input. In that case we can map regex-matches to input variables (that are filtered with your View's static `get_filter()` function.
+Let's start with a simple mapping to tell web-framework to send all requests for */dashboard* to your action in *actions/Dashboard.php* with class name `\App\Actions\Dashboard` and to call `html_main()` on that object. That would look something like:
 
 .. code-block:: php
 
-    $this->register_route('GET /product/(\w+)', 'product', 'PageProduct.html_main', array('slug'));
+    $framework->register_route('GET /dashboard', '', 'Dashboard.html_main');
 
-This will map part of the URL to the `slug` input variable for your PageProduct view.
+In some cases the URL already contains relevant information for your action to use as input. In that case we can map regex-matches to input variables (that are filtered with your action's static `get_filter()` function.
+
+.. code-block:: php
+
+    $this->register_route('GET /product/(\w+)', '', 'Product.html_main', array('slug'));
+
+This will map part of the URL to the `slug` input variable for your Product action.
 
 Handling 404s
 -------------
@@ -49,20 +49,20 @@ If you don't specify anything, web-framework will serve very boring text message
 
 You can either provide a single 404 page that is used for all 404 cases, or you can provide multiple different pages, by setting the right configuration.
 
-To provide multiple 404 page:
+To provide multiple 404 actions:
 
 .. code-block:: php
 
     $site_config = array(
         'error_handlers' => array(
             '404' => array(
-                'generic' => 'page_not_found',
-                'product' => 'product_not_found',
+                'generic' => 'PageNotFound',
+                'product' => 'ProductNotFound',
             ),
         ),
     );
 
-In case any code calls `$this->exit_send_404();`, the generic mapping is used, and *views/page_not_found.inc.php* is opened with the `PagePageNotFound` class called.
+In case any code calls `$this->exit_send_404();`, the generic mapping is used, and `App\Actions\PageNotFound` is called.
 
-For specific 404 cases, code can call `$this->exit_send_404('product');` and then *views/product_not_found.inc.php* is opened with the `PageProductNotFound` class called.
+For specific 404 cases, code can call `$this->exit_send_404('product');` and then `App\Actions\ProductNotFound` is called.
 
