@@ -1,15 +1,47 @@
 {
     "name": "avoutic/web-framework",
     "description": "web-framework is a secure-by-default PHP framework for quickly making PHP sites and APIs",
-    "require": {
-        "adodb/adodb-php": "~5.21.*",
-        "defuse/php-encryption": "^2.2"
-    },
+    "type": "library",
+    "keywords": [
+        "framework",
+        "security"
+    ],
+    "homepage": "https://avoutic.github.io/web-framework/",
     "license": "MIT",
     "authors": [
         {
             "name": "Avoutic",
             "email": "avoutic@gmail.com"
         }
-    ]
+    ],
+    "support": {
+        "issues": "https://github.com/avoutic/web-framework/issues",
+        "source": "https://github.com/avoutic/web-framework",
+        "docs": "https://avoutic.github.io/web-framework/"
+    },
+    "require": {
+        "php": "^8.1",
+        "adodb/adodb-php": "~5.21.0",
+        "ext-mysqli": "*"
+    },
+    "suggest": {
+        "wildbit/postmark-php": "Allow (error) mailing via Postmark (^4.0)",
+        "stripe/stripe-php": "Supporting Stripe (^7.128)",
+        "cache/redis-adapter": "For the RedisCache (^1.1)",
+        "ext-redis": "For the RedisCache"
+    },
+    "require-dev": {
+        "phpstan/phpstan": "^1.8"
+    },
+    "autoload": {
+        "psr-4": {
+            "WebFramework\\Core\\": "includes/",
+            "WebFramework\\Actions\\": "actions/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "WebFramework\\PHPStan\\": "web-framework/phpstan/"
+        }
+    }
 }
