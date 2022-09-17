@@ -4,7 +4,6 @@
 if (!file_exists(__DIR__ . '/../../vendor/autoload.php'))
     die('Composer not initialized');
 require_once(__DIR__ . '/../../vendor/autoload.php');
-require_once(__DIR__ . '/../includes/autoload.inc.php');
 
 use WebFramework\Core\WF;
 use WebFramework\Core\WFWebHandler;
