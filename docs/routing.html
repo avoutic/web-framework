@@ -1,70 +1,34 @@
-
-
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Routing &mdash; web-framework  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
-
-  
-  
-
-  
-
-  
-  
-    
-
-  
-
-  
-  
-    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="web-framework  documentation" href="index.html"/>
-        <link rel="prev" title="Tasks" href="tasks.html"/> 
-
-  
-  <script src="_static/js/modernizr.min.js"></script>
-
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Tasks" href="tasks.html" /> 
 </head>
 
-<body class="wy-body-for-nav" role="document">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
-          
-
-          
+        <div class="wy-side-nav-search" >
             <a href="index.html" class="icon icon-home"> web-framework
-          
-
-          
           </a>
-
-          
-            
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -72,15 +36,8 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-                <p class="caption"><span class="caption-text">Concepts:</span></p>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Concepts:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="data-core.html">Data Core</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sender-core.html">Sender Core</a></li>
@@ -94,73 +51,36 @@
 </li>
 </ul>
 
-            
-          
         </div>
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">web-framework</a>
-        
       </nav>
 
-
-      
       <div class="wy-nav-content">
         <div class="rst-content">
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="index.html">Docs</a> &raquo;</li>
-        
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
       <li>Routing</li>
-    
-    
       <li class="wy-breadcrumbs-aside">
-        
-            
             <a href="_sources/routing.rst.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <div class="section" id="routing">
-<h1>Routing<a class="headerlink" href="#routing" title="Permalink to this headline">¶</a></h1>
+             
+  <section id="routing">
+<h1>Routing<a class="headerlink" href="#routing" title="Permalink to this heading"></a></h1>
 <p>If nothing is configured, web-framework will not allow any traffic. To make sure pages get handled we have to populate the routing array.</p>
 <p>Routes are created by calling functions on the central Framework object. Convention is to create a central file <em>includes/site_logic.inc.php</em> that contains all your routes. This file is then the central switchroom of your application.</p>
-<div class="section" id="adding-a-redirect">
-<h2>Adding a redirect<a class="headerlink" href="#adding-a-redirect" title="Permalink to this headline">¶</a></h2>
+<section id="adding-a-redirect">
+<h2>Adding a redirect<a class="headerlink" href="#adding-a-redirect" title="Permalink to this heading"></a></h2>
 <p>A redirect is an instruction to return a 301 (or other redirect code) to the client and move the communication somewhere else.</p>
 <p>In it’s most basic form, a redirect is nothing more than a statement to redirect a method and URL to another URL, like this:</p>
 <div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="nv">$framework</span><span class="o">-&gt;</span><span class="na">register_redirect</span><span class="p">(</span><span class="s1">&#39;GET /old_page&#39;</span><span class="p">,</span> <span class="s1">&#39;/new-page&#39;</span><span class="p">);</span>
@@ -171,106 +91,68 @@
                       <span class="mi">301</span><span class="p">,</span> <span class="k">array</span><span class="p">(</span><span class="s1">&#39;slug&#39;</span> <span class="o">=&gt;</span> <span class="mi">1</span><span class="p">));</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="adding-a-route">
-<h2>Adding a route<a class="headerlink" href="#adding-a-route" title="Permalink to this headline">¶</a></h2>
-<p>A route is a mapping that will result in a specific view page being called and executed.</p>
-<p>Let’s start with a simple mapping to tell web-framework to send all requests for <em>/dashboard</em> to your View in <em>views/dashboard.inc.php</em> with class name <cite>PageDashboard</cite> and to call <cite>html_main()</cite> on that object. That would look something like:</p>
-<div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="nv">$framework</span><span class="o">-&gt;</span><span class="na">register_route</span><span class="p">(</span><span class="s1">&#39;GET /dashboard&#39;</span><span class="p">,</span> <span class="s1">&#39;dashboard&#39;</span><span class="p">,</span> <span class="s1">&#39;PageDashboard.html_main&#39;</span><span class="p">);</span>
+</section>
+<section id="adding-a-route">
+<h2>Adding a route<a class="headerlink" href="#adding-a-route" title="Permalink to this heading"></a></h2>
+<p>A route is a mapping that will result in a specific action being called and executed.</p>
+<p>Let’s start with a simple mapping to tell web-framework to send all requests for <em>/dashboard</em> to your action in <em>actions/Dashboard.php</em> with class name <cite>AppActionsDashboard</cite> and to call <cite>html_main()</cite> on that object. That would look something like:</p>
+<div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="nv">$framework</span><span class="o">-&gt;</span><span class="na">register_route</span><span class="p">(</span><span class="s1">&#39;GET /dashboard&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;Dashboard.html_main&#39;</span><span class="p">);</span>
 </pre></div>
 </div>
-<p>In some cases the URL already contains relevant information for your view to use as input. In that case we can map regex-matches to input variables (that are filtered with your View’s static <cite>get_filter()</cite> function.</p>
-<div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">register_route</span><span class="p">(</span><span class="s1">&#39;GET /product/(\w+)&#39;</span><span class="p">,</span> <span class="s1">&#39;product&#39;</span><span class="p">,</span> <span class="s1">&#39;PageProduct.html_main&#39;</span><span class="p">,</span> <span class="k">array</span><span class="p">(</span><span class="s1">&#39;slug&#39;</span><span class="p">));</span>
+<p>In some cases the URL already contains relevant information for your action to use as input. In that case we can map regex-matches to input variables (that are filtered with your action’s static <cite>get_filter()</cite> function.</p>
+<div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">register_route</span><span class="p">(</span><span class="s1">&#39;GET /product/(\w+)&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;Product.html_main&#39;</span><span class="p">,</span> <span class="k">array</span><span class="p">(</span><span class="s1">&#39;slug&#39;</span><span class="p">));</span>
 </pre></div>
 </div>
-<p>This will map part of the URL to the <cite>slug</cite> input variable for your PageProduct view.</p>
-</div>
-<div class="section" id="handling-404s">
-<h2>Handling 404s<a class="headerlink" href="#handling-404s" title="Permalink to this headline">¶</a></h2>
+<p>This will map part of the URL to the <cite>slug</cite> input variable for your Product action.</p>
+</section>
+<section id="handling-404s">
+<h2>Handling 404s<a class="headerlink" href="#handling-404s" title="Permalink to this heading"></a></h2>
 <p>If you don’t specify anything, web-framework will serve very boring text messages in case a page is not found.</p>
 <p>You can either provide a single 404 page that is used for all 404 cases, or you can provide multiple different pages, by setting the right configuration.</p>
-<p>To provide multiple 404 page:</p>
+<p>To provide multiple 404 actions:</p>
 <div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="nv">$site_config</span> <span class="o">=</span> <span class="k">array</span><span class="p">(</span>
     <span class="s1">&#39;error_handlers&#39;</span> <span class="o">=&gt;</span> <span class="k">array</span><span class="p">(</span>
         <span class="s1">&#39;404&#39;</span> <span class="o">=&gt;</span> <span class="k">array</span><span class="p">(</span>
-            <span class="s1">&#39;generic&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;page_not_found&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;product&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;product_not_found&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;generic&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;PageNotFound&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;product&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;ProductNotFound&#39;</span><span class="p">,</span>
         <span class="p">),</span>
     <span class="p">),</span>
 <span class="p">);</span>
 </pre></div>
 </div>
-<p>In case any code calls <cite>$this-&gt;exit_send_404();</cite>, the generic mapping is used, and <em>views/page_not_found.inc.php</em> is opened with the <cite>PagePageNotFound</cite> class called.</p>
-<p>For specific 404 cases, code can call <cite>$this-&gt;exit_send_404(‘product’);</cite> and then <em>views/product_not_found.inc.php</em> is opened with the <cite>PageProductNotFound</cite> class called.</p>
-</div>
-</div>
+<p>In case any code calls <cite>$this-&gt;exit_send_404();</cite>, the generic mapping is used, and <cite>AppActionsPageNotFound</cite> is called.</p>
+<p>For specific 404 cases, code can call <cite>$this-&gt;exit_send_404(‘product’);</cite> and then <cite>AppActionsProductNotFound</cite> is called.</p>
+</section>
+</section>
 
 
            </div>
           </div>
-          <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-      
-        <a href="tasks.html" class="btn btn-neutral" title="Tasks" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="tasks.html" class="btn btn-neutral float-left" title="Tasks" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &copy; Copyright 2020, Avoutic.
-
-    </p>
+    <p>&#169; Copyright 2022, Avoutic.</p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> and ❤️  using a custom <a href="https://github.com/LinxiFan/Sphinx-theme">theme</a> based on <a href="https://readthedocs.org">Read the Docs</a>. 
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
-
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'./',
-            VERSION:'',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
-        };
-    </script>
-      <script type="text/javascript" src="_static/jquery.js"></script>
-      <script type="text/javascript" src="_static/underscore.js"></script>
-      <script type="text/javascript" src="_static/doctools.js"></script>
-      <script type="text/javascript" src="_static/language_data.js"></script>
-
-  
-
-  
-  
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-  
-
-  
-  
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

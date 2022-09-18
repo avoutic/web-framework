@@ -1,71 +1,35 @@
-
-
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Data Core &mdash; web-framework  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
-
-  
-  
-
-  
-
-  
-  
-    
-
-  
-
-  
-  
-    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="web-framework  documentation" href="index.html"/>
-        <link rel="next" title="Sender Core" href="sender-core.html"/>
-        <link rel="prev" title="web-framework: Simple Secure PHP Framework" href="index.html"/> 
-
-  
-  <script src="_static/js/modernizr.min.js"></script>
-
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Sender Core" href="sender-core.html" />
+    <link rel="prev" title="web-framework: Simple Secure PHP Framework" href="index.html" /> 
 </head>
 
-<body class="wy-body-for-nav" role="document">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
-          
-
-          
+        <div class="wy-side-nav-search" >
             <a href="index.html" class="icon icon-home"> web-framework
-          
-
-          
           </a>
-
-          
-            
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -73,15 +37,8 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-                <p class="caption"><span class="caption-text">Concepts:</span></p>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Concepts:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Data Core</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#datacore">DataCore</a><ul>
@@ -100,84 +57,51 @@
 <li class="toctree-l1"><a class="reference internal" href="routing.html">Routing</a></li>
 </ul>
 
-            
-          
         </div>
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">web-framework</a>
-        
       </nav>
 
-
-      
       <div class="wy-nav-content">
         <div class="rst-content">
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="index.html">Docs</a> &raquo;</li>
-        
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
       <li>Data Core</li>
-    
-    
       <li class="wy-breadcrumbs-aside">
-        
-            
             <a href="_sources/data-core.rst.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <div class="section" id="data-core">
-<h1>Data Core<a class="headerlink" href="#data-core" title="Permalink to this headline">¶</a></h1>
+             
+  <section id="data-core">
+<h1>Data Core<a class="headerlink" href="#data-core" title="Permalink to this heading"></a></h1>
 <p>Within web-framework data and database interaction is abstracted where possible. With a little bit of code you can make simple and more complex object types by just providing an ID or another identifier.</p>
 <p>The core library has two base classes to build from:</p>
 <ul class="simple">
-<li><p>DataCore, an object abstraction that represents a row from a table</p></li>
-<li><p>FactoryCore, a factory abstraction that understands how to work with DataCore objects</p></li>
+<li><p>WebFrameworkCoreDataCore, an object abstraction that represents a row from a table</p></li>
+<li><p>WebFrameworkCoreFactoryCore, a factory abstraction that understands how to work with DataCore objects</p></li>
 </ul>
-<div class="section" id="datacore">
-<h2>DataCore<a class="headerlink" href="#datacore" title="Permalink to this headline">¶</a></h2>
-<p>The base data abstraction is done with <em>DataCore</em>. By just specifying the <cite>table_name</cite> and <cite>base_fields</cite> you can already easily instantiate objects based on data in the database.</p>
-<p>If we have a table <em>persons</em> in our database, with fields like name, address and country, we can easily encapsulate this table with a DataCore abstraction. Let’s create <em>includes/persons.inc.php</em> to construct the Person class.</p>
+<section id="datacore">
+<h2>DataCore<a class="headerlink" href="#datacore" title="Permalink to this heading"></a></h2>
+<p>The base data abstraction is done with <cite>DataCore</cite>. By just specifying the <cite>table_name</cite> and <cite>base_fields</cite> you can already easily instantiate objects based on data in the database.</p>
+<p>If we have a table <em>persons</em> in our database, with fields like name, address and country, we can easily encapsulate this table with a DataCore abstraction. Let’s create <em>includes/Persons.php</em> to construct the Person class.</p>
 <div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;?</span><span class="nx">php</span>
+<span class="k">namespace</span> <span class="nx">App\Core</span><span class="p">;</span>
+
+<span class="k">use</span> <span class="nx">WebFramework\Core\DataCore</span><span class="p">;</span>
+
 <span class="k">class</span> <span class="nc">Person</span> <span class="k">extends</span> <span class="nx">DataCore</span>
 <span class="p">{</span>
-    <span class="k">static</span> <span class="k">protected</span> <span class="nv">$table_name</span> <span class="o">=</span> <span class="s1">&#39;persons&#39;</span><span class="p">;</span>
-    <span class="k">static</span> <span class="k">protected</span> <span class="nv">$base_fields</span> <span class="o">=</span> <span class="k">array</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;email&#39;</span><span class="p">,</span> <span class="s1">&#39;country&#39;</span><span class="p">);</span>
+    <span class="k">static</span> <span class="k">protected</span> <span class="nx">string</span> <span class="nv">$table_name</span> <span class="o">=</span> <span class="s1">&#39;persons&#39;</span><span class="p">;</span>
+    <span class="k">static</span> <span class="k">protected</span> <span class="k">array</span> <span class="nv">$base_fields</span> <span class="o">=</span> <span class="k">array</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;email&#39;</span><span class="p">,</span> <span class="s1">&#39;country&#39;</span><span class="p">);</span>
 <span class="p">};</span>
 <span class="cp">?&gt;</span><span class="x"></span>
 </pre></div>
@@ -186,9 +110,12 @@
 <p class="admonition-title">Note</p>
 <p>For encapsulation with DataCore, each table needs a column named <cite>id</cite> with unique, as primary key values.</p>
 </div>
-<p>Our Person object now has basic capabilities. While we can instantiate an DataCore object with <cite>new</cite>, this is not advised for multiple reasons. You should use <cite>DataCore::get_object_by_id()</cite> and others instead. The main reason is that this gracefully handles non-existing IDs (returning <cite>false</cite>), but also allows intermediate caching and transformations.</p>
+<p>Our Person object now has basic capabilities. While we can instantiate an DataCore object with <cite>new</cite>, this is not advised for multiple reasons. You should use <cite>Person::get_object_by_id()</cite> and others instead. The main reason is that this gracefully handles non-existing IDs (returning <cite>false</cite>), but also allows intermediate caching and transformations.</p>
 <p>So if we instantiate a Person (using our global database information), we can take actions, like these:</p>
 <div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;?</span><span class="nx">php</span>
+<span class="k">use</span> <span class="nx">App\Core\Person</span><span class="p">;</span>
+<span class="k">use</span> <span class="nx">WebFramework\Core\WF</span><span class="p">;</span>
+
 <span class="c1">// Retrieve person with id 5</span>
 <span class="nv">$person</span> <span class="o">=</span> <span class="nx">Person</span><span class="o">::</span><span class="na">get_object_by_id</span><span class="p">(</span><span class="mi">5</span><span class="p">);</span>
 
@@ -203,124 +130,121 @@
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>What is <cite>WF::verify()</cite>? <cite>WF::verify()</cite> is like <cite>assert()</cite>. It is used to guard code paths that should never occur, unless something is really wrong. But unlike <cite>assert()</cite> our <cite>WF::verify()</cite> cannot be silently ignored due to PHP settings. For a secure-by-default platform, we want to make sure those guards are always there. In addition it can show a debug trace, debug info and e-mail you in case a verify gate fails. In most cases you will use <cite>$this-&gt;verify()</cite> instead, when you work with code in objects.</p>
+<p>What is <cite>WF::verify()</cite>? <cite>WF::verify()</cite> is like <cite>assert()</cite>. It is used to guard code paths that should never occur, unless something is really wrong. But unlike <cite>assert()</cite> our <cite>WF::verify()</cite> cannot be silently ignored due to PHP settings. In addition it can e-mail error reports to you so you see errors even when others encounter them. For a secure-by-default platform, we want to make sure those guards are always there. In addition it can show a debug trace, debug info and e-mail you in case a verify gate fails. In most cases you will use <cite>$this-&gt;verify()</cite> instead, when you work with code in objects.</p>
 </div>
-<div class="section" id="complex-objects">
-<h3>Complex objects<a class="headerlink" href="#complex-objects" title="Permalink to this headline">¶</a></h3>
+<section id="complex-objects">
+<h3>Complex objects<a class="headerlink" href="#complex-objects" title="Permalink to this heading"></a></h3>
 <p>There are a lot of cases where you don’t just need to encapsulate a single row from a single table, but data from other tables is required as well. Let’s consider that our Person can also own one or more vehicles. We can easily make sure that those vehicles are populated directly at instantiation of a Person.</p>
-<p>Let’s first create our Vehicle class in <em>includes/vehicles.inc.php</em>:</p>
+<p>Let’s first create our Vehicle class in <em>includes/Vehicle.php</em>:</p>
 <div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;?</span><span class="nx">php</span>
+<span class="k">namespace</span> <span class="nx">App\Core</span><span class="p">;</span>
+
+<span class="k">use</span> <span class="nx">WebFramework\Core\DataCore</span><span class="p">;</span>
+
 <span class="k">class</span> <span class="nc">Vehicle</span> <span class="k">extends</span> <span class="nx">DataCore</span>
 <span class="p">{</span>
-    <span class="k">static</span> <span class="k">protected</span> <span class="nv">$table_name</span> <span class="o">=</span> <span class="s1">&#39;vehicles&#39;</span><span class="p">;</span>
-    <span class="k">static</span> <span class="k">protected</span> <span class="nv">$base_fields</span> <span class="o">=</span> <span class="k">array</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="s1">&#39;brand&#39;</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">);</span>
+    <span class="k">static</span> <span class="k">protected</span> <span class="nx">string</span> <span class="nv">$table_name</span> <span class="o">=</span> <span class="s1">&#39;vehicles&#39;</span><span class="p">;</span>
+    <span class="k">static</span> <span class="k">protected</span> <span class="k">array</span> <span class="nv">$base_fields</span> <span class="o">=</span> <span class="k">array</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="s1">&#39;brand&#39;</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">);</span>
 <span class="p">};</span>
 <span class="cp">?&gt;</span><span class="x"></span>
-</pre></div>
-</div>
-<p>Now we include this file at the top of <em>includes/persons.inc.php</em>:</p>
-<div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="k">require_once</span><span class="p">(</span><span class="nx">WF</span><span class="o">::</span><span class="nv">$site_includes</span><span class="o">.</span><span class="s1">&#39;vehicles.inc.php&#39;</span><span class="p">);</span>
-
-<span class="k">class</span> <span class="nc">Person</span> <span class="k">extends</span> <span class="nx">DataCore</span>
-<span class="o">&lt;</span><span class="nx">snip</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <p>And we’ll add a method called <cite>fill_complex_fields()</cite> in our Person class:</p>
 <div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="k">function</span> <span class="nf">fill_complex_fields</span><span class="p">()</span>
 <span class="p">{</span>
-    <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">vehicles</span> <span class="o">=</span> <span class="nx">Vehicles</span><span class="o">::</span><span class="na">get_objects</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
-                                   <span class="k">array</span><span class="p">(</span><span class="s1">&#39;owner_id&#39;</span> <span class="o">=&gt;</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">id</span><span class="p">));</span>
+    <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">vehicles</span> <span class="o">=</span> <span class="nx">Vehicle</span><span class="o">::</span><span class="na">get_objects</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+        <span class="k">array</span><span class="p">(</span><span class="s1">&#39;owner_id&#39;</span> <span class="o">=&gt;</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">id</span><span class="p">));</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p><cite>fill_complex_fields()</cite> is immediately called in the constructor after all base fields have been loaded.</p>
 <p>Keep in mind that <cite>Person-&gt;fill_complex_fields()</cite> runs on every instantiation. In most cases you want to be able to instantiate a bare Person class as well. So it would be better to just implement a <cite>Person-&gt;get_vehicles()</cite> (with optional caching) instead:</p>
-<div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="k">protected</span> <span class="nv">$vehicles</span> <span class="o">=</span> <span class="k">null</span><span class="p">;</span>
+<div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="k">protected</span> <span class="o">?</span><span class="k">array</span> <span class="nv">$vehicles</span> <span class="o">=</span> <span class="k">null</span><span class="p">;</span>
 <span class="k">function</span> <span class="nf">get_vehicles</span><span class="p">()</span>
 <span class="p">{</span>
     <span class="k">if</span> <span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">vehicles</span> <span class="o">===</span> <span class="k">null</span><span class="p">)</span>
-        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">vehicles</span> <span class="o">=</span> <span class="nx">Vehicles</span><span class="o">::</span><span class="na">get_objects</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="k">array</span><span class="p">(</span><span class="s1">&#39;owner_id&#39;</span> <span class="o">=&gt;</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">id</span><span class="p">));</span>
+        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">vehicles</span> <span class="o">=</span> <span class="nx">Vehicle</span><span class="o">::</span><span class="na">get_objects</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="k">array</span><span class="p">(</span><span class="s1">&#39;owner_id&#39;</span> <span class="o">=&gt;</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">id</span><span class="p">));</span>
 
     <span class="k">return</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">vehicles</span><span class="p">;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
-</div>
-</div>
-<div class="section" id="object-documentation">
-<h2>Object Documentation<a class="headerlink" href="#object-documentation" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="datacore-object">
-<h3>DataCore Object<a class="headerlink" href="#datacore-object" title="Permalink to this headline">¶</a></h3>
-<dl class="class">
-<dt id="DataCore">
-<em class="property">class </em><code class="sig-name descname">DataCore</code><a class="headerlink" href="#DataCore" title="Permalink to this definition">¶</a></dt>
+</section>
+</section>
+<section id="object-documentation">
+<h2>Object Documentation<a class="headerlink" href="#object-documentation" title="Permalink to this heading"></a></h2>
+<section id="datacore-object">
+<h3>DataCore Object<a class="headerlink" href="#datacore-object" title="Permalink to this heading"></a></h3>
+<dl class="php class">
+<dt class="sig sig-object php" id="DataCore">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">DataCore</span></span><a class="headerlink" href="#DataCore" title="Permalink to this definition"></a></dt>
 <dd><p>An object abstration that represents a single row from a table.</p>
-<dl class="attr">
-<dt id="DataCore::$$table_name">
-<em class="property">protected </em><em class="property">static </em><em class="property">property </em><code class="sig-name descname">$table_name</code><a class="headerlink" href="#DataCore::$$table_name" title="Permalink to this definition">¶</a></dt>
+<dl class="php attr">
+<dt class="sig sig-object php">
+<span class="sig-name descname"><span class="pre">protected</span> <span class="pre">static</span> <span class="pre">string</span> <span class="pre">$table_name</span></span></dt>
 <dd><p>The name of the table in your database</p>
 </dd></dl>
 
-<dl class="attr">
-<dt id="DataCore::$$base_fields">
-<em class="property">protected </em><em class="property">static </em><em class="property">property </em><code class="sig-name descname">$base_fields</code><a class="headerlink" href="#DataCore::$$base_fields" title="Permalink to this definition">¶</a></dt>
+<dl class="php attr">
+<dt class="sig sig-object php">
+<span class="sig-name descname"><span class="pre">protected</span> <span class="pre">static</span> <span class="pre">array</span> <span class="pre">$base_fields</span></span></dt>
 <dd><p>An array with fields that should always be loaded into the object</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="DataCore::get_base_fields">
-<code class="sig-name descname">get_base_fields</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#DataCore::get_base_fields" title="Permalink to this definition">¶</a></dt>
+<dl class="php method">
+<dt class="sig sig-object php" id="DataCore::get_base_fields">
+<span class="sig-name descname"><span class="pre">get_base_fields</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">array</span></span></span><a class="headerlink" href="#DataCore::get_base_fields" title="Permalink to this definition"></a></dt>
 <dd><p>Retrieve all raw database fields</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="DataCore::get_field">
-<code class="sig-name descname">get_field</code><span class="sig-paren">(</span><em class="sig-param">$field</em><span class="sig-paren">)</span><a class="headerlink" href="#DataCore::get_field" title="Permalink to this definition">¶</a></dt>
+<dl class="php method">
+<dt class="sig sig-object php" id="DataCore::get_field">
+<span class="sig-name descname"><span class="pre">get_field</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">string</span> <span class="pre">$field</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">mixed</span></span></span><a class="headerlink" href="#DataCore::get_field" title="Permalink to this definition"></a></dt>
 <dd><p>Retrieve a non-base-field for the object</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>$field</strong> (<em>string</em>) – The field name in the table</p></li>
+<li><p><strong>$field</strong> (<span><code class="xref php php-obj docutils literal notranslate"><span class="pre">string</span></code></span>) – The field name in the table</p></li>
 </ul>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="DataCore::update">
-<code class="sig-name descname">update</code><span class="sig-paren">(</span><em class="sig-param">$data</em><span class="sig-paren">)</span><a class="headerlink" href="#DataCore::update" title="Permalink to this definition">¶</a></dt>
+<dl class="php method">
+<dt class="sig sig-object php" id="DataCore::update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">array</span> <span class="pre">$data</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">void</span></span></span><a class="headerlink" href="#DataCore::update" title="Permalink to this definition"></a></dt>
 <dd><p>Update fields in the database</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>$data</strong> (<em>array</em>) – Array with field names and values to store</p></li>
+<li><p><strong>$data</strong> (<span><code class="xref php php-obj docutils literal notranslate"><span class="pre">array</span></code></span>) – Array with field names and values to store</p></li>
 </ul>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="DataCore::update_field">
-<code class="sig-name descname">update_field</code><span class="sig-paren">(</span><em class="sig-param">$field</em>, <em class="sig-param">$value</em><span class="sig-paren">)</span><a class="headerlink" href="#DataCore::update_field" title="Permalink to this definition">¶</a></dt>
+<dl class="php method">
+<dt class="sig sig-object php" id="DataCore::update_field">
+<span class="sig-name descname"><span class="pre">update_field</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">string</span> <span class="pre">$field</span></em>, <em class="sig-param"><span class="pre">mixed</span> <span class="pre">$value</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">void</span></span></span><a class="headerlink" href="#DataCore::update_field" title="Permalink to this definition"></a></dt>
 <dd><p>Update a single field</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>$field</strong> (<em>string</em>) – Field to update</p></li>
+<li><p><strong>$field</strong> (<span><code class="xref php php-obj docutils literal notranslate"><span class="pre">string</span></code></span>) – Field to update</p></li>
 <li><p><strong>$value</strong> – Value to store</p></li>
 </ul>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="DataCore::decrease_field">
-<code class="sig-name descname">decrease_field</code><span class="sig-paren">(</span><em class="sig-param">$field</em>, <em class="sig-param">$value = 1</em>, <em class="sig-param">$minimum = false</em><span class="sig-paren">)</span><a class="headerlink" href="#DataCore::decrease_field" title="Permalink to this definition">¶</a></dt>
+<dl class="php method">
+<dt class="sig sig-object php" id="DataCore::decrease_field">
+<span class="sig-name descname"><span class="pre">decrease_field</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">string</span> <span class="pre">$field</span></em>, <em class="sig-param"><span class="pre">int</span> <span class="pre">$value</span> <span class="pre">=</span> <span class="pre">1</span></em>, <em class="sig-param"><span class="pre">bool|int</span> <span class="pre">$minimum</span> <span class="pre">=</span> <span class="pre">false</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">void</span></span></span><a class="headerlink" href="#DataCore::decrease_field" title="Permalink to this definition"></a></dt>
 <dd><p>Decrease the value of a field</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>$field</strong> (<em>string</em>) – Field to update</p></li>
+<li><p><strong>$field</strong> (<span><code class="xref php php-obj docutils literal notranslate"><span class="pre">string</span></code></span>) – Field to update</p></li>
 <li><p><strong>$value</strong> – Decrease by this value</p></li>
 <li><p><strong>$minimum</strong> – If set, value will not reduce below this minimu,</p></li>
 </ul>
@@ -328,189 +252,189 @@
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="DataCore::increase_field">
-<code class="sig-name descname">increase_field</code><span class="sig-paren">(</span><em class="sig-param">$field</em>, <em class="sig-param">$value = 1</em><span class="sig-paren">)</span><a class="headerlink" href="#DataCore::increase_field" title="Permalink to this definition">¶</a></dt>
+<dl class="php method">
+<dt class="sig sig-object php" id="DataCore::increase_field">
+<span class="sig-name descname"><span class="pre">increase_field</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">string</span> <span class="pre">$field</span></em>, <em class="sig-param"><span class="pre">int</span> <span class="pre">$value</span> <span class="pre">=</span> <span class="pre">1</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">void</span></span></span><a class="headerlink" href="#DataCore::increase_field" title="Permalink to this definition"></a></dt>
 <dd><p>Increase the value of a field</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>$field</strong> (<em>string</em>) – Field to update</p></li>
+<li><p><strong>$field</strong> (<span><code class="xref php php-obj docutils literal notranslate"><span class="pre">string</span></code></span>) – Field to update</p></li>
 <li><p><strong>$value</strong> – Increase by this value</p></li>
 </ul>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="DataCore::delete">
-<code class="sig-name descname">delete</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#DataCore::delete" title="Permalink to this definition">¶</a></dt>
+<dl class="php method">
+<dt class="sig sig-object php" id="DataCore::delete">
+<span class="sig-name descname"><span class="pre">delete</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">void</span></span></span><a class="headerlink" href="#DataCore::delete" title="Permalink to this definition"></a></dt>
 <dd><p>Delete this item</p>
 </dd></dl>
 
-<dl class="staticmethod">
-<dt id="DataCore::create">
-<em class="property">static </em><code class="sig-name descname">create</code><span class="sig-paren">(</span><em class="sig-param">$fields</em><span class="sig-paren">)</span><a class="headerlink" href="#DataCore::create" title="Permalink to this definition">¶</a></dt>
+<dl class="php staticmethod">
+<dt class="sig sig-object php" id="DataCore::create">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">array</span> <span class="pre">$fields</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">object</span></span></span><a class="headerlink" href="#DataCore::create" title="Permalink to this definition"></a></dt>
 <dd><p>Create a new Database entry with these fields</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>$fields</strong> (<em>array</em>) – Array of all (required) database fields for this table</p></li>
+<li><p><strong>$fields</strong> (<span><code class="xref php php-obj docutils literal notranslate"><span class="pre">array</span></code></span>) – Array of all (required) database fields for this table</p></li>
 </ul>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="staticmethod">
-<dt id="DataCore::exists">
-<em class="property">static </em><code class="sig-name descname">exists</code><span class="sig-paren">(</span><em class="sig-param">$id</em><span class="sig-paren">)</span><a class="headerlink" href="#DataCore::exists" title="Permalink to this definition">¶</a></dt>
+<dl class="php staticmethod">
+<dt class="sig sig-object php" id="DataCore::exists">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">exists</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">int</span> <span class="pre">$id</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#DataCore::exists" title="Permalink to this definition"></a></dt>
 <dd><p>Check if an object with that id exists.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>$id</strong> (<em>int</em>) – ID of the object to check</p></li>
+<li><p><strong>$id</strong> (<span><code class="xref php php-obj docutils literal notranslate"><span class="pre">int</span></code></span>) – ID of the object to check</p></li>
 </ul>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="staticmethod">
-<dt id="DataCore::count_objects">
-<em class="property">static </em><code class="sig-name descname">count_objects</code><span class="sig-paren">(</span><em class="sig-param">$filter</em><span class="sig-paren">)</span><a class="headerlink" href="#DataCore::count_objects" title="Permalink to this definition">¶</a></dt>
+<dl class="php staticmethod">
+<dt class="sig sig-object php" id="DataCore::count_objects">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">count_objects</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">array</span> <span class="pre">$filter</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#DataCore::count_objects" title="Permalink to this definition"></a></dt>
 <dd><p>Count the number of entries that match the filter</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>$filter</strong> (<em>array</em>) – Array of fields that should match</p></li>
+<li><p><strong>$filter</strong> (<span><code class="xref php php-obj docutils literal notranslate"><span class="pre">array</span></code></span>) – Array of fields that should match</p></li>
 </ul>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="staticmethod">
-<dt id="DataCore::get_object_by_id">
-<em class="property">static </em><code class="sig-name descname">get_object_by_id</code><span class="sig-paren">(</span><em class="sig-param">$id</em><span class="sig-paren">)</span><a class="headerlink" href="#DataCore::get_object_by_id" title="Permalink to this definition">¶</a></dt>
+<dl class="php staticmethod">
+<dt class="sig sig-object php" id="DataCore::get_object_by_id">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">get_object_by_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">int</span> <span class="pre">$id</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">object</span></span></span><a class="headerlink" href="#DataCore::get_object_by_id" title="Permalink to this definition"></a></dt>
 <dd><p>Retrieve an object by id</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>$id</strong> (<em>array</em>) – The id of the object to retrieve</p></li>
+<li><p><strong>$id</strong> (<span><code class="xref php php-obj docutils literal notranslate"><span class="pre">array</span></code></span>) – The id of the object to retrieve</p></li>
 </ul>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="staticmethod">
-<dt id="DataCore::get_object">
-<em class="property">static </em><code class="sig-name descname">get_object</code><span class="sig-paren">(</span><em class="sig-param">$filter</em><span class="sig-paren">)</span><a class="headerlink" href="#DataCore::get_object" title="Permalink to this definition">¶</a></dt>
+<dl class="php staticmethod">
+<dt class="sig sig-object php" id="DataCore::get_object">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">get_object</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">array</span> <span class="pre">$filter</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">object</span></span></span><a class="headerlink" href="#DataCore::get_object" title="Permalink to this definition"></a></dt>
 <dd><p>Retrieve a single object based on a filter array. Fails if more than one entries match.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>$filter</strong> (<em>array</em>) – Array of fields that should match</p></li>
+<li><p><strong>$filter</strong> (<span><code class="xref php php-obj docutils literal notranslate"><span class="pre">array</span></code></span>) – Array of fields that should match</p></li>
 </ul>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="staticmethod">
-<dt id="DataCore::get_object_info">
-<em class="property">static </em><code class="sig-name descname">get_object_info</code><span class="sig-paren">(</span><em class="sig-param">$filter</em><span class="sig-paren">)</span><a class="headerlink" href="#DataCore::get_object_info" title="Permalink to this definition">¶</a></dt>
+<dl class="php staticmethod">
+<dt class="sig sig-object php" id="DataCore::get_object_info">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">get_object_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">array</span> <span class="pre">$filter</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">array</span></span></span><a class="headerlink" href="#DataCore::get_object_info" title="Permalink to this definition"></a></dt>
 <dd><p>Retrieve a single object’s get_info() based on a filter array. Fails if more than one entries match.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>$filter</strong> (<em>array</em>) – Array of fields that should match</p></li>
+<li><p><strong>$filter</strong> (<span><code class="xref php php-obj docutils literal notranslate"><span class="pre">array</span></code></span>) – Array of fields that should match</p></li>
 </ul>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="staticmethod">
-<dt id="DataCore::get_object_data">
-<em class="property">static </em><code class="sig-name descname">get_object_data</code><span class="sig-paren">(</span><em class="sig-param">$data_function</em>, <em class="sig-param">$filter</em><span class="sig-paren">)</span><a class="headerlink" href="#DataCore::get_object_data" title="Permalink to this definition">¶</a></dt>
+<dl class="php staticmethod">
+<dt class="sig sig-object php" id="DataCore::get_object_data">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">get_object_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">string</span> <span class="pre">$data_function</span></em>, <em class="sig-param"><span class="pre">array</span> <span class="pre">$filter</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">array</span></span></span><a class="headerlink" href="#DataCore::get_object_data" title="Permalink to this definition"></a></dt>
 <dd><p>Retrieve a single object’s data via the data_function specified based on a filter array. Fails if more than one entries match.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>$data_function</strong> (<em>array</em>) – Data function to call</p></li>
-<li><p><strong>$filter</strong> (<em>array</em>) – Array of fields that should match</p></li>
+<li><p><strong>$data_function</strong> (<span><code class="xref php php-obj docutils literal notranslate"><span class="pre">array</span></code></span>) – Data function to call</p></li>
+<li><p><strong>$filter</strong> (<span><code class="xref php php-obj docutils literal notranslate"><span class="pre">array</span></code></span>) – Array of fields that should match</p></li>
 </ul>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="staticmethod">
-<dt id="DataCore::get_object_info_by_id">
-<em class="property">static </em><code class="sig-name descname">get_object_info_by_id</code><span class="sig-paren">(</span><em class="sig-param">$id</em><span class="sig-paren">)</span><a class="headerlink" href="#DataCore::get_object_info_by_id" title="Permalink to this definition">¶</a></dt>
+<dl class="php staticmethod">
+<dt class="sig sig-object php" id="DataCore::get_object_info_by_id">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">get_object_info_by_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">int</span> <span class="pre">$id</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">object</span></span></span><a class="headerlink" href="#DataCore::get_object_info_by_id" title="Permalink to this definition"></a></dt>
 <dd><p>Retrieve a single object’s get_info() based on id.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>$id</strong> (<em>array</em>) – The id of the object to retrieve.</p></li>
+<li><p><strong>$id</strong> (<span><code class="xref php php-obj docutils literal notranslate"><span class="pre">array</span></code></span>) – The id of the object to retrieve.</p></li>
 </ul>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="staticmethod">
-<dt id="DataCore::get_object_data_by_id">
-<em class="property">static </em><code class="sig-name descname">get_object_data_by_id</code><span class="sig-paren">(</span><em class="sig-param">$data_function</em>, <em class="sig-param">$id</em><span class="sig-paren">)</span><a class="headerlink" href="#DataCore::get_object_data_by_id" title="Permalink to this definition">¶</a></dt>
+<dl class="php staticmethod">
+<dt class="sig sig-object php" id="DataCore::get_object_data_by_id">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">get_object_data_by_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">string</span> <span class="pre">$data_function</span></em>, <em class="sig-param"><span class="pre">int</span> <span class="pre">$id</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">array</span></span></span><a class="headerlink" href="#DataCore::get_object_data_by_id" title="Permalink to this definition"></a></dt>
 <dd><p>Retrieve a single object’s data via the data_function specified.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>$data_function</strong> (<em>array</em>) – Data function to call</p></li>
-<li><p><strong>$id</strong> (<em>array</em>) – The id of the object to retrieve</p></li>
+<li><p><strong>$data_function</strong> (<span><code class="xref php php-obj docutils literal notranslate"><span class="pre">array</span></code></span>) – Data function to call</p></li>
+<li><p><strong>$id</strong> (<span><code class="xref php php-obj docutils literal notranslate"><span class="pre">array</span></code></span>) – The id of the object to retrieve</p></li>
 </ul>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="staticmethod">
-<dt id="DataCore::get_objects">
-<em class="property">static </em><code class="sig-name descname">get_objects</code><span class="sig-paren">(</span><em class="sig-param">$offset</em>, <em class="sig-param">$results</em>, <em class="sig-param">$filter</em>, <em class="sig-param">$order</em><span class="sig-paren">)</span><a class="headerlink" href="#DataCore::get_objects" title="Permalink to this definition">¶</a></dt>
+<dl class="php staticmethod">
+<dt class="sig sig-object php" id="DataCore::get_objects">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">get_objects</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">int</span> <span class="pre">$offset</span></em>, <em class="sig-param"><span class="pre">int</span> <span class="pre">$results</span></em>, <em class="sig-param"><span class="pre">array</span> <span class="pre">$filter</span></em>, <em class="sig-param"><span class="pre">string</span> <span class="pre">$order</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">array</span></span></span><a class="headerlink" href="#DataCore::get_objects" title="Permalink to this definition"></a></dt>
 <dd><p>Retrieve an array of objects based on a filter array.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>$offset</strong> (<em>array</em>) – Start offset for paging</p></li>
-<li><p><strong>$results</strong> (<em>array</em>) – Amount of objects for paging</p></li>
-<li><p><strong>$filter</strong> (<em>array</em>) – Array of fields that should match</p></li>
-<li><p><strong>$order</strong> (<em>array</em>) – String of SQL order</p></li>
+<li><p><strong>$offset</strong> (<span><code class="xref php php-obj docutils literal notranslate"><span class="pre">array</span></code></span>) – Start offset for paging</p></li>
+<li><p><strong>$results</strong> (<span><code class="xref php php-obj docutils literal notranslate"><span class="pre">array</span></code></span>) – Amount of objects for paging</p></li>
+<li><p><strong>$filter</strong> (<span><code class="xref php php-obj docutils literal notranslate"><span class="pre">array</span></code></span>) – Array of fields that should match</p></li>
+<li><p><strong>$order</strong> (<span><code class="xref php php-obj docutils literal notranslate"><span class="pre">array</span></code></span>) – String of SQL order</p></li>
 </ul>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="staticmethod">
-<dt id="DataCore::get_objects_info">
-<em class="property">static </em><code class="sig-name descname">get_objects_info</code><span class="sig-paren">(</span><em class="sig-param">$offset</em>, <em class="sig-param">$results</em>, <em class="sig-param">$filter</em>, <em class="sig-param">$order</em><span class="sig-paren">)</span><a class="headerlink" href="#DataCore::get_objects_info" title="Permalink to this definition">¶</a></dt>
+<dl class="php staticmethod">
+<dt class="sig sig-object php" id="DataCore::get_objects_info">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">get_objects_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">int</span> <span class="pre">$offset</span></em>, <em class="sig-param"><span class="pre">int</span> <span class="pre">$results</span></em>, <em class="sig-param"><span class="pre">array</span> <span class="pre">$filter</span></em>, <em class="sig-param"><span class="pre">string</span> <span class="pre">$order</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">array</span></span></span><a class="headerlink" href="#DataCore::get_objects_info" title="Permalink to this definition"></a></dt>
 <dd><p>Retrieve an array filled with objects’ get_info() based on a filter array.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>$offset</strong> (<em>array</em>) – Start offset for paging</p></li>
-<li><p><strong>$results</strong> (<em>array</em>) – Amount of objects for paging</p></li>
-<li><p><strong>$filter</strong> (<em>array</em>) – Array of fields that should match</p></li>
-<li><p><strong>$order</strong> (<em>array</em>) – String of SQL order</p></li>
+<li><p><strong>$offset</strong> (<span><code class="xref php php-obj docutils literal notranslate"><span class="pre">array</span></code></span>) – Start offset for paging</p></li>
+<li><p><strong>$results</strong> (<span><code class="xref php php-obj docutils literal notranslate"><span class="pre">array</span></code></span>) – Amount of objects for paging</p></li>
+<li><p><strong>$filter</strong> (<span><code class="xref php php-obj docutils literal notranslate"><span class="pre">array</span></code></span>) – Array of fields that should match</p></li>
+<li><p><strong>$order</strong> (<span><code class="xref php php-obj docutils literal notranslate"><span class="pre">array</span></code></span>) – String of SQL order</p></li>
 </ul>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="staticmethod">
-<dt id="DataCore::get_objects_data">
-<em class="property">static </em><code class="sig-name descname">get_objects_data</code><span class="sig-paren">(</span><em class="sig-param">$data_function</em>, <em class="sig-param">$offset</em>, <em class="sig-param">$results</em>, <em class="sig-param">$filter</em>, <em class="sig-param">$order</em><span class="sig-paren">)</span><a class="headerlink" href="#DataCore::get_objects_data" title="Permalink to this definition">¶</a></dt>
+<dl class="php staticmethod">
+<dt class="sig sig-object php" id="DataCore::get_objects_data">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">get_objects_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">string</span> <span class="pre">$data_function</span></em>, <em class="sig-param"><span class="pre">int</span> <span class="pre">$offset</span></em>, <em class="sig-param"><span class="pre">int</span> <span class="pre">$results</span></em>, <em class="sig-param"><span class="pre">array</span> <span class="pre">$filter</span></em>, <em class="sig-param"><span class="pre">string</span> <span class="pre">$order</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">array</span></span></span><a class="headerlink" href="#DataCore::get_objects_data" title="Permalink to this definition"></a></dt>
 <dd><p>Retrieve an array filled fill objects’ data via the data_function specified based on a filter array.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>$data_function</strong> (<em>array</em>) – Data function to call</p></li>
-<li><p><strong>$offset</strong> (<em>array</em>) – Start offset for paging</p></li>
-<li><p><strong>$results</strong> (<em>array</em>) – Amount of objects for paging</p></li>
-<li><p><strong>$filter</strong> (<em>array</em>) – Array of fields that should match</p></li>
-<li><p><strong>$order</strong> (<em>array</em>) – String of SQL order</p></li>
+<li><p><strong>$data_function</strong> (<span><code class="xref php php-obj docutils literal notranslate"><span class="pre">array</span></code></span>) – Data function to call</p></li>
+<li><p><strong>$offset</strong> (<span><code class="xref php php-obj docutils literal notranslate"><span class="pre">array</span></code></span>) – Start offset for paging</p></li>
+<li><p><strong>$results</strong> (<span><code class="xref php php-obj docutils literal notranslate"><span class="pre">array</span></code></span>) – Amount of objects for paging</p></li>
+<li><p><strong>$filter</strong> (<span><code class="xref php php-obj docutils literal notranslate"><span class="pre">array</span></code></span>) – Array of fields that should match</p></li>
+<li><p><strong>$order</strong> (<span><code class="xref php php-obj docutils literal notranslate"><span class="pre">array</span></code></span>) – String of SQL order</p></li>
 </ul>
 </dd>
 </dl>
@@ -518,78 +442,39 @@
 
 </dd></dl>
 
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
 
 
            </div>
           </div>
-          <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="sender-core.html" class="btn btn-neutral float-right" title="Sender Core" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="index.html" class="btn btn-neutral" title="web-framework: Simple Secure PHP Framework" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="web-framework: Simple Secure PHP Framework" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="sender-core.html" class="btn btn-neutral float-right" title="Sender Core" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &copy; Copyright 2020, Avoutic.
-
-    </p>
+    <p>&#169; Copyright 2022, Avoutic.</p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> and ❤️  using a custom <a href="https://github.com/LinxiFan/Sphinx-theme">theme</a> based on <a href="https://readthedocs.org">Read the Docs</a>. 
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
-
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'./',
-            VERSION:'',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
-        };
-    </script>
-      <script type="text/javascript" src="_static/jquery.js"></script>
-      <script type="text/javascript" src="_static/underscore.js"></script>
-      <script type="text/javascript" src="_static/doctools.js"></script>
-      <script type="text/javascript" src="_static/language_data.js"></script>
-
-  
-
-  
-  
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-  
-
-  
-  
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>
