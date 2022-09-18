@@ -8,8 +8,9 @@ class InputHelpers
      */
     static function load_template(string $name, array $args = array()): void
     {
-        WF::verify(file_exists(WF::$site_templates.$name.'.inc.php'), 'Requested template not present');
-        include(WF::$site_templates.$name.'.inc.php');
+        $app_dir = WF::get_app_dir();
+        WF::verify(file_exists("{$app_dir}/templates/{$name}.inc.php"), 'Requested template not present');
+        include("{$app_dir}/templates/{$name}.inc.php");
     }
 
     /**

@@ -35,6 +35,11 @@ class FrameworkCore
         $this->database = $this->framework->get_db();
     }
 
+    protected function get_app_dir(): string
+    {
+        return $this->framework->internal_get_app_dir();
+    }
+
     protected function get_config(string $path): mixed
     {
         return $this->framework->internal_get_config($path);

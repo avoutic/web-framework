@@ -22,8 +22,9 @@ try
 
     // Load route and hooks array and site specific logic if available
     //
-    if (is_file(WF::$site_includes."site_logic.inc.php"))
-        include_once(WF::$site_includes."site_logic.inc.php");
+    $app_dir = $framework->get_app_dir();
+    if (is_file("{$app_dir}/includes/site_logic.inc.php"))
+        include_once("{$app_dir}/includes/site_logic.inc.php");
 
     $framework->handle_request();
 }

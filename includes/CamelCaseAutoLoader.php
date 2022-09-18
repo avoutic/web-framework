@@ -72,7 +72,8 @@ class CamelCaseAutoLoader
             $include_name = strtolower($include_name);
         }
 
-        $full_path = __DIR__."{$dir}{$include_name}.inc.php";
+        $app_dir = WF::get_app_dir();
+        $full_path = "{$app_dir}{$dir}{$include_name}.inc.php";
         if (file_exists($full_path))
         {
             include_once($full_path);

@@ -70,8 +70,9 @@ abstract class PageAction extends ActionCore
      */
     protected function load_template(string $name, array $args = array()): void
     {
-        $this->verify(file_exists(WF::$site_templates.$name.'.inc.php'), 'Requested template not present');
-        include(WF::$site_templates.$name.'.inc.php');
+        $app_dir = $this->get_app_dir();
+        $this->verify(file_exists("{$app_dir}/templates/{$name}.inc.php"), 'Requested template not present');
+        include("{$app_dir}/templates/{$name}.inc.php");
     }
 
     protected function is_blocked(string $name): bool
@@ -111,7 +112,8 @@ abstract class PageAction extends ActionCore
 
         if (strlen($this->get_frame_file()))
         {
-            $frame_file = WF::$site_frames.$this->get_frame_file();
+            $app_dir = $this->get_app_dir();
+            $frame_file = "{$app_dir}/frames/".$this->get_frame_file();
             $this->verify(file_exists($frame_file), 'Requested frame file not present');
             require($frame_file);
         }

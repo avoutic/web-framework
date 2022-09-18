@@ -3,10 +3,7 @@ namespace WebFramework\Core;
 
 class WF
 {
-    static string $includes = __DIR__.'/';
-    static string $site_includes = __DIR__.'/../../includes/';
-    static string $site_frames = __DIR__.'/../../frames/';
-    static string $site_templates = __DIR__.'/../../templates/';
+    private string $app_dir = '';
 
     private static WF $framework;
     private static Database $main_db;         // Only for DataCore and StoredValues abstraction
@@ -155,6 +152,11 @@ class WF
         //
         $this->cache = new NullCache(array());
         WF::$static_cache = $this->cache;
+
+        // Determine app dir
+        //
+        $reflection = new \ReflectionClass(\Composer\Autoload\ClassLoader::class);
+        $this->app_dir = dirname($reflection->getFileName(), 3);
     }
 
     static function assert_handler(string $file, int $line, string $message, string $error_type): void
@@ -545,6 +547,17 @@ TXT;
         return WF::$framework;
     }
 
+    static function get_app_dir(): string
+    {
+        $framework = WF::get_framework();
+        return $framework->internal_get_app_dir();
+    }
+
+    public function internal_get_app_dir(): string
+    {
+        return $this->app_dir;
+    }
+
     /**
      * @return mixed
      */
@@ -718,7 +731,7 @@ TXT;
 
     private function check_file_requirements(): void
     {
-        if (!is_file(WF::$site_includes."config.php"))
+        if (!is_file("{$this->app_dir}/includes/config.php"))
         {
             $this->exit_error('Missing base requirement',
                               'One of the required files (includes/config.php) is not found on the server.');
@@ -731,18 +744,18 @@ TXT;
         //
         if ($this->internal_get_config('preload') == true)
         {
-            if (!file_exists(WF::$site_includes.'preload.inc.php'))
+            if (!file_exists("{$this->app_dir}/includes/preload.inc.php"))
             {
                 $this->exit_error('Preload indicated but not present',
-                    'The file "preload.inc.php" does not exist.');
+                    'The file "includes/preload.inc.php" does not exist.');
             }
 
-            require_once(WF::$site_includes.'preload.inc.php');
+            require_once("{$this->app_dir}/includes/preload.inc.php");
         }
 
         // Load global and site specific defines
         //
-        require_once(WF::$includes."defines.inc.php");
+        require_once(__DIR__."/defines.inc.php");
 
         if (!class_exists($this->internal_get_config('sender_core.handler_class')))
         {
@@ -755,15 +768,15 @@ TXT;
     {
         // Merge configurations
         //
-        $site_config = require(WF::$site_includes.'config.php');
+        $site_config = require("{$this->app_dir}/includes/config.php");
         if (!is_array($site_config))
             $this->exit_error('Site config invalid', 'No config array found');
 
         $merge_config = array_replace_recursive($this->global_config, $site_config);
 
-        if (file_exists(WF::$site_includes."config_local.php"))
+        if (file_exists("{$this->app_dir}/includes/config_local.php"))
         {
-            $local_config = require(WF::$site_includes."config_local.php");
+            $local_config = require("{$this->app_dir}/includes/config_local.php");
             $merge_config = array_replace_recursive($merge_config, $local_config);
         }
 

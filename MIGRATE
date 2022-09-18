@@ -26,6 +26,9 @@ Required changes for v4:
 * PageBasic->delete_config_value() deprecated. Use stored values directly.
 * WF::$views deprecated.
 * WF::$site_views deprecated.
+* WF::$site_templates deprecated.
+* WF::$site_frames deprecated.
+* WF::$site_includes deprecated.
 * WF does not load WF::$site_includes/site_defines.inc.php anymore. Use preloader instead.
 * Use the WebFramework namespace to address classes
 * Rename Page related items to Action (See below)
