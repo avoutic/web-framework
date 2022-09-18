@@ -431,6 +431,14 @@ TXT;
             break;
         }
 
+        if ($caller === false)
+        {
+            return array(
+                'file' => 'Unknown',
+                'line' => '',
+            );
+        }
+
         return $caller;
     }
 
