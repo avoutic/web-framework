@@ -1,9 +1,9 @@
 <?php
 // Global configuration
 //
-if (!file_exists(__DIR__ . '/../../vendor/autoload.php'))
+if (!file_exists(__DIR__ . '/../vendor/autoload.php'))
     die('Composer not initialized');
-require_once(__DIR__ . '/../../vendor/autoload.php');
+require_once(__DIR__ . '/../vendor/autoload.php');
 
 use WebFramework\Core\WF;
 use WebFramework\Core\WFWebHandler;
