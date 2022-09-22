@@ -41,7 +41,7 @@ class Browserless extends FrameworkCore
     }
 
     /**
-     * @param array<string, string> $data
+     * @param array<string, mixed> $data
      */
     public function set_api_key_data(array $data): void
     {
