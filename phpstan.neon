@@ -20,16 +20,13 @@ parameters:
         - '#^Call to method WebFramework\\Core\\WF\:\:internal_verify\(\) with false and .* will always evaluate to false\.$#'
         -
             message: '#^Instantiated class WebFramework\\Core\\DataCore is abstract\.$#'
-            path: includes/data_core.inc.php
-        -
-            message: '#^Constructor of class WebFramework\\Core\\NullCache has an unused parameter \$config\.$#'
-            path: includes/null_cache.inc.php
+            path: includes/DataCore.php
         -
             message: '#^Call to an undefined method object\:\:send_raw_email\(\)\.$#'
-            path: includes/sender_core.inc.php
+            path: includes/SenderCore.php
         -
             message: '#^Call to an undefined method object\:\:dispatch_template_email\(\)\.$#'
-            path: includes/sender_core.inc.php
+            path: includes/SenderCore.php
 
 services:
     -
