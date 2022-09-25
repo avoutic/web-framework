@@ -1,0 +1,28 @@
+parameters:
+    universalObjectCratesClasses:
+        - WebFramework\Core\DataCore
+    ignoreErrors:
+        - '#^Call to method WebFramework\\Core\\FrameworkCore\:\:verify\(\) with false and .* will always evaluate to false\.$#'
+        -
+            message: '#^Instantiated class WebFramework\\Core\\DataCore is abstract\.$#'
+            path: includes/DataCore.php
+        -
+            message: '#^Call to an undefined method object\:\:send_raw_email\(\)\.$#'
+            path: includes/SenderCore.php
+        -
+            message: '#^Call to an undefined method object\:\:dispatch_template_email\(\)\.$#'
+            path: includes/SenderCore.php
+
+services:
+    -
+        class: WebFramework\PHPStan\VerifyMethodTypeSpecifyingExtension
+        tags:
+            - phpstan.typeSpecifier.methodTypeSpecifyingExtension
+    -
+        class: WebFramework\PHPStan\WFVerifyMethodTypeSpecifyingExtension
+        tags:
+            - phpstan.typeSpecifier.methodTypeSpecifyingExtension
+    -
+        class: WebFramework\PHPStan\VerifyStaticMethodTypeSpecifyingExtension
+        tags:
+            - phpstan.typeSpecifier.staticMethodTypeSpecifyingExtension
