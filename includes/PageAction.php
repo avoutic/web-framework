@@ -68,7 +68,7 @@ abstract class PageAction extends ActionCore
     /**
      * @param array<mixed> $args
      */
-    protected function load_template(string $name, array $args = array()): void
+    public function load_template(string $name, array $args = array()): void
     {
         $app_dir = $this->get_app_dir();
         $this->verify(file_exists("{$app_dir}/templates/{$name}.inc.php"), 'Requested template not present');
