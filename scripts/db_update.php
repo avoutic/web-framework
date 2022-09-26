@@ -16,6 +16,7 @@ try
     //
     $framework->skip_app_db_version_check();
     $framework->init();
+    $app_dir = $framework->get_app_dir();
 
     $db_manager = new DatabaseManager();
 
@@ -31,7 +32,7 @@ try
 
     while ($next_version <= $required_version)
     {
-        $version_file = __DIR__ . "/../../db_scheme/{$next_version}.inc.php";
+        $version_file = "{$app_dir}/db_scheme/{$next_version}.inc.php";
 
         if (!file_exists($version_file))
         {
