@@ -199,7 +199,7 @@ SQL;
         $this->update_in_cache();
     }
 
-    public function update_field(string $field, string|int|bool $value): void
+    public function update_field(string $field, string|int|bool|null $value): void
     {
         $table_name = static::$table_name;
 
