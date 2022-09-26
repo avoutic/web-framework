@@ -67,6 +67,7 @@ sed --follow-symlinks -i -e 's/^    static function get_filter()$/    \/**\n    
 sed --follow-symlinks -i -e 's/^    static function custom_get_filter()$/    \/**\n     * @return array<string, string>\n     *\/\n    static function custom_get_filter(): array/' actions/*.php actions/*/*.php
 sed --follow-symlinks -i -e 's/^    function custom_prepare_page_content()$/    function custom_prepare_page_content(): void/' actions/*.php actions/*/*.php
 sed --follow-symlinks -i -e 's/^    function custom_value_check()$/    function custom_value_check(): bool/' actions/*.php actions/*/*.php
+sed --follow-symlinks -i -e 's/^    function/    public function/' includes/*.php actions/*.php actions/*/*.php
 ```
 
 ## Page to Action migration
@@ -85,6 +86,16 @@ sed --follow-symlinks -i -e "s/get_config('pages\./get_config('actions./g" inclu
 ```
 
 You might have to adjust your config and own preload instructions for the autoloader as well.
+
+## Camelcase to PSR4 migration
+
+WebFramework has the CamelCaseAutoLoader in case your files have lowercase/underscore names and classes have CamelCase.
+
+If you want to rename your files all at once in a directory you can use the following to extract the class/trait name and rename based on that:
+
+```
+for i in `find . -type f`; do dir="$( echo $i | rev | cut -f 2- -d '/' | rev)"; j="$(grep "^class\|trait" $i | cut -f 2 -d ' ')"; echo $i "->" $dir "/" $j.php; git mv "$i" "$dir/$j.php"; done
+```
 
 ## Config file migrations
 #
