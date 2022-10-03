@@ -82,6 +82,25 @@ class Browserless extends FrameworkCore
         exit();
     }
 
+    public function output_stream(string $relative_url)
+    {
+        $target_url = "{$this->config['local_server']}{$relative_url}";
+
+        $query = parse_url($target_url, PHP_URL_QUERY);
+        if ($query)
+            $target_url .= "&auth={$this->api_key}";
+        else
+            $target_url .= "?auth={$this->api_key}";
+
+        $tmp_file = tmpfile();
+
+        $result = $this->get_pdf_result($target_url, $tmp_file);
+        $tmp_path = stream_get_meta_data($tmp_file)['uri'];
+        $this->verify($this->is_pdf($tmp_path), 'Failed to generate PDF: '.file_get_contents($tmp_path));
+
+        return $tmp_file;
+    }
+
     private function get_pdf_result($url, $output_stream = false): mixed
     {
         $pdf_endpoint = "{$this->config['pdf_endpoint']}?token={$this->config['token']}";
