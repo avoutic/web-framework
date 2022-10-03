@@ -61,7 +61,13 @@ class Browserless extends FrameworkCore
     public function output_pdf(string $relative_url, string $output_filename): void
     {
         $target_url = "{$this->config['local_server']}{$relative_url}";
-        $target_url .= "?auth={$this->api_key}";
+
+        $query = parse_url($target_url, PHP_URL_QUERY);
+        if ($query)
+            $target_url .= "&auth={$this->api_key}";
+        else
+            $target_url .= "?auth={$this->api_key}";
+
         $filename = $output_filename;
 
         $result = $this->get_pdf_result($target_url);
