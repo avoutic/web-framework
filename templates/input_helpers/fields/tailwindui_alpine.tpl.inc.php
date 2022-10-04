@@ -14,6 +14,7 @@ $parameters = $args['parameters'];
 $model_fmt = (strlen($parameters['model'])) ? "x-model='{$parameters['model']}'" : '';
 $required_fmt = ($parameters['required']) ? 'required' : '';
 $readonly_fmt = ($parameters['readonly']) ? 'readonly' : '';
+$show_fmt = (strlen($parameters['show'])) ? "x-cloak x-show=\"{$parameters['show']}\"" : '';
 $width_fmt = (strlen($parameters['width'])) ? $parameters['width'] : $default_width;
 
 $counter_info = array(
@@ -24,7 +25,7 @@ $counter_info = array(
 $counter_info_fmt = json_encode($counter_info);
 
 echo <<<HTML
-<div x-data='{$counter_info_fmt}' class="{$width_fmt}">
+<div {$show_fmt} x-data='{$counter_info_fmt}' class="{$width_fmt}">
   <label for="{$parameters['id']}" class="block text-sm font-medium text-gray-700">
     {$parameters['label']}
   </label>

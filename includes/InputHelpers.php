@@ -30,6 +30,7 @@ class InputHelpers
             'prefix' => '',
             'readonly' => false,
             'required' => false,
+            'show' => '',
             'type' => 'text',
             'value' => '',
             'width' => '',
