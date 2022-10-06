@@ -4,9 +4,6 @@ parameters:
     ignoreErrors:
         - '#^Call to method WebFramework\\Core\\FrameworkCore\:\:verify\(\) with false and .* will always evaluate to false\.$#'
         -
-            message: '#^Instantiated class WebFramework\\Core\\DataCore is abstract\.$#'
-            path: includes/DataCore.php
-        -
             message: '#^Call to an undefined method object\:\:send_raw_email\(\)\.$#'
             path: includes/SenderCore.php
         -

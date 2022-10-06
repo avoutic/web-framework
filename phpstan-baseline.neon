@@ -16,11 +16,6 @@ parameters:
 			path: includes/ActionCore.php
 
 		-
-			message: "#^Access to an undefined property WebFramework\\\\Core\\\\Browserless\\:\\:\\$api_key\\.$#"
-			count: 2
-			path: includes/Browserless.php
-
-		-
 			message: "#^Method WebFramework\\\\Core\\\\Browserless\\:\\:get_pdf_result\\(\\) has parameter \\$output_stream with no type specified\\.$#"
 			count: 1
 			path: includes/Browserless.php
@@ -29,16 +24,6 @@ parameters:
 			message: "#^Method WebFramework\\\\Core\\\\Browserless\\:\\:get_pdf_result\\(\\) has parameter \\$url with no type specified\\.$#"
 			count: 1
 			path: includes/Browserless.php
-
-		-
-			message: "#^Method WebFramework\\\\Core\\\\Browserless\\:\\:is_pdf\\(\\) is unused\\.$#"
-			count: 1
-			path: includes/Browserless.php
-
-		-
-			message: "#^Method WebFramework\\\\Core\\\\DataCore\\:\\:get_object_by_id\\(\\) should return static\\(WebFramework\\\\Core\\\\DataCore\\)\\|false but returns WebFramework\\\\Core\\\\DataCore\\.$#"
-			count: 1
-			path: includes/DataCore.php
 
 		-
 			message: "#^Offset 'target_version' on array\\{target_version\\: int, actions\\: array\\<array\\>\\} in isset\\(\\) always exists and is not nullable\\.$#"
@@ -136,32 +121,12 @@ parameters:
 			path: includes/WFSecurity.php
 
 		-
-			message: "#^Cannot access offset 'WebFramework\\\\\\\\Core…' on array\\<string, class\\-string\\>\\|false\\.$#"
-			count: 1
-			path: includes/WFWebHandler.php
-
-		-
 			message: "#^Cannot access offset 'user' on array\\|bool\\.$#"
 			count: 1
 			path: includes/WFWebHandler.php
 
 		-
 			message: "#^Cannot access offset string on array\\|bool\\.$#"
-			count: 1
-			path: includes/WFWebHandler.php
-
-		-
-			message: "#^Offset 'class' does not exist on array\\{type\\: string, regex\\: string, include_file\\?\\: string, class\\?\\: string, redirect\\?\\: string, redir_type\\?\\: string, args\\: array\\<string\\>\\}\\.$#"
-			count: 1
-			path: includes/WFWebHandler.php
-
-		-
-			message: "#^Offset 'redir_type' does not exist on array\\{type\\: 'redirect', regex\\: string, include_file\\?\\: string, class\\?\\: string, redirect\\?\\: string, redir_type\\?\\: string, args\\: array\\{\\}\\}\\|array\\{type\\: 'redirect', regex\\: string, include_file\\?\\: string, class\\?\\: string, redirect\\?\\: string, redir_type\\?\\: string, args\\: non\\-empty\\-array\\<string\\>\\}\\.$#"
-			count: 1
-			path: includes/WFWebHandler.php
-
-		-
-			message: "#^Offset 'redirect' does not exist on array\\{type\\: 'redirect', regex\\: string, include_file\\?\\: string, class\\?\\: string, redirect\\?\\: string, redir_type\\?\\: string, args\\: array\\<string\\>\\}\\.$#"
 			count: 1
 			path: includes/WFWebHandler.php
 
