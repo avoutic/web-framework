@@ -107,8 +107,8 @@ abstract class PageAction extends ActionCore
         // Unset availability of input in display
         // Forces explicit handling in do_logic()
         //
-        $this->input = null;
-        $this->raw_input = null;
+        $this->input = [];
+        $this->raw_input = [];
 
         ob_start();
 
