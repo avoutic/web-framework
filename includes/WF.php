@@ -1,4 +1,5 @@
 <?php
+
 namespace WebFramework\Core;
 
 class WF
@@ -12,17 +13,17 @@ class WF
     /**
      * @var array<mixed>
      */
-    protected array $input = array();
+    protected array $input = [];
 
     /**
      * @var array<mixed>
      */
-    protected array $raw_input = array();
+    protected array $raw_input = [];
 
     /**
      * @var array<mixed>
      */
-    protected array $raw_post = array();
+    protected array $raw_post = [];
 
     private int $in_verify = 0;             // Only go into an assert_handler for a maximum amount of times
     private string $debug_message = '';
@@ -35,7 +36,7 @@ class WF
     /**
      * @var array<Database>
      */
-    private array $aux_databases = array();
+    private array $aux_databases = [];
     private CacheInterface $cache;
     protected Blacklist $blacklist;
     protected WFSecurity $security;
@@ -43,7 +44,7 @@ class WF
     /**
      * @var array<array{mtype: string, message: string, extra_message: string}>
      */
-    private array $messages = array();
+    private array $messages = [];
 
     private bool $check_app_db_version = true;
 
@@ -52,33 +53,33 @@ class WF
     /**
      * @var array<mixed>
      */
-    private array $global_config = array(
+    private array $global_config = [
         'debug' => false,
         'debug_mail' => true,
         'preload' => false,
         'timezone' => 'UTC',
-        'registration' => array(
+        'registration' => [
             'allow_registration' => true,
             'after_verify_page' => '/',
-        ),
+        ],
         'database_enabled' => false,
         'database_config' => 'main',        // main database tag.
-        'databases' => array(),             // list of extra database tags to load.
-                                            // files will be retrieved from 'includes/db_config.{TAG}.php'
-        'versions' => array(
+        'databases' => [],             // list of extra database tags to load.
+        // files will be retrieved from 'includes/db_config.{TAG}.php'
+        'versions' => [
             'supported_framework' => -1,    // Default is always -1. App should set supported semantic
-                                            // version of this framework it supports in own config.
+            // version of this framework it supports in own config.
             'required_app_db' => 1,         // Default is always 1. App should set this if it tracks its
-                                            // own database version in the db.app_db_version config value
-                                            // in the database and wants the framework to indicate
-                                            // a mismatch between required and current value
-        ),
+            // own database version in the db.app_db_version config value
+            // in the database and wants the framework to indicate
+            // a mismatch between required and current value
+        ],
         'site_name' => 'Unknown',
         'server_name' => '',                // Set to $_SERVER['SERVER_NAME'] or 'app' automatically
-                                            // For use in URLs. Is allowed to contain colon with port
-                                            // number at the end.
+        // For use in URLs. Is allowed to contain colon with port
+        // number at the end.
         'host_name' => '',                  // Set to $_SERVER['SERVER_NAME'] or 'app' automatically
-                                            // Pure host name. Cannot include port number information.
+        // Pure host name. Cannot include port number information.
         'http_mode' => 'https',
         'base_url' => '',                   // Add a base_url to be used in external urls
         'document_root' => '',              // Set to $_SERVER['DOCUMENT_ROOT'] automatically
@@ -86,72 +87,72 @@ class WF
         'auth_mode' => 'redirect',          // redirect, www-authenticate, custom (requires auth_module)
         'auth_module' => '',                // class name with full namespace
         'sanity_check_module' => '',        // class name with full namespace
-        'authenticator' => array(
+        'authenticator' => [
             'unique_identifier' => 'email',
             'auth_required_message' => 'Authentication required. Please login.',
             'session_timeout' => 900,
-        ),
-        'security' => array(
-            'blacklist' => array(
+        ],
+        'security' => [
+            'blacklist' => [
                 'enabled' => true,
                 'trigger_period' => 14400,  // Period to consider for blacklisting (default: 4 hours)
                 'store_period' => 2592000,  // Period to keep entries (default: 30 days)
                 'threshold' => 25,          // Points before blacklisting occurs (default: 25)
-            ),
+            ],
             'hash' => 'sha256',
-            'hmac_key' =>  '',
+            'hmac_key' => '',
             'crypt_key' => '',
-            'recaptcha' => array(
+            'recaptcha' => [
                 'site_key' => '',
                 'secret_key' => '',
-            ),
-        ),
-        'error_handlers' => array(
+            ],
+        ],
+        'error_handlers' => [
             '403' => '',
             '404' => '',
             '500' => '',
-        ),
-        'actions' => array(
+        ],
+        'actions' => [
             'default_action' => 'Main.html_main',
             'default_frame_file' => 'default_frame.inc.php',
             'app_namespace' => 'App\\Actions\\',
-            'login' => array(
+            'login' => [
                 'location' => '/login',
                 'send_verify_page' => '/send-verify',
                 'verify_page' => '/verify',
                 'after_verify_page' => '/',
                 'default_return_page' => '/',
                 'bruteforce_protection' => true,
-            ),
-            'forgot_password' => array(
+            ],
+            'forgot_password' => [
                 'location' => '/forgot-password',
                 'reset_password_page' => '/reset-password',
-            ),
-            'change_password' => array(
+            ],
+            'change_password' => [
                 'return_page' => '/',
-            ),
-            'change_email' => array(
+            ],
+            'change_email' => [
                 'location' => '/change-email',
                 'verify_page' => '/change-email-verify',
                 'return_page' => '/',
-            ),
-            'send_verify' => array(
+            ],
+            'send_verify' => [
                 'after_verify_page' => '/',
-            ),
-        ),
-        'sender_core' => array(
+            ],
+        ],
+        'sender_core' => [
             'handler_class' => '',
             'default_sender' => '',
             'assert_recipient' => '',
-        ),
-    );
+        ],
+    ];
 
-    function __construct()
+    public function __construct()
     {
         // Immediately initialize cache with NullCache so that a cache is always available
         //
-        $this->cache = new NullCache(array());
-        WF::$static_cache = $this->cache;
+        $this->cache = new NullCache([]);
+        self::$static_cache = $this->cache;
 
         // Determine app dir
         //
@@ -159,10 +160,10 @@ class WF
         $this->app_dir = dirname($reflection->getFileName(), 3);
     }
 
-    static function assert_handler(string $file, int $line, string $message, string $error_type): void
+    public static function assert_handler(string $file, int $line, string $message, string $error_type): void
     {
-         $framework = WF::get_framework();
-         $framework->internal_assert_handler($file, $line, $message, $error_type);
+        $framework = self::get_framework();
+        $framework->internal_assert_handler($file, $line, $message, $error_type);
     }
 
     public function internal_assert_handler(string $file, int $line, string $message, string $error_type): void
@@ -183,14 +184,16 @@ class WF
         $error_type = WFHelpers::get_error_type_string($error_type);
 
         if (!$this->initialized)
-            die($use_message);
+        {
+            exit($use_message);
+        }
 
         $this->exit_error(
-            "Oops, something went wrong",
-            "Debug information: $error_type<br/>".
-            "<br/><pre>".
+            'Oops, something went wrong',
+            "Debug information: {$error_type}<br/>".
+            '<br/><pre>'.
             $use_message.
-            "</pre>"
+            '</pre>'
         );
     }
 
@@ -200,7 +203,9 @@ class WF
     protected function mail_debug_info(string $message, string $error_type, array $debug_info): void
     {
         if (!$this->initialized || $this->internal_get_config('debug_mail') == false)
+        {
             return;
+        }
 
         // Make sure we are not spamming the same error en masse
         //
@@ -209,10 +214,10 @@ class WF
 
         if ($cached === false)
         {
-            $cached = array(
+            $cached = [
                 'count' => 1,
                 'last_timestamp' => time(),
-            );
+            ];
         }
         else
         {
@@ -225,13 +230,17 @@ class WF
         // More than 3 in the last 10 minutes, update timestamp, and skip mail
         //
         if ($cached['count'] > 3 && $cached['count'] % 25 !== 0)
+        {
             return;
+        }
 
         $server_name = $this->internal_get_config('server_name');
         $title = "{$server_name} - {$error_type}: {$message}";
 
         if ($cached['count'] % 25 === 0)
+        {
             $title = "[{$cached['count']} times]: {$title}";
+        }
 
         SenderCore::send_raw(
             $this->internal_get_config('sender_core.assert_recipient'),
@@ -243,16 +252,17 @@ class WF
 
     /**
      * @param array<mixed> $trace
+     *
      * @return array{debug_message: string, debug_data: string, low_info_message: string, hash: string}
      */
     protected function get_debug_info(string $file, int $line, string $message, array $trace = null): array
     {
-        $info = array(
+        $info = [
             'low_info_message' => '',
             'debug_message' => '',
             'debug_data' => '',
             'hash' => '',
-        );
+        ];
 
         // Retrieve request
         //
@@ -288,41 +298,47 @@ TXT;
         // Construct stack trace
         //
         if ($trace === null)
+        {
             $trace = debug_backtrace(0);
+        }
 
-        $stack = array();
+        $stack = [];
         $stack_condensed = '';
 
         if (is_array($trace))
         {
             $skipping = true;
 
-            foreach($trace as $entry)
+            foreach ($trace as $entry)
             {
-                if ($skipping &&
-                    in_array($entry['function'], array(
+                if ($skipping
+                    && in_array($entry['function'], [
                         'get_debug_info',
                         'internal_assert_handler',
                         'assert_handler',
                         'internal_verify',
-                    )))
+                    ]))
                 {
                     continue;
                 }
 
                 $skipping = false;
 
-                if (in_array($entry['function'], array('exit_send_error', 'exit_error')))
+                if (in_array($entry['function'], ['exit_send_error', 'exit_error']))
+                {
                     unset($entry['args']);
+                }
 
                 $stack_condensed .= $entry['file'].'('.$entry['line'].'): ';
 
                 if (isset($entry['class']))
+                {
                     $stack_condensed .= $entry['class'].$entry['type'];
+                }
 
                 $stack_condensed .= $entry['function']."()\n";
 
-                array_push($stack, $entry);
+                $stack[] = $entry;
             }
 
             WFHelpers::scrub_state($stack);
@@ -337,7 +353,9 @@ TXT;
         {
             $db_error = $main_db->get_last_error();
             if ($db_error === '')
+            {
                 $db_error = 'None';
+            }
         }
 
         // Retrieve auth data
@@ -382,39 +400,43 @@ TXT;
         return $info;
     }
 
-    static function verify(bool|int $bool, string $message): void
+    public static function verify(bool|int $bool, string $message): void
     {
-        $framework = WF::get_framework();
+        $framework = self::get_framework();
         $framework->internal_verify($bool, $message);
     }
 
     public function internal_verify(bool|int $bool, string $message): void
     {
         if ($bool)
+        {
             return;
+        }
 
         if ($this->in_verify > 2)
         {
-            print('<pre>');
-            print($this->debug_message.PHP_EOL);
-            print($this->debug_data.PHP_EOL);
-            print('</pre>');
+            echo('<pre>');
+            echo($this->debug_message.PHP_EOL);
+            echo($this->debug_data.PHP_EOL);
+            echo('</pre>');
 
-            die('2 deep into verifications.. Aborting.');
+            exit('2 deep into verifications.. Aborting.');
         }
 
         $this->in_verify++;
         $stack = debug_backtrace(0);
-        $caller = $this->find_caller($stack, array('internal_assert_handler', 'assert_handler',
-                                                   'internal_verify'));
+        $caller = $this->find_caller($stack, ['internal_assert_handler', 'assert_handler',
+            'internal_verify', ]);
 
         $this->internal_assert_handler($caller['file'], $caller['line'], $message, 'verify');
+
         exit();
     }
 
     /**
-     * @param array<mixed> $stack
+     * @param array<mixed>  $stack
      * @param array<string> $exclude_functions
+     *
      * @return array<mixed>
      */
     private function find_caller(array $stack, array $exclude_functions): array
@@ -426,17 +448,19 @@ TXT;
             $caller = $entry;
 
             if (in_array($entry['function'], $exclude_functions))
+            {
                 continue;
+            }
 
             break;
         }
 
         if ($caller === false)
         {
-            return array(
+            return [
                 'file' => 'Unknown',
                 'line' => '',
-            );
+            ];
         }
 
         return $caller;
@@ -447,9 +471,9 @@ TXT;
     /**
      * @param array<mixed> $stack
      */
-    static function report_error(string $message, array $stack = null): void
+    public static function report_error(string $message, array $stack = null): void
     {
-        $framework = WF::get_framework();
+        $framework = self::get_framework();
         $framework->internal_report_error($message, $stack);
     }
 
@@ -461,33 +485,42 @@ TXT;
         // Cannot report if we cannot mail
         //
         if ($this->internal_get_config('debug_mail') == false)
+        {
             return;
+        }
 
         if ($stack === null)
+        {
             $stack = debug_backtrace(0);
+        }
 
-        $caller = $this->find_caller($stack, array('internal_report_error'));
+        $caller = $this->find_caller($stack, ['internal_report_error']);
 
         if (!$this->initialized)
-            die($message.PHP_EOL);
+        {
+            exit($message.PHP_EOL);
+        }
 
         $debug_info = $this->get_debug_info($caller['file'], $caller['line'], $message, $stack);
 
         $this->mail_debug_info($message, 'Error reported', $debug_info);
     }
 
-    static function blacklist_verify(bool|int $bool, string $reason, int $severity = 1): void
+    public static function blacklist_verify(bool|int $bool, string $reason, int $severity = 1): void
     {
-        $framework = WF::get_framework();
+        $framework = self::get_framework();
         $framework->internal_blacklist_verify($bool, $reason, $severity);
     }
 
     public function internal_blacklist_verify(bool|int $bool, string $reason, int $severity = 1): void
     {
         if ($bool)
+        {
             return;
+        }
 
         $this->add_blacklist_entry($reason, $severity);
+
         exit();
     }
 
@@ -496,9 +529,9 @@ TXT;
         $this->internal_verify(false, 'No blacklist support in script mode');
     }
 
-    static function shutdown_handler(): void
+    public static function shutdown_handler(): void
     {
-        $framework = WF::get_framework();
+        $framework = self::get_framework();
         $framework->internal_shutdown_handler();
     }
 
@@ -506,26 +539,41 @@ TXT;
     {
         $last_error = error_get_last();
         if (!$last_error)
+        {
             return;
+        }
 
         if ($last_error['type'] == E_NOTICE && $last_error['file'] == 'adodb-mysqli.inc')
-            return;
-
-        switch($last_error['type'])
         {
-        case E_ERROR:
-        case E_PARSE:
-        case E_CORE_ERROR:
-        case E_CORE_WARNING:
-        case E_COMPILE_ERROR:
-        case E_COMPILE_WARNING:
-            $this->internal_assert_handler($last_error['file'], $last_error['line'],
-                                  $last_error['message'], (string) $last_error['type']);
-            break;
-        default:
-            $this->internal_assert_handler($last_error['file'], $last_error['line'],
-                                  $last_error['message'], (string) $last_error['type']);
-            break;
+            return;
+        }
+
+        switch ($last_error['type'])
+        {
+            case E_ERROR:
+            case E_PARSE:
+            case E_CORE_ERROR:
+            case E_CORE_WARNING:
+            case E_COMPILE_ERROR:
+            case E_COMPILE_WARNING:
+                $this->internal_assert_handler(
+                    $last_error['file'],
+                    $last_error['line'],
+                    $last_error['message'],
+                    (string) $last_error['type']
+                );
+
+                break;
+
+            default:
+                $this->internal_assert_handler(
+                    $last_error['file'],
+                    $last_error['line'],
+                    $last_error['message'],
+                    (string) $last_error['type']
+                );
+
+                break;
         }
 
         // Don't trigger other handlers after this call
@@ -535,29 +583,28 @@ TXT;
 
     protected function exit_error(string $short_message, string $message): void
     {
-        print('Fatal error: '.$short_message.PHP_EOL);
-        print($message.PHP_EOL);
+        echo('Fatal error: '.$short_message.PHP_EOL);
+        echo($message.PHP_EOL);
 
         exit();
     }
 
-    static function get_framework(): WF
+    public static function get_framework(): self
     {
-        return WF::$framework;
+        return self::$framework;
     }
 
-    /**
-     * @return WFWebHandler
-     */
-    static function get_web_handler(): WFWebHandler
+    public static function get_web_handler(): WFWebHandler
     {
-        WF::verify(WF::$framework instanceof WFWebHandler, 'Not started as WFWebHandler');
-        return WF::$framework;
+        self::verify(self::$framework instanceof WFWebHandler, 'Not started as WFWebHandler');
+
+        return self::$framework;
     }
 
-    static function get_app_dir(): string
+    public static function get_app_dir(): string
     {
-        $framework = WF::get_framework();
+        $framework = self::get_framework();
+
         return $framework->internal_get_app_dir();
     }
 
@@ -566,22 +613,19 @@ TXT;
         return $this->app_dir;
     }
 
-    /**
-     * @return mixed
-     */
-    static function get_config(string $location = ''): mixed
+    public static function get_config(string $location = ''): mixed
     {
-        $framework = WF::get_framework();
+        $framework = self::get_framework();
+
         return $framework->internal_get_config($location);
     }
 
-    /**
-     * @return mixed
-     */
     public function internal_get_config(string $location = ''): mixed
     {
         if (!strlen($location))
+        {
             return $this->global_config;
+        }
 
         $path = explode('.', $location);
         $part = $this->global_config;
@@ -598,7 +642,9 @@ TXT;
     public function get_db(string $tag = ''): Database
     {
         if (!strlen($tag))
+        {
             return $this->main_database;
+        }
 
         $this->internal_verify(array_key_exists($tag, $this->aux_databases), 'Database not registered');
 
@@ -607,9 +653,9 @@ TXT;
 
     // Only relevant for DataCore and StoredValues to retrieve main database in static functions
     //
-    static function get_main_db(): Database
+    public static function get_main_db(): Database
     {
-        return WF::$main_db;
+        return self::$main_db;
     }
 
     public function get_cache(): CacheInterface
@@ -619,9 +665,9 @@ TXT;
 
     // Only relevant for DataCore and StoredValues to retrieve main database in static functions
     //
-    static function get_static_cache(): CacheInterface
+    public static function get_static_cache(): CacheInterface
     {
-        return WF::$static_cache;
+        return self::$static_cache;
     }
 
     public function get_security(): WFSecurity
@@ -639,40 +685,56 @@ TXT;
 
             // Expect multiple values
             //
-            $info = array();
-            $this->input[$item] = array();
-            $this->raw_input[$item] = array();
+            $info = [];
+            $this->input[$item] = [];
+            $this->raw_input[$item] = [];
 
             if (isset($this->raw_post[$item]))
+            {
                 $info = $this->raw_post[$item];
-            else if (isset($_POST[$item]))
+            }
+            elseif (isset($_POST[$item]))
+            {
                 $info = $_POST[$item];
-            else if (isset($_GET[$item]))
+            }
+            elseif (isset($_GET[$item]))
+            {
                 $info = $_GET[$item];
+            }
 
             foreach ($info as $k => $val)
             {
                 $this->raw_input[$item][$k] = trim($val);
-                if (preg_match("/^\s*$filter\s*$/m", $val))
+                if (preg_match("/^\\s*{$filter}\\s*$/m", $val))
+                {
                     $this->input[$item][$k] = trim($val);
+                }
             }
         }
         else
         {
-            $str = "";
-            $this->input[$item] = "";
+            $str = '';
+            $this->input[$item] = '';
 
             if (isset($this->raw_post[$item]))
+            {
                 $str = $this->raw_post[$item];
-            else if (isset($_POST[$item]))
+            }
+            elseif (isset($_POST[$item]))
+            {
                 $str = $_POST[$item];
-            else if (isset($_GET[$item]))
+            }
+            elseif (isset($_GET[$item]))
+            {
                 $str = $_GET[$item];
+            }
 
             $this->raw_input[$item] = trim($str);
 
-            if (preg_match("/^\s*$filter\s*$/m", $str))
+            if (preg_match("/^\\s*{$filter}\\s*$/m", $str))
+            {
                 $this->input[$item] = trim($str);
+            }
         }
     }
 
@@ -686,11 +748,11 @@ TXT;
 
     public function add_message(string $type, string $message, string $extra_message): void
     {
-        array_push($this->messages, array(
+        array_push($this->messages, [
             'mtype' => $type,
             'message' => $message,
             'extra_message' => $extra_message,
-        ));
+        ]);
     }
 
     public function skip_app_db_version_check(): void
@@ -702,9 +764,9 @@ TXT;
     {
         // Make sure static wrapper functions can work
         //
-        WF::$framework = $this;
+        self::$framework = $this;
 
-        srand();
+        mt_srand();
 
         $this->check_file_requirements();
         $this->merge_configs();
@@ -714,10 +776,12 @@ TXT;
         if ($this->internal_get_config('debug') == true)
         {
             error_reporting(E_ALL | E_STRICT);
-            ini_set("display_errors", '1');
+            ini_set('display_errors', '1');
         }
         else
-            register_shutdown_function(array($this, 'internal_shutdown_handler'));
+        {
+            register_shutdown_function([$this, 'internal_shutdown_handler']);
+        }
 
         // Set default timezone
         //
@@ -728,7 +792,9 @@ TXT;
         $this->security = new WFSecurity($this->internal_get_config('security'));
 
         if ($this->internal_get_config('database_enabled') == true)
+        {
             $this->init_databases();
+        }
 
         $this->check_compatibility();
 
@@ -741,8 +807,10 @@ TXT;
     {
         if (!is_file("{$this->app_dir}/includes/config.php"))
         {
-            $this->exit_error('Missing base requirement',
-                              'One of the required files (includes/config.php) is not found on the server.');
+            $this->exit_error(
+                'Missing base requirement',
+                'One of the required files (includes/config.php) is not found on the server.'
+            );
         }
     }
 
@@ -754,21 +822,25 @@ TXT;
         {
             if (!file_exists("{$this->app_dir}/includes/preload.inc.php"))
             {
-                $this->exit_error('Preload indicated but not present',
-                    'The file "includes/preload.inc.php" does not exist.');
+                $this->exit_error(
+                    'Preload indicated but not present',
+                    'The file "includes/preload.inc.php" does not exist.'
+                );
             }
 
-            require_once("{$this->app_dir}/includes/preload.inc.php");
+            require_once "{$this->app_dir}/includes/preload.inc.php";
         }
 
         // Load global and site specific defines
         //
-        require_once(__DIR__."/defines.inc.php");
+        require_once __DIR__.'/defines.inc.php';
 
         if (!class_exists($this->internal_get_config('sender_core.handler_class')))
         {
-            $this->exit_error('Handler class does not exist',
-                'The class configured in "sender_core.handler_class" cannot be found');
+            $this->exit_error(
+                'Handler class does not exist',
+                'The class configured in "sender_core.handler_class" cannot be found'
+            );
         }
     }
 
@@ -776,15 +848,17 @@ TXT;
     {
         // Merge configurations
         //
-        $site_config = require("{$this->app_dir}/includes/config.php");
+        $site_config = require "{$this->app_dir}/includes/config.php";
         if (!is_array($site_config))
+        {
             $this->exit_error('Site config invalid', 'No config array found');
+        }
 
         $merge_config = array_replace_recursive($this->global_config, $site_config);
 
         if (file_exists("{$this->app_dir}/includes/config_local.php"))
         {
-            $local_config = require("{$this->app_dir}/includes/config_local.php");
+            $local_config = require "{$this->app_dir}/includes/config_local.php";
             $merge_config = array_replace_recursive($merge_config, $local_config);
         }
 
@@ -801,10 +875,14 @@ TXT;
         else
         {
             if (!strlen($merge_config['server_name']))
+            {
                 $merge_config['server_name'] = $_SERVER['SERVER_NAME'];
+            }
 
             if (!strlen($merge_config['host_name']))
+            {
                 $merge_config['host_name'] = $_SERVER['SERVER_NAME'];
+            }
         }
 
         $merge_config['document_root'] = $_SERVER['DOCUMENT_ROOT'];
@@ -818,28 +896,36 @@ TXT;
         //
         if (!strlen($this->internal_get_config('sender_core.default_sender')))
         {
-            $this->exit_error('No default sender specified',
-                              'One of the required config values (sender_core.default_sender) is missing. '.
-                              'Required for mailing verify information');
+            $this->exit_error(
+                'No default sender specified',
+                'One of the required config values (sender_core.default_sender) is missing. '.
+                'Required for mailing verify information'
+            );
         }
 
         if (!strlen($this->internal_get_config('sender_core.assert_recipient')))
         {
-            $this->exit_error('No assert recipient specified',
-                              'One of the required config values (sender_core.assert_recipient) is missing. '.
-                              'Required for mailing verify information');
+            $this->exit_error(
+                'No assert recipient specified',
+                'One of the required config values (sender_core.assert_recipient) is missing. '.
+                'Required for mailing verify information'
+            );
         }
 
         if (strlen($this->internal_get_config('security.hmac_key')) < 20)
         {
-            $this->exit_error('Required config value missing',
-                'No or too short HMAC Key provided (Minimum 20 chars) in (security.hmac_key).');
+            $this->exit_error(
+                'Required config value missing',
+                'No or too short HMAC Key provided (Minimum 20 chars) in (security.hmac_key).'
+            );
         }
 
         if (strlen($this->internal_get_config('security.crypt_key')) < 20)
         {
-            $this->exit_error('Required config value missing',
-                'No or too short Crypt Key provided (Minimum 20 chars) in (security.crypt_key).');
+            $this->exit_error(
+                'Required config value missing',
+                'No or too short Crypt Key provided (Minimum 20 chars) in (security.crypt_key).'
+            );
         }
     }
 
@@ -848,15 +934,17 @@ TXT;
         // Start the database connection(s)
         //
         $this->main_database = new Database();
-        WF::$main_db = $this->main_database;
+        self::$main_db = $this->main_database;
 
         $main_db_tag = $this->internal_get_config('database_config');
         $main_config = $this->security->get_auth_config('db_config.'.$main_db_tag);
 
         if ($this->main_database->connect($main_config) === false)
         {
-            $this->exit_error('Database server connection failed',
-                    'The connection to the database server failed.');
+            $this->exit_error(
+                'Database server connection failed',
+                'The connection to the database server failed.'
+            );
         }
 
         // Open auxilary database connections
@@ -868,8 +956,10 @@ TXT;
 
             if ($database->connect($tag_config) === false)
             {
-                $this->exit_error('Databases server connection failed',
-                        'The connection to the database server failed.');
+                $this->exit_error(
+                    'Databases server connection failed',
+                    'The connection to the database server failed.'
+                );
             }
 
             $this->aux_databases[$tag] = $database;
@@ -885,20 +975,26 @@ TXT;
 
         if ($supported_wf_version == -1)
         {
-            $this->exit_error('No supported Framework version configured',
-                    'There is no supported framework version provided in "versions.supported_framework". '.
-                    "The current version is {$required_wf_version} of this Framework.");
+            $this->exit_error(
+                'No supported Framework version configured',
+                'There is no supported framework version provided in "versions.supported_framework". '.
+                "The current version is {$required_wf_version} of this Framework."
+            );
         }
 
         if ($required_wf_version != $supported_wf_version)
         {
-            $this->exit_error('Framework version mismatch',
-                    'Please make sure that this app is upgraded to support version '.
-                    "{$required_wf_version} of this Framework.");
+            $this->exit_error(
+                'Framework version mismatch',
+                'Please make sure that this app is upgraded to support version '.
+                "{$required_wf_version} of this Framework."
+            );
         }
 
         if ($this->internal_get_config('database_enabled') != true)
+        {
             return;
+        }
 
         $required_wf_db_version = FRAMEWORK_DB_VERSION;
         $required_app_db_version = $this->internal_get_config('versions.required_app_db');
@@ -909,15 +1005,19 @@ TXT;
 
         if ($required_wf_db_version != $current_wf_db_version)
         {
-            $this->exit_error('Framework Database version mismatch',
-                    "Please make sure that the latest Framework database changes for version ".
-                    "{$required_wf_db_version} of the scheme are applied.");
+            $this->exit_error(
+                'Framework Database version mismatch',
+                'Please make sure that the latest Framework database changes for version '.
+                "{$required_wf_db_version} of the scheme are applied."
+            );
         }
 
         if ($this->check_app_db_version && $required_app_db_version > $current_app_db_version)
         {
-            $this->exit_error('Outdated version of the app DB',
-                    "Please make sure that the app DB scheme is at least {$required_app_db_version}.");
+            $this->exit_error(
+                'Outdated version of the app DB',
+                "Please make sure that the app DB scheme is at least {$required_app_db_version}."
+            );
         }
     }
 
@@ -930,7 +1030,7 @@ TXT;
             $cache_config = $this->security->get_auth_config('redis');
 
             $this->cache = new RedisCache($cache_config);
-            WF::$static_cache = $this->cache;
+            self::$static_cache = $this->cache;
         }
     }
 
@@ -939,7 +1039,7 @@ TXT;
         $class_name = $this->internal_get_config('sanity_check_module');
         $this->verify(class_exists($class_name), "Sanity check module '{$class_name}' not found");
 
-        $obj = new $class_name;
+        $obj = new $class_name();
         $this->internal_verify($obj instanceof SanityCheckInterface, 'Sanity check module does not implement SanityCheckInterface');
 
         return $obj;
@@ -949,7 +1049,9 @@ TXT;
     {
         $class_name = $this->internal_get_config('sanity_check_module');
         if (!strlen($class_name))
+        {
             return true;
+        }
 
         $stored_values = new StoredValues('sanity_check');
         $build_info = $this->get_build_info();
@@ -962,7 +1064,9 @@ TXT;
             $last_timestamp = (int) $stored_values->get_value('last_check', '0');
 
             if (time() - $last_timestamp < 60)
+            {
                 return true;
+            }
 
             $stored_values->set_value('last_check', (string) time());
         }
@@ -972,7 +1076,9 @@ TXT;
             //
             $checked = $stored_values->get_value('checked_'.$commit, '0');
             if ($checked !== '0')
+            {
                 return true;
+            }
         }
 
         $sanity_check = $this->get_sanity_check();
@@ -983,7 +1089,9 @@ TXT;
         // Register successful check of this commit
         //
         if ($commit !== null)
+        {
             $stored_values->set_value('checked_'.$commit, '1');
+        }
 
         return true;
     }
@@ -1040,7 +1148,7 @@ TXT;
     }
 
     /**
-     * Get build info
+     * Get build info.
      *
      * @return array{commit: null|string, timestamp: string}
      */
@@ -1048,10 +1156,10 @@ TXT;
     {
         if (!file_exists($this->app_dir.'/build_commit') || !file_exists($this->app_dir.'/build_timestamp'))
         {
-            return array(
+            return [
                 'commit' => null,
                 'timestamp' => date('Y-m-d H:i'),
-            );
+            ];
         }
 
         $commit = file_get_contents($this->app_dir.'/build_commit');
@@ -1061,10 +1169,9 @@ TXT;
         $build_time = file_get_contents($this->app_dir.'/build_timestamp');
         $this->internal_verify($build_time !== false, 'Failed to retrieve build_timestamp');
 
-        return array(
+        return [
             'commit' => $commit,
             'timestamp' => $build_time,
-        );
+        ];
     }
 }
-?>

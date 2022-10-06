@@ -1,12 +1,13 @@
 <?php
+
 namespace WebFramework\Core;
 
 class AuthRedirect extends Authenticator
 {
     public function cleanup(): void
     {
-        if (isset($_SESSION['last_session_cleanup']) &&
-            $_SESSION['last_session_cleanup'] + 60 * 60 > time())
+        if (isset($_SESSION['last_session_cleanup'])
+            && $_SESSION['last_session_cleanup'] + 60 * 60 > time())
         {
             // Skip, because already cleaned in the last hour
             return;
@@ -15,7 +16,7 @@ class AuthRedirect extends Authenticator
         $timeout = $this->get_config('authenticator.session_timeout');
         $timestamp = date('Y-m-d H:i:s');
 
-        $this->query('DELETE FROM sessions WHERE ADDDATE(last_active, INTERVAL ? SECOND) < ?', array($timeout, $timestamp));
+        $this->query('DELETE FROM sessions WHERE ADDDATE(last_active, INTERVAL ? SECOND) < ?', [$timeout, $timestamp]);
 
         $_SESSION['last_session_cleanup'] = time();
     }
@@ -24,11 +25,11 @@ class AuthRedirect extends Authenticator
     {
         $timestamp = date('Y-m-d H:i:s');
 
-        $session = Session::create(array(
+        $session = Session::create([
             'user_id' => $user_id,
             'session_id' => $session_id,
             'last_active' => $timestamp,
-        ));
+        ]);
 
         $this->verify($session !== false, 'Failed to create Session');
 
@@ -37,7 +38,7 @@ class AuthRedirect extends Authenticator
 
     public function auth_invalidate_sessions(int $user_id): void
     {
-        $result = $this->query('DELETE FROM sessions WHERE user_id = ?', array($user_id));
+        $result = $this->query('DELETE FROM sessions WHERE user_id = ?', [$user_id]);
         $this->verify($result !== false, 'Failed to delete all user\'s sessions');
     }
 
@@ -48,7 +49,9 @@ class AuthRedirect extends Authenticator
         {
             $session = Session::get_object_by_id($_SESSION['session_id']);
             if ($session !== false)
+            {
                 $session->delete();
+            }
         }
 
         session_regenerate_id(true);
@@ -62,16 +65,21 @@ class AuthRedirect extends Authenticator
     protected function is_valid(): bool
     {
         if (!isset($_SESSION['session_id']))
+        {
             return false;
+        }
 
         $session = Session::get_object_by_id($_SESSION['session_id']);
         if ($session === false)
+        {
             return false;
+        }
 
         if (!$session->is_valid())
         {
             $this->logoff();
             $this->add_message('info', 'Session timed out', '');
+
             return false;
         }
 
@@ -84,10 +92,14 @@ class AuthRedirect extends Authenticator
     public function get_logged_in(): array|false
     {
         if (!isset($_SESSION['logged_in']))
+        {
             return false;
+        }
 
         if (!$this->is_valid())
+        {
             return false;
+        }
 
         return $_SESSION['auth'];
     }
@@ -98,15 +110,14 @@ class AuthRedirect extends Authenticator
         {
             $session = Session::get_object_by_id($_SESSION['session_id']);
             if ($session)
+            {
                 $session->delete();
+            }
         }
 
-        unset($_SESSION['logged_in']);
-        unset($_SESSION['auth']);
-        unset($_SESSION['session_id']);
+        unset($_SESSION['logged_in'], $_SESSION['auth'], $_SESSION['session_id']);
 
         session_regenerate_id();
         session_destroy();
     }
-};
-?>
+}

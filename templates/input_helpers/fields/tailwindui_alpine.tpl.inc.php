@@ -1,9 +1,9 @@
 <?php
-use \WebFramework\Core\WF;
+use WebFramework\Core\WF;
 
 WF::verify(isset($args['template_parameters']['colors']), 'No colors defined');
 $colors = $args['template_parameters']['colors'];
-$required_colors = array('focus:ring', 'focus:border');
+$required_colors = ['focus:ring', 'focus:border'];
 WF::verify(count(array_diff(array_keys($colors), $required_colors)) == 0, 'Missing required colors');
 
 WF::verify(isset($args['template_parameters']['default_width']), 'No default_width defined');
@@ -17,10 +17,10 @@ $readonly_fmt = ($parameters['readonly']) ? 'readonly' : '';
 $show_fmt = (strlen($parameters['show'])) ? "x-cloak x-show=\"{$parameters['show']}\"" : '';
 $width_fmt = (strlen($parameters['width'])) ? $parameters['width'] : $default_width;
 
-$counter_info = array(
+$counter_info = [
     'content' => $parameters['value'],
     'limit' => $parameters['max_length'],
-);
+];
 
 $counter_info_fmt = json_encode($counter_info);
 
@@ -74,14 +74,14 @@ HTML;
 
 if ($counter_info['limit'] > 0)
 {
-    echo <<<HTML
+    echo <<<'HTML'
   <div class="text-right">
     <span x-ref="remaining" class="text-xs text-gray-500">( <span x-text="limit - content.length"></span> / <span x-text="limit"></span> )</span>
   </div>
 HTML;
 }
 
-echo <<<HTML
+echo <<<'HTML'
 </div>
 HTML;
 ?>

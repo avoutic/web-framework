@@ -1,9 +1,10 @@
 <?php
-use \WebFramework\Core\WF;
+
+use WebFramework\Core\WF;
 
 WF::verify(isset($args['template_parameters']['colors']), 'No colors defined');
 $colors = $args['template_parameters']['colors'];
-$required_colors = array('border', 'focus:ring');
+$required_colors = ['border', 'focus:ring'];
 WF::verify(count(array_diff(array_keys($colors), $required_colors)) == 0, 'Missing required colors');
 
 WF::verify(isset($args['template_parameters']['default_width']), 'No default_width defined');
@@ -27,4 +28,3 @@ echo <<<HTML
   </div>
 </div>
 HTML;
-?>

@@ -1,10 +1,12 @@
 <?php
+
 namespace WebFramework\Core;
 
 use ADOConnection;
 
-class Database {
-	private ADOConnection $database;
+class Database
+{
+    private ADOConnection $database;
 
     /**
      * @param array<string> $config
@@ -13,7 +15,9 @@ class Database {
     {
         $database = ADONewConnection($config['database_type']);
         if (!$database)
+        {
             return false;
+        }
 
         $this->database = $database;
 
@@ -25,40 +29,45 @@ class Database {
         );
 
         if (!$result)
+        {
             return false;
+        }
 
         return true;
-	}
+    }
 
     /**
-     * @param array<bool|int|string|null> $value_array
+     * @param array<null|bool|int|string> $value_array
      */
-	public function query(string $query_str, array $value_array): mixed
-	{
-		if (!$this->database->IsConnected())
-			die('Database connection not available. Exiting.');
+    public function query(string $query_str, array $value_array): mixed
+    {
+        if (!$this->database->IsConnected())
+        {
+            exit('Database connection not available. Exiting.');
+        }
 
-		$query = $this->database->Prepare($query_str);
+        $query = $this->database->Prepare($query_str);
 
-		return $this->database->Execute($query, $value_array);
-	}
+        return $this->database->Execute($query, $value_array);
+    }
 
     /**
      * @param array<bool|int|string> $params
      */
     public function insert_query(string $query, array $params): mixed
-	{
-		$result = $this->query($query, $params);
+    {
+        $result = $this->query($query, $params);
 
-		if ($result !== false)
-			return $this->database->Insert_ID();
+        if ($result !== false)
+        {
+            return $this->database->Insert_ID();
+        }
 
-		return false;
-	}
+        return false;
+    }
 
     public function get_last_error(): string
     {
         return $this->database->errorMsg();
     }
 }
-?>

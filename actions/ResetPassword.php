@@ -1,4 +1,5 @@
 <?php
+
 namespace WebFramework\Actions;
 
 use WebFramework\Core\BaseFactory;
@@ -7,16 +8,16 @@ use WebFramework\Core\User;
 
 class ResetPassword extends PageAction
 {
-    static function get_filter(): array
+    public static function get_filter(): array
     {
-        return array(
-                'code' => '.*',
-                );
+        return [
+            'code' => '.*',
+        ];
     }
 
     protected function get_title(): string
     {
-        return "Reset password";
+        return 'Reset password';
     }
 
     // Can be overriden for project specific user factories and user classes
@@ -25,9 +26,7 @@ class ResetPassword extends PageAction
     {
         $factory = new BaseFactory();
 
-        $user = $factory->get_user_by_username($username);
-
-        return $user;
+        return $factory->get_user_by_username($username);
     }
 
     protected function do_logic(): void
@@ -42,7 +41,9 @@ class ResetPassword extends PageAction
 
         $msg = $this->decode_and_verify_array($code);
         if (!$msg)
+        {
             return;
+        }
 
         $this->blacklist_verify($msg['action'] == 'reset_password', 'wrong-action', 2);
 
@@ -50,18 +51,22 @@ class ResetPassword extends PageAction
         {
             // Expired
             header("Location: {$forgot_password_page}?".$this->get_message_for_url('error', 'Password reset link expired'));
+
             exit();
         }
 
         $user = $this->get_user($msg['username']);
 
         if ($user === false)
+        {
             return;
+        }
 
-        if (!isset($msg['params']) || !isset($msg['params']['iterator']) ||
-            $user->get_security_iterator() != $msg['params']['iterator'])
+        if (!isset($msg['params']) || !isset($msg['params']['iterator'])
+            || $user->get_security_iterator() != $msg['params']['iterator'])
         {
             header("Location: {$forgot_password_page}?".$this->get_message_for_url('error', 'Password reset link expired'));
+
             exit();
         }
 
@@ -74,7 +79,7 @@ class ResetPassword extends PageAction
         // Redirect to main sceen
         //
         header("Location: {$login_page}?".$this->get_message_for_url('success', 'Password reset', 'You will receive a mail with your new password'));
+
         exit();
     }
-};
-?>
+}

@@ -1,4 +1,5 @@
 <?php
+
 namespace WebFramework\Actions;
 
 use WebFramework\Core\BaseFactory;
@@ -7,23 +8,23 @@ use WebFramework\Core\User;
 
 class ChangeEmailVerify extends PageAction
 {
-    static function get_filter(): array
+    public static function get_filter(): array
     {
-        return array(
-                'code' => '.*',
-                );
+        return [
+            'code' => '.*',
+        ];
     }
 
-    static function get_permissions(): array
+    public static function get_permissions(): array
     {
-        return array(
-                'logged_in'
-                );
+        return [
+            'logged_in',
+        ];
     }
 
     protected function get_title(): string
     {
-        return "Change email address verification";
+        return 'Change email address verification';
     }
 
     // Can be overriden for project specific user factories and user classes
@@ -31,9 +32,8 @@ class ChangeEmailVerify extends PageAction
     protected function get_user(string $username): User|false
     {
         $factory = new BaseFactory();
-        $user = $factory->get_user_by_username($username);
 
-        return $user;
+        return $factory->get_user_by_username($username);
     }
 
     protected function do_logic(): void
@@ -47,7 +47,9 @@ class ChangeEmailVerify extends PageAction
 
         $msg = $this->decode_and_verify_array($code);
         if (!$msg)
+        {
             exit();
+        }
 
         $this->blacklist_verify($msg['action'] == 'change_email', 'wrong-action', 2);
 
@@ -55,6 +57,7 @@ class ChangeEmailVerify extends PageAction
         {
             // Expired
             header("Location: {$change_page}?".$this->get_message_for_url('error', 'E-mail verification link expired'));
+
             exit();
         }
 
@@ -69,6 +72,7 @@ class ChangeEmailVerify extends PageAction
             $this->deauthenticate();
             $login_page = $this->get_base_url().$this->get_config('actions.login.location');
             header("Location: {$login_page}?".$this->get_message_for_url('error', 'Other account', 'The link you used is meant for a different account. The current account has been logged off. Please try the link again.'));
+
             exit();
         }
 
@@ -79,10 +83,11 @@ class ChangeEmailVerify extends PageAction
 
         $old_email = $user->email;
 
-        if (!isset($msg['params']) || !isset($msg['params']['iterator']) ||
-            $user->get_security_iterator() != $msg['params']['iterator'])
+        if (!isset($msg['params']) || !isset($msg['params']['iterator'])
+            || $user->get_security_iterator() != $msg['params']['iterator'])
         {
             header("Location: {$change_page}?".$this->get_message_for_url('error', 'E-mail verification link expired'));
+
             exit();
         }
 
@@ -91,6 +96,7 @@ class ChangeEmailVerify extends PageAction
         if ($result == User::ERR_DUPLICATE_EMAIL)
         {
             header("Location: {$change_page}?".$this->get_message_for_url('error', 'E-mail address is already in use in another account.', 'The e-mail address is already in use and cannot be re-used in this account. Please choose another address.'));
+
             exit();
         }
         $this->verify($result == User::RESULT_SUCCESS, 'Unknown change email error');
@@ -103,8 +109,8 @@ class ChangeEmailVerify extends PageAction
         // Redirect to verification request screen
         //
         $return_page = $this->get_base_url().$this->get_config('actions.change_email.return_page');
-        header("Location: ${return_page}?".$this->get_message_for_url('success', 'E-mail address changed successfully'));
+        header("Location: {$return_page}?".$this->get_message_for_url('success', 'E-mail address changed successfully'));
+
         exit();
     }
-};
-?>
+}

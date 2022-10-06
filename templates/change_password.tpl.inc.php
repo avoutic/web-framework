@@ -1,7 +1,7 @@
 <form method="post" action="/change_password">
   <fieldset>
      <input type="hidden" name="do" value="yes"/>
-     <input type="hidden" name="token" value="<?=$this->get_csrf_token()?>"/>
+     <input type="hidden" name="token" value="<?= $this->get_csrf_token(); ?>"/>
 
      <legend>Change password</legend>
      <p>

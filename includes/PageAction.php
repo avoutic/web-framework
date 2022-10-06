@@ -1,4 +1,5 @@
 <?php
+
 namespace WebFramework\Core;
 
 abstract class PageAction extends ActionCore
@@ -8,9 +9,9 @@ abstract class PageAction extends ActionCore
     /**
      * @var array<mixed>
      */
-    protected array $page_content = array();
+    protected array $page_content = [];
 
-    function __construct()
+    public function __construct()
     {
         parent::__construct();
 
@@ -25,7 +26,7 @@ abstract class PageAction extends ActionCore
 
     protected function get_title(): string
     {
-        return "No Title Defined";
+        return 'No Title Defined';
     }
 
     protected function get_content_title(): string
@@ -35,29 +36,29 @@ abstract class PageAction extends ActionCore
 
     protected function get_canonical(): string
     {
-        return "";
+        return '';
     }
 
     protected function get_onload(): string
     {
-        return "";
+        return '';
     }
 
     protected function get_keywords(): string
     {
-        return "";
+        return '';
     }
 
     protected function get_description(): string
     {
-        return "";
+        return '';
     }
 
     protected function get_meta_robots(): string
     {
         // Default behaviour is "index,follow"
         //
-        return "index,follow";
+        return 'index,follow';
     }
 
     protected function get_frame_file(): string
@@ -68,11 +69,12 @@ abstract class PageAction extends ActionCore
     /**
      * @param array<mixed> $args
      */
-    public function load_template(string $name, array $args = array()): void
+    public function load_template(string $name, array $args = []): void
     {
         $app_dir = $this->get_app_dir();
         $this->verify(file_exists("{$app_dir}/templates/{$name}.inc.php"), 'Requested template not present');
-        include("{$app_dir}/templates/{$name}.inc.php");
+
+        include "{$app_dir}/templates/{$name}.inc.php";
     }
 
     protected function is_blocked(string $name): bool
@@ -105,8 +107,8 @@ abstract class PageAction extends ActionCore
         // Unset availability of input in display
         // Forces explicit handling in do_logic()
         //
-        unset($this->input);
-        unset($this->raw_input);
+        $this->input = null;
+        $this->raw_input = null;
 
         ob_start();
 
@@ -115,14 +117,17 @@ abstract class PageAction extends ActionCore
             $app_dir = $this->get_app_dir();
             $frame_file = "{$app_dir}/frames/".$this->get_frame_file();
             $this->verify(file_exists($frame_file), 'Requested frame file not present');
-            require($frame_file);
+
+            require $frame_file;
         }
         else
+        {
             $this->display_content();
+        }
 
         $content = ob_get_clean();
 
-        print($content);
+        echo($content);
     }
 
     public function html_main(): void
@@ -131,5 +136,4 @@ abstract class PageAction extends ActionCore
         $this->do_logic();
         $this->display_frame();
     }
-};
-?>
+}

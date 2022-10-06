@@ -1,4 +1,5 @@
 <?php
+
 namespace WebFramework\Core;
 
 class CamelCaseAutoLoader
@@ -8,18 +9,18 @@ class CamelCaseAutoLoader
     /**
      * @var array<string, string>
      */
-    protected array $wf_exceptions = array(
-    );
+    protected array $wf_exceptions = [
+    ];
 
     /**
      * @var array<string, string>
      */
-    protected array $wf_namespaces = array(
-    );
+    protected array $wf_namespaces = [
+    ];
 
     public function register(): void
     {
-        spl_autoload_register(array($this, 'autoload'), true, true);
+        spl_autoload_register([$this, 'autoload'], true, true);
     }
 
     public function register_exception(string $class, string $file): void
@@ -34,25 +35,31 @@ class CamelCaseAutoLoader
 
     public function autoload(string $namespaced_class_name): void
     {
-        $exploded = explode("\\", $namespaced_class_name);
+        $exploded = explode('\\', $namespaced_class_name);
 
         $namespace = '';
         if (count($exploded) > 1)
-            $namespace = implode("\\", array_slice($exploded, 0, -1));
+        {
+            $namespace = implode('\\', array_slice($exploded, 0, -1));
+        }
 
         $class_name = end($exploded);
 
         // Skip other namespaces
         //
         if (!isset($this->wf_namespaces[$namespace]))
+        {
             return;
+        }
 
         $dir = $this->wf_namespaces[$namespace];
 
         $this->try_load($dir, $class_name);
 
         if (str_ends_with($class_name, 'Factory'))
+        {
             $this->try_load($dir, substr($class_name, 0, -7));
+        }
     }
 
     protected function try_load(string $dir, string $class_name): void
@@ -62,12 +69,16 @@ class CamelCaseAutoLoader
         $include_name = '';
 
         if (isset($this->wf_exceptions[$class_name]))
+        {
             $include_name = $this->wf_exceptions[$class_name];
+        }
         else
         {
             $include_name = preg_replace('/([a-z])([A-Z])/', '$1_$2', $class_name);
             if ($include_name === null)
-                die("Cannot convert '{$class_name}' to CamelCase");
+            {
+                exit("Cannot convert '{$class_name}' to CamelCase");
+            }
 
             $include_name = strtolower($include_name);
         }
@@ -76,18 +87,18 @@ class CamelCaseAutoLoader
         $full_path = "{$app_dir}{$dir}{$include_name}.inc.php";
         if (file_exists($full_path))
         {
-            include_once($full_path);
+            include_once $full_path;
+
             return;
         }
     }
 
-    static function get_loader(): CamelCaseAutoLoader
+    public static function get_loader(): self
     {
         if (self::$loader === null)
         {
-            self::$loader = new CamelCaseAutoLoader();
+            self::$loader = new self();
             self::$loader->register();
-
         }
 
         return self::$loader;
@@ -95,4 +106,3 @@ class CamelCaseAutoLoader
 }
 
 CamelCaseAutoLoader::get_loader();
-?>

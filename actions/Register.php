@@ -1,4 +1,5 @@
 <?php
+
 namespace WebFramework\Actions;
 
 use WebFramework\Core\BaseFactory;
@@ -12,26 +13,26 @@ class Register extends PageAction
     /**
      * @return array<string, string>
      */
-    static function custom_get_filter(): array
+    public static function custom_get_filter(): array
     {
-        return array();
+        return [];
     }
 
     /**
      * @return array<string, string>
      */
-    static function get_filter(): array
+    public static function get_filter(): array
     {
         $custom_filter = static::custom_get_filter();
 
-        $base_filter = array(
-                'username' => FORMAT_USERNAME,
-                'password' => FORMAT_PASSWORD,
-                'password2' => FORMAT_PASSWORD,
-                'email' => FORMAT_EMAIL,
-                'accept_terms' => '0|1',
-                'g-recaptcha-response' => '.*',
-                );
+        $base_filter = [
+            'username' => FORMAT_USERNAME,
+            'password' => FORMAT_PASSWORD,
+            'password2' => FORMAT_PASSWORD,
+            'email' => FORMAT_EMAIL,
+            'accept_terms' => '0|1',
+            'g-recaptcha-response' => '.*',
+        ];
 
         return array_merge($base_filter, $custom_filter);
     }
@@ -45,7 +46,7 @@ class Register extends PageAction
 
     protected function get_title(): string
     {
-        return "Register new account";
+        return 'Register new account';
     }
 
     protected function get_onload(): string
@@ -58,7 +59,7 @@ class Register extends PageAction
      */
     protected function get_after_verify_data(): array
     {
-        return array();
+        return [];
     }
 
     protected function custom_prepare_page_content(): void
@@ -94,9 +95,13 @@ class Register extends PageAction
         $password2 = $this->get_input_var('password2');
 
         if ($identifier == 'email')
+        {
             $username = $email;
+        }
         else
+        {
             $username = $this->get_input_var('username');
+        }
 
         $accept_terms = $this->get_input_var('accept_terms');
 
@@ -116,36 +121,43 @@ class Register extends PageAction
             // Redirect to default page
             //
             $return_page = $this->get_config('actions.login.default_return_page');
-            header("Location: ".$this->get_base_url().$return_page."?".
+            header('Location: '.$this->get_base_url().$return_page.'?'.
                             $this->get_message_for_url('info', 'Already logged in'));
+
             exit();
         }
 
         // Check if this is a true attempt
         //
         if (!strlen($this->get_input_var('do')))
+        {
             return;
+        }
 
         $success = true;
 
         // Check if required values are present
         //
-        if ($identifier == 'username' && !strlen($username)) {
+        if ($identifier == 'username' && !strlen($username))
+        {
             $this->add_message('error', 'Please enter a correct username.', 'Usernames can contain letters, digits and underscores.');
             $success = false;
         }
 
-        if (!strlen($password)) {
+        if (!strlen($password))
+        {
             $this->add_message('error', 'Please enter a password.', 'Passwords can contain any printable character.');
             $success = false;
         }
 
-        if (!strlen($password2)) {
+        if (!strlen($password2))
+        {
             $this->add_message('error', 'Please enter the password verification.', 'Password verification should match password.');
             $success = false;
         }
 
-        if (strlen($password) && strlen($password2) && $password != $password2) {
+        if (strlen($password) && strlen($password2) && $password != $password2)
+        {
             $this->add_message('error', 'Passwords don\'t match.', 'Password and password verification should be the same.');
             $success = false;
         }
@@ -156,18 +168,22 @@ class Register extends PageAction
             $success = false;
         }
 
-        if (!strlen($email)) {
+        if (!strlen($email))
+        {
             $this->add_message('error', 'Please enter a correct e-mail address.', 'E-mail addresses can contain letters, digits, hyphens, underscores, dots and at\'s.');
             $success = false;
         }
 
-        if ($accept_terms != 1) {
+        if ($accept_terms != 1)
+        {
             $this->add_message('error', 'Please accept our Terms.', 'To register for our site you need to accept our Privacy Policy and our Terms of Service.');
             $success = false;
         }
 
         if ($this->custom_value_check() !== true)
+        {
             $success = false;
+        }
 
         $recaptcha_response = $this->get_input_var('g-recaptcha-response');
 
@@ -175,30 +191,34 @@ class Register extends PageAction
         {
             $this->add_message('error', 'CAPTCHA required', 'To prevent bots registering account en masse, filling in a CAPTCHA is required!');
             $success = false;
+
             return;
         }
-        else
-        {
-            $recaptcha = new Recaptcha();
-            $result = $recaptcha->verify_response($recaptcha_response);
 
-            if ($result != true)
-            {
-                $this->add_message('error', 'The CAPTCHA code entered was incorrect.');
-                $success = false;
-                return;
-            }
+        $recaptcha = new Recaptcha();
+        $result = $recaptcha->verify_response($recaptcha_response);
+
+        if ($result != true)
+        {
+            $this->add_message('error', 'The CAPTCHA code entered was incorrect.');
+            $success = false;
+
+            return;
         }
 
         if (!$success)
+        {
             return;
+        }
 
         // Check if identifier already exists
         //
         if ($identifier == 'email')
         {
-            $result = $this->query('SELECT id FROM users WHERE email = ?',
-                    array($email));
+            $result = $this->query(
+                'SELECT id FROM users WHERE email = ?',
+                [$email]
+            );
 
             $this->verify($result->RecordCount() <= 1, 'Too many results for email: '.$email);
 
@@ -213,8 +233,10 @@ class Register extends PageAction
         }
         else
         {
-            $result = $this->query('SELECT id FROM users WHERE username = ?',
-                    array($username));
+            $result = $this->query(
+                'SELECT id FROM users WHERE username = ?',
+                [$username]
+            );
 
             $this->verify($result->RecordCount() <= 1, 'Too many results for username: '.$username);
 
@@ -241,10 +263,12 @@ class Register extends PageAction
     {
         // Send mail to administrator
         //
-        SenderCore::send_raw($this->get_config('sender_core.default_sender'),
-                $this->get_config('site_name').": User '".$user->username."' registered.",
-                "The user with username '".$user->username."' registered.\n".
-                "E-mail is: '".$user->email."'.");
+        SenderCore::send_raw(
+            $this->get_config('sender_core.default_sender'),
+            $this->get_config('site_name').": User '".$user->username."' registered.",
+            "The user with username '".$user->username."' registered.\n".
+            "E-mail is: '".$user->email."'."
+        );
 
         $code = $user->generate_verify_code('send_verify', $this->get_after_verify_data());
         $send_verify_page = $this->get_config('actions.login.send_verify_page');
@@ -252,13 +276,14 @@ class Register extends PageAction
 
         // Redirect to verification request screen
         //
-        header("Location: ".$this->get_base_url().$send_verify_url);
+        header('Location: '.$this->get_base_url().$send_verify_url);
+
         exit();
     }
 
     protected function display_header(): void
     {
-        echo <<<HTML
+        echo <<<'HTML'
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 HTML;
     }
@@ -267,5 +292,4 @@ HTML;
     {
         $this->load_template('register_account.tpl', $this->page_content);
     }
-};
-?>
+}

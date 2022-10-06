@@ -1,4 +1,5 @@
 <?php
+
 namespace WebFramework\Core;
 
 class DatabaseManager extends FrameworkCore
@@ -12,11 +13,11 @@ class DatabaseManager extends FrameworkCore
     {
         // Get tables
         //
-        $query = <<<SQL
+        $query = <<<'SQL'
         SHOW TABLES
 SQL;
 
-        $params = array();
+        $params = [];
 
         $result = $this->query($query, $params);
         $this->verify($result !== false, 'Failed to retrieve tables');
@@ -33,7 +34,7 @@ SQL;
             SHOW CREATE TABLE {$table_name}
 SQL;
 
-            $params = array();
+            $params = [];
 
             $result = $this->query($query, $params);
             $this->verify($result !== false, 'Failed to retrieve create table');
@@ -90,8 +91,8 @@ SQL;
 
         $this->check_version($start_version);
 
-        echo " - Preparing all statements".PHP_EOL;
-        $queries = array();
+        echo ' - Preparing all statements'.PHP_EOL;
+        $queries = [];
 
         foreach ($data['actions'] as $action)
         {
@@ -103,71 +104,74 @@ SQL;
                 $this->verify(isset($action['constraints']) && is_array($action['constraints']), 'No constraints array specified');
 
                 $result = $this->create_table($action['table_name'], $action['fields'], $action['constraints']);
-                array_push($queries, $result);
+                $queries[] = $result;
             }
-            else if ($action['type'] == 'create_trigger')
+            elseif ($action['type'] == 'create_trigger')
             {
                 $this->verify(isset($action['trigger']) && is_array($action['trigger']), 'No trigger array specified');
 
                 $result = $this->create_trigger($action['table_name'], $action['trigger']);
-                array_push($queries, $result);
+                $queries[] = $result;
             }
-            else if ($action['type'] == 'add_column')
+            elseif ($action['type'] == 'add_column')
             {
                 $this->verify(is_array($action['field']), 'No field array specified');
                 $result = $this->add_column($action['table_name'], $action['field']);
-                array_push($queries, $result);
+                $queries[] = $result;
             }
-            else if ($action['type'] == 'add_constraint')
+            elseif ($action['type'] == 'add_constraint')
             {
                 $this->verify(is_array($action['constraint']), 'No constraint array specified');
                 $result = $this->add_constraint($action['table_name'], $action['constraint']);
-                array_push($queries, $result);
+                $queries[] = $result;
             }
-            else if ($action['type'] == 'modify_column_type')
+            elseif ($action['type'] == 'modify_column_type')
             {
                 $this->verify(is_array($action['field']), 'No field array specified');
                 $result = $this->modify_column_type($action['table_name'], $action['field']);
-                array_push($queries, $result);
+                $queries[] = $result;
             }
-            else if ($action['type'] == 'rename_column')
+            elseif ($action['type'] == 'rename_column')
             {
                 $this->verify(isset($action['name']), 'No name specified');
                 $this->verify(isset($action['new_name']), 'No new_name specified');
                 $result = $this->rename_column($action['table_name'], $action['name'], $action['new_name']);
-                array_push($queries, $result);
+                $queries[] = $result;
             }
-            else if ($action['type'] == 'rename_table')
+            elseif ($action['type'] == 'rename_table')
             {
                 $this->verify(isset($action['new_name']), 'No new_name specified');
                 $result = $this->rename_table($action['table_name'], $action['new_name']);
-                array_push($queries, $result);
+                $queries[] = $result;
             }
-            else if ($action['type'] == 'raw_query')
+            elseif ($action['type'] == 'raw_query')
             {
                 $this->verify(isset($action['query']), 'No query specified');
                 $this->verify(isset($action['params']) && is_array($action['params']), 'No params array specified');
 
                 $result = $this->raw_query($action['query'], $action['params']);
-                array_push($queries, $result);
+                $queries[] = $result;
             }
             else
+            {
                 $this->verify(false, "Unknown action type '{$action['type']}'");
+            }
         }
 
-        echo " - Executing queries".PHP_EOL;
+        echo ' - Executing queries'.PHP_EOL;
 
         foreach ($queries as $info)
         {
-            echo "   - Executing:".PHP_EOL.$info['query'].PHP_EOL;
+            echo '   - Executing:'.PHP_EOL.$info['query'].PHP_EOL;
 
             $result = $this->query($info['query'], $info['params']);
 
             if ($result === false)
             {
-                echo "   Failed: ";
+                echo '   Failed: ';
                 $db = $this->get_db();
                 echo $db->get_last_error().PHP_EOL;
+
                 exit();
             }
         }
@@ -216,32 +220,46 @@ SQL;
         // First get database type and check requirements
         //
         if ($info['type'] == 'boolean')
+        {
             $db_type = 'BOOLEAN';
-        else if ($info['type'] == 'foreign_key')
+        }
+        elseif ($info['type'] == 'foreign_key')
         {
             $this->verify(isset($info['foreign_table']), 'No target for foreign table set');
             $this->verify(isset($info['foreign_field']), 'No target for foreign field set');
 
             $db_type = 'INT(11)';
         }
-        else if ($info['type'] == 'varchar')
+        elseif ($info['type'] == 'varchar')
         {
             $this->verify(isset($info['size']), 'No varchar size set');
 
             $db_type = "VARCHAR({$info['size']})";
         }
-        else if ($info['type'] == 'float')
+        elseif ($info['type'] == 'float')
+        {
             $db_type = 'FLOAT';
-        else if ($info['type'] == 'int')
+        }
+        elseif ($info['type'] == 'int')
+        {
             $db_type = 'INT';
-        else if ($info['type'] == 'text')
+        }
+        elseif ($info['type'] == 'text')
+        {
             $db_type = 'TEXT';
-        else if ($info['type'] == 'timestamp')
+        }
+        elseif ($info['type'] == 'timestamp')
+        {
             $db_type = 'TIMESTAMP';
-        else if ($info['type'] == 'date')
+        }
+        elseif ($info['type'] == 'date')
+        {
             $db_type = 'DATE';
+        }
         else
+        {
             $this->verify(false, "Unhandled field type '{$info['type']}'");
+        }
 
         $null_fmt = $null ? 'NULL' : 'NOT NULL';
         $default_fmt = (isset($info['default'])) ? "DEFAULT {$info['default']}" : '';
@@ -252,24 +270,26 @@ SQL;
         if ($info['type'] == 'varchar')
         {
             if (isset($info['default']))
+            {
                 $default_fmt = "DEFAULT '{$info['default']}'";
+            }
         }
 
         $str = "`{$info['name']}` {$db_type} {$null_fmt} {$default_fmt} {$after_fmt}";
 
-        array_push($field_lines, $str);
+        $field_lines[] = $str;
 
         // Special post actions
         //
         if ($info['type'] == 'foreign_key')
         {
-            array_push($constraint_lines, "KEY `foreign_{$table_name}_{$info['name']}` (`{$info['name']}`)");
-            array_push($constraint_lines, "CONSTRAINT `foreign_{$table_name}_{$info['name']}` FOREIGN KEY (`{$info['name']}`) REFERENCES `{$info['foreign_table']}` (`${info['foreign_field']}`)");
+            $constraint_lines[] = "KEY `foreign_{$table_name}_{$info['name']}` (`{$info['name']}`)";
+            $constraint_lines[] = "CONSTRAINT `foreign_{$table_name}_{$info['name']}` FOREIGN KEY (`{$info['name']}`) REFERENCES `{$info['foreign_table']}` (`${info['foreign_field']}`)";
         }
     }
 
     /**
-     * @param array<mixed> $info
+     * @param array<mixed>  $info
      * @param array<string> $constraint_lines
      */
     private function get_constraint_statements(string $table_name, array $info, array &$constraint_lines): void
@@ -284,32 +304,39 @@ SQL;
             $values_fmt = implode('_', $info['values']);
             $fields_fmt = implode('`, `', $info['values']);
 
-            array_push($constraint_lines, "UNIQUE KEY `unique_{$table_name}_{$values_fmt}` (`{$fields_fmt}`)");
+            $constraint_lines[] = "UNIQUE KEY `unique_{$table_name}_{$values_fmt}` (`{$fields_fmt}`)";
         }
         else
+        {
             $this->verify(false, "Unknown constraint type '{$info['type']}'");
+        }
     }
 
     /**
      * @param array<array<string>> $fields
      * @param array<array<string>> $constraints
+     *
      * @return array{query: string, params: array<string>}
      */
     private function create_table(string $table_name, array $fields, array $constraints): array
     {
-        $field_lines = array();
-        $constraint_lines = array();
+        $field_lines = [];
+        $constraint_lines = [];
 
         // Add id primary key to all tables
         //
-        array_push($field_lines, "`id` int(11) NOT NULL AUTO_INCREMENT");
-        array_push($constraint_lines, "PRIMARY KEY (`id`)");
+        $field_lines[] = '`id` int(11) NOT NULL AUTO_INCREMENT';
+        $constraint_lines[] = 'PRIMARY KEY (`id`)';
 
         foreach ($fields as $info)
+        {
             $this->get_field_statements($table_name, $info, $field_lines, $constraint_lines);
+        }
 
         foreach ($constraints as $info)
+        {
             $this->get_constraint_statements($table_name, $info, $constraint_lines);
+        }
 
         $lines = array_merge($field_lines, $constraint_lines);
         $lines_fmt = implode(",\n    ", $lines);
@@ -320,16 +347,17 @@ CREATE TABLE `{$table_name}` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
 SQL;
 
-        $params = array();
+        $params = [];
 
-        return array(
+        return [
             'query' => $query,
             'params' => $params,
-        );
+        ];
     }
 
     /**
      * @param array<string> $info
+     *
      * @return array{query: string, params: array<string>}
      */
     private function create_trigger(string $table_name, array $info): array
@@ -344,22 +372,23 @@ CREATE TRIGGER `{$info['name']}` {$info['time']} {$info['event']} ON `{$table_na
     FOR EACH ROW {$info['action']}
 SQL;
 
-        $params = array();
+        $params = [];
 
-        return array(
+        return [
             'query' => $query,
             'params' => $params,
-        );
+        ];
     }
 
     /**
      * @param array<string> $info
+     *
      * @return array{query: string, params: array<string>}
      */
     private function add_column(string $table_name, array $info): array
     {
-        $field_lines = array();
-        $constraint_lines = array();
+        $field_lines = [];
+        $constraint_lines = [];
 
         $this->get_field_statements($table_name, $info, $field_lines, $constraint_lines);
 
@@ -371,22 +400,23 @@ ALTER TABLE `{$table_name}`
     ADD {$lines_fmt}
 SQL;
 
-        $params = array();
+        $params = [];
 
-        return array(
+        return [
             'query' => $query,
             'params' => $params,
-        );
+        ];
     }
 
     /**
      * @param array<string> $info
+     *
      * @return array{query: string, params: array<string>}
      */
     private function add_constraint(string $table_name, array $info): array
     {
-        $field_lines = array();
-        $constraint_lines = array();
+        $field_lines = [];
+        $constraint_lines = [];
 
         $this->get_constraint_statements($table_name, $info, $constraint_lines);
 
@@ -398,34 +428,36 @@ ALTER TABLE `{$table_name}`
     ADD {$lines_fmt}
 SQL;
 
-        $params = array();
+        $params = [];
 
-        return array(
+        return [
             'query' => $query,
             'params' => $params,
-        );
+        ];
     }
 
     /**
      * @param array<string> $params
+     *
      * @return array{query: string, params: array<string>}
      */
     private function raw_query(string $query, array $params): array
     {
-        return array(
+        return [
             'query' => $query,
             'params' => $params,
-        );
+        ];
     }
 
     /**
      * @param array<string> $info
+     *
      * @return array{query: string, params: array<string>}
      */
     private function modify_column_type(string $table_name, array $info): array
     {
-        $field_lines = array();
-        $constraint_lines = array();
+        $field_lines = [];
+        $constraint_lines = [];
 
         $this->get_field_statements($table_name, $info, $field_lines, $constraint_lines);
 
@@ -437,12 +469,12 @@ ALTER TABLE `{$table_name}`
     MODIFY {$lines_fmt}
 SQL;
 
-        $params = array();
+        $params = [];
 
-        return array(
+        return [
             'query' => $query,
             'params' => $params,
-        );
+        ];
     }
 
     /**
@@ -455,12 +487,12 @@ ALTER TABLE `{$table_name}`
     RENAME COLUMN `{$current_name}` TO `{$new_name}`
 SQL;
 
-        $params = array();
+        $params = [];
 
-        return array(
+        return [
             'query' => $query,
             'params' => $params,
-        );
+        ];
     }
 
     /**
@@ -473,12 +505,11 @@ ALTER TABLE `{$table_name}`
     RENAME TO `{$new_name}`
 SQL;
 
-        $params = array();
+        $params = [];
 
-        return array(
+        return [
             'query' => $query,
             'params' => $params,
-        );
+        ];
     }
-};
-?>
+}

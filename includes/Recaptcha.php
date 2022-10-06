@@ -1,4 +1,5 @@
 <?php
+
 namespace WebFramework\Core;
 
 class Recaptcha extends FrameworkCore
@@ -8,14 +9,14 @@ class Recaptcha extends FrameworkCore
     /**
      * @var array<string>
      */
-    protected array $error_codes = array();
+    protected array $error_codes = [];
 
     /**
      * @var array<string>
      */
     protected array $module_config;
 
-    function __construct()
+    public function __construct()
     {
         parent::__construct();
 
@@ -43,18 +44,20 @@ class Recaptcha extends FrameworkCore
     public function verify_response(string $recaptcha_response): bool
     {
         if (!strlen($recaptcha_response))
+        {
             return false;
+        }
 
         $recaptcha_secret = $this->secret_key;
-        $this->error_codes = array();
+        $this->error_codes = [];
 
-        $recaptcha_data = array(
+        $recaptcha_data = [
             'secret' => $recaptcha_secret,
             'response' => $recaptcha_response,
-        );
+        ];
 
         $verify = curl_init();
-        curl_setopt($verify, CURLOPT_URL, "https://www.google.com/recaptcha/api/siteverify");
+        curl_setopt($verify, CURLOPT_URL, 'https://www.google.com/recaptcha/api/siteverify');
         curl_setopt($verify, CURLOPT_POST, true);
         curl_setopt($verify, CURLOPT_POSTFIELDS, http_build_query($recaptcha_data));
         curl_setopt($verify, CURLOPT_RETURNTRANSFER, true);
@@ -62,7 +65,9 @@ class Recaptcha extends FrameworkCore
         curl_close($verify);
 
         if (is_string($response))
+        {
             $response = json_decode($response, true);
+        }
 
         if (isset($response['error_codes']))
         {
@@ -74,5 +79,4 @@ class Recaptcha extends FrameworkCore
 
         return $response['success'];
     }
-};
-?>
+}

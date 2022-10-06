@@ -1,4 +1,5 @@
 <?php
+
 namespace WebFramework\Actions;
 
 use WebFramework\Core\BaseFactory;
@@ -7,16 +8,16 @@ use WebFramework\Core\User;
 
 class Verify extends PageAction
 {
-    static function get_filter(): array
+    public static function get_filter(): array
     {
-        return array(
-                'code' => '.*',
-                );
+        return [
+            'code' => '.*',
+        ];
     }
 
     protected function get_title(): string
     {
-        return "Mail address verification";
+        return 'Mail address verification';
     }
 
     /**
@@ -38,7 +39,8 @@ class Verify extends PageAction
         $msg = $this->decode_and_verify_array($code);
         if (!$msg)
         {
-            header("Location: ${login_page}?".$this->get_message_for_url('error', 'Verification mail expired', 'Please <a href="'.$login_page.'">request a new one</a> after logging in.'));
+            header("Location: {$login_page}?".$this->get_message_for_url('error', 'Verification mail expired', 'Please <a href="'.$login_page.'">request a new one</a> after logging in.'));
+
             exit();
         }
 
@@ -47,7 +49,8 @@ class Verify extends PageAction
         if ($msg['timestamp'] + 86400 < time())
         {
             // Expired
-            header("Location: ${login_page}?".$this->get_message_for_url('error', 'Verification mail expired', 'Please <a href="'.$login_page.'">request a new one</a> after logging in.'));
+            header("Location: {$login_page}?".$this->get_message_for_url('error', 'Verification mail expired', 'Please <a href="'.$login_page.'">request a new one</a> after logging in.'));
+
             exit();
         }
 
@@ -58,7 +61,9 @@ class Verify extends PageAction
         $user = $base_factory->get_user_by_username($msg['username']);
 
         if ($user === false)
+        {
             return;
+        }
 
         if (!$user->is_verified())
         {
@@ -69,8 +74,8 @@ class Verify extends PageAction
         // Redirect to main sceen
         //
         $after_verify_page = $this->get_config('actions.login.after_verify_page');
-        header("Location: ${login_page}?".$this->get_message_for_url('success', 'Verification succeeded', 'Verification succeeded. You can now use your account.')."&return_page=".urlencode($after_verify_page));
+        header("Location: {$login_page}?".$this->get_message_for_url('success', 'Verification succeeded', 'Verification succeeded. You can now use your account.').'&return_page='.urlencode($after_verify_page));
+
         exit();
     }
-};
-?>
+}

@@ -1,4 +1,5 @@
 <?php
+
 namespace WebFramework\Core;
 
 class WFWebHandler extends WF
@@ -7,14 +8,14 @@ class WFWebHandler extends WF
     protected Authenticator $authenticator;
 
     /**
-     * @var bool|array<mixed>
+     * @var array<mixed>|bool
      */
     protected bool|array $auth_array = false;
 
     /**
      * @var array<array{type: string, regex: string, include_file?: string, class?:string, redirect?:string, redir_type?: string, args: array<string>}>
      */
-    protected array $route_array = array();
+    protected array $route_array = [];
 
     protected string $request_uri = '/';
 
@@ -23,12 +24,16 @@ class WFWebHandler extends WF
         parent::init();
         if ($this->internal_get_config('database_enabled') == false)
         {
-            $this->exit_error('Database required',
-                    'Web handler is used but no database is configured.');
+            $this->exit_error(
+                'Database required',
+                'Web handler is used but no database is configured.'
+            );
         }
 
         if ($this->internal_get_config('security.blacklist.enabled') == true)
+        {
             $this->blacklist = new Blacklist();
+        }
     }
 
     protected function exit_error(string $short_message, string $message): void
@@ -40,15 +45,22 @@ class WFWebHandler extends WF
     {
         if (count($this->route_array) == 0)
         {
-            $this->exit_error('No routes loaded',
-                    'No routes have been loaded into Web handler.');
+            $this->exit_error(
+                'No routes loaded',
+                'No routes have been loaded into Web handler.'
+            );
         }
 
         // Run WebHandler
         //
         session_name(preg_replace('/\./', '_', $this->internal_get_config('host_name')));
-        session_set_cookie_params(60 * 60 * 24, '/', $this->internal_get_config('host_name'),
-                                  $this->internal_get_config('http_mode') === 'https', true);
+        session_set_cookie_params(
+            60 * 60 * 24,
+            '/',
+            $this->internal_get_config('host_name'),
+            $this->internal_get_config('http_mode') === 'https',
+            true
+        );
         session_start();
 
         $this->create_authenticator();
@@ -61,13 +73,17 @@ class WFWebHandler extends WF
             //
             $user_id = null;
             if ($this->is_authenticated())
-                $user_id = $this->get_authenticated('user_id');
-
-            if (isset($_SERVER['REMOTE_ADDR']) &&
-                $this->blacklist->is_blacklisted($_SERVER['REMOTE_ADDR'], $user_id))
             {
-                $this->exit_error('Blacklisted',
-                        'Too much suspicious activity. Do you think this is a mistake?');
+                $user_id = $this->get_authenticated('user_id');
+            }
+
+            if (isset($_SERVER['REMOTE_ADDR'])
+                && $this->blacklist->is_blacklisted($_SERVER['REMOTE_ADDR'], $user_id))
+            {
+                $this->exit_error(
+                    'Blacklisted',
+                    'Too much suspicious activity. Do you think this is a mistake?'
+                );
             }
         }
 
@@ -79,20 +95,24 @@ class WFWebHandler extends WF
 
     private function load_raw_input(): void
     {
-        $data = file_get_contents("php://input");
+        $data = file_get_contents('php://input');
         if ($data === false)
+        {
             return;
+        }
 
         $data = json_decode($data, true);
         if ($data !== false && is_array($data))
+        {
             $this->raw_post = $data;
+        }
     }
 
     private function add_security_headers(): void
     {
         // Add random header (against BREACH like attacks)
         //
-        header('X-Random:'. substr(sha1((string) time()), 0, rand(1, 40)));
+        header('X-Random:'.substr(sha1((string) time()), 0, mt_rand(1, 40)));
 
         // Add Clickjack prevention header
         //
@@ -104,23 +124,27 @@ class WFWebHandler extends WF
         $msg = $this->security->decode_and_verify_array($url_str);
 
         if ($msg === false)
+        {
             return;
+        }
 
         $this->add_message($msg['mtype'], $msg['message'], $msg['extra_message']);
     }
 
     private function handle_fixed_input(): void
     {
-        $fixed_action_filter = array(
-                'msg' => '.*',
-                'token' => '.*',
-                'do' => 'yes|preview',
-            );
+        $fixed_action_filter = [
+            'msg' => '.*',
+            'token' => '.*',
+            'do' => 'yes|preview',
+        ];
 
-        array_walk($fixed_action_filter, array($this, 'validate_input'));
+        array_walk($fixed_action_filter, [$this, 'validate_input']);
 
         if (strlen($this->input['msg']))
+        {
             $this->add_message_from_url($this->input['msg']);
+        }
 
         if (strlen($this->input['do']))
         {
@@ -137,7 +161,7 @@ class WFWebHandler extends WF
         if (function_exists('site_get_filter'))
         {
             $site_filter = site_get_filter();
-            array_walk($site_filter, array($this, 'validate_input'));
+            array_walk($site_filter, [$this, 'validate_input']);
         }
     }
 
@@ -148,11 +172,15 @@ class WFWebHandler extends WF
         $auth_mode = $this->internal_get_config('auth_mode');
 
         if ($auth_mode == 'redirect')
+        {
             $this->authenticator = new AuthRedirect();
-        else if ($auth_mode == 'www-authenticate')
+        }
+        elseif ($auth_mode == 'www-authenticate')
+        {
             $this->authenticator = new AuthWwwAuthenticate();
-        else if ($auth_mode == 'custom' &&
-                strlen($this->internal_get_config('auth_module')))
+        }
+        elseif ($auth_mode == 'custom'
+                && strlen($this->internal_get_config('auth_module')))
         {
             $class_name = $this->internal_get_config('auth_module');
             $this->verify(class_exists($class_name), "Custom auth module '{$class_name}' not found");
@@ -163,7 +191,9 @@ class WFWebHandler extends WF
             $this->authenticator = $obj;
         }
         else
+        {
             $this->internal_verify(false, 'No valid authenticator found.');
+        }
     }
 
     private function handle_action_routing(): void
@@ -172,10 +202,14 @@ class WFWebHandler extends WF
         //
         $full_request_uri = '';
         if (isset($_SERVER['REQUEST_METHOD']))
+        {
             $full_request_uri = $_SERVER['REQUEST_METHOD'].' ';
+        }
 
         if (isset($_SERVER['REQUEST_URI']))
+        {
             $this->request_uri = preg_replace('/\?.*/', '', $_SERVER['REQUEST_URI']);
+        }
 
         $full_request_uri .= $this->request_uri;
 
@@ -187,15 +221,18 @@ class WFWebHandler extends WF
         foreach ($this->route_array as $target)
         {
             $route = $target['regex'];
-            if (preg_match("!^$route$!", $full_request_uri, $matches))
+            if (preg_match("!^{$route}$!", $full_request_uri, $matches))
             {
                 $target_info = $target;
+
                 break;
             }
         }
 
         if ($target_info === null && $full_request_uri !== 'GET /')
+        {
             $this->exit_send_404();
+        }
 
         $class = '';
 
@@ -203,23 +240,30 @@ class WFWebHandler extends WF
         {
             // Matched in the route array
             //
-            if ($target_info['type'] ==  'redirect')
+            if ($target_info['type'] == 'redirect')
             {
                 $url = $target_info['redirect'];
                 foreach ($target_info['args'] as $name => $match_index)
-                    $url = preg_replace("!\{$name\}!", $matches[$match_index], $url);
+                {
+                    $url = preg_replace("!\\{{$name}\\}!", $matches[$match_index], $url);
+                }
 
                 header('Location: '.$url, true, $target_info['redir_type']);
+
                 return;
             }
 
             for ($i = 0; $i < count($target_info['args']); $i++)
+            {
                 $this->raw_post[$target_info['args'][$i]] = $matches[$i + 1];
+            }
 
             $class = $target_info['class'];
         }
-        else if ($full_request_uri == 'GET /')
+        elseif ($full_request_uri == 'GET /')
+        {
             $class = $this->internal_get_config('actions.default_action');
+        }
 
         $this->internal_verify(strlen($class), 'No class to handle');
 
@@ -240,12 +284,15 @@ class WFWebHandler extends WF
         $has_permissions = $this->user_has_permissions($permissions);
 
         if ($has_permissions)
+        {
             return;
+        }
 
         if (!$this->is_authenticated())
         {
             $redirect_type = $object_name::redirect_login_type();
             $this->authenticator->redirect_login($redirect_type, $this->request_uri);
+
             exit();
         }
 
@@ -261,40 +308,40 @@ class WFWebHandler extends WF
         $action_filter = $object_name::get_filter();
         $action_permissions = $object_name::get_permissions();
 
-        array_walk($action_filter, array($this, 'validate_input'));
+        array_walk($action_filter, [$this, 'validate_input']);
 
         $this->enforce_permissions($object_name, $action_permissions);
 
         $action_obj = new $object_name();
 
         $this->internal_verify(method_exists($action_obj, $function_name), "Registered route function {$object_name}->{$function_name} does not exist");
-        $action_obj->$function_name();
+        $action_obj->{$function_name}();
     }
 
     /**
      * @param array<string> $args
      */
-    public function register_route(string $regex, string $file, string $class_function, array $args = array()): void
+    public function register_route(string $regex, string $file, string $class_function, array $args = []): void
     {
-        array_push($this->route_array, array(
-                    'type' => 'route',
-                    'regex' => $regex,
-                    'include_file' => $file,
-                    'class' => $class_function,
-                    'args' => $args));
+        array_push($this->route_array, [
+            'type' => 'route',
+            'regex' => $regex,
+            'include_file' => $file,
+            'class' => $class_function,
+            'args' => $args, ]);
     }
 
     /**
      * @param array<string> $args
      */
-    public function register_redirect(string $regex, string $redirect, string $type = '301', array $args = array()): void
+    public function register_redirect(string $regex, string $redirect, string $type = '301', array $args = []): void
     {
-        array_push($this->route_array, array(
-                    'type' => 'redirect',
-                    'regex' => $regex,
-                    'redirect' => $redirect,
-                    'redir_type' => $type,
-                    'args' => $args));
+        array_push($this->route_array, [
+            'type' => 'redirect',
+            'regex' => $regex,
+            'redirect' => $redirect,
+            'redir_type' => $type,
+            'args' => $args, ]);
     }
 
     /**
@@ -319,19 +366,23 @@ class WFWebHandler extends WF
     public function exit_send_error(int $code, string $title, string $type = 'generic', string $message = ''): void
     {
         if (!$this->initialized)
-            die($title.PHP_EOL.$message.PHP_EOL);
+        {
+            exit($title.PHP_EOL.$message.PHP_EOL);
+        }
 
-        if (isset($_SERVER["CONTENT_TYPE"]) && $_SERVER['CONTENT_TYPE'] == 'application/json')
+        if (isset($_SERVER['CONTENT_TYPE']) && $_SERVER['CONTENT_TYPE'] == 'application/json')
         {
             http_response_code($code);
             header('Content-type: application/json');
 
-            print(json_encode(
-                array(
+            echo(json_encode(
+                [
                     'success' => false,
                     'title' => $title,
                     'details' => $message,
-                )));
+                ]
+            ));
+
             exit();
         }
 
@@ -341,29 +392,33 @@ class WFWebHandler extends WF
         if (is_array($mapping))
         {
             if (isset($mapping[$type]))
+            {
                 $class = $mapping[$type];
+            }
         }
-        else if (strlen($mapping))
+        elseif (strlen($mapping))
+        {
             $class = $mapping;
+        }
 
         http_response_code($code);
         if (!strlen($class))
         {
-            print("<h1>$title</h1>");
-            print($message.'<br/>');
-            print('Please contact the administrator.');
+            echo("<h1>{$title}</h1>");
+            echo($message.'<br/>');
+            echo('Please contact the administrator.');
+
             exit();
         }
-        else
-        {
-            $this->input['error_title'] = $title;
-            $this->input['error_message'] = $message;
-        }
+
+        $this->input['error_title'] = $title;
+        $this->input['error_message'] = $message;
 
         $object_name = $this->internal_get_config('actions.app_namespace').$class;
-        $function_name = "html_main";
+        $function_name = 'html_main';
 
         $this->call_obj_func($object_name, $function_name);
+
         exit();
     }
 
@@ -390,7 +445,9 @@ class WFWebHandler extends WF
     public function get_authenticated(string $item = ''): mixed
     {
         if (!strlen($item))
+        {
             return $this->auth_array;
+        }
 
         $this->internal_verify(is_array($this->auth_array), 'Authenticated item not present');
         $this->internal_verify(isset($this->auth_array[$item]), 'Authenticated item not present');
@@ -404,20 +461,28 @@ class WFWebHandler extends WF
     public function user_has_permissions(array $permissions): bool
     {
         if (count($permissions) == 0)
+        {
             return true;
+        }
 
         if (!$this->is_authenticated())
+        {
             return false;
+        }
 
         foreach ($permissions as $permission)
         {
             if ($permission == 'logged_in')
+            {
                 continue;
+            }
 
             try
             {
                 if (!$this->auth_array['user']->has_right($permission))
+                {
                     return false;
+                }
             }
             catch (\Throwable $e)
             {
@@ -425,6 +490,7 @@ class WFWebHandler extends WF
                 // deserialization will be thrown. Deauthenticate instead.
                 //
                 $this->deauthenticate();
+
                 return false;
             }
         }
@@ -440,13 +506,16 @@ class WFWebHandler extends WF
     public function add_blacklist_entry(string $reason, int $severity = 1): void
     {
         if ($this->internal_get_config('security.blacklist.enabled') != true)
+        {
             return;
+        }
 
         $user_id = null;
         if ($this->is_authenticated())
+        {
             $user_id = $this->get_authenticated('user_id');
+        }
 
         $this->blacklist->add_entry($_SERVER['REMOTE_ADDR'], $user_id, $reason, $severity);
     }
-};
-?>
+}

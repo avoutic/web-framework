@@ -1,9 +1,10 @@
 <?php
+
 namespace WebFramework\Core;
 
 class FactoryCore extends FrameworkCore
 {
-    function __construct()
+    public function __construct()
     {
         parent::__construct();
     }
@@ -13,7 +14,7 @@ class FactoryCore extends FrameworkCore
      */
     public function __serialize(): array
     {
-        return array();
+        return [];
     }
 
     /**
@@ -23,5 +24,4 @@ class FactoryCore extends FrameworkCore
     {
         parent::__unserialize($data);
     }
-};
-?>
+}

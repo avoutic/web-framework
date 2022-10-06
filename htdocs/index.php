@@ -1,9 +1,13 @@
 <?php
+
 // Global configuration
 //
-if (!file_exists(__DIR__ . '/../vendor/autoload.php'))
-    die('Composer not initialized');
-require_once(__DIR__ . '/../vendor/autoload.php');
+if (!file_exists(__DIR__.'/../vendor/autoload.php'))
+{
+    exit('Composer not initialized');
+}
+
+require_once __DIR__.'/../vendor/autoload.php';
 
 use WebFramework\Core\WF;
 use WebFramework\Core\WFWebHandler;
@@ -24,21 +28,23 @@ try
     //
     $app_dir = $framework->get_app_dir();
     if (is_file("{$app_dir}/includes/site_logic.inc.php"))
-        include_once("{$app_dir}/includes/site_logic.inc.php");
+    {
+        include_once "{$app_dir}/includes/site_logic.inc.php";
+    }
 
     $framework->handle_request();
 }
 catch (Throwable $e)
 {
-    print('Unhandled exception'.PHP_EOL);
+    echo('Unhandled exception'.PHP_EOL);
 
     if ($framework->get_config('debug') == true)
     {
-        print($e->getMessage().PHP_EOL);
+        echo($e->getMessage().PHP_EOL);
         print_r($e->getTrace());
     }
 
     WF::report_error($e->getMessage(), $e->getTrace());
+
     exit();
 }
-?>

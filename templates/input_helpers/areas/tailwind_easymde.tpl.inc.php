@@ -1,10 +1,11 @@
 <?php
+
 use WebFramework\Core\ActionCore;
 use WebFramework\Core\WF;
 
 WF::verify(isset($args['template_parameters']['colors']), 'No colors defined');
 $colors = $args['template_parameters']['colors'];
-$required_colors = array('focus:ring', 'focus:border');
+$required_colors = ['focus:ring', 'focus:border'];
 WF::verify(count(array_diff(array_keys($colors), $required_colors)) == 0, 'Missing required colors');
 
 WF::verify(isset($args['template_parameters']['default_width']), 'No default_width defined');
@@ -20,9 +21,13 @@ $width_fmt = (strlen($parameters['width'])) ? $parameters['width'] : $default_wi
 $value_fmt = '';
 $value_json_fmt = '';
 if ($parameters['enable_editor'])
+{
     $value_json_fmt = json_encode($parameters['value']);
+}
 else
+{
     $value_fmt = ActionCore::encode($parameters['value']);
+}
 
 echo <<<HTML
 <div {$show_fmt} class="{$width_fmt}">
@@ -64,8 +69,7 @@ if ($parameters['enable_editor'])
 HTML;
 }
 
-echo <<<HTML
+echo <<<'HTML'
   </div>
 </div>
 HTML;
-?>

@@ -1,4 +1,5 @@
 <?php
+
 namespace WebFramework\Core;
 
 /**
@@ -6,8 +7,8 @@ namespace WebFramework\Core;
  */
 class Session extends DataCore
 {
-    static protected string $table_name = 'sessions';
-    static protected array $base_fields = array('user_id', 'session_id', 'start', 'last_active');
+    protected static string $table_name = 'sessions';
+    protected static array $base_fields = ['user_id', 'session_id', 'start', 'last_active'];
 
     public string $user_id;
     public string $session_id;
@@ -31,7 +32,9 @@ class Session extends DataCore
         // Update timestamp every 5 minutes
         //
         if ($current - $last_active_timestamp > 60 * 5)
+        {
             $this->update_field('last_active', $timestamp);
+        }
 
         // Restart session every 4 hours
         //
@@ -44,5 +47,4 @@ class Session extends DataCore
 
         return true;
     }
-};
-?>
+}

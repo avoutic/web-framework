@@ -1,4 +1,5 @@
 <?php
+
 namespace WebFramework\Core;
 
 class FrameworkCore
@@ -8,7 +9,7 @@ class FrameworkCore
     private WFSecurity $security;
     private Database $database;
 
-    function __construct()
+    public function __construct()
     {
         $this->framework = WF::get_framework();
         $this->security = $this->framework->get_security();
@@ -21,7 +22,7 @@ class FrameworkCore
      */
     public function __serialize(): array
     {
-        return array();
+        return [];
     }
 
     /**
@@ -53,7 +54,7 @@ class FrameworkCore
     }
 
     /**
-     * @param array<bool|int|string|null> $params
+     * @param array<null|bool|int|string> $params
      */
     protected function query(string $query, array $params): mixed
     {
@@ -103,8 +104,9 @@ class FrameworkCore
 
     protected function get_message_for_url(string $mtype, string $message, string $extra_message = ''): string
     {
-        $msg = array('mtype' => $mtype, 'message' => $message, 'extra_message' => $extra_message);
-        return "msg=".$this->security->encode_and_auth_array($msg);
+        $msg = ['mtype' => $mtype, 'message' => $message, 'extra_message' => $extra_message];
+
+        return 'msg='.$this->security->encode_and_auth_array($msg);
     }
 
     // Assert related
@@ -129,9 +131,7 @@ class FrameworkCore
 
     // Security related
     //
-    /**
-     * @return mixed
-     */
+
     protected function get_auth_config(string $key_file): mixed
     {
         return $this->security->get_auth_config($key_file);
@@ -151,7 +151,7 @@ class FrameworkCore
     }
 
     /**
-     * @return false|array<mixed>
+     * @return array<mixed>|false
      */
     protected function decode_and_verify_array(string $str): array|false
     {
@@ -202,5 +202,4 @@ class FrameworkCore
     {
         return $this->framework->get_build_info();
     }
-};
-?>
+}

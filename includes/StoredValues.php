@@ -1,4 +1,5 @@
 <?php
+
 namespace WebFramework\Core;
 
 /*
@@ -18,7 +19,7 @@ class StoredValues
     private Database $database;
     private string $module;
 
-    function __construct(string $module)
+    public function __construct(string $module)
     {
         $this->database = WF::get_main_db();
         $this->module = $module;
@@ -29,49 +30,62 @@ class StoredValues
      */
     public function get_values(): array
     {
-        $result = $this->database->query('SELECT name, value FROM config_values WHERE module = ?',
-            array($this->module));
+        $result = $this->database->query(
+            'SELECT name, value FROM config_values WHERE module = ?',
+            [$this->module]
+        );
 
         WF::verify($result !== false, "Failed to retrieve stored values for {$this->module}");
 
-        $info = array();
+        $info = [];
 
         foreach ($result as $row)
+        {
             $info[$row['name']] = $row['value'];
+        }
 
         return $info;
     }
 
     public function get_value(string $name, string $default = ''): string
     {
-        $result = $this->database->query('SELECT value FROM config_values WHERE module = ? AND name = ?',
-            array($this->module, $name));
+        $result = $this->database->query(
+            'SELECT value FROM config_values WHERE module = ? AND name = ?',
+            [$this->module, $name]
+        );
 
         WF::verify($result !== false, "Failed to retrieve stored value {$this->module}:{$name}");
 
         if ($result->RecordCount() == 0)
+        {
             return $default;
+        }
 
         if ($result->RecordCount() != 1)
+        {
             return '';
+        }
 
         return $result->fields['value'];
     }
 
     public function set_value(string $name, string $value): void
     {
-        $result = $this->database->query('INSERT INTO config_values SET module = ?, name = ?, value = ? ON DUPLICATE KEY UPDATE value = ?',
-            array($this->module, $name, $value, $value));
+        $result = $this->database->query(
+            'INSERT INTO config_values SET module = ?, name = ?, value = ? ON DUPLICATE KEY UPDATE value = ?',
+            [$this->module, $name, $value, $value]
+        );
 
         WF::verify($result !== false, "Failed to set stored value {$this->module}:{$name}");
     }
 
     public function delete_value(string $name): void
     {
-        $result = $this->database->query('DELETE config_values WHERE module = ? AND name = ?',
-            array($this->module, $name));
+        $result = $this->database->query(
+            'DELETE config_values WHERE module = ? AND name = ?',
+            [$this->module, $name]
+        );
 
         WF::verify($result !== false, "Failed to delete stored value {$this->module}:{$name}");
     }
-};
-?>
+}

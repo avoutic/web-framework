@@ -43,5 +43,10 @@
         "psr-4": {
             "WebFramework\\PHPStan\\": "phpstan/"
         }
+    },
+    "config": {
+        "allow-plugins": {
+            "phpro/grumphp-shim": false
+        }
     }
 }

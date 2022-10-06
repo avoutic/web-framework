@@ -1,4 +1,5 @@
 <?php
+
 namespace WebFramework\Core;
 
 abstract class ActionCore extends FrameworkCore
@@ -6,16 +7,16 @@ abstract class ActionCore extends FrameworkCore
     protected WFWebHandler $web_handler;
 
     /**
-     * @var array<string|array<string>>
+     * @var array<array<string>|string>
      */
-    protected array $input = array();
+    protected array $input = [];
 
     /**
-     * @var array<string|array<string>>
+     * @var array<array<string>|string>
      */
-    protected array $raw_input = array();
+    protected array $raw_input = [];
 
-    function __construct()
+    public function __construct()
     {
         parent::__construct();
 
@@ -27,9 +28,9 @@ abstract class ActionCore extends FrameworkCore
     /**
      * @return array<string>
      */
-    static function get_filter(): array
+    public static function get_filter(): array
     {
-        return array();
+        return [];
     }
 
     protected function get_input_var(string $name, bool $content_required = false): string
@@ -38,7 +39,9 @@ abstract class ActionCore extends FrameworkCore
         $this->verify(is_string($this->input[$name]), 'Not a string');
 
         if ($content_required)
+        {
             $this->verify(strlen($this->input[$name]), 'Missing input variable: '.$name);
+        }
 
         return $this->input[$name];
     }
@@ -55,14 +58,16 @@ abstract class ActionCore extends FrameworkCore
     }
 
     /**
-     * @return array<string|array<string>>
+     * @return array<array<string>|string>
      */
     protected function get_input_vars(): array
     {
-        $fields = array();
+        $fields = [];
 
         foreach (array_keys($this->get_filter()) as $key)
+        {
             $fields[$key] = $this->input[$key];
+        }
 
         return $fields;
     }
@@ -110,7 +115,9 @@ abstract class ActionCore extends FrameworkCore
     protected function blacklist_404(bool|int $bool, string $reason, string $type = 'generic'): void
     {
         if ($bool)
+        {
             return;
+        }
 
         $this->add_blacklist_entry($reason);
 
@@ -120,24 +127,26 @@ abstract class ActionCore extends FrameworkCore
     /**
      * @return array<string>
      */
-    static function get_permissions(): array
+    public static function get_permissions(): array
     {
-        return array();
+        return [];
     }
 
-    static function redirect_login_type(): string
+    public static function redirect_login_type(): string
     {
         return 'redirect';
     }
 
-    static function encode(mixed $input, bool $double_encode = true): string
+    public static function encode(mixed $input, bool $double_encode = true): string
     {
-        WF::verify(( is_string($input) || is_bool($input) || is_int($input) || is_float($input) || is_null($input)) && is_bool($double_encode), 'Not valid for encoding');
+        WF::verify((is_string($input) || is_bool($input) || is_int($input) || is_float($input) || is_null($input)) && is_bool($double_encode), 'Not valid for encoding');
 
-        $str = htmlentities((string)$input, ENT_QUOTES, 'UTF-8', $double_encode);
+        $str = htmlentities((string) $input, ENT_QUOTES, 'UTF-8', $double_encode);
         if (!strlen($str))
-            $str = htmlentities((string)$input, ENT_QUOTES, 'ISO-8859-1', $double_encode);
+        {
+            $str = htmlentities((string) $input, ENT_QUOTES, 'ISO-8859-1', $double_encode);
+        }
+
         return $str;
     }
-};
-?>
+}

@@ -1,4 +1,5 @@
 <?php
+
 namespace WebFramework\Actions;
 
 use WebFramework\Core\BaseFactory;
@@ -7,20 +8,22 @@ use WebFramework\Core\WF;
 
 class ForgotPassword extends PageAction
 {
-    static function get_filter(): array
+    public static function get_filter(): array
     {
         $username_format = FORMAT_USERNAME;
         if (WF::get_config('authenticator.unique_identifier') == 'email')
+        {
             $username_format = FORMAT_EMAIL;
+        }
 
-        return array(
-                'username' => $username_format,
-                );
+        return [
+            'username' => $username_format,
+        ];
     }
 
     protected function get_title(): string
     {
-        return "Forgot password";
+        return 'Forgot password';
     }
 
     protected function do_logic(): void
@@ -28,7 +31,9 @@ class ForgotPassword extends PageAction
         // Check if this is a true attempt
         //
         if (!strlen($this->get_input_var('do')))
+        {
             return;
+        }
 
         // Check if user present
         //
@@ -36,6 +41,7 @@ class ForgotPassword extends PageAction
         if (!strlen($username))
         {
             $this->add_message('error', 'Please enter a username.', '');
+
             return;
         }
 
@@ -46,12 +52,15 @@ class ForgotPassword extends PageAction
         $user = $base_factory->get_user_by_username($username);
 
         if ($user !== false)
+        {
             $user->send_password_reset_mail();
+        }
 
         // Redirect to main sceen
         //
         $login_page = $this->get_base_url().$this->get_config('actions.login.location');
-        header("Location: ${login_page}?".$this->get_message_for_url('success', 'Reset link mailed to registered email account.'));
+        header("Location: {$login_page}?".$this->get_message_for_url('success', 'Reset link mailed to registered email account.'));
+
         exit();
     }
 
@@ -59,5 +68,4 @@ class ForgotPassword extends PageAction
     {
         $this->load_template('forgot_password.tpl', $this->page_content);
     }
-};
-?>
+}

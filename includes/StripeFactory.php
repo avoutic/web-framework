@@ -1,4 +1,5 @@
 <?php
+
 namespace WebFramework\Core;
 
 class StripeFactory extends FactoryCore
@@ -11,11 +12,11 @@ class StripeFactory extends FactoryCore
     /**
      * @var array<string>
      */
-    private array $event_handlers = array();
+    private array $event_handlers = [];
 
     protected \Stripe\StripeClient $stripe;
 
-    function __construct()
+    public function __construct()
     {
         parent::__construct();
 
@@ -29,13 +30,20 @@ class StripeFactory extends FactoryCore
 
     public function verify_request(string $payload, string $sig_header): bool
     {
-        try {
+        try
+        {
             $event = \Stripe\Webhook::constructEvent(
-                $payload, $sig_header, $this->config['endpoint_secret'],
+                $payload,
+                $sig_header,
+                $this->config['endpoint_secret'],
             );
-        } catch(\UnexpectedValueException $e) {
+        }
+        catch (\UnexpectedValueException $e)
+        {
             return false;
-        } catch(\Stripe\Exception\SignatureVerificationException $e) {
+        }
+        catch (\Stripe\Exception\SignatureVerificationException $e)
+        {
             return false;
         }
 
@@ -51,11 +59,13 @@ class StripeFactory extends FactoryCore
         $object = $payload['data']['object'];
 
         if (!isset($this->event_handlers[$event_type]))
+        {
             return 'unhandled-event-type';
+        }
 
         $handler_function = $this->event_handlers[$event_type];
 
-        return $this->$handler_function($object);
+        return $this->{$handler_function}($object);
     }
 
     protected function add_event_handler(string $event_type, string $handler_function): void
@@ -75,6 +85,7 @@ class StripeFactory extends FactoryCore
     //
     /**
      * @param array<mixed> $data
+     *
      * @return array<mixed>
      */
     public function create_customer(array $data): array
@@ -90,10 +101,11 @@ class StripeFactory extends FactoryCore
     public function get_customer_data(string $customer_id): array
     {
         $customer = \Stripe\Customer::retrieve(
-            array(
-                "id" => $customer_id,
-            )
+            [
+                'id' => $customer_id,
+            ]
         );
+
         return $customer->toArray();
     }
 
@@ -105,10 +117,11 @@ class StripeFactory extends FactoryCore
     public function get_invoice_data(string $invoice_id): array
     {
         $invoice = \Stripe\Invoice::retrieve(
-            array(
-                "id" => $invoice_id,
-            )
+            [
+                'id' => $invoice_id,
+            ]
         );
+
         return $invoice->toArray();
     }
 
@@ -116,6 +129,7 @@ class StripeFactory extends FactoryCore
     //
     /**
      * @param array<mixed> $data
+     *
      * @return array<mixed>
      */
     public function create_price(array $data): array
@@ -129,6 +143,7 @@ class StripeFactory extends FactoryCore
     //
     /**
      * @param array<mixed> $data
+     *
      * @return array<mixed>
      */
     public function create_product(array $data): array
@@ -140,9 +155,10 @@ class StripeFactory extends FactoryCore
 
     /**
      * @param array<mixed> $filter
+     *
      * @return array<mixed>
      */
-    public function get_products_data(array $filter = array()): array
+    public function get_products_data(array $filter = []): array
     {
         $products = \Stripe\Product::all();
 
@@ -155,29 +171,31 @@ class StripeFactory extends FactoryCore
     //
     public function cancel_subscription(string $subscription_id): bool
     {
-            $subscription = \Stripe\Subscription::retrieve(
-                array(
-                    "id" => $subscription_id,
-                )
-            );
+        $subscription = \Stripe\Subscription::retrieve(
+            [
+                'id' => $subscription_id,
+            ]
+        );
 
-            $subscription->cancel();
+        $subscription->cancel();
 
-            return true;
+        return true;
     }
 
     /**
      * @param array<string> $expand
+     *
      * @return array<mixed>
      */
-    public function get_subscription_data(string $subscription_id, array $expand = array()): array
+    public function get_subscription_data(string $subscription_id, array $expand = []): array
     {
         $subscription = \Stripe\Subscription::retrieve(
-            array(
-                "id" => $subscription_id,
-                "expand" => $expand,
-            )
+            [
+                'id' => $subscription_id,
+                'expand' => $expand,
+            ]
         );
+
         return $subscription->toArray();
     }
 
@@ -193,5 +211,4 @@ class StripeFactory extends FactoryCore
 
         return $webhooks->data[0]->enabled_events;
     }
-};
-?>
+}

@@ -1,4 +1,5 @@
 <?php
+
 namespace WebFramework\Core;
 
 class Browserless extends FrameworkCore
@@ -11,9 +12,9 @@ class Browserless extends FrameworkCore
     private string $header_template = '';
     private string $api_key = '';
 
-    private const PDF_MAGIC = "%PDF-";
+    private const PDF_MAGIC = '%PDF-';
 
-    function __construct()
+    public function __construct()
     {
         parent::__construct();
 
@@ -65,9 +66,13 @@ class Browserless extends FrameworkCore
 
         $query = parse_url($target_url, PHP_URL_QUERY);
         if ($query)
+        {
             $target_url .= "&auth={$this->api_key}";
+        }
         else
+        {
             $target_url .= "?auth={$this->api_key}";
+        }
 
         $filename = $output_filename;
 
@@ -80,6 +85,7 @@ class Browserless extends FrameworkCore
         header('Content-Length: '.strlen($result));
 
         echo $result;
+
         exit();
     }
 
@@ -89,9 +95,13 @@ class Browserless extends FrameworkCore
 
         $query = parse_url($target_url, PHP_URL_QUERY);
         if ($query)
+        {
             $target_url .= "&auth={$this->api_key}";
+        }
         else
+        {
             $target_url .= "?auth={$this->api_key}";
+        }
 
         $tmp_file = tmpfile();
         $this->verify($tmp_file !== false, 'Failed to get temporary stream');
@@ -107,48 +117,56 @@ class Browserless extends FrameworkCore
     {
         $pdf_endpoint = "{$this->config['pdf_endpoint']}?token={$this->config['token']}";
 
-        $data = array(
+        $data = [
             'url' => "{$url}",
             'emulateMedia' => 'print',
-            'options' => array(
+            'options' => [
                 'format' => 'A4',
-                'margin' => array(
+                'margin' => [
                     'left' => '50px',
                     'right' => '50px',
                     'top' => '60px',
                     'bottom' => '60px',
-                ),
+                ],
                 'printBackground' => true,
                 'scale' => 0.5,
-            ),
-        );
+            ],
+        ];
 
         if (strlen($this->header_template) || strlen($this->footer_template))
         {
             $data['options']['displayHeaderFooter'] = true;
 
             if (strlen($this->header_template))
+            {
                 $data['options']['headerTemplate'] = $this->header_template;
+            }
 
             if (strlen($this->footer_template))
+            {
                 $data['options']['footerTemplate'] = $this->footer_template;
-        };
+            }
+        }
 
-        $opts = array(
-            CURLOPT_URL             => $pdf_endpoint,
-            CURLOPT_CUSTOMREQUEST   => 'POST',
-            CURLOPT_POST            => 1,
-            CURLOPT_POSTFIELDS      => json_encode($data),
-            CURLOPT_HTTPHEADER      => array(
+        $opts = [
+            CURLOPT_URL => $pdf_endpoint,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POST => 1,
+            CURLOPT_POSTFIELDS => json_encode($data),
+            CURLOPT_HTTPHEADER => [
                 'Content-Type: application/json',
                 'Cache-Control: no-cache',
-            ),
-        );
+            ],
+        ];
 
         if ($output_stream !== false)
+        {
             $opts[CURLOPT_FILE] = $output_stream;
+        }
         else
+        {
             $opts[CURLOPT_RETURNTRANSFER] = true;
+        }
 
         $curl = curl_init();
         curl_setopt_array($curl, $opts);
@@ -158,9 +176,10 @@ class Browserless extends FrameworkCore
         curl_close($curl);
 
         if ($output_stream !== false)
+        {
             return true;
-        else
-            return $result;
+        }
+
+        return $result;
     }
-};
-?>
+}

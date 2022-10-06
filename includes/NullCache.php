@@ -1,9 +1,10 @@
 <?php
+
 namespace WebFramework\Core;
 
 class NullCache implements CacheInterface
 {
-    function __construct(array $config)
+    public function __construct(array $config)
     {
     }
 
@@ -28,5 +29,4 @@ class NullCache implements CacheInterface
     public function flush(): void
     {
     }
-};
-?>
+}

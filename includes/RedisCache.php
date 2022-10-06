@@ -1,8 +1,9 @@
 <?php
+
 namespace WebFramework\Core;
 
-use Redis;
 use Cache\Adapter\Redis\RedisCachePool;
+use Redis;
 
 class RedisCache implements CacheInterface
 {
@@ -11,7 +12,7 @@ class RedisCache implements CacheInterface
     /**
      * @param array<string> $config
      */
-    function __construct(array $config)
+    public function __construct(array $config)
     {
         WF::verify(isset($config['hostname']), 'No hostname set');
         WF::verify(isset($config['port']), 'No port set');
@@ -22,7 +23,7 @@ class RedisCache implements CacheInterface
             $config['hostname'],
             (int) $config['port'],
             1,
-            "wf",
+            'wf',
             0,
             0,
             ['auth' => $config['password']]
@@ -31,7 +32,8 @@ class RedisCache implements CacheInterface
 
         $this->pool = new RedisCachePool($client);
 
-        try {
+        try
+        {
             // Workaround: Without trying to check something, the connection is not yet verified.
             //
             $this->pool->hasItem('errors');
@@ -52,7 +54,9 @@ class RedisCache implements CacheInterface
         $item = $this->pool->getItem($path);
 
         if (!$item->isHit())
+        {
             return false;
+        }
 
         return $item->get();
     }
@@ -93,5 +97,4 @@ class RedisCache implements CacheInterface
     {
         $this->pool->clear();
     }
-};
-?>
+}

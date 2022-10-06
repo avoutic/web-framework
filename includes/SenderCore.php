@@ -1,4 +1,5 @@
 <?php
+
 namespace WebFramework\Core;
 
 abstract class SenderCore extends FrameworkCore
@@ -11,7 +12,7 @@ abstract class SenderCore extends FrameworkCore
         return $default_sender;
     }
 
-    static function send_raw(string $to, string $subject, string $message): bool|string
+    public static function send_raw(string $to, string $subject, string $message): bool|string
     {
         // Instantiate correct handler
         //
@@ -27,7 +28,7 @@ abstract class SenderCore extends FrameworkCore
     /**
      * @param array<mixed> $params
      */
-    static function send(string $template_name, string $to, array $params = array()): bool|string
+    public static function send(string $template_name, string $to, array $params = []): bool|string
     {
         // Instantiate correct handler
         //
@@ -42,11 +43,11 @@ abstract class SenderCore extends FrameworkCore
     /**
      * @param array<mixed> $params
      */
-    public function dispatch_template_email(string $template_name, string $to, array $params = array()): bool|string
+    public function dispatch_template_email(string $template_name, string $to, array $params = []): bool|string
     {
         WF::verify(method_exists($this, $template_name), 'No template handler available');
 
-        return $this->$template_name($to, $params);
+        return $this->{$template_name}($to, $params);
     }
 
     abstract public function send_raw_email(string $to, string $subject, string $message): bool|string;
@@ -77,5 +78,4 @@ abstract class SenderCore extends FrameworkCore
      * @param array<mixed> $params
      */
     abstract public function new_password(string $to, array $params): bool|string;
-};
-?>
+}
