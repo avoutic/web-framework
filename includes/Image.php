@@ -10,8 +10,6 @@ use GdImage;
 class Image extends FrameworkCore
 {
     private string $location;
-    private Callable $create_from;
-    private Callable $image_output;
     private int $width;
     private int $height;
     private int $type;
@@ -36,21 +34,6 @@ class Image extends FrameworkCore
         }
 
         $this->is_image = true;
-
-        $this->create_from = 'imagecreatefromgif';
-        $this->image_output = 'imagegif';
-
-        if ($size[2] == IMAGETYPE_JPEG)
-        {
-            $this->create_from = 'imagecreatefromjpeg';
-            $this->image_output = 'imagejpeg';
-        }
-        elseif ($size[2] == IMAGETYPE_PNG)
-        {
-            $this->create_from = 'imagecreatefrompng';
-            $this->image_output = 'imagepng';
-        }
-
         $this->width = $size[0];
         $this->height = $size[1];
         $this->type = $size[2];
@@ -58,16 +41,46 @@ class Image extends FrameworkCore
 
     private function create_from(string $location): GdImage|false
     {
-        $func = $this->create_from;
+        if ($this->type == IMAGETYPE_GIF)
+        {
+            return imagecreatefromgif($location);
+        }
 
-        return $func($location);
+        if ($this->type == IMAGETYPE_JPEG)
+        {
+            return imagecreatefromjpeg($location);
+        }
+
+        if ($this->type == IMAGETYPE_PNG)
+        {
+            return imagecreatefrompng($location);
+        }
+
+        $this->verify(false, 'Unknown image type');
+
+        exit();
     }
 
     private function image_output(GdImage $image, string $location): bool
     {
-        $func = $this->image_output;
+        if ($this->type == IMAGETYPE_GIF)
+        {
+            return imagegif($image, $location);
+        }
 
-        return $func($image, $location);
+        if ($this->type == IMAGETYPE_JPEG)
+        {
+            return imagejpeg($image, $location);
+        }
+
+        if ($this->type == IMAGETYPE_PNG)
+        {
+            return imagepng($image, $location);
+        }
+
+        $this->verify(false, 'Unknown image type');
+
+        exit();
     }
 
     public function get_width(): int
