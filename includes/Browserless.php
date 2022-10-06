@@ -9,6 +9,7 @@ class Browserless extends FrameworkCore
     private array $config;
     private string $footer_template = '';
     private string $header_template = '';
+    private string $api_key = '';
 
     private const PDF_MAGIC = "%PDF-";
 
@@ -82,7 +83,7 @@ class Browserless extends FrameworkCore
         exit();
     }
 
-    public function output_stream(string $relative_url)
+    public function output_stream(string $relative_url): mixed
     {
         $target_url = "{$this->config['local_server']}{$relative_url}";
 
@@ -93,6 +94,7 @@ class Browserless extends FrameworkCore
             $target_url .= "?auth={$this->api_key}";
 
         $tmp_file = tmpfile();
+        $this->verify($tmp_file !== false, 'Failed to get temporary stream');
 
         $result = $this->get_pdf_result($target_url, $tmp_file);
         $tmp_path = stream_get_meta_data($tmp_file)['uri'];
