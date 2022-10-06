@@ -53,7 +53,7 @@ class FrameworkCore
     }
 
     /**
-     * @param array<bool|int|string> $params
+     * @param array<bool|int|string|null> $params
      */
     protected function query(string $query, array $params): mixed
     {

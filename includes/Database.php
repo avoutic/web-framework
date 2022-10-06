@@ -31,7 +31,7 @@ class Database {
 	}
 
     /**
-     * @param array<bool|int|string> $value_array
+     * @param array<bool|int|string|null> $value_array
      */
 	public function query(string $query_str, array $value_array): mixed
 	{

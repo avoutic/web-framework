@@ -440,7 +440,7 @@ SQL;
     }
 
     /**
-     * @param array<null|int|string|int> $filter
+     * @param array<null|bool|string|int> $filter
      * @return array<mixed>
      */
     static function get_object_info(array $filter = array()): false|array
@@ -449,7 +449,7 @@ SQL;
     }
 
     /**
-     * @param array<null|int|string|int> $filter
+     * @param array<null|bool|string|int> $filter
      * @return false|array<mixed>
      */
     static function get_object_data(string $data_function, array $filter = array()): false|array
