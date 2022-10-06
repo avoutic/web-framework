@@ -41,7 +41,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "WebFramework\\PHPStan\\": "web-framework/phpstan/"
+            "WebFramework\\PHPStan\\": "phpstan/"
         }
     }
 }
