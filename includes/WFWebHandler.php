@@ -13,9 +13,14 @@ class WFWebHandler extends WF
     protected bool|array $auth_array = false;
 
     /**
-     * @var array<array{type: string, regex: string, include_file?: string, class?:string, redirect?:string, redir_type?: string, args: array<string>}>
+     * @var array<array{type: string, regex: string, include_file: string, class:string, string, args: array<string>}>
      */
     protected array $route_array = [];
+
+    /**
+     * @var array<array{type: string, regex: string, redirect:string, redir_type: string, args: array<string>}>
+     */
+    protected array $redirect_array = [];
 
     protected string $request_uri = '/';
 
@@ -43,7 +48,7 @@ class WFWebHandler extends WF
 
     public function handle_request(): void
     {
-        if (count($this->route_array) == 0)
+        if (count($this->route_array) == 0 && count($this->redirect_array) == 0)
         {
             $this->exit_error(
                 'No routes loaded',
@@ -213,55 +218,58 @@ class WFWebHandler extends WF
 
         $full_request_uri .= $this->request_uri;
 
+        // Check if there is a redirect to follow
+        //
+        $target_info = null;
+        $matches = null;
+
+        foreach ($this->redirect_array as $target)
+        {
+            $route = $target['regex'];
+            if (preg_match("!^{$route}$!", $full_request_uri, $matches))
+            {
+                $url = $target['redirect'];
+
+                foreach ($target['args'] as $name => $match_index)
+                {
+                    $url = preg_replace("!\\{{$name}\\}!", $matches[$match_index], $url);
+                }
+
+                header('Location: '.$url, true, $target['redir_type']);
+
+                exit();
+            }
+        }
+
         // Check if there is a route to follow
         //
         $target_info = null;
         $matches = null;
+        $class = '';
 
         foreach ($this->route_array as $target)
         {
             $route = $target['regex'];
             if (preg_match("!^{$route}$!", $full_request_uri, $matches))
             {
-                $target_info = $target;
+                for ($i = 0; $i < count($target['args']); $i++)
+                {
+                    $this->raw_post[$target['args'][$i]] = $matches[$i + 1];
+                }
+
+                $class = $target['class'];
 
                 break;
             }
         }
 
-        if ($target_info === null && $full_request_uri !== 'GET /')
+        if ($class === '')
         {
-            $this->exit_send_404();
-        }
-
-        $class = '';
-
-        if ($target_info !== null && $matches !== null)
-        {
-            // Matched in the route array
-            //
-            if ($target_info['type'] == 'redirect')
+            if ($full_request_uri !== 'GET /')
             {
-                $url = $target_info['redirect'];
-                foreach ($target_info['args'] as $name => $match_index)
-                {
-                    $url = preg_replace("!\\{{$name}\\}!", $matches[$match_index], $url);
-                }
-
-                header('Location: '.$url, true, $target_info['redir_type']);
-
-                return;
+                $this->exit_send_404();
             }
 
-            for ($i = 0; $i < count($target_info['args']); $i++)
-            {
-                $this->raw_post[$target_info['args'][$i]] = $matches[$i + 1];
-            }
-
-            $class = $target_info['class'];
-        }
-        elseif ($full_request_uri == 'GET /')
-        {
             $class = $this->internal_get_config('actions.default_action');
         }
 
@@ -336,7 +344,7 @@ class WFWebHandler extends WF
      */
     public function register_redirect(string $regex, string $redirect, string $type = '301', array $args = []): void
     {
-        array_push($this->route_array, [
+        array_push($this->redirect_array, [
             'type' => 'redirect',
             'regex' => $regex,
             'redirect' => $redirect,
