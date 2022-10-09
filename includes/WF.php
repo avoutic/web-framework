@@ -46,6 +46,7 @@ class WF
      */
     private array $messages = [];
 
+    private bool $check_db = true;
     private bool $check_app_db_version = true;
 
     // Default configuration
@@ -755,6 +756,11 @@ TXT;
         ]);
     }
 
+    public function skip_db_check(): void
+    {
+        $this->check_db = false;
+    }
+
     public function skip_app_db_version_check(): void
     {
         $this->check_app_db_version = false;
@@ -991,7 +997,7 @@ TXT;
             );
         }
 
-        if ($this->internal_get_config('database_enabled') != true)
+        if ($this->internal_get_config('database_enabled') != true || !$this->check_db)
         {
             return;
         }
