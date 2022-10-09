@@ -87,16 +87,20 @@ SQL;
     /**
      * @param array{target_version: int, actions: array<array<mixed>>} $data
      */
-    public function execute(array $data): void
+    public function execute(array $data, bool $ignore_version = false): void
     {
-        $this->verify(isset($data['target_version']), 'No target version specified');
         $this->verify(is_array($data['actions']), 'No action array specified');
 
-        $start_version = $data['target_version'] - 1;
+        if (!$ignore_version)
+        {
+            $this->verify(isset($data['target_version']), 'No target version specified');
 
-        echo " - Checking current version to match {$start_version}".PHP_EOL;
+            $start_version = $data['target_version'] - 1;
 
-        $this->check_version($start_version);
+            echo " - Checking current version to match {$start_version}".PHP_EOL;
+
+            $this->check_version($start_version);
+        }
 
         echo ' - Preparing all statements'.PHP_EOL;
         $queries = [];
@@ -182,6 +186,9 @@ SQL;
                 exit();
             }
         }
+
+        if ($ignore_version)
+            return;
 
         echo " - Updating version to {$data['target_version']}".PHP_EOL;
 
