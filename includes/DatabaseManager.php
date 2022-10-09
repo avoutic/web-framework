@@ -277,6 +277,10 @@ SQL;
         {
             $db_type = 'DATE';
         }
+        elseif ($info['type'] == 'datetime')
+        {
+            $db_type = 'DATETIME';
+        }
         else
         {
             $this->verify(false, "Unhandled field type '{$info['type']}'");
