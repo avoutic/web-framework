@@ -9,6 +9,13 @@ class DatabaseManager extends FrameworkCore
         return new StoredValues('db');
     }
 
+    public function is_initialized(): bool
+    {
+        $database = $this->get_db();
+
+        return $database->table_exists('config_values');
+    }
+
     public function calculate_hash(): string
     {
         // Get tables

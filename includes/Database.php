@@ -70,4 +70,13 @@ class Database
     {
         return $this->database->errorMsg();
     }
+
+    public function table_exists(string $table_name): bool
+    {
+        $query = "SELECT 1 FROM `{$table_name}` LIMIT 1";
+
+        $result = $this->query($query, array());
+
+        return $result !== false;
+    }
 }

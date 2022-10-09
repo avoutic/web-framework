@@ -999,6 +999,16 @@ TXT;
         $required_wf_db_version = FRAMEWORK_DB_VERSION;
         $required_app_db_version = $this->internal_get_config('versions.required_app_db');
 
+        // Check if base table is present
+        //
+        if (!$this->main_database->table_exists('config_values'))
+        {
+            $this->exit_error(
+                'Database missing config_values table',
+                'Please make sure that the core Framework database scheme has been applied.'
+            );
+        }
+
         $stored_values = new StoredValues('db');
         $current_wf_db_version = $stored_values->get_value('wf_db_version', '0');
         $current_app_db_version = $stored_values->get_value('app_db_version', '1');
