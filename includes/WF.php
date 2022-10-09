@@ -460,7 +460,7 @@ TXT;
         {
             return [
                 'file' => 'Unknown',
-                'line' => '',
+                'line' => 0,
             ];
         }
 
