@@ -136,6 +136,13 @@ SQL;
                 $result = $this->add_constraint($action['table_name'], $action['constraint']);
                 $queries[] = $result;
             }
+            elseif ($action['type'] == 'insert_row')
+            {
+                $this->verify(isset($action['values']) && is_array($action['values']), 'No values array specified');
+
+                $result = $this->insert_row($action['table_name'], $action['values']);
+                $queries[] = $result;
+            }
             elseif ($action['type'] == 'modify_column_type')
             {
                 $this->verify(is_array($action['field']), 'No field array specified');
@@ -448,6 +455,50 @@ ALTER TABLE `{$table_name}`
 SQL;
 
         $params = [];
+
+        return [
+            'query' => $query,
+            'params' => $params,
+        ];
+    }
+
+    /**
+     * @param array<string, null|string> $values
+     *
+     * @return array{query: string, params: array<string>}
+     */
+    private function insert_row(string $table_name, array $values): array
+    {
+        $fields_fmt = '';
+        $params = [];
+        $first = true;
+
+        foreach ($values as $key => $value)
+        {
+            if (!$first)
+            {
+                $fields_fmt .= ', ';
+            }
+            else
+            {
+                $first = false;
+            }
+
+            if ($value === null)
+            {
+                $fields_fmt .= "`{$key}` = NULL";
+            }
+            else
+            {
+                $fields_fmt .= "`{$key}` = ?";
+                $params[] = $value;
+            }
+        }
+
+        $query = <<<SQL
+INSERT INTO `{$table_name}`
+    SET {$fields_fmt}
+SQL;
 
         return [
             'query' => $query,
