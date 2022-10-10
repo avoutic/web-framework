@@ -273,6 +273,10 @@ SQL;
         {
             $db_type = 'TIMESTAMP';
         }
+        elseif ($info['type'] == 'tinytext')
+        {
+            $db_type = 'TINYTEXT';
+        }
         elseif ($info['type'] == 'date')
         {
             $db_type = 'DATE';
@@ -280,6 +284,10 @@ SQL;
         elseif ($info['type'] == 'datetime')
         {
             $db_type = 'DATETIME';
+        }
+        elseif ($info['type'] == 'time')
+        {
+            $db_type = 'TIME';
         }
         else
         {
