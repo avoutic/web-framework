@@ -300,7 +300,7 @@ SQL;
 
         // Special changes to standard flow
         //
-        if ($info['type'] == 'varchar')
+        if ($info['type'] == 'varchar' || $info['type'] == 'text' || $info['type'] == 'tinytext')
         {
             if (isset($info['default']))
             {
