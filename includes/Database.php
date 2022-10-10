@@ -75,7 +75,7 @@ class Database
     {
         $query = "SELECT 1 FROM `{$table_name}` LIMIT 1";
 
-        $result = $this->query($query, array());
+        $result = $this->query($query, []);
 
         return $result !== false;
     }

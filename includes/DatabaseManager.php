@@ -195,7 +195,9 @@ SQL;
         }
 
         if ($ignore_version)
+        {
             return;
+        }
 
         echo " - Updating version to {$data['target_version']}".PHP_EOL;
 

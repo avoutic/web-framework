@@ -14,6 +14,8 @@ use WebFramework\Core\WF;
 
 $framework = new WF();
 
+header('content-type: text/plain');
+
 try
 {
     // Initialize WF
@@ -26,7 +28,7 @@ try
 
     if ($db_manager->is_initialized())
     {
-        echo " - Already initialized. Exiting.".PHP_EOL;
+        echo ' - Already initialized. Exiting.'.PHP_EOL;
 
         exit();
     }

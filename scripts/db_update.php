@@ -14,6 +14,8 @@ use WebFramework\Core\WF;
 
 $framework = new WF();
 
+header('content-type: text/plain');
+
 try
 {
     // Initialize WF
