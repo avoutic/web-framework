@@ -142,12 +142,22 @@ class FrameworkCore
         $this->framework->add_blacklist_entry($reason, $severity);
     }
 
+    protected function encode_and_auth_string(string $value): string
+    {
+        return $this->security->encode_and_auth_string($value);
+    }
+
     /**
      * @param array<mixed> $array
      */
     protected function encode_and_auth_array(array $array): string
     {
         return $this->security->encode_and_auth_array($array);
+    }
+
+    protected function decode_and_verify_string(string $str): string|false
+    {
+        return $this->security->decode_and_verify_string($str);
     }
 
     /**

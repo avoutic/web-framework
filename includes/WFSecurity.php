@@ -62,13 +62,8 @@ class WFSecurity
         return ($diff === 0);
     }
 
-    /**
-     * @param array<mixed> $array
-     */
-    public function encode_and_auth_array(array $array): string
+    protected function internal_encode_and_auth(string $str): string
     {
-        $str = json_encode($array);
-
         // First encrypt it
         //
         $cipher = 'AES-256-CBC';
@@ -89,10 +84,26 @@ class WFSecurity
         return $iv.'-'.$str.'-'.$str_hmac;
     }
 
+    public function encode_and_auth_string(string $value): string
+    {
+        return $this->internal_encode_and_auth($value);
+    }
+
     /**
-     * @return array<mixed>|false
+     * @param array<mixed> $array
      */
-    public function decode_and_verify_array(string $str): array|false
+    public function encode_and_auth_array(array $array): string
+    {
+        $str = json_encode($array);
+        if ($str === false)
+        {
+            return '';
+        }
+
+        return $this->internal_encode_and_auth($str);
+    }
+
+    protected function internal_decode_and_verify_string(string $str): string|false
     {
         $idx = strpos($str, '-');
         if ($idx === false)
@@ -131,9 +142,29 @@ class WFSecurity
         $key = hash('sha256', $this->module_config['crypt_key'], true);
         $cipher = 'AES-256-CBC';
         $msg = base64_decode(strtr($part_msg, '._~', '+/='));
-        $json_encoded = openssl_decrypt($msg, $cipher, $key, 0, $iv);
+        $original = openssl_decrypt($msg, $cipher, $key, 0, $iv);
 
-        if ($json_encoded === false || !strlen($json_encoded))
+        if ($original === false || !strlen($original))
+        {
+            return false;
+        }
+
+        return $original;
+    }
+
+    public function decode_and_verify_string(string $str): string|false
+    {
+        return $this->internal_decode_and_verify_string($str);
+    }
+
+    /**
+     * @return array<mixed>|false
+     */
+    public function decode_and_verify_array(string $str): array|false
+    {
+        $json_encoded = $this->internal_decode_and_verify_string($str);
+
+        if ($json_encoded === false)
         {
             return false;
         }
