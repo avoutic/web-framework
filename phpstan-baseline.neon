@@ -106,11 +106,6 @@ parameters:
 			path: includes/WF.php
 
 		-
-			message: "#^Parameter \\#1 \\$data of function openssl_encrypt expects string, string\\|false given\\.$#"
-			count: 1
-			path: includes/WFSecurity.php
-
-		-
 			message: "#^Parameter \\#1 \\$length of function openssl_random_pseudo_bytes expects int, int\\|false given\\.$#"
 			count: 1
 			path: includes/WFSecurity.php
@@ -139,6 +134,11 @@ parameters:
 			message: "#^Parameter \\#3 \\$subject of function preg_replace expects array\\|string, string\\|null given\\.$#"
 			count: 1
 			path: includes/WFWebHandler.php
+
+		-
+			message: "#^Parameter \\#1 \\$data of method WebFramework\\\\Core\\\\DatabaseManager\\:\\:execute\\(\\) expects array\\{target_version\\: int, actions\\: array\\<array\\>\\}, array given\\.$#"
+			count: 1
+			path: scripts/db_init.php
 
 		-
 			message: "#^Parameter \\#1 \\$data of method WebFramework\\\\Core\\\\DatabaseManager\\:\\:execute\\(\\) expects array\\{target_version\\: int, actions\\: array\\<array\\>\\}, array given\\.$#"
