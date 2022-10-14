@@ -237,16 +237,12 @@ SQL;
         $this->verify(isset($info['type']), 'No field type specified');
         $this->verify(isset($info['name']), 'No field name specified');
 
-        $db_type = '';
+        $db_type = strtoupper($info['type']);
         $null = (isset($info['null']) && $info['null']);
 
         // First get database type and check requirements
         //
-        if ($info['type'] == 'boolean')
-        {
-            $db_type = 'BOOLEAN';
-        }
-        elseif ($info['type'] == 'foreign_key')
+        if ($info['type'] == 'foreign_key')
         {
             $this->verify(isset($info['foreign_table']), 'No target for foreign table set');
             $this->verify(isset($info['foreign_field']), 'No target for foreign field set');
@@ -258,42 +254,6 @@ SQL;
             $this->verify(isset($info['size']), 'No varchar size set');
 
             $db_type = "VARCHAR({$info['size']})";
-        }
-        elseif ($info['type'] == 'float')
-        {
-            $db_type = 'FLOAT';
-        }
-        elseif ($info['type'] == 'int')
-        {
-            $db_type = 'INT';
-        }
-        elseif ($info['type'] == 'text')
-        {
-            $db_type = 'TEXT';
-        }
-        elseif ($info['type'] == 'timestamp')
-        {
-            $db_type = 'TIMESTAMP';
-        }
-        elseif ($info['type'] == 'tinytext')
-        {
-            $db_type = 'TINYTEXT';
-        }
-        elseif ($info['type'] == 'date')
-        {
-            $db_type = 'DATE';
-        }
-        elseif ($info['type'] == 'datetime')
-        {
-            $db_type = 'DATETIME';
-        }
-        elseif ($info['type'] == 'time')
-        {
-            $db_type = 'TIME';
-        }
-        else
-        {
-            $this->verify(false, "Unhandled field type '{$info['type']}'");
         }
 
         $null_fmt = $null ? 'NULL' : 'NOT NULL';
