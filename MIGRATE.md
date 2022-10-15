@@ -56,18 +56,18 @@ But in views, the functions that you need to alter are mostly from PageBasic, so
 sed --follow-symlinks -i -e 's/^    static protected \$table_name/    static protected string \$table_name/' includes/*.php
 sed --follow-symlinks -i -e 's/^    static protected \$base_fields/\n    \/**\n     * @var array<string>\n     *\/\n    static protected array \$base_fields/' includes/*.php
 sed --follow-symlinks -i -e 's/^    function get_info()$/    \/**\n     * @return array<mixed>\n     *\/\n    function get_info(): array/' includes/*.php
-sed --follow-symlinks -i -e 's/^    function display_content()$/    protected function display_content(): void/' actions/*.php actions/*/*.php
-sed --follow-symlinks -i -e 's/^    function display_footer()$/    protected function display_footer(): void/' actions/*.php actions/*/*.php
-sed --follow-symlinks -i -e 's/^    function display_header()$/    protected function display_header(): void/' actions/*.php actions/*/*.php
-sed --follow-symlinks -i -e 's/^    function do_logic()$/    protected function do_logic(): void/' actions/*.php actions/*/*.php
-sed --follow-symlinks -i -e 's/^    function get_frame_file()$/    protected function get_frame_file(): string/' actions/*.php actions/*/*.php
-sed --follow-symlinks -i -e 's/^    function get_title()$/    protected function get_title(): string/' actions/*.php actions/*/*.php
-sed --follow-symlinks -i -e 's/^    static function get_permissions()$/    \/**\n     * @return array<string>\n     *\/\n    static function get_permissions(): array/' actions/*.php actions/*/*.php
-sed --follow-symlinks -i -e 's/^    static function get_filter()$/    \/**\n     * @return array<string, string>\n     *\/\n    static function get_filter(): array/' actions/*.php actions/*/*.php
-sed --follow-symlinks -i -e 's/^    static function custom_get_filter()$/    \/**\n     * @return array<string, string>\n     *\/\n    static function custom_get_filter(): array/' actions/*.php actions/*/*.php
-sed --follow-symlinks -i -e 's/^    function custom_prepare_page_content()$/    function custom_prepare_page_content(): void/' actions/*.php actions/*/*.php
-sed --follow-symlinks -i -e 's/^    function custom_value_check()$/    function custom_value_check(): bool/' actions/*.php actions/*/*.php
-sed --follow-symlinks -i -e 's/^    function/    public function/' includes/*.php actions/*.php actions/*/*.php
+sed --follow-symlinks -i -e 's/^    function display_content()$/    protected function display_content(): void/' actions/**/*.php
+sed --follow-symlinks -i -e 's/^    function display_footer()$/    protected function display_footer(): void/' actions/**/*.php
+sed --follow-symlinks -i -e 's/^    function display_header()$/    protected function display_header(): void/' actions/**/*.php
+sed --follow-symlinks -i -e 's/^    function do_logic()$/    protected function do_logic(): void/' actions/**/*.php
+sed --follow-symlinks -i -e 's/^    function get_frame_file()$/    protected function get_frame_file(): string/' actions/**/*.php
+sed --follow-symlinks -i -e 's/^    function get_title()$/    protected function get_title(): string/' actions/**/*.php
+sed --follow-symlinks -i -e 's/^    static function get_permissions()$/    \/**\n     * @return array<string>\n     *\/\n    static function get_permissions(): array/' actions/**/*.php
+sed --follow-symlinks -i -e 's/^    static function get_filter()$/    \/**\n     * @return array<string, string>\n     *\/\n    static function get_filter(): array/' actions/**/*.php
+sed --follow-symlinks -i -e 's/^    static function custom_get_filter()$/    \/**\n     * @return array<string, string>\n     *\/\n    static function custom_get_filter(): array/' actions/**/*.php
+sed --follow-symlinks -i -e 's/^    function custom_prepare_page_content()$/    function custom_prepare_page_content(): void/' actions/**/*.php
+sed --follow-symlinks -i -e 's/^    function custom_value_check()$/    function custom_value_check(): bool/' actions/**/*.php
+sed --follow-symlinks -i -e 's/^    function/    public function/' includes/*.php actions/**/*.php
 ```
 
 ## Page to Action migration
@@ -75,14 +75,14 @@ sed --follow-symlinks -i -e 's/^    function/    public function/' includes/*.ph
 Migrating from Page to Action should be straightforward replacements that you can mostly automate with the code below:
 ```
 mv views actions
-sed --follow-symlinks -i -e 's/PageCore/ActionCore/g' includes/*.php actions/*.php templates/*.php
-sed --follow-symlinks -i -e 's/PageService/ApiAction/g' includes/*.php actions/*.php
-sed --follow-symlinks -i -e 's/PageBasic/PageAction/g' includes/*.php actions/*.php
-sed --follow-symlinks -i -e 's/PageBasic/PageAction/g' includes/*.php actions/*.php
-sed --follow-symlinks -i -e 's/page\.base_url/base_url/g' includes/*.php actions/*.php
-sed --follow-symlinks -i -e 's/page\.default_frame_file/actions.default_frame_file/g' includes/*.php actions/*.php
-sed --follow-symlinks -i -e 's/page\.default_page/actions.default_action/g' includes/*.php actions/*.php
-sed --follow-symlinks -i -e "s/get_config('pages\./get_config('actions./g" includes/*.php actions/*.php
+sed --follow-symlinks -i -e 's/PageCore/ActionCore/g' includes/*.php actions/**/*.php templates/*.php
+sed --follow-symlinks -i -e 's/PageService/ApiAction/g' includes/*.php actions/**/*.php
+sed --follow-symlinks -i -e 's/PageBasic/PageAction/g' includes/*.php actions/**/*.php
+sed --follow-symlinks -i -e 's/PageBasic/PageAction/g' includes/*.php actions/**/*.php
+sed --follow-symlinks -i -e 's/page\.base_url/base_url/g' includes/*.php actions/**/*.php
+sed --follow-symlinks -i -e 's/page\.default_frame_file/actions.default_frame_file/g' includes/*.php actions/**/*.php
+sed --follow-symlinks -i -e 's/page\.default_page/actions.default_action/g' includes/*.php actions/**/*.php
+sed --follow-symlinks -i -e "s/get_config('pages\./get_config('actions./g" includes/*.php actions/**/*.php
 ```
 
 You might have to adjust your config and own preload instructions for the autoloader as well.
