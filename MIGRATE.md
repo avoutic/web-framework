@@ -137,3 +137,14 @@ Actions to take to migrate from v1/v2 to v3 of web-framework
 * get_crsf_token() to $this->get_csrf_token()
 * Routes from register_routes() to individual $framework->register_route()
 
+## Scripts
+
+```
+sed --follow-symlinks -i -e "s/\$this->check_required(\(\\\$\w\+\), '\(\w\+\)'/\1 = \$this->get_input_var('\2', true/g" actions/**/*.php
+sed --follow-symlinks -i -e "s/add_message_to_url/\$this->get_message_for_url/g" actions/**/*.php
+sed --follow-symlinks -i -e "s/ verify(/ \$this->verify(/g" includes/*.php actions/**/*.php templates/**/*.php
+sed --follow-symlinks -i -e "s/ send_404/ \$this->exit_send_404/g" includes/*.php actions/**/*.php
+sed --follow-symlinks -i -e "s/ \$this->database->Query/ \$this->query/g" includes/*.php
+sed --follow-symlinks -i -e "s/ get_csrf_token()/ \$this->get_csrf_token()/g" templates/**/*.php
+sed --follow-symlinks -i -e "s/<?=get_csrf_token()/<?=\$this->get_csrf_token()/g" templates/**/*.php
+```
