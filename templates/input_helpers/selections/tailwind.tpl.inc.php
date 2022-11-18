@@ -16,6 +16,7 @@ $checked_fmt = ($parameters['checked']) ? 'checked' : '';
 $model_fmt = (strlen($parameters['model'])) ? "x-model=\"{$parameters['model']}\"" : '';
 $show_fmt = (strlen($parameters['show'])) ? "x-cloak x-show=\"{$parameters['show']}\"" : '';
 $width_fmt = (strlen($parameters['width'])) ? $parameters['width'] : $default_width;
+$value_param = $parameters['value'] ?? '';
 
 echo <<<HTML
 <div {$show_fmt} class="{$width_fmt}">
@@ -40,7 +41,7 @@ HTML;
 
 foreach ($parameters['options'] as $value => $name)
 {
-    $selected_fmt = (strlen($parameters['value']) == strlen($value) && $parameters['value'] == $value) ? 'selected' : '';
+    $selected_fmt = (strlen($value_param) == strlen($value) && $value_param == $value) ? 'selected' : '';
 
     echo <<<HTML
     <option value="{$value}" {$selected_fmt}>{$name}</option>
