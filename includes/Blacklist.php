@@ -82,7 +82,7 @@ SQL;
             return false;
         }
 
-        $cutoff = time() - $this->module_config['trigger_period'];
+        $cutoff = time() - (int) $this->module_config['trigger_period'];
         $params = [$cutoff, $ip];
         $user_fmt = '';
 
