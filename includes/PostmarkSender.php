@@ -28,6 +28,20 @@ class PostmarkSender extends SenderCore
         $from = $this->get_sender_email();
         $client = $this->get_client();
 
+        if (!strlen($to))
+        {
+            $this->report_error('No recipient e-mail specified. Failing silently');
+
+            return true;
+        }
+
+        if (!strlen($from))
+        {
+            $this->report_error('No source e-mail specified. Failing silently');
+
+            return true;
+        }
+
         try
         {
             $result = $client->sendEmail(
@@ -55,6 +69,20 @@ class PostmarkSender extends SenderCore
     {
         $client = $this->get_client();
         $reply_to = null;
+
+        if (!strlen($to))
+        {
+            $this->report_error('No recipient e-mail specified. Failing silently');
+
+            return true;
+        }
+
+        if (!strlen($from))
+        {
+            $this->report_error('No source e-mail specified. Failing silently');
+
+            return true;
+        }
 
         if (isset($template_variables['reply_to']))
         {
