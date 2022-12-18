@@ -181,8 +181,9 @@ class WFSecurity
     public function get_auth_config(string $name): mixed
     {
         $app_dir = WF::get_app_dir();
+        $auth_dir = $this->module_config['auth_dir'];
 
-        $auth_config_file = "{$app_dir}/includes/auth/{$name}.php";
+        $auth_config_file = "{$app_dir}{$auth_dir}/{$name}.php";
         if (!file_exists($auth_config_file))
         {
             exit("Auth Config {$name} does not exist");

@@ -102,6 +102,7 @@ class WF
             'session_timeout' => 900,
         ],
         'security' => [
+            'auth_dir' => '/includes/auth', // Relative directory with auth configuration files
             'blacklist' => [
                 'enabled' => true,
                 'trigger_period' => 14400,  // Period to consider for blacklisting (default: 4 hours)
