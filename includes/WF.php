@@ -46,6 +46,14 @@ class WF
      */
     private array $messages = [];
 
+    /**
+     * @var array<string>
+     */
+    private array $configs = [
+        '/includes/config.php',
+        '?/includes/config_local.php',
+    ];
+
     private bool $check_db = true;
     private bool $check_app_db_version = true;
 
@@ -766,6 +774,17 @@ TXT;
         $this->check_app_db_version = false;
     }
 
+    /**
+     * @param array<string> $configs Config files to merge on top of each other in order.
+     *                               File locations should be relative to the app dir
+     *                               including leading /. If it starts with a '?' the file
+     *                               does not have to be present.
+     */
+    public function set_configs(array $configs): void
+    {
+        $this->configs = $configs;
+    }
+
     public function init(): void
     {
         // Make sure static wrapper functions can work
@@ -775,7 +794,7 @@ TXT;
         mt_srand();
 
         $this->check_file_requirements();
-        $this->merge_configs();
+        $this->merge_configs($this->configs);
 
         // Enable debugging if requested
         //
@@ -850,22 +869,37 @@ TXT;
         }
     }
 
-    private function merge_configs(): void
+    /**
+     * @param array<string> $configs Config files to merge on top of each other in order.
+     *                               File locations should be relative to the app dir
+     *                               including leading /. If it starts with a '?' the file
+     *                               does not have to be present.
+     */
+    private function merge_configs(array $configs): void
     {
+        $merge_config = $this->global_config;
+
         // Merge configurations
         //
-        $site_config = require "{$this->app_dir}/includes/config.php";
-        if (!is_array($site_config))
+        foreach ($configs as $config_location)
         {
-            $this->exit_error('Site config invalid', 'No config array found');
-        }
+            if ($config_location[0] == '?')
+            {
+                $config_location = substr($config_location, 1);
 
-        $merge_config = array_replace_recursive($this->global_config, $site_config);
+                if (!file_exists("{$this->app_dir}{$config_location}"))
+                {
+                    continue;
+                }
+            }
 
-        if (file_exists("{$this->app_dir}/includes/config_local.php"))
-        {
-            $local_config = require "{$this->app_dir}/includes/config_local.php";
-            $merge_config = array_replace_recursive($merge_config, $local_config);
+            $file_config = require "{$this->app_dir}{$config_location}";
+            if (!is_array($file_config))
+            {
+                $this->exit_error('Config invalid', "No config array found in '{$config_location}'");
+            }
+
+            $merge_config = array_replace_recursive($merge_config, $file_config);
         }
 
         // Force server_name and host_name to 'app' if run locally.
