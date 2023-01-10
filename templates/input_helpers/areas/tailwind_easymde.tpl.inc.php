@@ -13,6 +13,7 @@ $default_width = $args['template_parameters']['default_width'];
 
 $parameters = $args['parameters'];
 
+$model_fmt = (strlen($parameters['model'])) ? "x-model='{$parameters['model']}'" : '';
 $required_fmt = ($parameters['required']) ? 'required' : '';
 $rows_fmt = (strlen($parameters['rows'])) ? "rows=\"{$parameters['rows']}\"" : '';
 $show_fmt = (strlen($parameters['show'])) ? "x-cloak x-show=\"{$parameters['show']}\"" : '';
@@ -51,6 +52,7 @@ echo <<<HTML
       name="{$parameters['name']}"
       {$required_fmt}
       {$rows_fmt}
+      {$model_fmt}
       class="shadow-sm {$colors['focus:ring']} {$colors['focus:border']} block w-full text-sm border-gray-300 rounded-md">{$value_fmt}</textarea>
 HTML;
 

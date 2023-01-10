@@ -13,6 +13,7 @@ $default_width = $args['template_parameters']['default_width'];
 $parameters = $args['parameters'];
 
 $checked_fmt = ($parameters['checked']) ? 'checked' : '';
+$model_fmt = (strlen($parameters['model'])) ? "x-model='{$parameters['model']}'" : '';
 $show_fmt = (strlen($parameters['show'])) ? "x-cloak x-show=\"{$parameters['show']}\"" : '';
 $width_fmt = (strlen($parameters['width'])) ? $parameters['width'] : $default_width;
 
@@ -23,6 +24,7 @@ echo <<<HTML
            name="{$parameters['name']}"
            type="checkbox"
            value="{$parameters['value']}"
+           {$model_fmt}
            {$checked_fmt}
            class="{$colors['focus:ring']} h-4 w-4 {$colors['text']} border-gray-300 rounded">
   </div>
