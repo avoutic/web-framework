@@ -1,6 +1,7 @@
-# Future changes
-In case 8.2 images become available:
-* Change UploadHandler->move() and UploadHandler->check_upload() to use true instead of bool
+# v5 release
+
+Required changes for v5:
+* Run on PHP 8.2
 
 # v4 release
 

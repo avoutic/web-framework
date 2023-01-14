@@ -19,7 +19,7 @@ class UploadHandler extends FrameworkCore
     /**
      * @param array<string>|true $whitelist_mime_types
      */
-    public function check_upload(int $max_size, bool|array $whitelist_mime_types = true): string|bool
+    public function check_upload(int $max_size, bool|array $whitelist_mime_types = true): string|true
     {
         $var_name = $this->var_name;
 
@@ -96,7 +96,7 @@ class UploadHandler extends FrameworkCore
         return $this->tmp_filename;
     }
 
-    public function move(string $new_location): string|bool
+    public function move(string $new_location): string|true
     {
         $result = move_uploaded_file($this->tmp_filename, $new_location);
 
