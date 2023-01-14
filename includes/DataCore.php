@@ -14,12 +14,39 @@ abstract class DataCore extends FrameworkCore
     protected static array $base_fields;
     protected static bool $is_cacheable = false;
 
+    /** @var array<string, null|bool|int|string> */
+    private array $properties = [];
+
     public function __construct(int $id, bool $fill_complex = true)
     {
         parent::__construct();
 
         $this->id = $id;
         $this->fill_fields($fill_complex);
+    }
+
+    public function __get(string $name): mixed
+    {
+        if (array_key_exists($name, $this->properties))
+        {
+            return $this->properties[$name];
+        }
+
+        $this->report_error('Undefined property via __get(): '.$name);
+
+        return null;
+    }
+
+    public function __set(string $name, null|bool|int|string $value): void
+    {
+        if (property_exists($this, $name))
+        {
+            $this->report_error('Inaccessible property via __set(): '.$name);
+
+            return;
+        }
+
+        $this->properties[$name] = $value;
     }
 
     /**
