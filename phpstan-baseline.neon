@@ -26,6 +26,11 @@ parameters:
 			path: includes/Browserless.php
 
 		-
+			message: "#^Call to an undefined method mysqli\\:\\:execute_query\\(\\)\\.$#"
+			count: 1
+			path: includes/Database.php
+
+		-
 			message: "#^Offset 'target_version' on array\\{target_version\\: int, actions\\: array\\<array\\>\\} in isset\\(\\) always exists and is not nullable\\.$#"
 			count: 1
 			path: includes/DatabaseManager.php

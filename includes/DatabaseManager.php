@@ -33,7 +33,7 @@ SQL;
 
         foreach ($result as $row)
         {
-            $table_name = $row[0];
+            $table_name = reset($row);
 
             // Get tables
             //

@@ -553,11 +553,6 @@ TXT;
             return;
         }
 
-        if ($last_error['type'] == E_NOTICE && $last_error['file'] == 'adodb-mysqli.inc')
-        {
-            return;
-        }
-
         switch ($last_error['type'])
         {
             case E_ERROR:

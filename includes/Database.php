@@ -2,36 +2,28 @@
 
 namespace WebFramework\Core;
 
-use ADOConnection;
-
 class Database
 {
-    private ADOConnection $database;
+    private \mysqli $database;
 
     /**
      * @param array<string> $config
      */
     public function connect(array $config): bool
     {
-        $database = ADONewConnection($config['database_type']);
-        if (!$database)
-        {
-            return false;
-        }
-
-        $this->database = $database;
-
-        $result = $this->database->PConnect(
+        $database = new \mysqli(
             $config['database_host'],
             $config['database_user'],
             $config['database_password'],
             $config['database_database']
         );
 
-        if (!$result)
+        if ($database->connect_error)
         {
             return false;
         }
+
+        $this->database = $database;
 
         return true;
     }
@@ -39,28 +31,42 @@ class Database
     /**
      * @param array<null|bool|int|string> $value_array
      */
-    public function query(string $query_str, array $value_array): mixed
+    public function query(string $query_str, array $value_array): DatabaseResultWrapper|false
     {
-        if (!$this->database->IsConnected())
+        if (!$this->database->ping())
         {
             exit('Database connection not available. Exiting.');
         }
 
-        $query = $this->database->Prepare($query_str);
+        $result = null;
 
-        return $this->database->Execute($query, $value_array);
+        if (!count($value_array))
+        {
+            $result = $this->database->query($query_str);
+        }
+        else
+        {
+            $result = $this->database->execute_query($query_str, $value_array);
+        }
+
+        if (!$result)
+        {
+            return false;
+        }
+
+        return new DatabaseResultWrapper($result);
     }
 
     /**
      * @param array<bool|int|string> $params
      */
-    public function insert_query(string $query, array $params): mixed
+    public function insert_query(string $query, array $params): int|false
     {
         $result = $this->query($query, $params);
 
         if ($result !== false)
         {
-            return $this->database->Insert_ID();
+            return (int) $this->database->insert_id;
         }
 
         return false;
@@ -68,15 +74,19 @@ class Database
 
     public function get_last_error(): string
     {
-        return $this->database->errorMsg();
+        return $this->database->error;
     }
 
     public function table_exists(string $table_name): bool
     {
-        $query = "SELECT 1 FROM `{$table_name}` LIMIT 1";
+        $query = "SHOW TABLES LIKE '{$table_name}'";
 
         $result = $this->query($query, []);
+        if ($result === false)
+        {
+            exit('Query failed to check for table existence. Exiting.');
+        }
 
-        return $result !== false;
+        return $result->RecordCount() == 1;
     }
 }

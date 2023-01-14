@@ -16,10 +16,6 @@ You can also start with a base project:
 composer create-project avoutic/web-framework-example
 ```
 
-## Installing additional prerequisites
-
-web-framework depends on AdoDB as the database abstraction layer. It will be automatically installed when you install WebFramework with composer.
-
 ### Postmark
 
 If you also want to support Postmark for assert handling and transactional mail, you should add:
