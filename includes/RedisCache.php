@@ -3,7 +3,6 @@
 namespace WebFramework\Core;
 
 use Cache\Adapter\Redis\RedisCachePool;
-use Redis;
 
 class RedisCache implements CacheInterface
 {
@@ -18,7 +17,7 @@ class RedisCache implements CacheInterface
         WF::verify(isset($config['port']), 'No port set');
         WF::verify(isset($config['password']), 'No password set');
 
-        $client = new Redis();
+        $client = new \Redis();
         $result = $client->pconnect(
             $config['hostname'],
             (int) $config['port'],

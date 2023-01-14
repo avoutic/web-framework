@@ -2,7 +2,6 @@
 
 namespace WebFramework\Core;
 
-use Exception;
 use Postmark\Models\PostmarkException;
 use Postmark\PostmarkClient;
 
@@ -52,7 +51,7 @@ class PostmarkSender extends SenderCore
                 $message
             );
         }
-        catch (Exception $e)
+        catch (\Exception $e)
         {
             error_log($e->getMessage());
 

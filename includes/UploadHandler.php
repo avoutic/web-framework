@@ -2,8 +2,6 @@
 
 namespace WebFramework\Core;
 
-use finfo;
-
 class UploadHandler extends FrameworkCore
 {
     protected string $var_name;
@@ -47,7 +45,7 @@ class UploadHandler extends FrameworkCore
         $this->tmp_filename = $_FILES[$var_name]['tmp_name'];
         $this->orig_filename = $_FILES[$var_name]['name'];
 
-        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $finfo = new \finfo(FILEINFO_MIME_TYPE);
         $mime_type = $finfo->file($this->tmp_filename);
         if (is_string($mime_type))
         {

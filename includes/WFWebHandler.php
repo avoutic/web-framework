@@ -13,7 +13,7 @@ class WFWebHandler extends WF
     protected bool|array $auth_array = false;
 
     /**
-     * @var array<array{type: string, regex: string, include_file: string, class:string, string, args: array<string>}>
+     * @var array<array{type: string, regex: string, include_file: string, class: string, args: array<string>}>
      */
     protected array $route_array = [];
 
@@ -331,12 +331,13 @@ class WFWebHandler extends WF
      */
     public function register_route(string $regex, string $file, string $class_function, array $args = []): void
     {
-        array_push($this->route_array, [
+        $this->route_array[] = [
             'type' => 'route',
             'regex' => $regex,
             'include_file' => $file,
             'class' => $class_function,
-            'args' => $args, ]);
+            'args' => $args,
+        ];
     }
 
     /**
@@ -344,12 +345,13 @@ class WFWebHandler extends WF
      */
     public function register_redirect(string $regex, string $redirect, string $type = '301', array $args = []): void
     {
-        array_push($this->redirect_array, [
+        $this->redirect_array[] = [
             'type' => 'redirect',
             'regex' => $regex,
             'redirect' => $redirect,
             'redir_type' => $type,
-            'args' => $args, ]);
+            'args' => $args,
+        ];
     }
 
     /**

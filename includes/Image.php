@@ -2,8 +2,6 @@
 
 namespace WebFramework\Core;
 
-use GdImage;
-
 /**
  * Image class with support for GIF, JPEG and PNG images.
  */
@@ -39,7 +37,7 @@ class Image extends FrameworkCore
         $this->type = $size[2];
     }
 
-    private function create_from(string $location): GdImage|false
+    private function create_from(string $location): \GdImage|false
     {
         if ($this->type == IMAGETYPE_GIF)
         {
@@ -61,7 +59,7 @@ class Image extends FrameworkCore
         exit();
     }
 
-    private function image_output(GdImage $image, string $location): bool
+    private function image_output(\GdImage $image, string $location): bool
     {
         if ($this->type == IMAGETYPE_GIF)
         {
@@ -140,12 +138,12 @@ class Image extends FrameworkCore
     /**
      * Resizes a GD image.
      *
-     * @param GdImage              $image The GD image of the image to resize
+     * @param \GdImage             $image The GD image of the image to resize
      * @param array{0: int, 1:int} $size  An 2D array with the new maximum width and height
      *
      * @return bool
      */
-    private function resize_image(GdImage &$image, array $size = [100, 100])
+    private function resize_image(\GdImage &$image, array $size = [100, 100])
     {
         $this->verify(count($size) == 2 && $size[0] > 0 && $size[1] > 0, 'Size not correctly structured');
 
@@ -231,11 +229,11 @@ class Image extends FrameworkCore
     /**
      * Rotate a GD image image.
      *
-     * @param GdImage $image           The GD image of the image to rotate
-     * @param int     $degrees         How many degrees to rotate
-     * @param int     $backgroundColor Backgroundcolor as a raw int
+     * @param \GdImage $image           The GD image of the image to rotate
+     * @param int      $degrees         How many degrees to rotate
+     * @param int      $backgroundColor Backgroundcolor as a raw int
      */
-    private function rotate_image(GdImage &$image, int $degrees, int $backgroundColor = 16777215): bool
+    private function rotate_image(\GdImage &$image, int $degrees, int $backgroundColor = 16777215): bool
     {
         $this->verify(abs($degrees) <= 360, 'Invalid rotation');
 
@@ -281,11 +279,11 @@ class Image extends FrameworkCore
     /**
      * Crop a GD image image.
      *
-     * @param GdImage               $image  The GD image of the image to crop
+     * @param \GdImage              $image  The GD image of the image to crop
      * @param array{0: int, 1: int} $size   The new size
      * @param array{0: int, 1: int} $offset Offset
      */
-    public static function crop_image(GdImage &$image, array $size, array $offset = [0, 0]): bool
+    public static function crop_image(\GdImage &$image, array $size, array $offset = [0, 0]): bool
     {
         WF::verify(count($size) == 2 && $size[0] > 0 && $size[1] > 0, 'Size not correctly structured');
         WF::verify(count($offset) == 2 && $offset[0] >= 0 && $offset[1] >= 0 && $offset[0] < $size[0] && $offset[1] < $size[1], 'Offset not correctly structured');

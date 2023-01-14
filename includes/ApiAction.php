@@ -2,8 +2,6 @@
 
 namespace WebFramework\Core;
 
-use finfo;
-
 function arrayify_datacore(mixed &$item, string $key): void
 {
     if (is_object($item) && is_subclass_of($item, 'DataCore'))
@@ -71,7 +69,7 @@ abstract class ApiAction extends ActionCore
             }
         }
 
-        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $finfo = new \finfo(FILEINFO_MIME_TYPE);
         $type = $finfo->file($filename);
 
         header('Cache-Control: public, max-age=604800');

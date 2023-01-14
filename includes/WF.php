@@ -753,11 +753,11 @@ TXT;
 
     public function add_message(string $type, string $message, string $extra_message): void
     {
-        array_push($this->messages, [
+        $this->messages[] = [
             'mtype' => $type,
             'message' => $message,
             'extra_message' => $extra_message,
-        ]);
+        ];
     }
 
     public function skip_db_check(): void

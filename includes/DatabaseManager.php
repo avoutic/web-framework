@@ -282,7 +282,7 @@ SQL;
             $on_delete = isset($info['on_delete']) ? "ON DELETE {$info['on_delete']}" : '';
             $on_update = isset($info['on_update']) ? "ON UPDATE {$info['on_update']}" : '';
 
-            $line = "CONSTRAINT `foreign_{$table_name}_{$info['name']}` FOREIGN KEY (`{$info['name']}`) REFERENCES `{$info['foreign_table']}` (`${info['foreign_field']}`) {$on_delete} {$on_update}";
+            $line = "CONSTRAINT `foreign_{$table_name}_{$info['name']}` FOREIGN KEY (`{$info['name']}`) REFERENCES `{$info['foreign_table']}` (`{$info['foreign_field']}`) {$on_delete} {$on_update}";
 
             $constraint_lines[] = $line;
         }
