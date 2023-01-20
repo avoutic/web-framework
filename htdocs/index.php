@@ -44,7 +44,10 @@ catch (Throwable $e)
         print_r($e->getTrace());
     }
 
-    WF::report_error($e->getMessage(), $e->getTrace());
+    if (!$e instanceof WebFramework\Core\VerifyException)
+    {
+        WF::report_error($e->getMessage(), $e->getTrace());
+    }
 
     exit();
 }

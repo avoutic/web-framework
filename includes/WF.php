@@ -26,6 +26,7 @@ class WF
     protected array $raw_post = [];
 
     private int $in_verify = 0;             // Only go into an assert_handler for a maximum amount of times
+    private bool $throw_exception = false;  // Instead of reporting an error in the output, throw an exception
     private string $debug_message = '';
     private string $debug_data = '';
     private string $low_info_message = '';
@@ -423,6 +424,11 @@ TXT;
             return;
         }
 
+        if ($this->throw_exception)
+        {
+            throw new VerifyException($message);
+        }
+
         if ($this->in_verify > 2)
         {
             echo('<pre>');
@@ -768,6 +774,11 @@ TXT;
     public function skip_app_db_version_check(): void
     {
         $this->check_app_db_version = false;
+    }
+
+    public function throw_exception_on_error(): void
+    {
+        $this->throw_exception = true;
     }
 
     /**
