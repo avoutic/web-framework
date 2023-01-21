@@ -88,6 +88,13 @@ class ChangePassword extends PageAction
         $user = $this->get_user($this->get_authenticated('username'));
         $this->verify($user !== false, 'Failed to retrieve user');
 
+        if ($user->is_disabled())
+        {
+            $this->add_message('error', 'Account is disabled');
+
+            return;
+        }
+
         $result = $user->change_password($orig_password, $password);
 
         if ($result == User::ERR_ORIG_PASSWORD_MISMATCH)

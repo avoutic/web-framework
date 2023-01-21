@@ -70,7 +70,12 @@ class ResetPassword extends PageAction
             exit();
         }
 
-        $user->send_new_password();
+        // Only send for active accounts
+        //
+        if (!$user->is_disabled())
+        {
+            $user->send_new_password();
+        }
 
         // Invalidate old sessions
         //

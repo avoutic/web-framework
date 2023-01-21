@@ -48,6 +48,7 @@ class User extends DataCore
     public const ERR_DUPLICATE_EMAIL = 1;
     public const ERR_ORIG_PASSWORD_MISMATCH = 2;
     public const ERR_NEW_PASSWORD_TOO_WEAK = 3;
+    public const ERR_DISABLED = 4;
 
     protected static string $table_name = 'users';
     protected static array $base_fields = ['username', 'email', 'terms_accepted', 'verified', 'last_login', 'failed_login'];
@@ -122,8 +123,22 @@ class User extends DataCore
         return false;
     }
 
+    public function is_disabled(): bool
+    {
+        // A missing solid password means the account is disabled
+        //
+        $solid_password = $this->get_field('solid_password');
+
+        return strlen($solid_password) == 0;
+    }
+
     public function check_password(string $password): bool
     {
+        if ($this->is_disabled())
+        {
+            return false;
+        }
+
         $solid_password = $this->get_field('solid_password');
         $stored_hash = 'stored';
         $calculated_hash = 'calculated';
@@ -205,6 +220,11 @@ class User extends DataCore
 
     public function change_password(string $old_password, string $new_password): int
     {
+        if ($this->is_disabled())
+        {
+            return self::ERR_DISABLED;
+        }
+
         // Check if original password is correct
         //
         if ($this->check_password($old_password) !== true)
@@ -227,6 +247,11 @@ class User extends DataCore
 
     public function update_password(string $new_password): int
     {
+        if ($this->is_disabled())
+        {
+            return self::ERR_DISABLED;
+        }
+
         // Change password
         //
         $solid_password = self::new_hash_from_password($new_password);
@@ -444,6 +469,11 @@ SQL;
 
     public function send_new_password(): bool|string
     {
+        if ($this->is_disabled())
+        {
+            return false;
+        }
+
         // Generate and store password
         //
         $new_pw = bin2hex(substr(openssl_random_pseudo_bytes(24), 0, 10));
