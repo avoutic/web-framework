@@ -17,7 +17,7 @@ class DatabaseResultWrapper implements \Iterator
     {
         $this->result = $result;
 
-        if ($this->result !== true && $this->result->num_rows == 1)
+        if ($this->result !== true)
         {
             $this->rewind();
         }
