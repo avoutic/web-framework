@@ -21,6 +21,7 @@ try
     // Initialize WF
     //
     $framework->skip_app_db_version_check();
+    $framework->skip_wf_db_version_check();
     $framework->init();
     $app_dir = $framework->get_app_dir();
 

@@ -57,6 +57,7 @@ class WF
 
     private bool $check_db = true;
     private bool $check_app_db_version = true;
+    private bool $check_wf_db_version = true;
 
     // Default configuration
     //
@@ -776,6 +777,11 @@ TXT;
         $this->check_app_db_version = false;
     }
 
+    public function skip_wf_db_version_check(): void
+    {
+        $this->check_wf_db_version = false;
+    }
+
     public function throw_exception_on_error(): void
     {
         $this->throw_exception = true;
@@ -1060,7 +1066,7 @@ TXT;
         $current_wf_db_version = $stored_values->get_value('wf_db_version', '0');
         $current_app_db_version = $stored_values->get_value('app_db_version', '1');
 
-        if ($required_wf_db_version != $current_wf_db_version)
+        if ($this->check_wf_db_version && $required_wf_db_version != $current_wf_db_version)
         {
             $this->exit_error(
                 'Framework Database version mismatch',
