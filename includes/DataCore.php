@@ -646,6 +646,13 @@ SQL;
                 $first = false;
             }
 
+            // Mysqli does not accept empty for false, so force to zero
+            //
+            if ($value === false)
+            {
+                $value = 0;
+            }
+
             if ($value === null)
             {
                 $set_fmt .= "`{$key}` = NULL";
