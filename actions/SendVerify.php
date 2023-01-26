@@ -29,7 +29,7 @@ class SendVerify extends PageAction
         $msg = $this->decode_and_verify_array($code);
         if (!$msg)
         {
-            return;
+            exit();
         }
 
         $this->blacklist_verify($msg['action'] == 'send_verify', 'wrong-action', 2);
@@ -66,6 +66,5 @@ class SendVerify extends PageAction
 
     protected function display_content(): void
     {
-        $this->load_template('send_verify.tpl', $this->page_content);
     }
 }
