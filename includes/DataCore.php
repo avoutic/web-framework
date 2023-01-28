@@ -251,6 +251,13 @@ SQL;
     {
         $table_name = static::$table_name;
 
+        // Mysqli does not accept empty for false, so force to zero
+        //
+        if ($value === false)
+        {
+            $value = 0;
+        }
+
         $query = <<<SQL
         UPDATE {$table_name}
         SET `{$field}` = ?
@@ -690,6 +697,13 @@ SQL;
             else
             {
                 $first = false;
+            }
+
+            // Mysqli does not accept empty for false, so force to zero
+            //
+            if ($value === false)
+            {
+                $value = 0;
             }
 
             if ($value === null)
