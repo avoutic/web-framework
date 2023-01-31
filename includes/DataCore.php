@@ -223,6 +223,11 @@ SQL;
      */
     public function update(array $data): void
     {
+        if (count($data) == 0)
+        {
+            return;
+        }
+
         $table_name = static::$table_name;
         $set_array = static::get_set_fmt($data);
         $params = $set_array['params'];
@@ -356,13 +361,26 @@ SQL;
     public static function create(array $data): self
     {
         $table_name = static::$table_name;
-        $set_array = static::get_set_fmt($data);
-        $params = $set_array['params'];
+        $query = '';
+        $params = [];
 
-        $query = <<<SQL
+        if (count($data) == 0)
+        {
+            $query = <<<SQL
+        INSERT INTO {$table_name}
+        VALUES()
+SQL;
+        }
+        else
+        {
+            $set_array = static::get_set_fmt($data);
+            $params = $set_array['params'];
+
+            $query = <<<SQL
         INSERT INTO {$table_name}
         SET {$set_array['query']}
 SQL;
+        }
 
         $result = WF::get_main_db()->insert_query($query, $params);
         $class = static::class;
