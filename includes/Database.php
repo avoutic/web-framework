@@ -29,7 +29,7 @@ class Database
     }
 
     /**
-     * @param array<null|bool|int|string> $value_array
+     * @param array<null|bool|float|int|string> $value_array
      */
     public function query(string $query_str, array $value_array): DatabaseResultWrapper|false
     {
@@ -58,7 +58,7 @@ class Database
     }
 
     /**
-     * @param array<bool|int|string> $params
+     * @param array<null|bool|float|int|string> $params
      */
     public function insert_query(string $query, array $params): int|false
     {

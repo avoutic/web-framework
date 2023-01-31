@@ -14,7 +14,7 @@ abstract class DataCore extends FrameworkCore
     protected static array $base_fields;
     protected static bool $is_cacheable = false;
 
-    /** @var array<string, null|bool|int|string> */
+    /** @var array<string, null|bool|float|int|string> */
     private array $properties = [];
 
     public function __construct(int $id, bool $fill_complex = true)
@@ -37,7 +37,7 @@ abstract class DataCore extends FrameworkCore
         return null;
     }
 
-    public function __set(string $name, null|bool|int|string $value): void
+    public function __set(string $name, null|bool|float|int|string $value): void
     {
         if (property_exists($this, $name))
         {
@@ -219,7 +219,7 @@ SQL;
     }
 
     /**
-     * @param array<null|bool|int|string> $data
+     * @param array<null|bool|float|int|string> $data
      */
     public function update(array $data): void
     {
@@ -247,7 +247,7 @@ SQL;
         $this->update_in_cache();
     }
 
-    public function update_field(string $field, string|int|bool|null $value): void
+    public function update_field(string $field, null|bool|float|int|string $value): void
     {
         $table_name = static::$table_name;
 
@@ -349,7 +349,7 @@ SQL;
     }
 
     /**
-     * @param array<null|bool|int|string> $data
+     * @param array<null|bool|float|int|string> $data
      *
      * @return static
      */
@@ -375,7 +375,7 @@ SQL;
     }
 
     /**
-     * @param array<string, null|bool|int|string> $filter
+     * @param array<string, null|bool|float|int|string> $filter
      */
     public static function count_objects(array $filter = []): int
     {
@@ -463,7 +463,7 @@ SQL;
     // Helper retrieval functions
     //
     /**
-     * @param array<null|bool|int|string> $filter
+     * @param array<null|bool|float|int|string> $filter
      *
      * @return false|static
      */
@@ -501,7 +501,7 @@ SQL;
     }
 
     /**
-     * @param array<null|bool|int|string> $filter
+     * @param array<null|bool|float|int|string> $filter
      *
      * @return array<mixed>
      */
@@ -511,7 +511,7 @@ SQL;
     }
 
     /**
-     * @param array<null|bool|int|string> $filter
+     * @param array<null|bool|float|int|string> $filter
      *
      * @return array<mixed>|false
      */
@@ -551,7 +551,7 @@ SQL;
     }
 
     /**
-     * @param array<null|bool|int|string> $filter
+     * @param array<null|bool|float|int|string> $filter
      *
      * @return array<static>
      */
@@ -604,7 +604,7 @@ SQL;
     }
 
     /**
-     * @param array<null|bool|int|string> $filter
+     * @param array<null|bool|float|int|string> $filter
      *
      * @return array<mixed>
      */
@@ -614,7 +614,7 @@ SQL;
     }
 
     /**
-     * @param array<null|bool|int|string> $filter
+     * @param array<null|bool|float|int|string> $filter
      *
      * @return array<mixed>
      */
@@ -632,9 +632,9 @@ SQL;
     }
 
     /**
-     * @param array<null|bool|int|string> $values
+     * @param array<null|bool|float|int|string> $values
      *
-     * @return array{query: string, params: array<bool|int|string>}
+     * @return array{query: string, params: array<bool|float|int|string>}
      */
     public static function get_set_fmt(array $values): array
     {
@@ -678,9 +678,9 @@ SQL;
     }
 
     /**
-     * @param array<null|bool|int|string> $filter
+     * @param array<null|bool|float|int|string> $filter
      *
-     * @return array{query: string, params: array<bool|int|string>}
+     * @return array{query: string, params: array<bool|float|int|string>}
      */
     public static function get_filter_array(array $filter): array
     {

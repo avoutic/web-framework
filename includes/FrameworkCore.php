@@ -54,7 +54,7 @@ class FrameworkCore
     }
 
     /**
-     * @param array<null|bool|int|string> $params
+     * @param array<null|bool|float|int|string> $params
      */
     protected function query(string $query, array $params): mixed
     {
@@ -62,7 +62,7 @@ class FrameworkCore
     }
 
     /**
-     * @param array<bool|int|string> $params
+     * @param array<null|bool|float|int|string> $params
      */
     protected function insert_query(string $query, array $params): false|int
     {
