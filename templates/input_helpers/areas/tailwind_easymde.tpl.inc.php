@@ -14,7 +14,7 @@ $default_width = $args['template_parameters']['default_width'];
 $parameters = $args['parameters'];
 
 $model_fmt = (strlen($parameters['model'])) ? "x-model='{$parameters['model']}'" : '';
-$required_fmt = ($parameters['required']) ? 'required' : '';
+$required_fmt = (!$parameters['enable_editor'] && $parameters['required']) ? 'required' : '';
 $rows_fmt = (strlen($parameters['rows'])) ? "rows=\"{$parameters['rows']}\"" : '';
 $show_fmt = (strlen($parameters['show'])) ? "x-cloak x-show=\"{$parameters['show']}\"" : '';
 $width_fmt = (strlen($parameters['width'])) ? $parameters['width'] : $default_width;
