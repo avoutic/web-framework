@@ -357,9 +357,9 @@ class WFWebHandler extends WF
     /**
      * @return never
      */
-    public function exit_send_404(string $type = 'generic'): void
+    public function exit_send_400(string $type = 'generic'): void
     {
-        $this->exit_send_error(404, 'Page not found', $type);
+        $this->exit_send_error(400, 'Bad Request', $type);
     }
 
     /**
@@ -368,6 +368,14 @@ class WFWebHandler extends WF
     public function exit_send_403(string $type = 'generic'): void
     {
         $this->exit_send_error(403, 'Access Denied', $type);
+    }
+
+    /**
+     * @return never
+     */
+    public function exit_send_404(string $type = 'generic'): void
+    {
+        $this->exit_send_error(404, 'Page not found', $type);
     }
 
     /**

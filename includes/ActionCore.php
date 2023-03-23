@@ -99,6 +99,22 @@ abstract class ActionCore extends FrameworkCore
     /**
      * @return never
      */
+    protected function exit_send_error(int $code, string $title, string $type = 'generic', string $message = ''): void
+    {
+        $this->web_handler->exit_send_error($code, $title, $type, $message);
+    }
+
+    /**
+     * @return never
+     */
+    protected function exit_send_400(string $type = 'generic'): void
+    {
+        $this->web_handler->exit_send_400($type);
+    }
+
+    /**
+     * @return never
+     */
     protected function exit_send_403(string $type = 'generic'): void
     {
         $this->web_handler->exit_send_403($type);
