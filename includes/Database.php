@@ -5,6 +5,7 @@ namespace WebFramework\Core;
 class Database
 {
     private \mysqli $database;
+    private int $transaction_depth = 0;
 
     /**
      * @param array<string> $config
@@ -88,5 +89,31 @@ class Database
         }
 
         return $result->RecordCount() == 1;
+    }
+
+    public function start_transaction(): void
+    {
+        // MariaDB does not support recursive transactions, so simulate by counting depth
+        //
+        if ($this->transaction_depth == 0)
+        {
+            $result = $this->query('START TRANSACTION', []);
+            WF::verify($result !== false, 'Failed to start transaction');
+        }
+
+        $this->transaction_depth++;
+    }
+
+    public function commit_transaction(): void
+    {
+        // MariaDB does not support recursive transactions, so only commit the final transaction
+        //
+        if ($this->transaction_depth == 1)
+        {
+            $result = $this->query('COMMIT', []);
+            WF::verify($result !== false, 'Failed to commit transaction');
+        }
+
+        $this->transaction_depth--;
     }
 }

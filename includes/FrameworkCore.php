@@ -69,6 +69,16 @@ class FrameworkCore
         return $this->database->insert_query($query, $params);
     }
 
+    protected function start_transaction(): void
+    {
+        $this->database->start_transaction();
+    }
+
+    protected function commit_transaction(): void
+    {
+        $this->database->commit_transaction();
+    }
+
     // Input related
     //
     /**
