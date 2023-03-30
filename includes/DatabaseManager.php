@@ -178,6 +178,8 @@ SQL;
 
         echo ' - Executing queries'.PHP_EOL;
 
+        $this->start_transaction();
+
         foreach ($queries as $info)
         {
             echo '   - Executing:'.PHP_EOL.$info['query'].PHP_EOL;
@@ -202,6 +204,8 @@ SQL;
         echo " - Updating version to {$data['target_version']}".PHP_EOL;
 
         $this->set_version($data['target_version']);
+
+        $this->commit_transaction();
     }
 
     public function get_current_version(): int
