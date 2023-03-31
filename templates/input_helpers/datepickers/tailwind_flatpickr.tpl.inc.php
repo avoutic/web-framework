@@ -39,7 +39,7 @@ echo <<<HTML
 </div>
 <script>
 flatpickr("#{$parameters['id']}", {
-    "locale": "en",
+    "locale": "{$parameters['locale']}",
     "allowInput": true,
     "altFormat": "d-m-Y",
     "altInput": true

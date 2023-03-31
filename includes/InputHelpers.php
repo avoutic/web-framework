@@ -234,6 +234,7 @@ class InputHelpers
             'extra_label' => '',
             'id' => '',
             'label' => '',
+            'locale' => 'en',
             'model' => '',
             'name' => '',
             'placeholder' => '',
