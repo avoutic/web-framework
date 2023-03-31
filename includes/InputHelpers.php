@@ -28,6 +28,8 @@ class InputHelpers
             'max_length' => '',
             'model' => '',
             'name' => '',
+            'on_change' => '',
+            'on_keyup' => '',
             'placeholder' => '',
             'prefix' => '',
             'readonly' => false,
