@@ -7,6 +7,11 @@ $colors = $args['template_parameters']['colors'];
 $required_colors = ['border', 'focus:ring'];
 WF::verify(array_diff(array_keys($colors), $required_colors) == array_diff($required_colors, array_keys($colors)), 'Missing required colors');
 
+WF::verify(isset($args['template_parameters']['texts']), 'No texts defined');
+$texts = $args['template_parameters']['texts'];
+$required_texts = ['clear'];
+WF::verify(array_diff(array_keys($texts), $required_texts) == array_diff($required_texts, array_keys($texts)), 'Missing required texts');
+
 WF::verify(isset($args['template_parameters']['default_width']), 'No default_width defined');
 $default_width = $args['template_parameters']['default_width'];
 
@@ -23,7 +28,7 @@ echo <<<HTML
   </div>
   <div class="pt-2">
     <button type="button" @click="clearPad" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 {$colors['focus:ring']}">
-      Clear
+      {$texts['clear']}
     </button>
   </div>
 </div>
