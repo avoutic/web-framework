@@ -318,4 +318,39 @@ class InputHelpers
                 'parameters' => $parameters, ]
         );
     }
+
+    /**
+     * @param array<mixed> $template_parameters
+     * @param array<mixed> $parameters
+     */
+    public static function print_input_radio_group(string $template, array $template_parameters, array $parameters): void
+    {
+        $base_parameters = [
+            'checked' => false,
+            'extra_label' => '',
+            'id' => '',
+            'label' => '',
+            'model' => '',
+            'name' => '',
+            'on_change' => '',
+            'options' => [],
+            'show' => '',
+            'value' => '1',
+            'width' => '',
+        ];
+
+        $parameters = array_merge($base_parameters, $parameters);
+
+        if (!strlen($parameters['id']))
+        {
+            $parameters['id'] = "input_{$parameters['name']}";
+        }
+
+        static::load_template(
+            $template,
+            [
+                'template_parameters' => $template_parameters,
+                'parameters' => $parameters, ]
+        );
+    }
 }
