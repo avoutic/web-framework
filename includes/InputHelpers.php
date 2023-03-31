@@ -4,6 +4,20 @@ namespace WebFramework\Core;
 
 class InputHelpers
 {
+    /** @var array<string, mixed> */
+    public static array $default_parameters = [
+        'extra_label' => '',
+        'id' => '',
+        'label' => '',
+        'model' => '',
+        'name' => '',
+        'on_change' => '',
+        'required' => false,
+        'show' => '',
+        'value' => '',
+        'width' => '',
+    ];
+
     /**
      * @param array<mixed> $args
      */
@@ -21,26 +35,16 @@ class InputHelpers
      */
     public static function print_input_field(string $template, array $template_parameters, array $parameters): void
     {
-        $base_parameters = [
-            'extra_label' => '',
-            'id' => '',
-            'label' => '',
+        $type_parameters = [
             'max_length' => '',
-            'model' => '',
-            'name' => '',
-            'on_change' => '',
             'on_keyup' => '',
             'placeholder' => '',
             'prefix' => '',
             'readonly' => false,
-            'required' => false,
-            'show' => '',
             'type' => 'text',
-            'value' => '',
-            'width' => '',
         ];
 
-        $parameters = array_merge($base_parameters, $parameters);
+        $parameters = array_merge(static::$default_parameters, $type_parameters, $parameters);
 
         if (!strlen($parameters['id']))
         {
@@ -61,21 +65,13 @@ class InputHelpers
      */
     public static function print_input_area(string $template, array $template_parameters, array $parameters): void
     {
-        $base_parameters = [
-            'extra_label' => '',
-            'id' => '',
-            'label' => '',
-            'model' => '',
-            'name' => '',
+        $type_parameters = [
             'enable_editor' => false,
+            'on_keyup' => '',
             'rows' => '',
-            'required' => false,
-            'show' => '',
-            'value' => '',
-            'width' => '',
         ];
 
-        $parameters = array_merge($base_parameters, $parameters);
+        $parameters = array_merge(static::$default_parameters, $type_parameters, $parameters);
 
         if (!strlen($parameters['id']))
         {
@@ -96,19 +92,12 @@ class InputHelpers
      */
     public static function print_input_checkbox(string $template, array $template_parameters, array $parameters): void
     {
-        $base_parameters = [
+        $type_parameters = [
             'checked' => false,
-            'extra_label' => '',
-            'id' => '',
-            'label' => '',
-            'model' => '',
-            'name' => '',
-            'show' => '',
             'value' => '1',
-            'width' => '',
         ];
 
-        $parameters = array_merge($base_parameters, $parameters);
+        $parameters = array_merge(static::$default_parameters, $type_parameters, $parameters);
 
         if (!strlen($parameters['id']))
         {
@@ -129,19 +118,11 @@ class InputHelpers
      */
     public static function print_input_toggle(string $template, array $template_parameters, array $parameters): void
     {
-        $base_parameters = [
+        $type_parameters = [
             'checked' => false,
-            'extra_label' => '',
-            'id' => '',
-            'label' => '',
-            'model' => '',
-            'name' => '',
-            'show' => '',
-            'value' => '1',
-            'width' => '',
         ];
 
-        $parameters = array_merge($base_parameters, $parameters);
+        $parameters = array_merge(static::$default_parameters, $type_parameters, $parameters);
 
         if (!strlen($parameters['id']))
         {
@@ -162,20 +143,11 @@ class InputHelpers
      */
     public static function print_input_selection(string $template, array $template_parameters, array $parameters): void
     {
-        $base_parameters = [
-            'checked' => false,
-            'extra_label' => '',
-            'id' => '',
-            'label' => '',
-            'model' => '',
-            'name' => '',
+        $type_parameters = [
             'options' => [],
-            'show' => '',
-            'value' => '1',
-            'width' => '',
         ];
 
-        $parameters = array_merge($base_parameters, $parameters);
+        $parameters = array_merge(static::$default_parameters, $type_parameters, $parameters);
 
         if (!strlen($parameters['id']))
         {
@@ -196,20 +168,12 @@ class InputHelpers
      */
     public static function print_input_upload(string $template, array $template_parameters, array $parameters): void
     {
-        $base_parameters = [
-            'extra_label' => '',
+        $type_parameters = [
             'file_types' => 'PNG, JPG, PDF',
-            'id' => '',
-            'label' => '',
             'max_size' => '10 Mb',
-            'name' => '',
-            'options' => [],
-            'show' => '',
-            'value' => '1',
-            'width' => '',
         ];
 
-        $parameters = array_merge($base_parameters, $parameters);
+        $parameters = array_merge(static::$default_parameters, $type_parameters, $parameters);
 
         if (!strlen($parameters['id']))
         {
@@ -230,20 +194,12 @@ class InputHelpers
      */
     public static function print_input_datepicker(string $template, array $template_parameters, array $parameters): void
     {
-        $base_parameters = [
-            'extra_label' => '',
-            'id' => '',
-            'label' => '',
+        $type_parameters = [
             'locale' => 'en',
-            'model' => '',
-            'name' => '',
             'placeholder' => '',
-            'show' => '',
-            'value' => '1',
-            'width' => '',
         ];
 
-        $parameters = array_merge($base_parameters, $parameters);
+        $parameters = array_merge(static::$default_parameters, $type_parameters, $parameters);
 
         if (!strlen($parameters['id']))
         {
@@ -264,19 +220,11 @@ class InputHelpers
      */
     public static function print_input_timepicker(string $template, array $template_parameters, array $parameters): void
     {
-        $base_parameters = [
-            'extra_label' => '',
-            'id' => '',
-            'label' => '',
-            'model' => '',
-            'name' => '',
+        $type_parameters = [
             'placeholder' => '',
-            'show' => '',
-            'value' => '1',
-            'width' => '',
         ];
 
-        $parameters = array_merge($base_parameters, $parameters);
+        $parameters = array_merge(static::$default_parameters, $type_parameters, $parameters);
 
         if (!strlen($parameters['id']))
         {
@@ -297,14 +245,10 @@ class InputHelpers
      */
     public static function print_input_signature(string $template, array $template_parameters, array $parameters): void
     {
-        $base_parameters = [
-            'id' => '',
-            'name' => '',
-            'show' => '',
-            'width' => '',
+        $type_parameters = [
         ];
 
-        $parameters = array_merge($base_parameters, $parameters);
+        $parameters = array_merge(static::$default_parameters, $type_parameters, $parameters);
 
         if (!strlen($parameters['id']))
         {
@@ -325,21 +269,11 @@ class InputHelpers
      */
     public static function print_input_radio_group(string $template, array $template_parameters, array $parameters): void
     {
-        $base_parameters = [
-            'checked' => false,
-            'extra_label' => '',
-            'id' => '',
-            'label' => '',
-            'model' => '',
-            'name' => '',
-            'on_change' => '',
+        $type_parameters = [
             'options' => [],
-            'show' => '',
-            'value' => '1',
-            'width' => '',
         ];
 
-        $parameters = array_merge($base_parameters, $parameters);
+        $parameters = array_merge(static::$default_parameters, $type_parameters, $parameters);
 
         if (!strlen($parameters['id']))
         {

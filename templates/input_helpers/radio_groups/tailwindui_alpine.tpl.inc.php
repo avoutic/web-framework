@@ -12,7 +12,6 @@ $default_width = $args['template_parameters']['default_width'];
 
 $parameters = $args['parameters'];
 
-$checked_fmt = ($parameters['checked']) ? 'checked' : '';
 $model_var_fmt = (strlen($parameters['model'])) ? $parameters['model'] : $parameters['name'];
 $model_fmt = "x-model=\"{$model_var_fmt}\"";
 $show_fmt = (strlen($parameters['show'])) ? "x-cloak x-show=\"{$parameters['show']}\"" : '';
