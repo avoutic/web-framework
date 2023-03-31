@@ -7,6 +7,11 @@ $colors = $args['template_parameters']['colors'];
 $required_colors = ['border', 'shadow-outline', 'text', 'hover:text', 'focus-within:ring'];
 WF::verify(array_diff(array_keys($colors), $required_colors) == array_diff($required_colors, array_keys($colors)), 'Missing required colors');
 
+WF::verify(isset($args['template_parameters']['texts']), 'No texts defined');
+$texts = $args['template_parameters']['texts'];
+$required_texts = ['or_drag', 'selected', 'upload_file', 'with_maximum_of'];
+WF::verify(array_diff(array_keys($texts), $required_texts) == array_diff($required_texts, array_keys($texts)), 'Missing required texts');
+
 WF::verify(isset($args['template_parameters']['default_width']), 'No default_width defined');
 $default_width = $args['template_parameters']['default_width'];
 
@@ -42,15 +47,15 @@ echo <<<HTML
       <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
         <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
       </svg>
-      <div class="flex text-sm text-gray-600">
-        <a href="javascript:void()" class="cursor-pointer bg-white rounded-md font-medium {$colors['text']} {$colors['hover:text']} focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 {$colors['focus-within:ring']}">Upload a file</a>
-        <p class="pl-1">or drag here</p>
+      <div class="flex flex-col text-sm text-gray-600">
+        <a href="javascript:void()" class="cursor-pointer bg-white rounded-md font-medium {$colors['text']} {$colors['hover:text']} focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 {$colors['focus-within:ring']}">{$texts['upload_file']}</a>
+        <p class="pl-1">{$texts['or_drag']}</p>
       </div>
       <p class="text-xs text-gray-500">
-        {$parameters['file_types']} with a maximum of {$parameters['max_size']}
+        {$parameters['file_types']} {$texts['with_maximum_of']} {$parameters['max_size']}
       </p>
       <p x-cloak x-show="fileSelected" class="text-xs text-gray-500">
-        Selected:
+        {$texts['selected']}
         <span x-text="filename" class="font-semibold {$colors['text']}">
         </span>
       </p>
