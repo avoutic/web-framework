@@ -1,7 +1,12 @@
+<?php
+
+$csrf_token = $this->get_csrf_token();
+
+echo <<<HTML
 <form method="post" action="/change_password">
   <fieldset>
      <input type="hidden" name="do" value="yes"/>
-     <input type="hidden" name="token" value="<?= $this->get_csrf_token(); ?>"/>
+     <input type="hidden" name="token" value="{$csrf_token}"/>
 
      <legend>Change password</legend>
      <p>
@@ -21,3 +26,4 @@
      <label>&nbsp;</label> <input type="submit" value="Change" />
    </p>
 </form>
+HTML;

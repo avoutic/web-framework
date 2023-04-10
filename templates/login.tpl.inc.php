@@ -1,24 +1,31 @@
 <?php
+
 use WebFramework\Core\ActionCore;
 
-?>
-<form method="post" action="/<?= $args['login_page']; ?>">
+$csrf_token = $this->get_csrf_token();
+$return_page_fmt = ActionCore::encode($args['return_page']);
+$return_page_fmt = ActionCore::encode($args['return_query']);
+$username_fmt = ActionCore::encode($args['username']);
+
+echo <<<HTML
+<form method="post" action="/{$args['login_page']}">
   <fieldset>
     <input type="hidden" name="do" value="yes"/>
-    <input type="hidden" name="token" value="<?= $this->get_csrf_token(); ?>"/>
+    <input type="hidden" name="token" value="{$csrf_token}"/>
     <input type="hidden" id="password" name="password" value=""/>
-    <input type="hidden" name="return_page" value="<?= ActionCore::encode($args['return_page']); ?>"/>
-    <input type="hidden" name="return_query" value="<?= ActionCore::encode($args['return_query']); ?>"/>
+    <input type="hidden" name="return_page" value="{$return_page_fmt}"/>
+    <input type="hidden" name="return_query" value="{$return_query_fmt}"/>
     <legend>Login form</legend>
     <p>
       <label for="username">Username</label>
-      <input type="text" id="username" name="username" value="<?= ActionCore::encode($args['username']); ?>" autocomplete="off"/>
+      <input type="text" id="username" name="username" value="{$username_fmt}" autocomplete="off"/>
     </p>
     <p>
       <label for="password_helper">Password</label>
       <input type="password" id="password_helper" name="password_helper"/>
     </p>
-<?php
+HTML;
+
 if ($args['recaptcha_needed'])
 {
     echo <<<HTML
@@ -27,8 +34,8 @@ if ($args['recaptcha_needed'])
     </div>
 HTML;
 }
-?>
 
+echo <<<'HTML'
     <div>
       <label>&nbsp;</label>
       <input type="submit" value="Submit" />
@@ -37,12 +44,15 @@ HTML;
 </form>
 <span>
   <a href="/forgot_password">Forgot your password?</a>
-<?php
+HTML;
+
 if ($this->get_config('registration.allow_registration'))
 {
     echo <<<'HTML'
   | <a href="/register_account">No account yet?</a>
 HTML;
 }
-?>
+
+echo <<<'HTML'
 </span>
+HTML;
