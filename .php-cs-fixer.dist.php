@@ -14,7 +14,8 @@ return $config->setRules([
         '@PhpCsFixer:risky' => true,
 
         // Preferences
-        'braces' => [ 'position_after_control_structures' => 'next' ], // Allman style
+        'curly_braces_position' => [ 'control_structures_opening_brace' => 'next_line_unless_newline_at_signature_end'], // Allman style
+        'control_structure_continuation_position' => [ 'position' => 'next_line'], // Allman style
         'echo_tag_syntax' => [ 'format' => 'short' ],
         'increment_style' => [ 'style' => 'post' ],
         'is_null' => false,
