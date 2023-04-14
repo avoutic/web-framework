@@ -81,7 +81,13 @@ class WFSecurity
             $this->module_config['hmac_key']
         );
 
-        return $iv.'-'.$str.'-'.$str_hmac;
+        $full_str = $iv.'-'.$str.'-'.$str_hmac;
+
+        // Add double hyphens every 16 characters for 'line-breaking in e-mail clients'
+        //
+        $chunks = str_split($full_str, 16);
+
+        return implode('--', $chunks);
     }
 
     public function encode_and_auth_string(string $value): string
@@ -105,6 +111,10 @@ class WFSecurity
 
     protected function internal_decode_and_verify_string(string $str): string|false
     {
+        // Remove the double hyphens first
+        //
+        $str = str_replace('--', '', $str);
+
         $idx = strpos($str, '-');
         if ($idx === false)
         {
