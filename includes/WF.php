@@ -1058,7 +1058,7 @@ TXT;
         {
             $this->exit_error(
                 'Database missing config_values table',
-                'Please make sure that the core Framework database scheme has been applied.'
+                'Please make sure that the core Framework database scheme has been applied. (by running db_init script)'
             );
         }
 
@@ -1075,11 +1075,19 @@ TXT;
             );
         }
 
+        if ($this->check_app_db_version && $required_app_db_version > 0 && $current_app_db_version == 0)
+        {
+            $this->exit_error(
+                'No app DB present',
+                "Config (versions.required_app_db) indicates an App DB should be present. None found."
+            );
+        }
+
         if ($this->check_app_db_version && $required_app_db_version > $current_app_db_version)
         {
             $this->exit_error(
                 'Outdated version of the app DB',
-                "Please make sure that the app DB scheme is at least {$required_app_db_version}."
+                "Please make sure that the app DB scheme is at least {$required_app_db_version}. (Current: {$current_app_db_version})"
             );
         }
     }
