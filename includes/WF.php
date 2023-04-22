@@ -97,7 +97,12 @@ class WF
         'cache_enabled' => false,
         'auth_mode' => 'redirect',          // redirect, www-authenticate, custom (requires auth_module)
         'auth_module' => '',                // class name with full namespace
-        'sanity_check_module' => '',        // class name with full namespace
+        'sanity_check_module' => '',        // class name with full namespace (Deprecated)
+        'sanity_check_modules' => [],       // associative array with class names with full namespace as key
+                                            // and their config array as the value
+        'sanity_check' => [
+            'required_auth' => [],          // Auth files that should be present
+        ],
         'authenticator' => [
             'unique_identifier' => 'email',
             'auth_required_message' => 'Authentication required. Please login.',
@@ -1105,21 +1110,48 @@ TXT;
         }
     }
 
+    // Deprecated (Remove for v6)
+    //
     public function get_sanity_check(): SanityCheckInterface
     {
+        @trigger_error('WF->get_sanity_check()', E_USER_DEPRECATED);
         $class_name = $this->internal_get_config('sanity_check_module');
+
+        return $this->instantiate_sanity_check($class_name);
+    }
+
+    public function instantiate_sanity_check(string $class_name, array $config = []): SanityCheckInterface
+    {
         $this->verify(class_exists($class_name), "Sanity check module '{$class_name}' not found");
 
-        $obj = new $class_name();
+        $obj = new $class_name($config);
         $this->internal_verify($obj instanceof SanityCheckInterface, 'Sanity check module does not implement SanityCheckInterface');
 
         return $obj;
     }
 
-    public function check_sanity(): bool
+    /**
+     * @return array<string, array>
+     */
+    public function get_sanity_checks_to_run(): array
     {
         $class_name = $this->internal_get_config('sanity_check_module');
-        if (!strlen($class_name))
+        $class_names = $this->internal_get_config('sanity_check_modules');
+
+        if (strlen($class_name))
+        {
+            @trigger_error('Config sanity_check_module', E_USER_DEPRECATED);
+
+            $class_names[$class_name] = [];
+        }
+
+        return $class_names;
+    }
+
+    public function check_sanity(): bool
+    {
+        $class_names = $this->get_sanity_checks_to_run();
+        if (!count($class_names))
         {
             return true;
         }
@@ -1130,11 +1162,12 @@ TXT;
 
         if ($commit == null)
         {
-            // We are in live code. Prevent flooding. Only start check once per minute.
+            // We are in live code. Prevent flooding. Only start check once per
+            // five seconds.
             //
             $last_timestamp = (int) $stored_values->get_value('last_check', '0');
 
-            if (time() - $last_timestamp < 60)
+            if (time() - $last_timestamp < 5)
             {
                 return true;
             }
@@ -1152,10 +1185,13 @@ TXT;
             }
         }
 
-        $sanity_check = $this->get_sanity_check();
-        $result = $sanity_check->perform_checks();
+        foreach ($class_names as $class_name => $module_config)
+        {
+            $sanity_check = $this->instantiate_sanity_check($class_name, $module_config);
+            $result = $sanity_check->perform_checks();
 
-        $this->verify($result, 'Sanity check failed');
+            $this->verify($result, 'Sanity check failed');
+        }
 
         // Register successful check of this commit
         //
