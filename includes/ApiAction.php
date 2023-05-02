@@ -41,7 +41,7 @@ abstract class ApiAction extends ActionCore
         ));
     }
 
-    protected function output_file(string $filename, string $hash = ''): void
+    protected function output_file(string $filename, string $hash = '', bool $as_download = false): void
     {
         if (!file_exists($filename))
         {
@@ -77,6 +77,16 @@ abstract class ApiAction extends ActionCore
         header('Content-Length: '.filesize($filename));
         header('Content-Type: '.$type);
         header('Content-Transfer-Encoding: Binary');
+
+        if ($as_download)
+        {
+            header('Content-Disposition: attachment; filename="'.basename($filename).'"');
+        }
+        else
+        {
+            header('Content-Disposition: inline; filename="'.basename($filename).'"');
+        }
+
         readfile($filename);
 
         exit();
