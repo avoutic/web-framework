@@ -1,0 +1,85 @@
+{parameters
+    ?array $override_colors,
+    string $default_width,
+    ?string $extra_label,
+    ?string $id,
+    ?string $label,
+    ?string $model,
+    ?string $name,
+    array $options = [],
+    bool $required = false,
+    ?string $show,
+    string $value = '',
+    ?string $width,
+}
+
+{var $id = isset($id) ?: 'input_' . $name}
+{var $colors = [
+    'bg' => 'bg-indigo-50',
+    'border' => 'border-indigo-200',
+    'text-input' => 'text-indigo-600',
+    'text-label' => 'text-indigo-900',
+    'text-extra-label' => 'text-indigo-700',
+    'focus:ring' => 'focus:ring-indigo-500',
+]}
+{ifset $override_colors}
+    {foreach $override_colors as $key => $tag}
+        {var $colors[$key] = $tag}
+    {/foreach}
+{/ifset}
+
+<div
+  {ifset $show} x-cloak x-show="{$show}" {/ifset}
+  class="{$width ?: $default_width}">
+  <label n:ifset="$label" for="{$id}" class="block text-sm font-medium text-gray-700">
+    {$label}
+  </label>
+  <p n:ifset="$extra_label" class="text-sm text-gray-500">{$extra_label}</p>
+
+  <fieldset
+{if !isset($model)}
+    {var $model = 'enabled'}
+    {var $data = [ 'enabled' => $value ]}
+     x-data="{json_encode($data)}"
+{/if}
+    >
+    <div class="bg-white rounded-md -space-y-px mt-3">
+
+{foreach $options as $option_value => $option_info}
+    {var $option_id = "{$id}-{$iterator->counter}"}
+
+      <div
+        class="relative border flex
+          {first} rounded-tl-md rounded-tr-md {/first}
+          {last} rounded-bl-md rounded-br-md {/last}"
+        :class="{ '{$colors['bg']} {$colors['border']} z-10': {$model} == {$option_value},
+                  'border-gray-200': {$model} != {$option_value} }"
+        >
+        <div class="flex items-center h-5 my-4 ml-4">
+          <input
+            x-model="{$model}"
+            id="{$option_id}"
+            {ifset $name} name="{$name}" {/ifset}
+            type="radio"
+            value="{$option_value}"
+            class="{$colors['focus:ring']} h-4 w-4 {$colors['text-input']} cursor-pointer border-gray-300">
+        </div>
+        <label for="{$option_id}" class="p-4 pl-3 flex flex-col cursor-pointer w-full">
+          <span
+            class="block text-sm font-medium"
+            :class="{ '{$colors['text-label']}': {$model} == {$option_value}, 'text-gray-900': {$model} != {$option_value} }"
+            >
+            {$option_info['label']}
+          </span>
+          <span n:ifset="$option_info['extra_label']" class="block text-sm"
+                :class="{ '{$colors['text-extra-label']}': {$model} == {$option_value}, 'text-gray-500': {$model} != {$option_value} }"
+                >
+            {$option_info['extra_label']}
+          </span>
+        </label>
+      </div>
+{/foreach}
+
+    </div>
+  </fieldset>
+</div>

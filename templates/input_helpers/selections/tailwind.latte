@@ -1,0 +1,46 @@
+{parameters
+    ?array $override_colors,
+    string $default_width,
+    bool $enable_editor = false,
+    ?string $extra_label,
+    ?string $id,
+    ?string $label,
+    ?string $model,
+    ?string $name,
+    array $options = [],
+    ?string $show,
+    string $value = '',
+    ?string $width,
+}
+
+{var $id = isset($id) ?: 'input_' . $name}
+{var $colors = [
+    'focus:border' => 'focus:border-indigo-500',
+    'focus:ring' => 'focus:ring-indigo-500',
+]}
+{ifset $override_colors}
+    {foreach $override_colors as $key => $tag}
+        {var $colors[$key] = $tag}
+    {/foreach}
+{/ifset}
+
+<div
+  {ifset $show} x-cloak x-show="{$show}" {/ifset}
+  class="{$width ?: $default_width}">
+  <label n:ifset="$label" for="{$id}" class="block text-sm font-medium text-gray-700">
+    {$label}
+  </label>
+  <p n:ifset="$extra_label" class="text-sm text-gray-500">{$extra_label}</p>
+
+  <select
+    id="{$id}"
+    {ifset $model} x-model="{$model}" {/ifset}
+    {ifset $name} name="{$name}" {/ifset}
+    class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none {$colors['focus:ring']} {$colors['focus:border']} sm:text-sm">
+
+{foreach $options as $option_value => $name}
+    <option value="{$option_value}" {if strlen($option_value) && $value == $option_value} selected {/if}>{$name}</option>
+{/foreach}
+
+  </select>
+</div>

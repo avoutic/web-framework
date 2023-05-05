@@ -1,0 +1,54 @@
+{parameters
+    ?array $override_colors,
+    string $default_width,
+    bool $checked = false,
+    ?string $extra_label,
+    ?string $id,
+    ?string $label,
+    ?string $model,
+    ?string $name,
+    ?string $show,
+    string $value = '',
+    ?string $width,
+}
+
+{var $id = isset($id) ?: 'input_' . $name}
+{var $colors = [
+    'bg' => 'bg-indigo-600',
+    'focus:ring' => 'focus:ring-indigo-500',
+]}
+{ifset $override_colors}
+    {foreach $override_colors as $key => $tag}
+        {var $colors[$key] = $tag}
+    {/foreach}
+{/ifset}
+<div
+  {ifset $show} x-cloak x-show="{$show}" {/ifset}
+  {if !isset($model)}
+    {var $model = 'enabled'}
+    {var $data = [ 'enabled' => $checked ]}
+  x-data="{json_encode($data)}"
+  {/if}
+  class="flex items-center justify-between {$width ?: $default_width}">
+  <span class="flex-grow flex flex-col" id="{$id}-label">
+    <label n:ifset="$label" for="{$id}" class="text-sm font-base text-gray-900">
+      {$label}
+    </label>
+    <p n:ifset="$extra_label" class="text-sm text-gray-500">{$extra_label}</p>
+  </span>
+  <input
+    x-model="{$model}"
+    {ifset $name} name="{$name}" {/ifset}
+    type="hidden" />
+  <button
+    @click="{$model} = !{$model}"
+    id="{$id}"
+    type="button"
+    :class="{'{$colors['bg']}': {$model}, 'bg-gray-200': !{$model}}"
+    class="relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 {$colors['focus:ring']}" aria-pressed="false" aria-labelledby="{$id}-label">
+    <span class="sr-only">Use setting</span>
+    <span aria-hidden="true"
+      :class="{'translate-x-5': {$model}, 'translate-x-0': !{$model}}"
+      class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform ring-0 transition ease-in-out duration-200"></span>
+  </button>
+</div>

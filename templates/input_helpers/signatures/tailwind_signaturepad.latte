@@ -1,0 +1,51 @@
+{parameters
+    ?array $override_colors,
+    ?array $override_texts,
+    string $default_width,
+    bool $enable_editor = false,
+    ?string $extra_label,
+    ?string $id,
+    ?string $label,
+    ?string $name,
+    ?string $show,
+    ?string $width,
+}
+
+{var $id = isset($id) ?: 'input_' . $name}
+{var $colors = [
+    'focus:border' => 'focus:border-indigo-500',
+    'focus:ring' => 'focus:ring-indigo-500',
+]}
+{ifset $override_colors}
+    {foreach $override_colors as $key => $tag}
+        {var $colors[$key] = $tag}
+    {/foreach}
+{/ifset}
+{var $texts = [
+    'clear' => 'Clear',
+]}
+{ifset $override_texts}
+    {foreach $override_texts as $key => $tag}
+        {var $texts[$key] = $tag}
+    {/foreach}
+{/ifset}
+
+<div
+  {ifset $show} x-cloak x-show="{$show}" {/ifset}
+  x-data="canvas()" x-init="initializePad()"
+  id="{$id}"
+  class="{$width ?: $default_width}">
+  <label n:ifset="$label" for="{$id}" class="block text-sm font-medium text-gray-700">
+    {$label}
+  </label>
+  <p n:ifset="$extra_label" class="text-sm text-gray-500">{$extra_label}</p>
+  <input x-model="signatureData" type="hidden" {ifset $name} name="{$name}" {/ifset} value="" />
+  <div x-on:mouseup="saveSignature()" x-on:touchend="saveSignature()" class="w-72 h-48 bg-gray-200 rounded-md border {$colors['border']}">
+    <canvas x-ref="canvas" class="w-full h-full"></canvas>
+  </div>
+  <div class="pt-2">
+    <button type="button" @click="clearPad" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 {$colors['focus:ring']}">
+      {$texts['clear']}
+    </button>
+  </div>
+</div>

@@ -1,0 +1,48 @@
+{parameters
+    ?array $override_colors,
+    string $default_width,
+    ?string $extra_label,
+    ?string $id,
+    ?string $label,
+    string $locale = 'en',
+    ?string $name,
+    ?string $placeholder,
+    ?string $show,
+    string $value = '',
+    ?string $width,
+}
+
+{var $id = isset($id) ?: 'input_' . $name}
+{var $colors = [
+    'focus:border' => 'focus:border-indigo-500',
+    'focus:ring' => 'focus:ring-indigo-500',
+]}
+{ifset $override_colors}
+    {foreach $override_colors as $key => $tag}
+        {var $colors[$key] = $tag}
+    {/foreach}
+{/ifset}
+
+<div
+  {ifset $show} x-cloak x-show="{$show}" {/ifset}
+  class="{$width ?: $default_width}">
+  <label n:ifset="$label" for="{$id}" class="block text-sm font-medium text-gray-700">
+    {$label}
+  </label>
+  <p n:ifset="$extra_label" class="text-sm text-gray-500">{$extra_label}</p>
+
+  <input type="text"
+    id="{$id}"
+    {ifset $name} name="{$name}" {/ifset}
+    {ifset $placeholder} placeholder="{$placeholder}" {/ifset}
+    value="{$value}"
+    class="mt-1 {$colors['focus:ring']} {$colors['focus:border']} block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
+</div>
+<script>
+flatpickr("#" + {$id}, {
+    "locale": {$locale},
+    "allowInput": true,
+    "altFormat": "d-m-Y",
+    "altInput": true
+});
+</script>

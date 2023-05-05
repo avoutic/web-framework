@@ -1,0 +1,79 @@
+{parameters
+    ?array $override_colors,
+    ?array $override_texts,
+    string $default_width = '',
+    string $file_types = 'PNG, JPG, PDF',
+    string $max_size = '10 Mb',
+    ?string $extra_label,
+    ?string $id,
+    ?string $label,
+    ?string $name,
+    ?string $show,
+    ?string $width,
+}
+
+{var $id = isset($id) ?: 'input_' . $name}
+{var $colors = [
+    'border' => 'border-indigo-800',
+    'shadow-outline' => 'shadow-outline-indigo',
+    'text' => 'text-indigo-600',
+    'hover:text' => 'hover:text-indigo-500',
+    'focus-within:ring' => 'focus-within:ring-indigo-500',
+]}
+{ifset $override_colors}
+    {foreach $override_colors as $key => $tag}
+        {var $colors[$key] = $tag}
+    {/foreach}
+{/ifset}
+{var $texts = [
+    'or_drag' => 'or drag a file here',
+    'selected' => 'selected',
+    'upload_file' => 'Upload file',
+    'with_maximum_of' => 'with a maximum of',
+]}
+{ifset ($override_texts)}
+    {foreach $override_texts as $key => $tag}
+        {var $texts[$key] = $tag}
+    {/foreach}
+{/ifset}
+
+<div x-data="{ fileSelected: false, filename: '' }" class="{$width ?: $default_width}"
+{ifset $show}
+    x-cloak x-show="{$show}"
+{/ifset}
+  >
+  <label n:ifset="$label" for="{$id}" class="block text-sm font-medium text-gray-700">
+    {$label}
+  </label>
+
+  <p n:ifset="$extra_label" class="text-sm text-gray-500">{$extra_label}</p>
+
+  <div x-ref="border" class="mt-2 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md relative cursor-pointer">
+    <input type="file"
+      class="absolute inset-0 z-50 m-0 p-0 w-full h-full outline-none opacity-0 cursor-pointer"
+      x-on:change="fileSelected = true; filename = $event.target.files[0].name;"
+      x-on:dragover="$refs.border.classList.add('{$colors['shadow-outline']}', '{$colors['border']}')"
+      x-on:dragleave="$refs.border.classList.remove('{$colors['shadow-outline']}', '{$colors['border']}')"
+      x-on:drop="$refs.border.classList.remove('{$colors['shadow-outline']}', '{$colors['border']}')"
+      id="{$id}"
+      {ifset $name} name="{$name}" {/ifset}
+      />
+    <div class="flex flex-col space-y-2 items-center justify-center text-center">
+      <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+      <div class="flex flex-col text-sm text-gray-600">
+        <a href="javascript:void()" class="cursor-pointer bg-white rounded-md font-medium {$colors['text']} {$colors['hover:text']} focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 {$colors['focus-within:ring']}">{$texts['upload_file']}</a>
+        <p class="pl-1">{$texts['or_drag']}</p>
+      </div>
+      <p class="text-xs text-gray-500">
+        {$file_types} {$texts['with_maximum_of']} {$max_size}
+      </p>
+      <p x-cloak x-show="fileSelected" class="text-xs text-gray-500">
+        {$texts['selected']}
+        <span x-text="filename" class="font-semibold {$colors['text']}">
+        </span>
+      </p>
+    </div>
+  </div>
+</div>

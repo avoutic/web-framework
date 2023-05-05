@@ -1,0 +1,44 @@
+{parameters
+    ?array $override_colors,
+    string $default_width,
+    bool $checked = false,
+    ?string $extra_label,
+    ?string $id,
+    ?string $label,
+    ?string $model,
+    ?string $name,
+    ?string $show,
+    string $value = '',
+    ?string $width,
+}
+
+{var $id = isset($id) ?: 'input_' . $name}
+{var $colors = [
+    'text' => 'text-indigo-600',
+    'focus:ring' => 'focus:ring-indigo-500',
+]}
+{ifset $override_colors}
+    {foreach $override_colors as $key => $tag}
+        {var $colors[$key] = $tag}
+    {/foreach}
+{/ifset}
+
+<div
+  {ifset $show} x-cloak x-show="{$show}" {/ifset}
+  class="flex items-start {$width ?: $default_width}">
+  <div class="flex items-center h-5">
+    <input id="{$id}"
+      {ifset $model} x-model="{$model}" {/ifset}
+      {ifset $name} name="{$name}" {/ifset}
+      type="checkbox"
+      value="{$value}"
+      {if $checked} checked {/if}
+      class="{$colors['focus:ring']} h-4 w-4 {$colors['text']} border-gray-300 rounded">
+  </div>
+  <div class="ml-3 text-sm">
+    <label n:ifset="$label" for="{$id}" class="font-medium text-gray-700">
+      {$label}
+    </label>
+    <p n:ifset="$extra_label" class="text-sm text-gray-500">{$extra_label}</p>
+  </div>
+</div>
