@@ -1,4 +1,5 @@
 <?php
+
 // Global configuration
 //
 if (!file_exists(__DIR__.'/../vendor/autoload.php'))
@@ -20,7 +21,7 @@ try
     //
     $framework->init();
 
-    header("content-type: text/plain");
+    header('content-type: text/plain');
 
     $class_names = $framework->get_sanity_checks_to_run();
 
@@ -34,15 +35,15 @@ try
 }
 catch (Throwable $e)
 {
-    print('Unhandled exception'.PHP_EOL);
+    echo('Unhandled exception'.PHP_EOL);
 
     if ($framework->get_config('debug') == true)
     {
-        print($e->getMessage().PHP_EOL);
+        echo($e->getMessage().PHP_EOL);
         print_r($e->getTrace());
     }
 
     WF::report_error($e->getMessage(), $e->getTrace());
+
     exit();
 }
-?>

@@ -2,8 +2,6 @@
 
 namespace WebFramework\Core\SanityCheck;
 
-use WebFramework\Core\WF;
-
 class RequiredAuth extends Base
 {
     public function perform_checks(): bool
@@ -26,6 +24,7 @@ class RequiredAuth extends Base
             if ($exists)
             {
                 $this->add_output(" - {$filename} present".PHP_EOL);
+
                 continue;
             }
 
@@ -40,6 +39,7 @@ class RequiredAuth extends Base
         else
         {
             $this->add_output(PHP_EOL.'Breaking off');
+
             return false;
         }
 

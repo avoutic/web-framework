@@ -9,8 +9,13 @@ abstract class Base implements SanityCheckInterface
 {
     protected bool $allow_fixing = false;
     protected bool $verbose = false;
+
+    /** @var array<string, mixed> */
     protected array $config;
 
+    /**
+     * @param array<string, mixed> $config
+     */
     public function __construct(array $config)
     {
         $this->config = $config;
@@ -28,7 +33,7 @@ abstract class Base implements SanityCheckInterface
         return dirname($filename, 3);
     }
 
-    public abstract function perform_checks(): bool;
+    abstract public function perform_checks(): bool;
 
     public function allow_fixing(): void
     {

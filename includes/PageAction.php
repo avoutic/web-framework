@@ -129,11 +129,14 @@ abstract class PageAction extends ActionCore
         if ($template_system === 'latte')
         {
             $this->display_with_latte();
+
             return;
         }
-        elseif ($template_system === 'native')
+
+        if ($template_system === 'native')
         {
             $this->display_with_native();
+
             return;
         }
 
@@ -170,7 +173,7 @@ abstract class PageAction extends ActionCore
 
         $this->page_content['core'] = $this->get_core_variables();
 
-        $latte = new \Latte\Engine;
+        $latte = new \Latte\Engine();
         $latte->setTempDirectory('/tmp/latte');
         $latte->setLoader(new \Latte\Loaders\FileLoader($template_dir));
 
@@ -181,7 +184,6 @@ abstract class PageAction extends ActionCore
         $output = $latte->renderToString($template_file, $this->page_content);
 
         echo($output);
-        return;
     }
 
     protected function display_with_native(): void

@@ -1084,7 +1084,7 @@ TXT;
         {
             $this->exit_error(
                 'No app DB present',
-                "Config (versions.required_app_db) indicates an App DB should be present. None found."
+                'Config (versions.required_app_db) indicates an App DB should be present. None found.'
             );
         }
 
@@ -1120,6 +1120,9 @@ TXT;
         return $this->instantiate_sanity_check($class_name);
     }
 
+    /**
+     * @param array<string, mixed> $config
+     */
     public function instantiate_sanity_check(string $class_name, array $config = []): SanityCheckInterface
     {
         $this->verify(class_exists($class_name), "Sanity check module '{$class_name}' not found");
@@ -1131,7 +1134,7 @@ TXT;
     }
 
     /**
-     * @return array<string, array>
+     * @return array<string, array<string, mixed>>
      */
     public function get_sanity_checks_to_run(): array
     {
