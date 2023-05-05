@@ -25,6 +25,7 @@
         "wildbit/postmark-php": "^4.0",
         "stripe/stripe-php": "^7.128",
         "cache/redis-adapter": "^1.1",
+        "latte/latte": "^3.0",
         "ext-redis": "*"
     },
     "require-dev": {
