@@ -2,12 +2,8 @@
 
 namespace WebFramework\Core;
 
-class NullCache implements CacheInterface
+class NullCache implements CacheService
 {
-    public function __construct(array $config)
-    {
-    }
-
     public function exists(string $path): bool
     {
         return false;

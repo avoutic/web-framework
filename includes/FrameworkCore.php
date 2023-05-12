@@ -4,7 +4,7 @@ namespace WebFramework\Core;
 
 class FrameworkCore
 {
-    protected CacheInterface $cache;
+    protected CacheService $cache;
     protected WF $framework;
     private WFSecurity $security;
     private Database $database;

@@ -2,13 +2,8 @@
 
 namespace WebFramework\Core;
 
-interface CacheInterface
+interface CacheService
 {
-    /**
-     * @param array<mixed> $config
-     */
-    public function __construct(array $config);
-
     public function exists(string $path): bool;
 
     public function get(string $path): mixed;

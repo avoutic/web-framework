@@ -2,13 +2,15 @@
 
 namespace WebFramework\Core;
 
+use Cache\Adapter\Redis\RedisCachePool;
+
 class WF
 {
     private string $app_dir = '';
 
     private static WF $framework;
     private static Database $main_db;         // Only for DataCore and StoredValues abstraction
-    private static CacheInterface $static_cache;    // Only for DataCore and StoredValues abstraction
+    private static CacheService $static_cache;    // Only for DataCore and StoredValues abstraction
 
     /**
      * @var array<mixed>
@@ -38,7 +40,7 @@ class WF
      * @var array<Database>
      */
     private array $aux_databases = [];
-    private CacheInterface $cache;
+    private CacheService $cache;
     protected Blacklist $blacklist;
     protected WFSecurity $security;
 
@@ -168,7 +170,7 @@ class WF
     {
         // Immediately initialize cache with NullCache so that a cache is always available
         //
-        $this->cache = new NullCache([]);
+        $this->cache = new NullCache();
         self::$static_cache = $this->cache;
 
         // Determine app dir
@@ -675,14 +677,14 @@ TXT;
         return self::$main_db;
     }
 
-    public function get_cache(): CacheInterface
+    public function get_cache(): CacheService
     {
         return $this->cache;
     }
 
     // Only relevant for DataCore and StoredValues to retrieve main database in static functions
     //
-    public static function get_static_cache(): CacheInterface
+    public static function get_static_cache(): CacheService
     {
         return self::$static_cache;
     }
@@ -1105,7 +1107,32 @@ TXT;
             //
             $cache_config = $this->security->get_auth_config('redis');
 
-            $this->cache = new RedisCache($cache_config);
+            $redis_client = new \Redis();
+            $result = $redis_client->pconnect(
+                $cache_config['hostname'],
+                $cache_config['port'],
+                1,
+                'wf',
+                0,
+                0,
+                ['auth' => $cache_config['password']]
+            );
+            self::verify($result === true, 'Failed to connect to Redis cache');
+
+            $cache_pool = new RedisCachePool($redis_client);
+
+            try
+            {
+                // Workaround: Without trying to check something, the connection is not yet verified.
+                //
+                $cache_pool->hasItem('errors');
+            }
+            catch (\Throwable $e)
+            {
+                self::verify(false, 'Failed to connect to Redis cache');
+            }
+            $this->cache = new RedisCache($cache_pool);
+
             self::$static_cache = $this->cache;
         }
     }

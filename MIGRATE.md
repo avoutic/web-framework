@@ -1,3 +1,12 @@
+# v6 release
+
+Major internal changes to dependency injection
+
+As a result:
+
+* CacheInterface is now called CacheService
+* If you instantiated RedisCache yourself, the constructor has changed.
+
 # v5 release
 
 Required changes for v5:
