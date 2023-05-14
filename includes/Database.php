@@ -4,29 +4,12 @@ namespace WebFramework\Core;
 
 class Database
 {
-    private \mysqli $database;
     private int $transaction_depth = 0;
 
-    /**
-     * @param array<string> $config
-     */
-    public function connect(array $config): bool
-    {
-        $database = new \mysqli(
-            $config['database_host'],
-            $config['database_user'],
-            $config['database_password'],
-            $config['database_database']
-        );
-
-        if ($database->connect_error)
-        {
-            return false;
-        }
-
-        $this->database = $database;
-
-        return true;
+    public function __construct(
+        private \mysqli $database,
+        protected AssertService $assert_service,
+    ) {
     }
 
     /**
@@ -36,7 +19,7 @@ class Database
     {
         if (!$this->database->ping())
         {
-            exit('Database connection not available. Exiting.');
+            throw new \RuntimeException('Database connection not available');
         }
 
         $result = null;
@@ -65,7 +48,7 @@ class Database
     {
         $result = $this->query($query, $params);
 
-        if ($result !== false)
+        if ($this->database !== null && $result !== false)
         {
             return (int) $this->database->insert_id;
         }
@@ -85,7 +68,7 @@ class Database
         $result = $this->query($query, []);
         if ($result === false)
         {
-            exit('Query failed to check for table existence. Exiting.');
+            throw new \RuntimeException('Check for table existence failed');
         }
 
         return $result->RecordCount() == 1;
@@ -98,7 +81,7 @@ class Database
         if ($this->transaction_depth == 0)
         {
             $result = $this->query('START TRANSACTION', []);
-            WF::verify($result !== false, 'Failed to start transaction');
+            $this->assert_service->verify($result !== false, 'Failed to start transaction');
         }
 
         $this->transaction_depth++;
@@ -111,9 +94,14 @@ class Database
         if ($this->transaction_depth == 1)
         {
             $result = $this->query('COMMIT', []);
-            WF::verify($result !== false, 'Failed to commit transaction');
+            $this->assert_service->verify($result !== false, 'Failed to commit transaction');
         }
 
         $this->transaction_depth--;
+    }
+
+    public function get_transaction_depth(): int
+    {
+        return $this->transaction_depth;
     }
 }
