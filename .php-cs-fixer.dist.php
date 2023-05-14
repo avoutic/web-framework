@@ -6,6 +6,7 @@ $finder = PhpCsFixer\Finder::create()
     ->in(__DIR__.'/includes')
     ->in(__DIR__.'/scripts')
     ->in(__DIR__.'/templates')
+    ->in(__DIR__.'/tests/Unit')
 ;
 
 $config = new PhpCsFixer\Config();

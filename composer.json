@@ -26,10 +26,14 @@
         "stripe/stripe-php": "^7.128",
         "cache/redis-adapter": "^1.1",
         "latte/latte": "^3.0",
-        "ext-redis": "*"
+        "ext-redis": "*",
+        "slim/psr7": "^1.6"
     },
     "require-dev": {
-        "phpstan/phpstan": "^1.8"
+        "phpstan/phpstan": "^1.8",
+        "codeception/codeception": "^5.0",
+        "codeception/module-asserts": "^3.0",
+        "codeception/verify": "^3.0"
     },
     "autoload": {
         "psr-4": {
