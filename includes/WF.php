@@ -3,6 +3,7 @@
 namespace WebFramework\Core;
 
 use Cache\Adapter\Redis\RedisCachePool;
+use Slim\Psr7\Factory\ServerRequestFactory;
 
 class WF
 {
@@ -30,8 +31,6 @@ class WF
     private int $in_verify = 0;             // Only go into an assert_handler for a maximum amount of times
     private bool $throw_exception = false;  // Instead of reporting an error in the output, throw an exception
     private string $debug_message = '';
-    private string $debug_data = '';
-    private string $low_info_message = '';
 
     protected bool $initialized = false;
     private Database $main_database;
@@ -182,23 +181,25 @@ class WF
     public static function assert_handler(string $file, int $line, string $message, string $error_type): void
     {
         $framework = self::get_framework();
-        $framework->internal_assert_handler($file, $line, $message, $error_type);
+        $framework->internal_assert_handler($message, $error_type);
     }
 
-    public function internal_assert_handler(string $file, int $line, string $message, string $error_type): void
+    public function internal_assert_handler(string $message, string $error_type): void
     {
-        $debug_info = $this->get_debug_info($file, $line, $message);
+        $stack = debug_backtrace(0);
+        $request = ServerRequestFactory::createFromGlobals();
+        $debug_service = new DebugService($this, $this->get_db(), $this->get_config('server_name'));
+
+        $debug_info = $debug_service->get_error_report($stack, $request, $message);
 
         // In case a second verify fails, make sure this data is added to that die()
         //
-        $this->low_info_message .= $debug_info['low_info_message'];
-        $this->debug_message .= $debug_info['debug_message'];
-        $this->debug_data .= $debug_info['debug_data'];
+        $this->debug_message .= $debug_info['message'];
 
         $this->mail_debug_info($message, 'Assertion failed', $debug_info);
 
         $use_message = ($this->internal_get_config('debug') == true) ?
-            $debug_info['debug_message'].$debug_info['debug_data'] : $debug_info['low_info_message'];
+            $debug_info['message'] : $debug_info['low_info_message'];
 
         $error_type = WFHelpers::get_error_type_string($error_type);
 
@@ -217,7 +218,7 @@ class WF
     }
 
     /**
-     * @param array{debug_message: string, debug_data: string, low_info_message: string, hash:string} $debug_info
+     * @param array{message: string, low_info_message: string, hash:string} $debug_info
      */
     protected function mail_debug_info(string $message, string $error_type, array $debug_info): void
     {
@@ -264,159 +265,8 @@ class WF
         SenderCore::send_raw(
             $this->internal_get_config('sender_core.assert_recipient'),
             "{$title}\n\n",
-            $debug_info['debug_message'].
-            $debug_info['debug_data']
+            $debug_info['message']
         );
-    }
-
-    /**
-     * @param array<mixed> $trace
-     *
-     * @return array{debug_message: string, debug_data: string, low_info_message: string, hash: string}
-     */
-    protected function get_debug_info(string $file, int $line, string $message, array $trace = null): array
-    {
-        $info = [
-            'low_info_message' => '',
-            'debug_message' => '',
-            'debug_data' => '',
-            'hash' => '',
-        ];
-
-        // Retrieve request
-        //
-        $server_name = $this->internal_get_config('server_name');
-
-        $request = 'app';
-        if ($server_name !== 'app')
-        {
-            $request = "{$_SERVER['REQUEST_METHOD']} ";
-            $request .= (isset($_SERVER['REDIRECT_URL'])) ? $_SERVER['REDIRECT_URL'] : '/';
-        }
-
-        // Construct base message
-        //
-        $info['low_info_message'] = <<<TXT
-File: {$file}
-Line: {$line}
-
-TXT;
-
-        $info['debug_message'] = <<<TXT
-File: {$file}
-Line: {$line}
-Message: {$message}
-
-Server: {$server_name}
-Request: {$request}
-
-TXT;
-
-        $info['hash'] = sha1("{$server_name}:{$request}:{$file}:{$line}:{$message}");
-
-        // Construct stack trace
-        //
-        if ($trace === null)
-        {
-            $trace = debug_backtrace(0);
-        }
-
-        $stack = [];
-        $stack_condensed = '';
-
-        if (is_array($trace))
-        {
-            $skipping = true;
-
-            foreach ($trace as $entry)
-            {
-                if ($skipping
-                    && in_array($entry['function'], [
-                        'get_debug_info',
-                        'internal_assert_handler',
-                        'assert_handler',
-                        'internal_verify',
-                    ]))
-                {
-                    continue;
-                }
-
-                $skipping = false;
-
-                if (in_array($entry['function'], ['exit_send_error', 'exit_error']))
-                {
-                    unset($entry['args']);
-                }
-
-                $stack_condensed .= $entry['file'].'('.$entry['line'].'): ';
-
-                if (isset($entry['class']))
-                {
-                    $stack_condensed .= $entry['class'].$entry['type'];
-                }
-
-                $stack_condensed .= $entry['function']."()\n";
-
-                $stack[] = $entry;
-            }
-
-            WFHelpers::scrub_state($stack);
-        }
-        $stack_fmt = print_r($stack, true);
-
-        // Retrieve database error
-        //
-        $db_error = 'Not initialized yet';
-        $main_db = $this->get_db();
-        if ($main_db != null)
-        {
-            $db_error = $main_db->get_last_error();
-            if ($db_error === '')
-            {
-                $db_error = 'None';
-            }
-        }
-
-        // Retrieve auth data
-        //
-        $auth_data = 'Not authenticated';
-        if ($this->is_authenticated())
-        {
-            $auth_array = $this->get_authenticated();
-            WFHelpers::scrub_state($auth_array);
-
-            $auth_data = print_r($auth_array, true);
-        }
-
-        // Retrieve inputs
-        //
-        $inputs = $this->get_input();
-        unset($inputs['error_message']);
-        $input_data = print_r($inputs, true);
-
-        $raw_input_data = print_r($this->get_raw_input(), true);
-
-        $server_info = $_SERVER;
-        $server_info['HTTP_COOKIE'] = 'scrubbed';
-        $server_fmt = print_r($server_info, true);
-
-        // Construct debug data
-        //
-        $info['debug_data'] = <<<TXT
-
-Condensed backtrace:
-{$stack_condensed}
-Last Database error: {$db_error}
-
-Input: {$input_data}
-Raw Input: {$raw_input_data}
-Auth: {$auth_data}
-Backtrace:
-{$stack_fmt}
-{$server_fmt}
-TXT;
-
-        return $info;
     }
 
     public static function verify(bool|int $bool, string $message): void
@@ -441,53 +291,16 @@ TXT;
         {
             echo('<pre>');
             echo($this->debug_message.PHP_EOL);
-            echo($this->debug_data.PHP_EOL);
             echo('</pre>');
 
             exit('2 deep into verifications.. Aborting.');
         }
 
         $this->in_verify++;
-        $stack = debug_backtrace(0);
-        $caller = $this->find_caller($stack, ['internal_assert_handler', 'assert_handler',
-            'internal_verify', ]);
 
-        $this->internal_assert_handler($caller['file'], $caller['line'], $message, 'verify');
+        $this->internal_assert_handler($message, 'verify');
 
         exit();
-    }
-
-    /**
-     * @param array<mixed>  $stack
-     * @param array<string> $exclude_functions
-     *
-     * @return array<mixed>
-     */
-    private function find_caller(array $stack, array $exclude_functions): array
-    {
-        $caller = false;
-
-        foreach ($stack as $entry)
-        {
-            $caller = $entry;
-
-            if (in_array($entry['function'], $exclude_functions))
-            {
-                continue;
-            }
-
-            break;
-        }
-
-        if ($caller === false)
-        {
-            return [
-                'file' => 'Unknown',
-                'line' => 0,
-            ];
-        }
-
-        return $caller;
     }
 
     // Send a triggered error message but continue running
@@ -518,14 +331,15 @@ TXT;
             $stack = debug_backtrace(0);
         }
 
-        $caller = $this->find_caller($stack, ['internal_report_error']);
-
         if (!$this->initialized)
         {
             exit($message.PHP_EOL);
         }
 
-        $debug_info = $this->get_debug_info($caller['file'], $caller['line'], $message, $stack);
+        $request = ServerRequestFactory::createFromGlobals();
+        $debug_service = new DebugService($this, $this->get_db(), $this->get_config('server_name'));
+
+        $debug_info = $debug_service->get_error_report($stack, $request, $message);
 
         $this->mail_debug_info($message, 'Error reported', $debug_info);
     }
@@ -567,33 +381,9 @@ TXT;
             return;
         }
 
-        switch ($last_error['type'])
-        {
-            case E_ERROR:
-            case E_PARSE:
-            case E_CORE_ERROR:
-            case E_CORE_WARNING:
-            case E_COMPILE_ERROR:
-            case E_COMPILE_WARNING:
-                $this->internal_assert_handler(
-                    $last_error['file'],
-                    $last_error['line'],
-                    $last_error['message'],
-                    (string) $last_error['type']
-                );
+        $message = "{$last_error['file']}:{$last_error['line']}:{$last_error['message']}";
 
-                break;
-
-            default:
-                $this->internal_assert_handler(
-                    $last_error['file'],
-                    $last_error['line'],
-                    $last_error['message'],
-                    (string) $last_error['type']
-                );
-
-                break;
-        }
+        $this->internal_assert_handler($message, (string) $last_error['type']);
 
         // Don't trigger other handlers after this call
         //
