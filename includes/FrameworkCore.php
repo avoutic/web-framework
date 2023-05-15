@@ -126,6 +126,11 @@ class FrameworkCore
      */
     protected function report_error(string $message, array $stack = null): void
     {
+        if ($stack === null)
+        {
+            $stack = debug_backtrace(0);
+        }
+
         $this->framework->internal_report_error($message, $stack);
     }
 
