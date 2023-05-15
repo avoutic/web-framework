@@ -28,10 +28,6 @@ class WF
      */
     protected array $raw_post = [];
 
-    private int $in_verify = 0;             // Only go into an assert_handler for a maximum amount of times
-    private bool $throw_exception = false;  // Instead of reporting an error in the output, throw an exception
-    private string $debug_message = '';
-
     protected bool $initialized = false;
     private Database $main_database;
 
@@ -42,6 +38,13 @@ class WF
     private CacheService $cache;
     protected Blacklist $blacklist;
     protected WFSecurity $security;
+
+    // Services
+    //
+    protected ?AssertService $assert_service = null;
+    protected ?DebugService $debug_service = null;
+    protected ?MailService $mail_service = null;
+    protected ?ReportFunction $report_function = null;
 
     /**
      * @var array<array{mtype: string, message: string, extra_message: string}>
@@ -178,6 +181,56 @@ class WF
         $this->app_dir = dirname($reflection->getFileName(), 3);
     }
 
+    public function get_assert_service(): AssertService
+    {
+        if ($this->assert_service === null)
+        {
+            $this->assert_service = new AssertService(
+                $this->get_debug_service(),
+                $this->get_report_function(),
+            );
+        }
+
+        return $this->assert_service;
+    }
+
+    public function get_debug_service(): DebugService
+    {
+        if ($this->debug_service === null)
+        {
+            $this->debug_service = new DebugService(
+                $this,
+                $this->get_config('server_name')
+            );
+        }
+
+        return $this->debug_service;
+    }
+
+    public function get_report_function(): ReportFunction
+    {
+        if ($this->report_function === null)
+        {
+            $this->report_function = new MailReportFunction(
+                $this->get_cache(),
+                $this->get_mail_service(),
+                $this->get_config('sender_core.assert_recipient'),
+            );
+        }
+
+        return $this->report_function;
+    }
+
+    public function get_mail_service(): MailService
+    {
+        if ($this->mail_service === null)
+        {
+            $this->mail_service = new NullMailService();
+        }
+
+        return $this->mail_service;
+    }
+
     public static function assert_handler(string $file, int $line, string $message, string $error_type): void
     {
         $framework = self::get_framework();
@@ -186,87 +239,8 @@ class WF
 
     public function internal_assert_handler(string $message, string $error_type): void
     {
-        $stack = debug_backtrace(0);
-        $request = ServerRequestFactory::createFromGlobals();
-        $debug_service = new DebugService($this, $this->get_db(), $this->get_config('server_name'));
-
-        $debug_info = $debug_service->get_error_report($stack, $request, $message);
-
-        // In case a second verify fails, make sure this data is added to that die()
-        //
-        $this->debug_message .= $debug_info['message'];
-
-        $this->mail_debug_info($message, 'Assertion failed', $debug_info);
-
-        $use_message = ($this->internal_get_config('debug') == true) ?
-            $debug_info['message'] : $debug_info['low_info_message'];
-
-        $error_type = WFHelpers::get_error_type_string($error_type);
-
-        if (!$this->initialized)
-        {
-            exit($use_message);
-        }
-
-        $this->exit_error(
-            'Oops, something went wrong',
-            "Debug information: {$error_type}<br/>".
-            '<br/><pre>'.
-            $use_message.
-            '</pre>'
-        );
-    }
-
-    /**
-     * @param array{message: string, low_info_message: string, hash:string} $debug_info
-     */
-    protected function mail_debug_info(string $message, string $error_type, array $debug_info): void
-    {
-        if (!$this->initialized || $this->internal_get_config('debug_mail') == false)
-        {
-            return;
-        }
-
-        // Make sure we are not spamming the same error en masse
-        //
-        $cache_id = "errors[{$debug_info['hash']}]";
-        $cached = $this->cache->get($cache_id);
-
-        if ($cached === false)
-        {
-            $cached = [
-                'count' => 1,
-                'last_timestamp' => time(),
-            ];
-        }
-        else
-        {
-            $cached['count']++;
-            $cached['last_timestamp'] = time();
-        }
-
-        $this->cache->set($cache_id, $cached, time() + 10 * 60);
-
-        // More than 3 in the last 10 minutes, update timestamp, and skip mail
-        //
-        if ($cached['count'] > 3 && $cached['count'] % 25 !== 0)
-        {
-            return;
-        }
-
-        $server_name = $this->internal_get_config('server_name');
-        $title = "{$server_name} - {$error_type}: {$message}";
-
-        if ($cached['count'] % 25 === 0)
-        {
-            $title = "[{$cached['count']} times]: {$title}";
-        }
-
-        SenderCore::send_raw(
-            $this->internal_get_config('sender_core.assert_recipient'),
-            "{$title}\n\n",
-            $debug_info['message']
-        );
+        $assert_service = $this->get_assert_service();
+        $assert_service->report_error(message: $message, error_type: $error_type);
     }
 
     public static function verify(bool|int $bool, string $message): void
@@ -282,25 +256,11 @@ class WF
             return;
         }
 
-        if ($this->throw_exception)
-        {
-            throw new VerifyException($message);
-        }
+        $stack = debug_backtrace(0);
+        $request = ServerRequestFactory::createFromGlobals();
 
-        if ($this->in_verify > 2)
-        {
-            echo('<pre>');
-            echo($this->debug_message.PHP_EOL);
-            echo('</pre>');
-
-            exit('2 deep into verifications.. Aborting.');
-        }
-
-        $this->in_verify++;
-
-        $this->internal_assert_handler($message, 'verify');
-
-        exit();
+        $assert_service = $this->get_assert_service();
+        $assert_service->verify($bool, $message, $stack, $request);
     }
 
     // Send a triggered error message but continue running
@@ -308,7 +268,7 @@ class WF
     /**
      * @param array<mixed> $stack
      */
-    public static function report_error(string $message, array $stack = null): void
+    public static function report_error(string $message, array $stack = []): void
     {
         $framework = self::get_framework();
         $framework->internal_report_error($message, $stack);
@@ -317,31 +277,12 @@ class WF
     /**
      * @param array<mixed> $stack
      */
-    public function internal_report_error(string $message, array $stack = null): void
+    public function internal_report_error(string $message, array $stack = []): void
     {
-        // Cannot report if we cannot mail
-        //
-        if ($this->internal_get_config('debug_mail') == false)
-        {
-            return;
-        }
-
-        if ($stack === null)
-        {
-            $stack = debug_backtrace(0);
-        }
-
-        if (!$this->initialized)
-        {
-            exit($message.PHP_EOL);
-        }
-
         $request = ServerRequestFactory::createFromGlobals();
-        $debug_service = new DebugService($this, $this->get_db(), $this->get_config('server_name'));
 
-        $debug_info = $debug_service->get_error_report($stack, $request, $message);
-
-        $this->mail_debug_info($message, 'Error reported', $debug_info);
+        $assert_service = $this->get_assert_service();
+        $assert_service->report_error($message, $stack, $request);
     }
 
     public static function blacklist_verify(bool|int $bool, string $reason, int $severity = 1): void
@@ -579,11 +520,6 @@ class WF
         $this->check_wf_db_version = false;
     }
 
-    public function throw_exception_on_error(): void
-    {
-        $this->throw_exception = true;
-    }
-
     /**
      * @param array<string> $configs Config files to merge on top of each other in order.
      *                               File locations should be relative to the app dir
@@ -783,13 +719,17 @@ class WF
     {
         // Start the database connection(s)
         //
-        $this->main_database = new Database();
-        self::$main_db = $this->main_database;
-
         $main_db_tag = $this->internal_get_config('database_config');
         $main_config = $this->security->get_auth_config('db_config.'.$main_db_tag);
 
-        if ($this->main_database->connect($main_config) === false)
+        $mysql = new \mysqli(
+            $main_config['database_host'],
+            $main_config['database_user'],
+            $main_config['database_password'],
+            $main_config['database_database']
+        );
+
+        if ($mysql->connect_error)
         {
             $this->exit_error(
                 'Database server connection failed',
@@ -797,22 +737,35 @@ class WF
             );
         }
 
+        $this->main_database = new Database($mysql, $this->get_assert_service());
+        self::$main_db = $this->main_database;
+
+        // Set the Database in the DebugService after init
+        //
+        $this->get_debug_service()->set_database($this->main_database);
+
         // Open auxilary database connections
         //
         foreach ($this->internal_get_config('databases') as $tag)
         {
-            $database = new Database();
             $tag_config = $this->security->get_auth_config('db_config.'.$tag);
 
-            if ($database->connect($tag_config) === false)
+            $mysql = new \mysqli(
+                $tag_config['database_host'],
+                $tag_config['database_user'],
+                $tag_config['database_password'],
+                $tag_config['database_database']
+            );
+
+            if ($mysql->connect_error)
             {
                 $this->exit_error(
-                    'Databases server connection failed',
+                    "Database server connection for '{$tag}' failed",
                     'The connection to the database server failed.'
                 );
             }
 
-            $this->aux_databases[$tag] = $database;
+            $this->aux_databases[$tag] = new Database($mysql, $this->get_assert_service());
         }
     }
 
