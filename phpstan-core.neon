@@ -16,7 +16,11 @@ services:
         tags:
             - phpstan.typeSpecifier.methodTypeSpecifyingExtension
     -
-        class: WebFramework\PHPStan\WFVerifyMethodTypeSpecifyingExtension
+        class: WebFramework\PHPStan\AssertHandlerVerifyMethodTypeSpecifyingExtension
+        tags:
+            - phpstan.typeSpecifier.methodTypeSpecifyingExtension
+    -
+        class: WebFramework\PHPStan\WFInternalVerifyMethodTypeSpecifyingExtension
         tags:
             - phpstan.typeSpecifier.methodTypeSpecifyingExtension
     -
