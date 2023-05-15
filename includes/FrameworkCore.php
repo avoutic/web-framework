@@ -2,19 +2,24 @@
 
 namespace WebFramework\Core;
 
+use WebFramework\Core\Security\ConfigService;
+use WebFramework\Core\Security\ProtectService;
+
 class FrameworkCore
 {
     protected CacheService $cache;
     protected WF $framework;
-    private WFSecurity $security;
+    private ProtectService $protect_service;
+    private ConfigService $secure_config_service;
     private Database $database;
 
     public function __construct()
     {
         $this->framework = WF::get_framework();
-        $this->security = $this->framework->get_security();
         $this->cache = $this->framework->get_cache();
         $this->database = $this->framework->get_db();
+        $this->protect_service = $this->framework->get_protect_service();
+        $this->secure_config_service = $this->framework->get_secure_config_service();
     }
 
     /**
@@ -31,9 +36,10 @@ class FrameworkCore
     public function __unserialize(array $arr): void
     {
         $this->framework = WF::get_framework();
-        $this->security = $this->framework->get_security();
         $this->cache = $this->framework->get_cache();
         $this->database = $this->framework->get_db();
+        $this->protect_service = $this->framework->get_protect_service();
+        $this->secure_config_service = $this->framework->get_secure_config_service();
     }
 
     protected function get_app_dir(): string
@@ -116,7 +122,7 @@ class FrameworkCore
     {
         $msg = ['mtype' => $mtype, 'message' => $message, 'extra_message' => $extra_message];
 
-        return 'msg='.$this->security->encode_and_auth_array($msg);
+        return 'msg='.$this->protect_service->encode_and_auth_array($msg);
     }
 
     // Assert related
@@ -149,7 +155,7 @@ class FrameworkCore
 
     protected function get_auth_config(string $key_file): mixed
     {
-        return $this->security->get_auth_config($key_file);
+        return $this->secure_config_service->get_auth_config($key_file);
     }
 
     protected function add_blacklist_entry(string $reason, int $severity = 1): void
@@ -159,7 +165,7 @@ class FrameworkCore
 
     protected function encode_and_auth_string(string $value): string
     {
-        return $this->security->encode_and_auth_string($value);
+        return $this->protect_service->encode_and_auth_string($value);
     }
 
     /**
@@ -167,12 +173,12 @@ class FrameworkCore
      */
     protected function encode_and_auth_array(array $array): string
     {
-        return $this->security->encode_and_auth_array($array);
+        return $this->protect_service->encode_and_auth_array($array);
     }
 
     protected function decode_and_verify_string(string $str): string|false
     {
-        return $this->security->decode_and_verify_string($str);
+        return $this->protect_service->decode_and_verify_string($str);
     }
 
     /**
@@ -180,7 +186,7 @@ class FrameworkCore
      */
     protected function decode_and_verify_array(string $str): array|false
     {
-        return $this->security->decode_and_verify_array($str);
+        return $this->protect_service->decode_and_verify_array($str);
     }
 
     // Authentication related

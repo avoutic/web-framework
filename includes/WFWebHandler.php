@@ -126,7 +126,7 @@ class WFWebHandler extends WF
 
     private function add_message_from_url(string $url_str): void
     {
-        $msg = $this->security->decode_and_verify_array($url_str);
+        $msg = $this->get_protect_service()->decode_and_verify_array($url_str);
 
         if ($msg === false)
         {
@@ -153,7 +153,7 @@ class WFWebHandler extends WF
 
         if (strlen($this->input['do']))
         {
-            if (!$this->security->validate_csrf_token($this->input['token']))
+            if (!$this->get_csrf_service()->validate_token($this->input['token']))
             {
                 $this->input['do'] = '';
                 $this->add_blacklist_entry('missing-csrf');
@@ -518,7 +518,7 @@ class WFWebHandler extends WF
 
     public function get_csrf_token(): string
     {
-        return $this->security->get_csrf_token();
+        return $this->get_csrf_service()->get_token();
     }
 
     public function add_blacklist_entry(string $reason, int $severity = 1): void

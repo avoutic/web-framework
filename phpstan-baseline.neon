@@ -106,16 +106,6 @@ parameters:
 			path: includes/WF.php
 
 		-
-			message: "#^Parameter \\#1 \\$length of function openssl_random_pseudo_bytes expects int, int\\|false given\\.$#"
-			count: 1
-			path: includes/WFSecurity.php
-
-		-
-			message: "#^Parameter \\#1 \\$string of function base64_encode expects string, string\\|false given\\.$#"
-			count: 1
-			path: includes/WFSecurity.php
-
-		-
 			message: "#^Cannot access offset 'user' on array\\|bool\\.$#"
 			count: 1
 			path: includes/WFWebHandler.php

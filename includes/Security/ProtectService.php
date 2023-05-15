@@ -1,65 +1,20 @@
 <?php
 
-namespace WebFramework\Core;
+namespace WebFramework\Core\Security;
 
-class WFSecurity
+class ProtectService
 {
-    /**
-     * @var array<string>
-     */
-    private array $module_config;
-
     /**
      * @param array<string> $module_config
      */
-    public function __construct(array $module_config)
-    {
-        $this->module_config = $module_config;
+    public function __construct(
+        private array $module_config,
+    ) {
     }
 
-    public function get_csrf_token(): string
+    protected function get_random_bytes(int $iv_len): string
     {
-        if (!isset($_SESSION['csrf_token']) || strlen($_SESSION['csrf_token']) != 16)
-        {
-            $_SESSION['csrf_token'] = openssl_random_pseudo_bytes(16);
-        }
-
-        $token = $_SESSION['csrf_token'];
-        $xor = openssl_random_pseudo_bytes(16);
-        for ($i = 0; $i < 16; $i++)
-        {
-            $token[$i] = chr(ord($xor[$i]) ^ ord($token[$i]));
-        }
-
-        return bin2hex($xor).bin2hex($token);
-    }
-
-    public function validate_csrf_token(string $token): bool
-    {
-        if (!isset($_SESSION['csrf_token']))
-        {
-            return false;
-        }
-
-        $check = $_SESSION['csrf_token'];
-        $value = $token;
-        if (strlen($value) != 16 * 4 || strlen($check) != 16)
-        {
-            return false;
-        }
-
-        $xor = pack('H*', substr($value, 0, 16 * 2));
-        $token = pack('H*', substr($value, 16 * 2, 16 * 2));
-
-        // Slow compare (time-constant)
-        $diff = 0;
-        for ($i = 0; $i < 16; $i++)
-        {
-            $token[$i] = chr(ord($xor[$i]) ^ ord($token[$i]));
-            $diff |= ord($token[$i]) ^ ord($check[$i]);
-        }
-
-        return ($diff === 0);
+        return openssl_random_pseudo_bytes($iv_len);
     }
 
     protected function internal_encode_and_auth(string $str): string
@@ -68,9 +23,18 @@ class WFSecurity
         //
         $cipher = 'AES-256-CBC';
         $iv_len = openssl_cipher_iv_length($cipher);
-        $iv = openssl_random_pseudo_bytes($iv_len);
+        if ($iv_len === false)
+        {
+            return '';
+        }
+
+        $iv = $this->get_random_bytes($iv_len);
         $key = hash('sha256', $this->module_config['crypt_key'], true);
         $str = openssl_encrypt($str, $cipher, $key, 0, $iv);
+        if ($str === false)
+        {
+            return '';
+        }
 
         $str = strtr(base64_encode($str), '+/=', '._~');
         $iv = strtr(base64_encode($iv), '+/=', '._~');
@@ -143,9 +107,6 @@ class WFSecurity
 
         if ($str_hmac !== $part_hmac)
         {
-            $framework = WF::get_framework();
-            $framework->add_blacklist_entry('hmac-mismatch', 4);
-
             return false;
         }
 
@@ -186,22 +147,5 @@ class WFSecurity
         }
 
         return $array;
-    }
-
-    public function get_auth_config(string $name): mixed
-    {
-        $app_dir = WF::get_app_dir();
-        $auth_dir = $this->module_config['auth_dir'];
-
-        $auth_config_file = "{$app_dir}{$auth_dir}/{$name}.php";
-        if (!file_exists($auth_config_file))
-        {
-            exit("Auth Config {$name} does not exist");
-        }
-
-        $auth_config = require $auth_config_file;
-        WF::verify(is_array($auth_config) || strlen($auth_config), 'Auth Config '.$name.' invalid');
-
-        return $auth_config;
     }
 }

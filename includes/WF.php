@@ -37,14 +37,16 @@ class WF
     private array $aux_databases = [];
     private CacheService $cache;
     protected Blacklist $blacklist;
-    protected WFSecurity $security;
 
     // Services
     //
     protected ?AssertService $assert_service = null;
+    protected ?Security\CsrfService $csrf_service = null;
     protected ?DebugService $debug_service = null;
     protected ?MailService $mail_service = null;
     protected ?ReportFunction $report_function = null;
+    protected ?Security\ConfigService $secure_config_service = null;
+    protected ?Security\ProtectService $protect_service = null;
 
     /**
      * @var array<array{mtype: string, message: string, extra_message: string}>
@@ -194,6 +196,16 @@ class WF
         return $this->assert_service;
     }
 
+    public function get_csrf_service(): Security\CsrfService
+    {
+        if ($this->csrf_service === null)
+        {
+            $this->csrf_service = new Security\CsrfService();
+        }
+
+        return $this->csrf_service;
+    }
+
     public function get_debug_service(): DebugService
     {
         if ($this->debug_service === null)
@@ -219,6 +231,30 @@ class WF
         }
 
         return $this->report_function;
+    }
+
+    public function get_secure_config_service(): Security\ConfigService
+    {
+        if ($this->secure_config_service === null)
+        {
+            $this->secure_config_service = new Security\ConfigService(
+                $this->get_app_dir().$this->get_config('security.auth_dir'),
+            );
+        }
+
+        return $this->secure_config_service;
+    }
+
+    public function get_protect_service(): Security\ProtectService
+    {
+        if ($this->protect_service === null)
+        {
+            $this->protect_service = new Security\ProtectService(
+                $this->get_config('security'),
+            );
+        }
+
+        return $this->protect_service;
     }
 
     public function get_mail_service(): MailService
@@ -420,11 +456,6 @@ class WF
         return self::$static_cache;
     }
 
-    public function get_security(): WFSecurity
-    {
-        return $this->security;
-    }
-
     public function validate_input(string $filter, string $item): void
     {
         $this->internal_verify(strlen($filter), 'No filter provided');
@@ -560,7 +591,6 @@ class WF
 
         $this->check_config_requirements();
         $this->load_requirements();
-        $this->security = new WFSecurity($this->internal_get_config('security'));
 
         if ($this->internal_get_config('database_enabled') == true)
         {
@@ -720,7 +750,7 @@ class WF
         // Start the database connection(s)
         //
         $main_db_tag = $this->internal_get_config('database_config');
-        $main_config = $this->security->get_auth_config('db_config.'.$main_db_tag);
+        $main_config = $this->get_secure_config_service()->get_auth_config('db_config.'.$main_db_tag);
 
         $mysql = new \mysqli(
             $main_config['database_host'],
@@ -748,7 +778,7 @@ class WF
         //
         foreach ($this->internal_get_config('databases') as $tag)
         {
-            $tag_config = $this->security->get_auth_config('db_config.'.$tag);
+            $tag_config = $this->get_secure_config_service()->get_auth_config('db_config.'.$tag);
 
             $mysql = new \mysqli(
                 $tag_config['database_host'],
@@ -848,7 +878,7 @@ class WF
         {
             // Start the Redis cache connection
             //
-            $cache_config = $this->security->get_auth_config('redis');
+            $cache_config = $this->get_secure_config_service()->get_auth_config('redis');
 
             $redis_client = new \Redis();
             $result = $redis_client->pconnect(
