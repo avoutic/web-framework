@@ -20,7 +20,7 @@ final class DebugServiceTest extends \Codeception\Test\Unit
     {
         $framework = $this->makeEmpty(WF::class);
 
-        $instance = new DebugService($framework, '');
+        $instance = new DebugService($framework, '', '');
 
         verify($instance->generate_hash('ServerName', 'RequestSource', 'File', 1, 'Message'))
             ->equals('5bd8c554bf94a90d97e9f31c63b69fde17ac4bb9');
@@ -30,7 +30,7 @@ final class DebugServiceTest extends \Codeception\Test\Unit
     {
         $framework = $this->makeEmpty(WF::class);
 
-        $instance = new DebugService($framework, '');
+        $instance = new DebugService($framework, '', '');
 
         verify($instance->generate_hash('', 'RequestSource', 'File', 1, 'Message'))
             ->equals('bf0a0f18bf3c2e20ea0fe62092376caccefcbb7a');
@@ -40,7 +40,7 @@ final class DebugServiceTest extends \Codeception\Test\Unit
     {
         $framework = $this->makeEmpty(WF::class);
 
-        $instance = new DebugService($framework, '');
+        $instance = new DebugService($framework, '', '');
 
         verify($instance->generate_hash('ServerName', '', 'File', 1, 'Message'))
             ->equals('bf0f9b3a2f36e3e1a8359c289494a41a3c673c45');
@@ -50,7 +50,7 @@ final class DebugServiceTest extends \Codeception\Test\Unit
     {
         $framework = $this->makeEmpty(WF::class);
 
-        $instance = new DebugService($framework, '');
+        $instance = new DebugService($framework, '', '');
 
         verify($instance->generate_hash('ServerName', 'RequestSource', 'unknown', 1, 'Message'))
             ->equals('8bdac8c96d84253c28d5981d096550747be0d2f8');
@@ -60,7 +60,7 @@ final class DebugServiceTest extends \Codeception\Test\Unit
     {
         $framework = $this->makeEmpty(WF::class);
 
-        $instance = new DebugService($framework, '');
+        $instance = new DebugService($framework, '', '');
 
         verify($instance->generate_hash('ServerName', 'RequestSource', 'File', 0, 'Message'))
             ->equals('72a2066e2671474739c142d668a25da79b8184a0');
@@ -70,7 +70,7 @@ final class DebugServiceTest extends \Codeception\Test\Unit
     {
         $framework = $this->makeEmpty(WF::class);
 
-        $instance = new DebugService($framework, '');
+        $instance = new DebugService($framework, '', '');
 
         verify($instance->generate_hash('ServerName', 'RequestSource', 'File', 1, ''))
             ->equals('2d63a5522289108ab2091fd5b99f0ba0499bff76');
@@ -80,7 +80,7 @@ final class DebugServiceTest extends \Codeception\Test\Unit
     {
         $framework = $this->makeEmpty(WF::class);
 
-        $instance = new DebugService($framework, '');
+        $instance = new DebugService($framework, '', '');
 
         verify($instance->get_database_error(null))
             ->equals('Not initialized yet');
@@ -91,7 +91,7 @@ final class DebugServiceTest extends \Codeception\Test\Unit
         $framework = $this->makeEmpty(WF::class);
         $database = $this->makeEmpty(Database::class, ['get_last_error' => '']);
 
-        $instance = new DebugService($framework, '');
+        $instance = new DebugService($framework, '', '');
         $instance->set_database($database);
 
         verify($instance->get_database_error($database))
@@ -103,7 +103,7 @@ final class DebugServiceTest extends \Codeception\Test\Unit
         $framework = $this->makeEmpty(WF::class);
         $database = $this->makeEmpty(Database::class, ['get_last_error' => 'DB ERROR']);
 
-        $instance = new DebugService($framework, '');
+        $instance = new DebugService($framework, '', '');
         $instance->set_database($database);
 
         verify($instance->get_database_error($database))
@@ -114,7 +114,7 @@ final class DebugServiceTest extends \Codeception\Test\Unit
     {
         $framework = $this->makeEmpty(WF::class, ['is_authenticated' => false]);
 
-        $instance = new DebugService($framework, '');
+        $instance = new DebugService($framework, '', '');
 
         verify($instance->get_authentication_status())
             ->equals("Not authenticated\n");
@@ -125,7 +125,7 @@ final class DebugServiceTest extends \Codeception\Test\Unit
         $auth_data = ['var1' => 'val1', 'var2' => 'val2'];
         $framework = $this->makeEmpty(WF::class, ['is_authenticated' => true, 'get_authenticated' => $auth_data]);
 
-        $instance = new DebugService($framework, '');
+        $instance = new DebugService($framework, '', '');
 
         verify($instance->get_authentication_status())
             ->equals(print_r($auth_data, true));
@@ -157,7 +157,7 @@ final class DebugServiceTest extends \Codeception\Test\Unit
 
         $framework = $this->makeEmpty(WF::class, ['is_authenticated' => true, 'get_authenticated' => $auth_data]);
 
-        $instance = new DebugService($framework, '');
+        $instance = new DebugService($framework, '', '');
 
         verify($instance->get_authentication_status())
             ->equals(print_r($auth_scrubbed, true));
@@ -209,7 +209,7 @@ final class DebugServiceTest extends \Codeception\Test\Unit
 
         $framework = $this->makeEmpty(WF::class);
 
-        $instance = new DebugService($framework, '');
+        $instance = new DebugService($framework, '', '');
 
         verify($instance->filter_trace($trace, true, false))
             ->equals($trace_filtered);
@@ -267,7 +267,7 @@ final class DebugServiceTest extends \Codeception\Test\Unit
 
         $framework = $this->makeEmpty(WF::class);
 
-        $instance = new DebugService($framework, '');
+        $instance = new DebugService($framework, '', '');
 
         verify($instance->filter_trace($trace, true, false))
             ->equals($trace_filtered);
@@ -300,7 +300,7 @@ final class DebugServiceTest extends \Codeception\Test\Unit
 
         $framework = $this->makeEmpty(WF::class);
 
-        $instance = new DebugService($framework, '');
+        $instance = new DebugService($framework, '', '');
 
         verify($instance->filter_trace($trace, false, false))
             ->equals($trace);
@@ -347,7 +347,7 @@ final class DebugServiceTest extends \Codeception\Test\Unit
 
         $framework = $this->makeEmpty(WF::class);
 
-        $instance = new DebugService($framework, '');
+        $instance = new DebugService($framework, '', '');
 
         verify($instance->filter_trace($trace, false, true))
             ->equals($trace_filtered);
@@ -381,7 +381,7 @@ final class DebugServiceTest extends \Codeception\Test\Unit
 
         $framework = $this->makeEmpty(WF::class);
 
-        $instance = new DebugService($framework, '');
+        $instance = new DebugService($framework, '', '');
 
         verify($instance->filter_trace($trace, false, false))
             ->equals($trace_filtered);
@@ -412,7 +412,7 @@ TXT;
 
         $framework = $this->makeEmpty(WF::class);
 
-        $instance = new DebugService($framework, '');
+        $instance = new DebugService($framework, '', '');
 
         verify($instance->condense_stack($trace))
             ->equals($condensed_stack);
@@ -435,7 +435,7 @@ TXT;
 
         $framework = $this->makeEmpty(WF::class);
 
-        $instance = new DebugService($framework, '');
+        $instance = new DebugService($framework, '', '');
 
         verify($instance->scrub_request_headers($headers))
             ->equals($headers_scrubbed);
@@ -458,7 +458,7 @@ TXT;
 
         $framework = $this->makeEmpty(WF::class);
 
-        $instance = new DebugService($framework, '');
+        $instance = new DebugService($framework, '', '');
 
         verify($instance->scrub_request_headers($headers))
             ->equals($headers_scrubbed);
@@ -468,7 +468,7 @@ TXT;
     {
         $framework = $this->makeEmpty(WF::class);
 
-        $instance = new DebugService($framework, '');
+        $instance = new DebugService($framework, '', '');
 
         $request = $this->makeEmpty(Request::class, [
             'getQueryParams' => [],
@@ -485,7 +485,7 @@ TXT;
     {
         $framework = $this->makeEmpty(WF::class);
 
-        $instance = new DebugService($framework, '');
+        $instance = new DebugService($framework, '', '');
 
         $query_params = ['key1' => 'val1', 'key2' => 'val2'];
 
@@ -511,7 +511,7 @@ TXT;
     {
         $framework = $this->makeEmpty(WF::class);
 
-        $instance = new DebugService($framework, '');
+        $instance = new DebugService($framework, '', '');
 
         $post_params = ['key1' => 'val1', 'key2' => 'val2'];
 
@@ -537,7 +537,7 @@ TXT;
     {
         $framework = $this->makeEmpty(WF::class);
 
-        $instance = new DebugService($framework, '');
+        $instance = new DebugService($framework, '', '');
 
         $post_params = ['key1' => 'val1', 'key2' => 'val2'];
 
@@ -567,7 +567,7 @@ TXT;
     {
         $framework = $this->makeEmpty(WF::class);
 
-        $instance = new DebugService($framework, '');
+        $instance = new DebugService($framework, '', '');
 
         $bad_json = '{"key1" : "val1","key2":"val2"';
 
@@ -597,6 +597,7 @@ TXT;
             DebugService::class,
             [
                 'framework' => $this->makeEmpty(WF::class),
+                'app_dir' => '',
                 'server_name' => 'TestServer',
             ],
             [
@@ -662,6 +663,7 @@ TXT;
                         'get_authenticated' => ['var1' => 'val1', 'var2' => 'val2'],
                     ],
                 ),
+                'app_dir' => '',
                 'server_name' => 'TestServer',
             ],
             [

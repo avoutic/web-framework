@@ -247,7 +247,8 @@ class WF
         {
             $this->debug_service = new DebugService(
                 $this,
-                $this->get_config('server_name')
+                $this->get_app_dir(),
+                $this->get_config('server_name'),
             );
         }
 
@@ -1117,24 +1118,6 @@ class WF
      */
     public function get_build_info(): array
     {
-        if (!file_exists($this->app_dir.'/build_commit') || !file_exists($this->app_dir.'/build_timestamp'))
-        {
-            return [
-                'commit' => null,
-                'timestamp' => date('Y-m-d H:i'),
-            ];
-        }
-
-        $commit = file_get_contents($this->app_dir.'/build_commit');
-        $this->internal_verify($commit !== false, 'Failed to retrieve build_commit');
-        $commit = substr($commit, 0, 8);
-
-        $build_time = file_get_contents($this->app_dir.'/build_timestamp');
-        $this->internal_verify($build_time !== false, 'Failed to retrieve build_timestamp');
-
-        return [
-            'commit' => $commit,
-            'timestamp' => $build_time,
-        ];
+        return $this->get_debug_service()->get_build_info();
     }
 }

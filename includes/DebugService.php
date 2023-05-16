@@ -10,7 +10,8 @@ class DebugService
 
     public function __construct(
         private WF $framework,
-        private string $server_name
+        private string $app_dir,
+        private string $server_name,
     ) {
     }
 
@@ -314,5 +315,40 @@ TXT;
         }
 
         return $headers;
+    }
+
+    /**
+     * Get build info.
+     *
+     * @return array{commit: null|string, timestamp: string}
+     */
+    public function get_build_info(): array
+    {
+        if (!file_exists($this->app_dir.'/build_commit') || !file_exists($this->app_dir.'/build_timestamp'))
+        {
+            return [
+                'commit' => null,
+                'timestamp' => date('Y-m-d H:i'),
+            ];
+        }
+
+        $commit = file_get_contents($this->app_dir.'/build_commit');
+        if ($commit === false)
+        {
+            throw new \RuntimeException('Failed to retrieve build_commit');
+        }
+
+        $commit = substr($commit, 0, 8);
+
+        $build_time = file_get_contents($this->app_dir.'/build_timestamp');
+        if ($build_time === false)
+        {
+            throw new \RuntimeException('Failed to retrieve build_timestamp');
+        }
+
+        return [
+            'commit' => $commit,
+            'timestamp' => $build_time,
+        ];
     }
 }
