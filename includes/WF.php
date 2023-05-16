@@ -36,11 +36,11 @@ class WF
      */
     private array $aux_databases = [];
     private CacheService $cache;
-    protected Blacklist $blacklist;
 
     // Services
     //
     protected ?AssertService $assert_service = null;
+    protected ?Security\BlacklistService $blacklist_service = null;
     protected ?Security\CsrfService $csrf_service = null;
     protected ?DebugService $debug_service = null;
     protected ?MailService $mail_service = null;
@@ -196,6 +196,26 @@ class WF
         return $this->assert_service;
     }
 
+    public function get_blacklist_service(): Security\BlacklistService
+    {
+        if ($this->blacklist_service === null)
+        {
+            if ($this->internal_get_config('security.blacklist.enabled') == true)
+            {
+                $this->blacklist_service = new Security\NullBlacklistService();
+            }
+            else
+            {
+                $this->blacklist_service = new Security\DatabaseBlacklistService(
+                    $this->get_main_db(),
+                    $this->get_config('security.blacklist'),
+                );
+            }
+        }
+
+        return $this->blacklist_service;
+    }
+
     public function get_csrf_service(): Security\CsrfService
     {
         if ($this->csrf_service === null)
@@ -341,7 +361,15 @@ class WF
 
     public function add_blacklist_entry(string $reason, int $severity = 1): void
     {
-        $this->internal_verify(false, 'No blacklist support in script mode');
+        $ip = (isset($_SERVER['REMOTE_ADDR'])) ? $_SERVER['REMOTE_ADDR'] : 'app';
+
+        $user_id = null;
+        if ($this->is_authenticated())
+        {
+            $user_id = $this->get_authenticated('user_id');
+        }
+
+        $this->get_blacklist_service()->add_entry($ip, $user_id, $reason, $severity);
     }
 
     public static function shutdown_handler(): void

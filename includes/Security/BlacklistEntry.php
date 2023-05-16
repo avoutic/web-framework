@@ -1,6 +1,8 @@
 <?php
 
-namespace WebFramework\Core;
+namespace WebFramework\Core\Security;
+
+use WebFramework\Core\DataCore;
 
 class BlacklistEntry extends DataCore
 {

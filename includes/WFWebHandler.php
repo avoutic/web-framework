@@ -4,7 +4,6 @@ namespace WebFramework\Core;
 
 class WFWebHandler extends WF
 {
-    protected Blacklist $blacklist;
     protected Authenticator $authenticator;
 
     /**
@@ -33,11 +32,6 @@ class WFWebHandler extends WF
                 'Database required',
                 'Web handler is used but no database is configured.'
             );
-        }
-
-        if ($this->internal_get_config('security.blacklist.enabled') == true)
-        {
-            $this->blacklist = new Blacklist();
         }
     }
 
@@ -83,7 +77,7 @@ class WFWebHandler extends WF
             }
 
             if (isset($_SERVER['REMOTE_ADDR'])
-                && $this->blacklist->is_blacklisted($_SERVER['REMOTE_ADDR'], $user_id))
+                && $this->get_blacklist_service()->is_blacklisted($_SERVER['REMOTE_ADDR'], $user_id))
             {
                 $this->exit_error(
                     'Blacklisted',
@@ -534,6 +528,6 @@ class WFWebHandler extends WF
             $user_id = $this->get_authenticated('user_id');
         }
 
-        $this->blacklist->add_entry($_SERVER['REMOTE_ADDR'], $user_id, $reason, $severity);
+        $this->get_blacklist_service()->add_entry($_SERVER['REMOTE_ADDR'], $user_id, $reason, $severity);
     }
 }
