@@ -2,30 +2,41 @@
 
 namespace WebFramework\Core;
 
-class Webhook extends FrameworkCore
+use GuzzleHttp\Client;
+
+class Webhook
 {
+    public function __construct(
+        protected Client $client,
+        protected string $url,
+    ) {
+    }
+
     /**
      * @param array<mixed> $data
      */
-    public static function trigger(string $webhook_name, array $data): void
+    public function trigger(array $data): \Psr\Http\Message\ResponseInterface
     {
-        $url = WF::get_config('webhooks.'.$webhook_name);
+        $json_encoded_data = json_encode($data);
+        if ($json_encoded_data === false)
+        {
+            throw new \RuntimeException('Failed to encode data');
+        }
 
-        $jsonEncodedData = json_encode($data);
-        WF::verify($jsonEncodedData !== false, 'Failed to encode data');
+        try
+        {
+            $response = $this->client->post($this->url, [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                ],
+                'body' => $json_encoded_data,
+            ]);
+        }
+        catch (\GuzzleHttp\Exception\RequestException $e)
+        {
+            throw $e;
+        }
 
-        $opts = [
-            CURLOPT_URL => $url,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_CUSTOMREQUEST => 'POST',
-            CURLOPT_POST => 1,
-            CURLOPT_POSTFIELDS => json_encode($data),
-            CURLOPT_HTTPHEADER => ['Content-Type: application/json', 'Content-Length: '.strlen($jsonEncodedData)],
-        ];
-
-        $curl = curl_init();
-        curl_setopt_array($curl, $opts);
-        $result = curl_exec($curl);
-        curl_close($curl);
+        return $response;
     }
 }
