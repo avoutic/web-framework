@@ -9,7 +9,6 @@ if (!file_exists(__DIR__.'/../vendor/autoload.php'))
 
 require_once __DIR__.'/../vendor/autoload.php';
 
-use WebFramework\Core\DatabaseManager;
 use WebFramework\Core\WF;
 
 $framework = new WF();
@@ -24,7 +23,7 @@ try
     $framework->skip_wf_db_version_check();
     $framework->init();
 
-    $db_manager = new DatabaseManager();
+    $db_manager = $framework->get_database_manager();
 
     $current_version = $db_manager->get_current_version();
 

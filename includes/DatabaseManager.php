@@ -2,18 +2,18 @@
 
 namespace WebFramework\Core;
 
-class DatabaseManager extends FrameworkCore
+class DatabaseManager
 {
-    protected function get_stored_values(): StoredValues
-    {
-        return new StoredValues('db');
+    public function __construct(
+        protected AssertService $assert_service,
+        protected Database $database,
+        protected StoredValues $stored_values,
+    ) {
     }
 
     public function is_initialized(): bool
     {
-        $database = $this->get_db();
-
-        return $database->table_exists('config_values');
+        return $this->database->table_exists('config_values');
     }
 
     public function calculate_hash(): string
@@ -26,8 +26,8 @@ SQL;
 
         $params = [];
 
-        $result = $this->query($query, $params);
-        $this->verify($result !== false, 'Failed to retrieve tables');
+        $result = $this->database->query($query, $params);
+        $this->assert_service->verify($result !== false, 'Failed to retrieve tables');
 
         $db_def = '';
 
@@ -43,8 +43,8 @@ SQL;
 
             $params = [];
 
-            $result = $this->query($query, $params);
-            $this->verify($result !== false, 'Failed to retrieve create table');
+            $result = $this->database->query($query, $params);
+            $this->assert_service->verify($result !== false, 'Failed to retrieve create table');
 
             $statement = $result->fields['Create Table'].PHP_EOL;
 
@@ -70,18 +70,14 @@ SQL;
     {
         // Retrieve hash
         //
-        $db_values = $this->get_stored_values();
-
-        return $db_values->get_value('app_db_hash', '');
+        return $this->stored_values->get_value('app_db_hash', '');
     }
 
     public function update_stored_hash(): void
     {
         $actual_hash = $this->calculate_hash();
 
-        $db_values = $this->get_stored_values();
-
-        $db_values->set_value('app_db_hash', $actual_hash);
+        $this->stored_values->set_value('app_db_hash', $actual_hash);
     }
 
     /**
@@ -89,11 +85,11 @@ SQL;
      */
     public function execute(array $data, bool $ignore_version = false): void
     {
-        $this->verify(is_array($data['actions']), 'No action array specified');
+        $this->assert_service->verify(is_array($data['actions']), 'No action array specified');
 
         if (!$ignore_version)
         {
-            $this->verify(isset($data['target_version']), 'No target version specified');
+            $this->assert_service->verify(isset($data['target_version']), 'No target version specified');
 
             $start_version = $data['target_version'] - 1;
 
@@ -107,90 +103,89 @@ SQL;
 
         foreach ($data['actions'] as $action)
         {
-            $this->verify(isset($action['type']), 'No action type specified');
+            $this->assert_service->verify(isset($action['type']), 'No action type specified');
 
             if ($action['type'] == 'create_table')
             {
-                $this->verify(isset($action['fields']) && is_array($action['fields']), 'No fields array specified');
-                $this->verify(isset($action['constraints']) && is_array($action['constraints']), 'No constraints array specified');
+                $this->assert_service->verify(isset($action['fields']) && is_array($action['fields']), 'No fields array specified');
+                $this->assert_service->verify(isset($action['constraints']) && is_array($action['constraints']), 'No constraints array specified');
 
                 $result = $this->create_table($action['table_name'], $action['fields'], $action['constraints']);
                 $queries[] = $result;
             }
             elseif ($action['type'] == 'create_trigger')
             {
-                $this->verify(isset($action['trigger']) && is_array($action['trigger']), 'No trigger array specified');
+                $this->assert_service->verify(isset($action['trigger']) && is_array($action['trigger']), 'No trigger array specified');
 
                 $result = $this->create_trigger($action['table_name'], $action['trigger']);
                 $queries[] = $result;
             }
             elseif ($action['type'] == 'add_column')
             {
-                $this->verify(is_array($action['field']), 'No field array specified');
+                $this->assert_service->verify(is_array($action['field']), 'No field array specified');
                 $result = $this->add_column($action['table_name'], $action['field']);
                 $queries[] = $result;
             }
             elseif ($action['type'] == 'add_constraint')
             {
-                $this->verify(is_array($action['constraint']), 'No constraint array specified');
+                $this->assert_service->verify(is_array($action['constraint']), 'No constraint array specified');
                 $result = $this->add_constraint($action['table_name'], $action['constraint']);
                 $queries[] = $result;
             }
             elseif ($action['type'] == 'insert_row')
             {
-                $this->verify(isset($action['values']) && is_array($action['values']), 'No values array specified');
+                $this->assert_service->verify(isset($action['values']) && is_array($action['values']), 'No values array specified');
 
                 $result = $this->insert_row($action['table_name'], $action['values']);
                 $queries[] = $result;
             }
             elseif ($action['type'] == 'modify_column_type')
             {
-                $this->verify(is_array($action['field']), 'No field array specified');
+                $this->assert_service->verify(is_array($action['field']), 'No field array specified');
                 $result = $this->modify_column_type($action['table_name'], $action['field']);
                 $queries[] = $result;
             }
             elseif ($action['type'] == 'rename_column')
             {
-                $this->verify(isset($action['name']), 'No name specified');
-                $this->verify(isset($action['new_name']), 'No new_name specified');
+                $this->assert_service->verify(isset($action['name']), 'No name specified');
+                $this->assert_service->verify(isset($action['new_name']), 'No new_name specified');
                 $result = $this->rename_column($action['table_name'], $action['name'], $action['new_name']);
                 $queries[] = $result;
             }
             elseif ($action['type'] == 'rename_table')
             {
-                $this->verify(isset($action['new_name']), 'No new_name specified');
+                $this->assert_service->verify(isset($action['new_name']), 'No new_name specified');
                 $result = $this->rename_table($action['table_name'], $action['new_name']);
                 $queries[] = $result;
             }
             elseif ($action['type'] == 'raw_query')
             {
-                $this->verify(isset($action['query']), 'No query specified');
-                $this->verify(isset($action['params']) && is_array($action['params']), 'No params array specified');
+                $this->assert_service->verify(isset($action['query']), 'No query specified');
+                $this->assert_service->verify(isset($action['params']) && is_array($action['params']), 'No params array specified');
 
                 $result = $this->raw_query($action['query'], $action['params']);
                 $queries[] = $result;
             }
             else
             {
-                $this->verify(false, "Unknown action type '{$action['type']}'");
+                throw new \RuntimeException("Unknown action type '{$action['type']}'");
             }
         }
 
         echo ' - Executing queries'.PHP_EOL;
 
-        $this->start_transaction();
+        $this->database->start_transaction();
 
         foreach ($queries as $info)
         {
             echo '   - Executing:'.PHP_EOL.$info['query'].PHP_EOL;
 
-            $result = $this->query($info['query'], $info['params']);
+            $result = $this->database->query($info['query'], $info['params']);
 
             if ($result === false)
             {
                 echo '   Failed: ';
-                $db = $this->get_db();
-                echo $db->get_last_error().PHP_EOL;
+                echo $this->database->get_last_error().PHP_EOL;
 
                 exit();
             }
@@ -205,28 +200,24 @@ SQL;
 
         $this->set_version($data['target_version']);
 
-        $this->commit_transaction();
+        $this->database->commit_transaction();
     }
 
     public function get_current_version(): int
     {
-        $db_values = $this->get_stored_values();
-
-        return (int) $db_values->get_value('app_db_version', '0');
+        return (int) $this->stored_values->get_value('app_db_version', '0');
     }
 
     private function check_version(int $app_db_version): void
     {
         $current_version = $this->get_current_version();
 
-        $this->verify($current_version == $app_db_version, "DB version '{$current_version}' does not match requested version '{$app_db_version}'");
+        $this->assert_service->verify($current_version == $app_db_version, "DB version '{$current_version}' does not match requested version '{$app_db_version}'");
     }
 
     private function set_version(int $to): void
     {
-        $db_values = $this->get_stored_values();
-
-        $db_values->set_value('app_db_version', (string) $to);
+        $this->stored_values->set_value('app_db_version', (string) $to);
 
         $this->update_stored_hash();
     }
@@ -238,8 +229,8 @@ SQL;
      */
     private function get_field_statements(string $table_name, array $info, array &$field_lines, array &$constraint_lines): void
     {
-        $this->verify(isset($info['type']), 'No field type specified');
-        $this->verify(isset($info['name']), 'No field name specified');
+        $this->assert_service->verify(isset($info['type']), 'No field type specified');
+        $this->assert_service->verify(isset($info['name']), 'No field name specified');
 
         $db_type = strtoupper($info['type']);
         $null = (isset($info['null']) && $info['null']);
@@ -248,14 +239,14 @@ SQL;
         //
         if ($info['type'] == 'foreign_key')
         {
-            $this->verify(isset($info['foreign_table']), 'No target for foreign table set');
-            $this->verify(isset($info['foreign_field']), 'No target for foreign field set');
+            $this->assert_service->verify(isset($info['foreign_table']), 'No target for foreign table set');
+            $this->assert_service->verify(isset($info['foreign_field']), 'No target for foreign field set');
 
             $db_type = 'INT(11)';
         }
         elseif ($info['type'] == 'varchar')
         {
-            $this->verify(isset($info['size']), 'No varchar size set');
+            $this->assert_service->verify(isset($info['size']), 'No varchar size set');
 
             $db_type = "VARCHAR({$info['size']})";
         }
@@ -298,12 +289,12 @@ SQL;
      */
     private function get_constraint_statements(string $table_name, array $info, array &$constraint_lines): void
     {
-        $this->verify(isset($info['type']), 'No constraint type specified');
+        $this->assert_service->verify(isset($info['type']), 'No constraint type specified');
 
         if ($info['type'] == 'unique')
         {
-            $this->verify(isset($info['values']), 'No values for unique specified');
-            $this->verify(is_array($info['values']), 'Values is not an array');
+            $this->assert_service->verify(isset($info['values']), 'No values for unique specified');
+            $this->assert_service->verify(is_array($info['values']), 'Values is not an array');
 
             $values_fmt = implode('_', $info['values']);
             $fields_fmt = implode('`, `', $info['values']);
@@ -312,7 +303,7 @@ SQL;
         }
         else
         {
-            $this->verify(false, "Unknown constraint type '{$info['type']}'");
+            throw new \RuntimeException("Unknown constraint type '{$info['type']}'");
         }
     }
 
@@ -366,10 +357,10 @@ SQL;
      */
     private function create_trigger(string $table_name, array $info): array
     {
-        $this->verify(isset($info['name']), 'No trigger name specified');
-        $this->verify(isset($info['time']), 'No trigger time specified');
-        $this->verify(isset($info['event']), 'No trigger event specified');
-        $this->verify(isset($info['action']), 'No trigger action specified');
+        $this->assert_service->verify(isset($info['name']), 'No trigger name specified');
+        $this->assert_service->verify(isset($info['time']), 'No trigger time specified');
+        $this->assert_service->verify(isset($info['event']), 'No trigger event specified');
+        $this->assert_service->verify(isset($info['action']), 'No trigger action specified');
 
         $query = <<<SQL
 CREATE TRIGGER `{$info['name']}` {$info['time']} {$info['event']} ON `{$table_name}`

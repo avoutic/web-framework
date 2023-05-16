@@ -42,6 +42,7 @@ class WF
     protected ?AssertService $assert_service = null;
     protected ?Security\BlacklistService $blacklist_service = null;
     protected ?Security\CsrfService $csrf_service = null;
+    protected ?DatabaseManager $database_manager = null;
     protected ?DebugService $debug_service = null;
     protected ?MailService $mail_service = null;
     protected ?ReportFunction $report_function = null;
@@ -224,6 +225,20 @@ class WF
         }
 
         return $this->csrf_service;
+    }
+
+    public function get_database_manager(): DatabaseManager
+    {
+        if ($this->database_manager === null)
+        {
+            $this->database_manager = new DatabaseManager(
+                $this->get_assert_service(),
+                $this->get_main_db(),
+                new StoredValues('db'),
+            );
+        }
+
+        return $this->database_manager;
     }
 
     public function get_debug_service(): DebugService
