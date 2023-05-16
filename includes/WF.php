@@ -41,6 +41,7 @@ class WF
     //
     protected ?AssertService $assert_service = null;
     protected ?Security\BlacklistService $blacklist_service = null;
+    protected ?BrowserSessionService $browser_session_service = null;
     protected ?Security\CsrfService $csrf_service = null;
     protected ?DatabaseManager $database_manager = null;
     protected ?DebugService $debug_service = null;
@@ -215,6 +216,22 @@ class WF
         }
 
         return $this->blacklist_service;
+    }
+
+    public function get_browser_session_service(): BrowserSessionService
+    {
+        if ($this->browser_session_service === null)
+        {
+            $browser_session_service = new BrowserSessionService();
+            $browser_session_service->start(
+                $this->get_config('host_name'),
+                $this->get_config('http_mode'),
+            );
+
+            $this->browser_session_service = $browser_session_service;
+        }
+
+        return $this->browser_session_service;
     }
 
     public function get_csrf_service(): Security\CsrfService

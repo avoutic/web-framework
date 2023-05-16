@@ -52,16 +52,6 @@ class WFWebHandler extends WF
 
         // Run WebHandler
         //
-        session_name(preg_replace('/\./', '_', $this->internal_get_config('host_name')));
-        session_set_cookie_params(
-            60 * 60 * 24,
-            '/',
-            $this->internal_get_config('host_name'),
-            $this->internal_get_config('http_mode') === 'https',
-            true
-        );
-        session_start();
-
         $this->create_authenticator();
         $this->authenticator->cleanup();
         $this->auth_array = $this->authenticator->get_logged_in();
