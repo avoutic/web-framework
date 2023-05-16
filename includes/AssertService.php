@@ -14,7 +14,7 @@ class AssertService
     ) {
     }
 
-    public function verify(bool|int $bool, string $message): void
+    public function verify(bool|int $bool, string $message, string $exception_class = VerifyException::class): void
     {
         if ($bool)
         {
@@ -30,7 +30,12 @@ class AssertService
 
         $this->in_verify++;
 
-        throw new VerifyException($message);
+        if (!is_subclass_of($exception_class, \Throwable::class))
+        {
+            throw new \RuntimeException($message);
+        }
+
+        throw new $exception_class($message);
     }
 
     /**

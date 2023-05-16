@@ -5,16 +5,17 @@ Major internal changes to move to dependency injection
 As a result:
 
 * CacheInterface is now called Cache
-* If you instantiated RedisCache yourself, the constructor has changed.
-* If you instantiated Database yourself, the constructor has changed.
-* WF->throw_exception_on_error() is removed. Exception always thrown from AssertService
-* If you used WFSecurity directly, it has been split into CsrfService, ConfigService and ProtectService
+* Database constructor has changed
+* Image, constructor has changes and does not automatically analyze when constructed.
+* RedisCache constructor has changed.
 * SenderCore has been deprecated. Use mail_service instead.
 * Config option: sender_core.handler_class has been removed.
 * StripeFactory constructor has changed
 * StoredValues constructor has changed
 * UserStoredValues constructor has changed
 * Webhook interface has changed
+* WF->throw_exception_on_error() is removed. Exception always thrown from AssertService
+* WFSecurity has been split into CsrfService, ConfigService and ProtectService
 
 # v5 release
 
