@@ -2,7 +2,7 @@
 
 namespace WebFramework\Core;
 
-class UploadHandler extends FrameworkCore
+class UploadHandler
 {
     protected string $var_name;
     protected string $tmp_filename = '';
@@ -11,15 +11,13 @@ class UploadHandler extends FrameworkCore
 
     public function __construct(string $var_name = 'file')
     {
-        parent::__construct();
-
         $this->var_name = $var_name;
     }
 
     /**
      * @param array<string>|true $whitelist_mime_types
      */
-    public function check_upload(int $max_size, bool|array $whitelist_mime_types = true): string|true
+    public function check_upload(int $max_size, true|array $whitelist_mime_types = true): string|true
     {
         $var_name = $this->var_name;
 
@@ -54,8 +52,6 @@ class UploadHandler extends FrameworkCore
 
         if ($whitelist_mime_types !== true)
         {
-            $this->verify(is_array($whitelist_mime_types), 'whitelist_mime_types not an array');
-
             if (!in_array($this->mime_type, $whitelist_mime_types))
             {
                 return 'mime_type_not_allowed';
