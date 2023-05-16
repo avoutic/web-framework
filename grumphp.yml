@@ -2,7 +2,7 @@ grumphp:
     fixer:
         fix_by_default: true
     tasks:
-        composer:
+        codeception:
         git_blacklist:
             keywords:
                 - "var_dump"

@@ -43,7 +43,7 @@ final class AssertServiceTest extends \Codeception\Test\Unit
                 $this->makeEmpty(MailReportFunction::class),
             ],
             [
-                'report_error' => Expected::once(),
+                'report_error' => Expected::never(),
             ]
         );
 
@@ -53,7 +53,7 @@ final class AssertServiceTest extends \Codeception\Test\Unit
             ->callableThrows(VerifyException::class, 'TestMessage');
     }
 
-    public function testVerifyFalseInfinity()
+    public function testVerifyFalseDifferentException()
     {
         $instance = $this->construct(
             AssertService::class,
@@ -62,16 +62,14 @@ final class AssertServiceTest extends \Codeception\Test\Unit
                 $this->makeEmpty(MailReportFunction::class),
             ],
             [
-                'report_error' => function ($message, $stack, $request) use (&$instance) {
-                    $instance->verify(false, $message);
-                },
+                'report_error' => Expected::never(),
             ]
         );
 
         verify(function () use ($instance) {
-            $instance->verify(false, 'TestMessage');
+            $instance->verify(false, 'TestMessage', \InvalidArgumentException::class);
         })
-            ->callableThrows(\RuntimeException::class, '2 deep into verifications');
+            ->callableThrows(\InvalidArgumentException::class, 'TestMessage');
     }
 
     public function testReportError()
