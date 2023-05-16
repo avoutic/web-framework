@@ -9,7 +9,8 @@ As a result:
 * If you instantiated Database yourself, the constructor has changed.
 * WF->throw_exception_on_error() is removed. Exception always thrown from AssertService
 * If you used WFSecurity directly, it has been split into CsrfService, ConfigService and ProtectService
-* StripeFactory interface has changed
+* StripeFactory constructor has changed
+* StoredValues constructor has changed
 * Webhook interface has changed
 
 # v5 release

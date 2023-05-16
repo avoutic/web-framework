@@ -16,13 +16,10 @@ CREATE TABLE IF NOT EXISTS config_values (
 //
 class StoredValues
 {
-    private Database $database;
-    private string $module;
-
-    public function __construct(string $module)
-    {
-        $this->database = WF::get_main_db();
-        $this->module = $module;
+    public function __construct(
+        private Database $database,
+        private string $module,
+    ) {
     }
 
     /**
@@ -35,7 +32,10 @@ class StoredValues
             [$this->module]
         );
 
-        WF::verify($result !== false, "Failed to retrieve stored values for {$this->module}");
+        if ($result === false)
+        {
+            throw new \RuntimeException("Failed to retrieve stored values for {$this->module}");
+        }
 
         $info = [];
 
@@ -54,7 +54,10 @@ class StoredValues
             [$this->module, $name]
         );
 
-        WF::verify($result !== false, "Failed to retrieve stored value {$this->module}:{$name}");
+        if ($result === false)
+        {
+            throw new \RuntimeException("Failed to retrieve stored value for {$this->module}:{$name}");
+        }
 
         if ($result->RecordCount() == 0)
         {
@@ -76,7 +79,10 @@ class StoredValues
             [$this->module, $name, $value, $value]
         );
 
-        WF::verify($result !== false, "Failed to set stored value {$this->module}:{$name}");
+        if ($result === false)
+        {
+            throw new \RuntimeException("Failed to set stored value {$this->module}:{$name}");
+        }
     }
 
     public function delete_value(string $name): void
@@ -86,6 +92,9 @@ class StoredValues
             [$this->module, $name]
         );
 
-        WF::verify($result !== false, "Failed to delete stored value {$this->module}:{$name}");
+        if ($result === false)
+        {
+            throw new \RuntimeException("Failed to delete stored value {$this->module}:{$name}");
+        }
     }
 }

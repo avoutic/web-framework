@@ -234,7 +234,7 @@ class WF
             $this->database_manager = new DatabaseManager(
                 $this->get_assert_service(),
                 $this->get_main_db(),
-                new StoredValues('db'),
+                new StoredValues($this->get_main_db(), 'db'),
             );
         }
 
@@ -882,7 +882,7 @@ class WF
             );
         }
 
-        $stored_values = new StoredValues('db');
+        $stored_values = new StoredValues($this->get_main_db(), 'db');
         $current_wf_db_version = $stored_values->get_value('wf_db_version', '0');
         $current_app_db_version = $stored_values->get_value('app_db_version', '1');
 
@@ -999,7 +999,7 @@ class WF
             return true;
         }
 
-        $stored_values = new StoredValues('sanity_check');
+        $stored_values = new StoredValues($this->get_main_db(), 'sanity_check');
         $build_info = $this->get_build_info();
         $commit = $build_info['commit'];
 
