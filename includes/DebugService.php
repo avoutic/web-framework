@@ -134,7 +134,7 @@ TXT;
 
         foreach ($trace as $entry)
         {
-            if ($skipping
+            if ($skipping && isset($entry['class'])
                 && in_array($entry['class'], [
                     'FrameworkAssertService',
                     'DebugService',
@@ -170,7 +170,9 @@ TXT;
 
         foreach ($stack as $entry)
         {
-            $stack_condensed .= $entry['file'].'('.$entry['line'].'): ';
+            $file = $entry['file'] ?? 'unknown';
+            $line = $entry['line'] ?? '-';
+            $stack_condensed .= $file.'('.$line.'): ';
 
             if (isset($entry['class']))
             {
