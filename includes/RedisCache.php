@@ -4,7 +4,7 @@ namespace WebFramework\Core;
 
 use Cache\Adapter\Redis\RedisCachePool;
 
-class RedisCache implements CacheService
+class RedisCache implements Cache
 {
     private RedisCachePool $pool;
 

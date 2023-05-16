@@ -7,7 +7,7 @@ use WebFramework\Core\Security\ProtectService;
 
 class FrameworkCore
 {
-    protected CacheService $cache;
+    protected Cache $cache;
     protected WF $framework;
     private ProtectService $protect_service;
     private ConfigService $secure_config_service;

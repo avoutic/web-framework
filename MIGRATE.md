@@ -4,7 +4,7 @@ Major internal changes to move to dependency injection
 
 As a result:
 
-* CacheInterface is now called CacheService
+* CacheInterface is now called Cache
 * If you instantiated RedisCache yourself, the constructor has changed.
 * If you instantiated Database yourself, the constructor has changed.
 * WF->throw_exception_on_error() is removed. Exception always thrown from AssertService

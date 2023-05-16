@@ -10,8 +10,8 @@ class WF
     private string $app_dir = '';
 
     private static WF $framework;
-    private static Database $main_db;         // Only for DataCore and StoredValues abstraction
-    private static CacheService $static_cache;    // Only for DataCore and StoredValues abstraction
+    private static Database $main_db;       // Only for DataCore and StoredValues abstraction
+    private static Cache $static_cache;     // Only for DataCore and StoredValues abstraction
 
     /**
      * @var array<mixed>
@@ -35,7 +35,7 @@ class WF
      * @var array<Database>
      */
     private array $aux_databases = [];
-    private CacheService $cache;
+    private Cache $cache;
 
     // Services
     //
@@ -505,14 +505,14 @@ class WF
         return self::$main_db;
     }
 
-    public function get_cache(): CacheService
+    public function get_cache(): Cache
     {
         return $this->cache;
     }
 
     // Only relevant for DataCore and StoredValues to retrieve main database in static functions
     //
-    public static function get_static_cache(): CacheService
+    public static function get_static_cache(): Cache
     {
         return self::$static_cache;
     }
