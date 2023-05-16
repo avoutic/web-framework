@@ -312,11 +312,8 @@ class WF
             return;
         }
 
-        $stack = debug_backtrace(0);
-        $request = ServerRequestFactory::createFromGlobals();
-
         $assert_service = $this->get_assert_service();
-        $assert_service->verify($bool, $message, $stack, $request);
+        $assert_service->verify($bool, $message);
     }
 
     // Send a triggered error message but continue running

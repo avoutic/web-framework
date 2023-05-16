@@ -14,10 +14,7 @@ class AssertService
     ) {
     }
 
-    /**
-     * @param array<mixed> $stack
-     */
-    public function verify(bool|int $bool, string $message, array $stack = [], ?Request $request = null): void
+    public function verify(bool|int $bool, string $message): void
     {
         if ($bool)
         {
@@ -33,8 +30,6 @@ class AssertService
 
         $this->in_verify++;
 
-        $this->report_error($message, $stack, $request, 'verify');
-
         throw new VerifyException($message);
     }
 
@@ -43,8 +38,8 @@ class AssertService
      */
     public function report_error(string $message, array $stack = [], ?Request $request = null, string $error_type = 'report_error'): void
     {
-        $debug_info = $this->debug_service->get_error_report($stack, $request, 'report_error', $message);
+        $debug_info = $this->debug_service->get_error_report($stack, $request, $error_type, $message);
 
-        $this->report_function->report($message, 'Error reported', $debug_info);
+        $this->report_function->report($message, $error_type, $debug_info);
     }
 }
