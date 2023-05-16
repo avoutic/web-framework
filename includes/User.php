@@ -68,6 +68,7 @@ class User extends DataCore
      * @var array<string, StoredUserValues>
      */
     protected array $stored_values;
+    protected ?UserMailer $user_mailer = null;
 
     /**
      * @return array<string>
@@ -102,6 +103,16 @@ class User extends DataCore
 
             $this->rights[$right->short_name] = $right;
         }
+    }
+
+    protected function user_mailer(): UserMailer
+    {
+        if ($this->user_mailer === null)
+        {
+            $this->user_mailer = $this->framework->get_user_mailer();
+        }
+
+        return $this->user_mailer;
     }
 
     public static function new_hash_from_password(string $password): string
@@ -298,8 +309,7 @@ SQL;
                       $this->get_config('actions.change_email.verify_page').
                       '?code='.$code;
 
-        $result = SenderCore::send(
-            'change_email_verification_link',
+        $result = $this->user_mailer()->change_email_verification_link(
             $email,
             [
                 'user' => $this,
@@ -394,8 +404,7 @@ SQL;
                       $this->get_config('actions.login.verify_page').
                       '?code='.$code;
 
-        return SenderCore::send(
-            'email_verification_link',
+        return $this->user_mailer()->email_verification_link(
             $this->email,
             [
                 'user' => $this,
@@ -432,8 +441,7 @@ SQL;
                      $this->get_config('actions.forgot_password.reset_password_page').
                      '?code='.$code;
 
-        return SenderCore::send(
-            'password_reset',
+        return $this->user_mailer()->password_reset(
             $this->email,
             [
                 'user' => $this,
@@ -450,8 +458,7 @@ SQL;
 
         $this->update_password($new_pw);
 
-        return SenderCore::send(
-            'new_password',
+        return $this->user_mailer()->new_password(
             $this->email,
             [
                 'user' => $this,

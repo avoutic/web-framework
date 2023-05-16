@@ -5,7 +5,6 @@ namespace WebFramework\Actions;
 use WebFramework\Core\BaseFactory;
 use WebFramework\Core\PageAction;
 use WebFramework\Core\Recaptcha;
-use WebFramework\Core\SenderCore;
 use WebFramework\Core\User;
 
 class Register extends PageAction
@@ -261,15 +260,6 @@ class Register extends PageAction
      */
     protected function post_create_actions(User $user): void
     {
-        // Send mail to administrator
-        //
-        SenderCore::send_raw(
-            $this->get_config('sender_core.default_sender'),
-            $this->get_config('site_name').": User '".$user->username."' registered.",
-            "The user with username '".$user->username."' registered.\n".
-            "E-mail is: '".$user->email."'."
-        );
-
         $code = $user->generate_verify_code('send_verify', $this->get_after_verify_data());
         $send_verify_page = $this->get_config('actions.login.send_verify_page');
         $send_verify_url = $send_verify_page.'?code='.$code;

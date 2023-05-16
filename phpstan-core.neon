@@ -3,12 +3,6 @@ parameters:
         - WebFramework\Core\DataCore
     ignoreErrors:
         - '#^Call to method WebFramework\\Core\\FrameworkCore\:\:verify\(\) with false and .* will always evaluate to false\.$#'
-        -
-            message: '#^Call to an undefined method object\:\:send_raw_email\(\)\.$#'
-            path: includes/SenderCore.php
-        -
-            message: '#^Call to an undefined method object\:\:dispatch_template_email\(\)\.$#'
-            path: includes/SenderCore.php
 
 services:
     -

@@ -48,6 +48,7 @@ class WF
     protected ?ReportFunction $report_function = null;
     protected ?Security\ConfigService $secure_config_service = null;
     protected ?Security\ProtectService $protect_service = null;
+    protected ?UserMailer $user_mailer = null;
 
     /**
      * @var array<array{mtype: string, message: string, extra_message: string}>
@@ -165,7 +166,6 @@ class WF
             ],
         ],
         'sender_core' => [
-            'handler_class' => '',
             'default_sender' => '',
             'assert_recipient' => '',
         ],
@@ -292,11 +292,32 @@ class WF
         return $this->protect_service;
     }
 
+    public function get_user_mailer(): UserMailer
+    {
+        if ($this->user_mailer === null)
+        {
+            $this->user_mailer = new UserMailer(
+                $this->get_mail_service(),
+                $this->get_config('sender_core.default_sender'),
+            );
+        }
+
+        return $this->user_mailer;
+    }
+
     public function get_mail_service(): MailService
     {
         if ($this->mail_service === null)
         {
-            $this->mail_service = new NullMailService();
+            $api_key = $this->get_secure_config_service()->get_auth_config('postmark.php');
+            $postmark_client = new \Postmark\PostmarkClient($api_key);
+
+            $this->mail_service = new PostmarkMailService(
+                $this->get_assert_service(),
+                $postmark_client,
+                $this->get_config('sender_core.default_sender'),
+                $this->get_config('server_name'),
+            );
         }
 
         return $this->mail_service;
@@ -675,14 +696,6 @@ class WF
         // Load global and site specific defines
         //
         require_once __DIR__.'/defines.inc.php';
-
-        if (!class_exists($this->internal_get_config('sender_core.handler_class')))
-        {
-            $this->exit_error(
-                'Handler class does not exist',
-                'The class configured in "sender_core.handler_class" cannot be found'
-            );
-        }
     }
 
     /**

@@ -49,7 +49,8 @@ class MailReportFunction implements ReportFunction
             $title = "[{$cached['count']} times]: {$title}";
         }
 
-        $this->mail_service->send_raw(
+        $this->mail_service->send_raw_mail(
+            null,
             $this->assert_recipient,
             $title,
             $debug_info['message']
