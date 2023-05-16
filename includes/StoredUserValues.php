@@ -13,15 +13,11 @@ CREATE TABLE IF NOT EXISTS stored_user_values (
 */
 class StoredUserValues
 {
-    private Database $database;
-    private int $user_id;
-    private string $module;
-
-    public function __construct(int $user_id, string $module)
-    {
-        $this->database = WF::get_main_db();
-        $this->user_id = $user_id;
-        $this->module = $module;
+    public function __construct(
+        private Database $database,
+        private int $user_id,
+        private string $module,
+    ) {
     }
 
     /**
@@ -34,7 +30,10 @@ class StoredUserValues
             [$this->user_id, $this->module]
         );
 
-        WF::verify($result !== false, "Failed to retrieve stored user values for {$this->user_id}:{$this->module}");
+        if ($result === false)
+        {
+            throw new \RuntimeException("Failed to retrieve stored user values for {$this->user_id}:{$this->module}");
+        }
 
         $info = [];
 
@@ -53,7 +52,10 @@ class StoredUserValues
             [$this->user_id, $this->module, $name]
         );
 
-        WF::verify($result !== false, "Failed to retrieve stored user value {$this->user_id}:{$this->module}:{$name}");
+        if ($result === false)
+        {
+            throw new \RuntimeException("Failed to retrieve stored user value for {$this->user_id}:{$this->module}:{$name}");
+        }
 
         if ($result->RecordCount() == 0)
         {
@@ -70,7 +72,10 @@ class StoredUserValues
             [$this->user_id, $this->module, $name]
         );
 
-        WF::verify($result !== false, "Failed to retrieve stored user value {$this->user_id}:{$this->module}:{$name}");
+        if ($result === false)
+        {
+            throw new \RuntimeException("Failed to retrieve stored user value {$this->user_id}:{$this->module}:{$name}");
+        }
 
         if ($result->RecordCount() == 0)
         {
@@ -92,7 +97,10 @@ class StoredUserValues
             [$this->user_id, $this->module, $name, $value, $value]
         );
 
-        WF::verify($result !== false, "Failed to set stored user value {$this->user_id}:{$this->module}:{$name}");
+        if ($result === false)
+        {
+            throw new \RuntimeException("Failed to set stored user value {$this->user_id}:{$this->module}:{$name}");
+        }
     }
 
     public function delete_value(string $name): void
@@ -102,6 +110,9 @@ class StoredUserValues
             [$this->user_id, $this->module, $name]
         );
 
-        WF::verify($result !== false, "Failed to delete stored user value {$this->user_id}:{$this->module}:{$name}");
+        if ($result === false)
+        {
+            throw new \RuntimeException("Failed to delete stored user value {$this->user_id}:{$this->module}:{$name}");
+        }
     }
 }

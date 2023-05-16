@@ -464,7 +464,7 @@ SQL;
     {
         if (!isset($this->stored_values[$module]))
         {
-            $this->stored_values[$module] = new StoredUserValues($this->id, $module);
+            $this->stored_values[$module] = new StoredUserValues($this->database, $this->id, $module);
         }
 
         return $this->stored_values[$module];

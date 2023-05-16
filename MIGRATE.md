@@ -11,6 +11,7 @@ As a result:
 * If you used WFSecurity directly, it has been split into CsrfService, ConfigService and ProtectService
 * StripeFactory constructor has changed
 * StoredValues constructor has changed
+* UserStoredValues constructor has changed
 * Webhook interface has changed
 
 # v5 release
