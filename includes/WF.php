@@ -767,7 +767,7 @@ class WF
             );
         }
 
-        $this->main_database = new Database($mysql, $this->get_assert_service());
+        $this->main_database = new Database($mysql);
         self::$main_db = $this->main_database;
 
         // Set the Database in the DebugService after init
@@ -795,7 +795,7 @@ class WF
                 );
             }
 
-            $this->aux_databases[$tag] = new Database($mysql, $this->get_assert_service());
+            $this->aux_databases[$tag] = new Database($mysql);
         }
     }
 

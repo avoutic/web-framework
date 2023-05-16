@@ -8,7 +8,6 @@ class Database
 
     public function __construct(
         private \mysqli $database,
-        protected AssertService $assert_service,
     ) {
     }
 
@@ -81,7 +80,10 @@ class Database
         if ($this->transaction_depth == 0)
         {
             $result = $this->query('START TRANSACTION', []);
-            $this->assert_service->verify($result !== false, 'Failed to start transaction');
+            if ($result === false)
+            {
+                throw new \RuntimeException('Failed to start transaction');
+            }
         }
 
         $this->transaction_depth++;
@@ -94,7 +96,10 @@ class Database
         if ($this->transaction_depth == 1)
         {
             $result = $this->query('COMMIT', []);
-            $this->assert_service->verify($result !== false, 'Failed to commit transaction');
+            if ($result === false)
+            {
+                throw new \RuntimeException('Failed to commit transaction');
+            }
         }
 
         $this->transaction_depth--;
