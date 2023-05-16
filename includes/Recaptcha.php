@@ -2,30 +2,20 @@
 
 namespace WebFramework\Core;
 
-class Recaptcha extends FrameworkCore
-{
-    protected string $secret_key;
+use GuzzleHttp\Client;
 
+class Recaptcha
+{
     /**
      * @var array<string>
      */
     protected array $error_codes = [];
 
-    /**
-     * @var array<string>
-     */
-    protected array $module_config;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->module_config = $this->get_config('security.recaptcha');
-
-        $this->verify(strlen($this->module_config['site_key']), 'Missing reCAPTCHA Site Key');
-        $this->verify(strlen($this->module_config['secret_key']), 'Missing reCAPTCHA Secret Key');
-
-        $this->secret_key = $this->module_config['secret_key'];
+    public function __construct(
+        protected AssertService $assert_service,
+        protected Client $client,
+        protected string $secret_key,
+    ) {
     }
 
     public function set_secret_key(string $secret_key): void
@@ -56,27 +46,21 @@ class Recaptcha extends FrameworkCore
             'response' => $recaptcha_response,
         ];
 
-        $verify = curl_init();
-        curl_setopt($verify, CURLOPT_URL, 'https://www.google.com/recaptcha/api/siteverify');
-        curl_setopt($verify, CURLOPT_POST, true);
-        curl_setopt($verify, CURLOPT_POSTFIELDS, http_build_query($recaptcha_data));
-        curl_setopt($verify, CURLOPT_RETURNTRANSFER, true);
-        $response = curl_exec($verify);
-        curl_close($verify);
+        $response = $this->client->post('https://www.google.com/recaptcha/api/siteverify', [
+            'form_params' => $recaptcha_data,
+        ]);
 
-        if (is_string($response))
+        $body = $response->getBody();
+        $body = json_decode($body, true);
+
+        if (isset($body['error_codes']))
         {
-            $response = json_decode($response, true);
+            $this->error_codes = $body['error_codes'];
+
+            $this->assert_service->verify(!in_array('invalid-input-secret', $body['error-codes']), 'Invalid reCAPTCHA input secret used');
+            $this->assert_service->verify(!in_array('invalid-keys-secret', $body['error-codes']), 'Invalid reCAPTCHA key used');
         }
 
-        if (isset($response['error_codes']))
-        {
-            $this->error_codes = $response['error_codes'];
-
-            $this->verify(!in_array('invalid-input-secret', $response['error-codes']), 'Invalid reCAPTCHA input secret used');
-            $this->verify(!in_array('invalid-keys-secret', $response['error-codes']), 'Invalid reCAPTCHA key used');
-        }
-
-        return $response['success'];
+        return $body['success'];
     }
 }

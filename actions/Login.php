@@ -173,7 +173,11 @@ class Login extends PageAction
                 return;
             }
 
-            $recaptcha = new Recaptcha();
+            $recaptcha = new Recaptcha(
+                $this->framework->get_assert_service(),
+                new \GuzzleHttp\Client(),
+                $this->get_config('security.recaptcha.secret_key'),
+            );
             $result = $recaptcha->verify_response($recaptcha_response);
 
             if ($result != true)

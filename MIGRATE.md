@@ -7,6 +7,7 @@ As a result:
 * CacheInterface is now called Cache
 * Database constructor has changed
 * Image, constructor has changes and does not automatically analyze when constructed.
+* Recaptcha constructor has changed.
 * RedisCache constructor has changed.
 * SenderCore has been deprecated. Use mail_service instead.
 * Config option: sender_core.handler_class has been removed.
