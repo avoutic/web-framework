@@ -26,11 +26,6 @@ parameters:
 			path: includes/Browserless.php
 
 		-
-			message: "#^Call to an undefined method mysqli\\:\\:execute_query\\(\\)\\.$#"
-			count: 1
-			path: includes/Database.php
-
-		-
 			message: "#^Offset 'target_version' on array\\{target_version\\: int, actions\\: array\\<array\\>\\} in isset\\(\\) always exists and is not nullable\\.$#"
 			count: 1
 			path: includes/DatabaseManager.php
@@ -84,6 +79,11 @@ parameters:
 			message: "#^Parameter \\#6 \\$color of function imagefilledrectangle expects int, int\\|false given\\.$#"
 			count: 1
 			path: includes/Image.php
+
+		-
+			message: "#^Call to an undefined method mysqli\\:\\:execute_query\\(\\)\\.$#"
+			count: 1
+			path: includes/MysqliDatabase.php
 
 		-
 			message: "#^Offset 'calculated_hash' on array\\{calculated_hash\\: string, stored_hash\\: string\\} in isset\\(\\) always exists and is not nullable\\.$#"

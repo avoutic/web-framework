@@ -820,7 +820,7 @@ class WF
             );
         }
 
-        $this->main_database = new Database($mysql);
+        $this->main_database = new MysqliDatabase($mysql);
         self::$main_db = $this->main_database;
 
         // Set the Database in the DebugService after init
@@ -848,7 +848,7 @@ class WF
                 );
             }
 
-            $this->aux_databases[$tag] = new Database($mysql);
+            $this->aux_databases[$tag] = new MysqliDatabase($mysql);
         }
     }
 
