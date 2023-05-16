@@ -2,30 +2,21 @@
 
 namespace WebFramework\Core;
 
-class StripeFactory extends FactoryCore
-{
-    /**
-     * @var array<string>
-     */
-    protected array $config;
+use Stripe\StripeClient;
 
+class StripeFactory
+{
     /**
      * @var array<string>
      */
     private array $event_handlers = [];
 
-    protected \Stripe\StripeClient $stripe;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->config = $this->get_auth_config('stripe');
-        $this->verify(isset($this->config['api_key']), 'Stripe API Key missing');
-        $this->verify(isset($this->config['endpoint_secret']), 'Stripe Endpoint Secret missing');
-
-        \Stripe\Stripe::setApiKey($this->config['api_key']);
-        $this->stripe = new \Stripe\StripeClient($this->config['api_key']);
+    public function __construct(
+        protected AssertService $assert_service,
+        protected StripeClient $stripe,
+        protected string $api_key,
+        protected string $endpoint_secret,
+    ) {
     }
 
     public function verify_request(string $payload, string $sig_header): bool
@@ -35,7 +26,7 @@ class StripeFactory extends FactoryCore
             $event = \Stripe\Webhook::constructEvent(
                 $payload,
                 $sig_header,
-                $this->config['endpoint_secret'],
+                $this->endpoint_secret,
             );
         }
         catch (\UnexpectedValueException $e)
@@ -207,7 +198,7 @@ class StripeFactory extends FactoryCore
     public function get_webhook_events(): array
     {
         $webhooks = $this->stripe->webhookEndpoints->all();
-        $this->verify(count($webhooks) == 1, 'Not exactly 1 webhook in place');
+        $this->assert_service->verify(count($webhooks) == 1, 'Not exactly 1 webhook in place');
 
         return $webhooks->data[0]->enabled_events;
     }
