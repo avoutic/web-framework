@@ -67,7 +67,12 @@ parameters:
 
 		-
 			message: "#^Left side of && is always true\\.$#"
-			count: 3
+			count: 1
+			path: includes/Image.php
+
+		-
+			message: "#^Left side of \\|\\| is always false\\.$#"
+			count: 2
 			path: includes/Image.php
 
 		-

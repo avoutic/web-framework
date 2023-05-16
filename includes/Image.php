@@ -5,24 +5,20 @@ namespace WebFramework\Core;
 /**
  * Image class with support for GIF, JPEG and PNG images.
  */
-class Image extends FrameworkCore
+class Image
 {
-    private string $location;
     private int $width;
     private int $height;
     private int $type;
     public bool $is_image = false;
 
-    public function __construct(string $location)
-    {
-        parent::__construct();
-
-        $this->location = $location;
-
-        $this->analyze();
+    public function __construct(
+        private AssertService $assert_service,
+        private string $location,
+    ) {
     }
 
-    private function analyze(): void
+    public function analyze(): void
     {
         $size = getimagesize($this->location);
 
@@ -54,9 +50,7 @@ class Image extends FrameworkCore
             return imagecreatefrompng($location);
         }
 
-        $this->verify(false, 'Unknown image type');
-
-        exit();
+        throw new \InvalidArgumentException('Unknown image type');
     }
 
     private function image_output(\GdImage $image, string $location): bool
@@ -76,9 +70,7 @@ class Image extends FrameworkCore
             return imagepng($image, $location);
         }
 
-        $this->verify(false, 'Unknown image type');
-
-        exit();
+        throw new \InvalidArgumentException('Unknown image type');
     }
 
     public function get_width(): int
@@ -113,11 +105,11 @@ class Image extends FrameworkCore
     {
         if (file_exists($new_location))
         {
-            $this->verify(is_writable($new_location), 'Not writable');
+            $this->assert_service->verify(is_writable($new_location), 'Not writable');
         }
         else
         {
-            $this->verify(is_writable(dirname($new_location)), 'Not writable');
+            $this->assert_service->verify(is_writable(dirname($new_location)), 'Not writable');
         }
 
         $image = $this->create_from($this->location);
@@ -145,7 +137,7 @@ class Image extends FrameworkCore
      */
     private function resize_image(\GdImage &$image, array $size = [100, 100])
     {
-        $this->verify(count($size) == 2 && $size[0] > 0 && $size[1] > 0, 'Size not correctly structured');
+        $this->assert_service->verify(count($size) == 2 && $size[0] > 0 && $size[1] > 0, 'Size not correctly structured', \InvalidArgumentException::class);
 
         $width = imagesx($image);
         $height = imagesy($image);
@@ -202,8 +194,8 @@ class Image extends FrameworkCore
      */
     public function rotate(string $new_location, int $degrees, int $backgroundColor = 16777215): bool
     {
-        $this->verify(is_writable($new_location), 'Not writable');
-        $this->verify(abs($degrees) <= 360, 'Invalid rotation');
+        $this->assert_service->verify(is_writable($new_location), 'Not writable');
+        $this->assert_service->verify(abs($degrees) <= 360, 'Invalid rotation', \InvalidArgumentException::class);
 
         // Create new GD image
         $image = $this->create_from($this->location);
@@ -235,7 +227,7 @@ class Image extends FrameworkCore
      */
     private function rotate_image(\GdImage &$image, int $degrees, int $backgroundColor = 16777215): bool
     {
-        $this->verify(abs($degrees) <= 360, 'Invalid rotation');
+        $this->assert_service->verify(abs($degrees) <= 360, 'Invalid rotation', \InvalidArgumentException::class);
 
         imageantialias($image, true);
         $rotate = imagerotate($image, $degrees, $backgroundColor);
@@ -254,7 +246,7 @@ class Image extends FrameworkCore
      */
     public function crop(string $new_location, array $size, array $offset = [0, 0]): bool
     {
-        $this::verify(is_writable($new_location), 'Not writable');
+        $this->assert_service->verify(is_writable($new_location), 'Not writable');
 
         // Create new GD image
         $image = $this->create_from($this->location);
@@ -285,8 +277,15 @@ class Image extends FrameworkCore
      */
     public static function crop_image(\GdImage &$image, array $size, array $offset = [0, 0]): bool
     {
-        WF::verify(count($size) == 2 && $size[0] > 0 && $size[1] > 0, 'Size not correctly structured');
-        WF::verify(count($offset) == 2 && $offset[0] >= 0 && $offset[1] >= 0 && $offset[0] < $size[0] && $offset[1] < $size[1], 'Offset not correctly structured');
+        if (count($size) != 2 || $size[0] <= 0 || $size[1] <= 0)
+        {
+            throw new \InvalidArgumentException('Size not correctly structured');
+        }
+
+        if (count($offset) != 2 || $offset[0] < 0 || $offset[1] < 0 || $offset[0] >= $size[0] || $offset[1] >= $size[1])
+        {
+            throw new \InvalidArgumentException('Offset not correctly structured');
+        }
 
         $dest = imagecreatetruecolor($size[0], $size[1]);
         if ($dest === false)
