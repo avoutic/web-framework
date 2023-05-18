@@ -482,12 +482,14 @@ class WF
 
     public static function assert_handler(string $file, int $line, string $message, string $error_type): void
     {
+        @trigger_error('Deprecated. Will be removed', E_USER_DEPRECATED);
         $framework = self::get_framework();
         $framework->internal_assert_handler($message, $error_type);
     }
 
     public function internal_assert_handler(string $message, string $error_type): void
     {
+        @trigger_error('Deprecated. Will be removed', E_USER_DEPRECATED);
         $assert_service = $this->get_assert_service();
         $assert_service->report_error(message: $message, error_type: $error_type);
     }
@@ -565,6 +567,7 @@ class WF
 
     public static function shutdown_handler(): void
     {
+        @trigger_error('Deprecated. Will be removed', E_USER_DEPRECATED);
         $framework = self::get_framework();
         $framework->internal_shutdown_handler();
     }
@@ -579,7 +582,8 @@ class WF
 
         $message = "{$last_error['file']}:{$last_error['line']}:{$last_error['message']}";
 
-        $this->internal_assert_handler($message, (string) $last_error['type']);
+        $assert_service = $this->get_assert_service();
+        $assert_service->report_error(message: $message, error_type: (string) $last_error['type']);
 
         // Don't trigger other handlers after this call
         //
@@ -1145,26 +1149,33 @@ class WF
 
     public function is_authenticated(): bool
     {
+        @trigger_error('Deprecated. Will be removed', E_USER_DEPRECATED);
+
         return $this->get_authentication_service()->is_authenticated();
     }
 
     public function authenticate(User $user): void
     {
+        @trigger_error('Deprecated. Will be removed', E_USER_DEPRECATED);
         $this->get_authentication_service()->authenticate($user);
     }
 
     public function deauthenticate(): void
     {
+        @trigger_error('Deprecated. Will be removed', E_USER_DEPRECATED);
         $this->get_authentication_service()->deauthenticate();
     }
 
     public function invalidate_sessions(int $user_id): void
     {
+        @trigger_error('Deprecated. Will be removed', E_USER_DEPRECATED);
         $this->get_authentication_service()->invalidate_sessions($user_id);
     }
 
     public function get_authenticated_user(): User
     {
+        @trigger_error('Deprecated. Will be removed', E_USER_DEPRECATED);
+
         return $this->get_authentication_service()->get_authenticated_user();
     }
 
@@ -1173,6 +1184,8 @@ class WF
      */
     public function user_has_permissions(array $permissions): bool
     {
+        @trigger_error('Deprecated. Will be removed', E_USER_DEPRECATED);
+
         return $this->get_authentication_service()->user_has_permissions($permissions);
     }
 
@@ -1199,6 +1212,8 @@ class WF
      */
     public function get_build_info(): array
     {
+        @trigger_error('Deprecated. Will be removed', E_USER_DEPRECATED);
+
         return $this->get_debug_service()->get_build_info();
     }
 }
