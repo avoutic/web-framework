@@ -5,6 +5,7 @@ Major internal changes to move to dependency injection
 As a result there are some internal and external changes. Internal breaking changes only affect you if you used internal classes directly. External breaking changes affect the public interface.
 
 External:
+* BaseFactory constructor has changed
 * CacheInterface is now called Cache
 * Database constructor has changed
 * Image, constructor has changes and does not automatically analyze when constructed.

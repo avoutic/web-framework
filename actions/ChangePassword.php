@@ -2,7 +2,6 @@
 
 namespace WebFramework\Actions;
 
-use WebFramework\Core\BaseFactory;
 use WebFramework\Core\PageAction;
 use WebFramework\Core\User;
 
@@ -33,7 +32,7 @@ class ChangePassword extends PageAction
     //
     protected function get_user(string $username): User|false
     {
-        $factory = new BaseFactory();
+        $factory = $this->framework->get_base_factory();
 
         return $factory->get_user_by_username($username);
     }

@@ -2,7 +2,6 @@
 
 namespace WebFramework\Actions;
 
-use WebFramework\Core\BaseFactory;
 use WebFramework\Core\PageAction;
 use WebFramework\Core\User;
 
@@ -54,7 +53,7 @@ class Verify extends PageAction
             exit();
         }
 
-        $base_factory = new BaseFactory();
+        $base_factory = $this->framework->get_base_factory();
 
         // Check user status
         //

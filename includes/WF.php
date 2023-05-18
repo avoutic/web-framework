@@ -121,7 +121,10 @@ class WF
     {
         if ($this->base_factory === null)
         {
-            $this->base_factory = new BaseFactory();
+            $this->base_factory = new BaseFactory(
+                $this->get_main_db(),
+                $this->get_assert_service(),
+            );
         }
 
         return $this->base_factory;

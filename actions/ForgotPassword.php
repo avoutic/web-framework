@@ -2,7 +2,6 @@
 
 namespace WebFramework\Actions;
 
-use WebFramework\Core\BaseFactory;
 use WebFramework\Core\PageAction;
 use WebFramework\Core\WF;
 
@@ -45,7 +44,7 @@ class ForgotPassword extends PageAction
             return;
         }
 
-        $base_factory = new BaseFactory();
+        $base_factory = $this->framework->get_base_factory();
 
         // Retrieve user
         //

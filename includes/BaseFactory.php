@@ -2,8 +2,14 @@
 
 namespace WebFramework\Core;
 
-class BaseFactory extends FactoryCore
+class BaseFactory
 {
+    public function __construct(
+        protected Database $database,
+        protected AssertService $assert_service,
+    ) {
+    }
+
     /**
      * @template T of User
      *
@@ -13,7 +19,7 @@ class BaseFactory extends FactoryCore
      */
     public function get_user(int $user_id, string $type = '\\WebFramework\\Core\\User'): User|false
     {
-        $this->verify(class_exists($type), 'Class does not exist');
+        $this->assert_service->verify(class_exists($type), 'Class does not exist');
 
         return $type::get_object_by_id($user_id);
     }
@@ -27,7 +33,7 @@ class BaseFactory extends FactoryCore
      */
     public function get_users(int $offset = 0, int $results = 10, string $type = '\\WebFramework\\Core\\User'): array
     {
-        $this->verify(class_exists($type), 'Class does not exist');
+        $this->assert_service->verify(class_exists($type), 'Class does not exist');
 
         return $type::get_objects($offset, $results);
     }
@@ -41,7 +47,7 @@ class BaseFactory extends FactoryCore
      */
     public function get_user_by_username(string $username, string $type = '\\WebFramework\\Core\\User'): User|false
     {
-        $this->verify(class_exists($type), 'Class does not exist');
+        $this->assert_service->verify(class_exists($type), 'Class does not exist');
 
         return $type::get_object(['username' => $username]);
     }
@@ -55,7 +61,7 @@ class BaseFactory extends FactoryCore
      */
     public function get_user_by_email(string $email, string $type = '\\WebFramework\\Core\\User'): User|false
     {
-        $this->verify(class_exists($type), 'Class does not exist');
+        $this->assert_service->verify(class_exists($type), 'Class does not exist');
 
         return $type::get_object(['email' => $email]);
     }
@@ -77,18 +83,18 @@ class BaseFactory extends FactoryCore
               email LIKE ?
 SQL;
 
-        $result = $this->query($query, [
+        $result = $this->database->query($query, [
             $string,
             "%{$string}%",
             "%{$string}%",
         ]);
-        $this->verify($result !== false, 'Failed to search users');
+        $this->assert_service->verify($result !== false, 'Failed to search users');
 
         $data = [];
         foreach ($result as $row)
         {
             $user = $this->get_user($row['id'], $type);
-            $this->verify($user !== false, 'Failed to retrieve user');
+            $this->assert_service->verify($user !== false, 'Failed to retrieve user');
 
             $data[] = $user;
         }
@@ -105,7 +111,7 @@ SQL;
      */
     public function create_user(string $username, string $password, string $email, int $terms_accepted, string $type = '\\WebFramework\\Core\\User'): User
     {
-        $this->verify(class_exists($type), 'Class does not exist');
+        $this->assert_service->verify(class_exists($type), 'Class does not exist');
 
         $solid_password = User::new_hash_from_password($password);
 
@@ -116,7 +122,7 @@ SQL;
             'terms_accepted' => $terms_accepted,
             'registered' => time(),
         ]);
-        $this->verify($user !== false, 'Failed to create new user');
+        $this->assert_service->verify($user !== false, 'Failed to create new user');
 
         return $user;
     }
