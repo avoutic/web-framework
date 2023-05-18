@@ -816,12 +816,21 @@ class WF
 
     private function check_file_requirements(): void
     {
-        if (!is_file("{$this->app_dir}/includes/config.php"))
+        foreach ($this->configs as $config_file)
         {
-            $this->exit_error(
-                'Missing base requirement',
-                'One of the required files (includes/config.php) is not found on the server.'
-            );
+            // Skip optional files
+            if ($config_file[0] == '?')
+            {
+                continue;
+            }
+
+            if (!is_file("{$this->app_dir}{$config_file}"))
+            {
+                $this->exit_error(
+                    'Missing base requirement',
+                    "One of the required files ({$config_file}) is not found on the server."
+                );
+            }
         }
     }
 
