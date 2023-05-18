@@ -50,6 +50,7 @@ class WF
     protected ?MailService $mail_service = null;
     protected ?PostmarkClientFactory $postmark_client_factory = null;
     protected ?ReportFunction $report_function = null;
+    protected ?RouteService $route_service = null;
     protected ?Security\ConfigService $secure_config_service = null;
     protected ?Security\ProtectService $protect_service = null;
     protected ?UserMailer $user_mailer = null;
@@ -317,6 +318,18 @@ class WF
         }
 
         return $this->report_function;
+    }
+
+    public function get_route_service(): RouteService
+    {
+        if ($this->route_service === null)
+        {
+            $this->route_service = new RouteService(
+                $this->get_config('base_url'),
+            );
+        }
+
+        return $this->route_service;
     }
 
     public function get_secure_config_service(): Security\ConfigService

@@ -19,6 +19,8 @@ External:
 * Webhook interface has changed
 * WF->get_authenticated() is removed. Use WF->get_authenticated_user() instead
 * WF->auth_array is removed. Use WF->get_authenticated_user() instead
+* WF->register_redirect() is deprecated(). User RouteService->register_redirect() instead
+* WF->register_route() is deprecated(). User RouteService->register_action() instead
 * WF->throw_exception_on_error() is removed. Exception always thrown from AssertService
 
 Internal:

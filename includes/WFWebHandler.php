@@ -2,18 +2,10 @@
 
 namespace WebFramework\Core;
 
+use Slim\Psr7\Factory\ServerRequestFactory;
+
 class WFWebHandler extends WF
 {
-    /**
-     * @var array<array{type: string, regex: string, include_file: string, class: string, args: array<string>}>
-     */
-    protected array $route_array = [];
-
-    /**
-     * @var array<array{type: string, regex: string, redirect:string, redir_type: string, args: array<string>}>
-     */
-    protected array $redirect_array = [];
-
     protected string $request_uri = '/';
 
     public function init(): void
@@ -35,7 +27,8 @@ class WFWebHandler extends WF
 
     public function handle_request(): void
     {
-        if (count($this->route_array) == 0 && count($this->redirect_array) == 0)
+        $route_service = $this->get_route_service();
+        if (!$this->get_route_service()->has_routes())
         {
             $this->exit_error(
                 'No routes loaded',
@@ -71,7 +64,7 @@ class WFWebHandler extends WF
         $this->load_raw_input();
         $this->add_security_headers();
         $this->handle_fixed_input();
-        $this->handle_action_routing();
+        $this->handle_routing();
     }
 
     private function load_raw_input(): void
@@ -146,87 +139,33 @@ class WFWebHandler extends WF
         }
     }
 
-    private function handle_action_routing(): void
+    private function handle_routing(): void
     {
-        // Check action requested
-        //
-        $full_request_uri = '';
-        if (isset($_SERVER['REQUEST_METHOD']))
+        $route_service = $this->get_route_service();
+        $request = ServerRequestFactory::createFromGlobals();
+
+        $redirect = $route_service->get_redirect($request);
+        if ($redirect !== false)
         {
-            $full_request_uri = $_SERVER['REQUEST_METHOD'].' ';
+            header('Location: '.$redirect['url'], true, $redirect['redirect_type']);
+
+            exit();
         }
 
-        if (isset($_SERVER['REQUEST_URI']))
+        $action = $route_service->get_action($request);
+        if ($action !== false)
         {
-            $this->request_uri = preg_replace('/\?.*/', '', $_SERVER['REQUEST_URI']);
-        }
-
-        $full_request_uri .= $this->request_uri;
-
-        // Check if there is a redirect to follow
-        //
-        $target_info = null;
-        $matches = null;
-
-        foreach ($this->redirect_array as $target)
-        {
-            $route = $target['regex'];
-            if (preg_match("!^{$route}$!", $full_request_uri, $matches))
+            foreach ($action['args'] as $key => $value)
             {
-                $url = $target['redirect'];
-
-                foreach ($target['args'] as $name => $match_index)
-                {
-                    $url = preg_replace("!\\{{$name}\\}!", $matches[$match_index], $url);
-                }
-
-                header('Location: '.$url, true, $target['redir_type']);
-
-                exit();
-            }
-        }
-
-        // Check if there is a route to follow
-        //
-        $target_info = null;
-        $matches = null;
-        $class = '';
-
-        foreach ($this->route_array as $target)
-        {
-            $route = $target['regex'];
-            if (preg_match("!^{$route}$!", $full_request_uri, $matches))
-            {
-                for ($i = 0; $i < count($target['args']); $i++)
-                {
-                    $this->raw_post[$target['args'][$i]] = $matches[$i + 1];
-                }
-
-                $class = $target['class'];
-
-                break;
-            }
-        }
-
-        if ($class === '')
-        {
-            if ($full_request_uri !== 'GET /')
-            {
-                $this->exit_send_404();
+                $this->raw_post[$key] = $value;
             }
 
-            $class = $this->internal_get_config('actions.default_action');
+            $this->call_obj_func($this->get_config('actions.app_namespace').$action['class'], $action['function']);
+
+            exit();
         }
 
-        $this->internal_verify(strlen($class), 'No class to handle');
-
-        $target = explode('.', $class);
-        $this->internal_verify(count($target) === 2, "Target name {$class} illegal");
-
-        $object_name = $this->internal_get_config('actions.app_namespace').$target[0];
-        $function_name = $target[1];
-
-        $this->call_obj_func($object_name, $function_name);
+        $this->exit_send_404();
     }
 
     /**
@@ -262,7 +201,7 @@ class WFWebHandler extends WF
     {
         $this->internal_verify(class_exists($object_name), "Requested object {$object_name} could not be located");
         $parents = class_parents($object_name);
-        $this->internal_verify(isset($parents['WebFramework\Core\ActionCore']), "Requested object {$object_name} does not derive from ActionCore");
+        $this->internal_verify(isset($parents[ActionCore::class]), "Requested object {$object_name} does not derive from ActionCore");
 
         $action_filter = $object_name::get_filter();
         $action_permissions = $object_name::get_permissions();
@@ -282,27 +221,50 @@ class WFWebHandler extends WF
      */
     public function register_route(string $regex, string $file, string $class_function, array $args = []): void
     {
-        $this->route_array[] = [
-            'type' => 'route',
-            'regex' => $regex,
-            'include_file' => $file,
-            'class' => $class_function,
-            'args' => $args,
-        ];
+        @trigger_error('Deprecated. Directly call RouteService instead', E_USER_DEPRECATED);
+        $target = explode('.', $class_function);
+
+        if (count($target) !== 2)
+        {
+            throw new \InvalidArgumentException("Target name {$class_function} not class.function");
+        }
+
+        $regex_parts = explode(' ', $regex);
+
+        if (count($regex_parts) !== 2)
+        {
+            throw new \InvalidArgumentException("Regex {$regex} does not contain single space");
+        }
+
+        $this->get_route_service()->register_action(
+            $regex_parts[0],
+            $regex_parts[1],
+            $target[0],
+            $target[1],
+            $args,
+        );
     }
 
     /**
-     * @param array<string> $args
+     * @param array<string, int> $args
      */
     public function register_redirect(string $regex, string $redirect, string $type = '301', array $args = []): void
     {
-        $this->redirect_array[] = [
-            'type' => 'redirect',
-            'regex' => $regex,
-            'redirect' => $redirect,
-            'redir_type' => $type,
-            'args' => $args,
-        ];
+        @trigger_error('Deprecated. Directly call RouteService instead', E_USER_DEPRECATED);
+        $regex_parts = explode(' ', $regex);
+
+        if (count($regex_parts) !== 2)
+        {
+            throw new \InvalidArgumentException("Regex {$regex} does not contain single space");
+        }
+
+        $this->get_route_service()->register_redirect(
+            $regex_parts[0],
+            $regex_parts[1],
+            $redirect,
+            (int) $type,
+            $args,
+        );
     }
 
     /**
