@@ -61,6 +61,9 @@ class WF
      */
     private array $messages = [];
 
+    /** @var array<string> */
+    private array $container_stack = [];
+
     /**
      * @var array<string>
      */
@@ -91,10 +94,20 @@ class WF
     {
         if ($this->assert_service === null)
         {
+            $this->container_stack[] = 'assert_service';
+            if (count($this->container_stack) > 25)
+            {
+                print_r($this->container_stack);
+
+                exit();
+            }
+
             $this->assert_service = new AssertService(
                 $this->get_debug_service(),
                 $this->get_report_function(),
             );
+
+            array_pop($this->container_stack);
         }
 
         return $this->assert_service;
@@ -104,6 +117,14 @@ class WF
     {
         if ($this->authentication_service === null)
         {
+            $this->container_stack[] = 'authentication_service';
+            if (count($this->container_stack) > 25)
+            {
+                print_r($this->container_stack);
+
+                exit();
+            }
+
             $this->authentication_service = new Security\DatabaseAuthenticationService(
                 $this->get_cache(),
                 $this->get_main_db(),
@@ -112,6 +133,8 @@ class WF
                 $this->get_config('authenticator.session_timeout'),
                 $this->get_config('authenticator.user_class'),
             );
+
+            array_pop($this->container_stack);
         }
 
         return $this->authentication_service;
@@ -121,10 +144,20 @@ class WF
     {
         if ($this->base_factory === null)
         {
+            $this->container_stack[] = 'base_factory';
+            if (count($this->container_stack) > 25)
+            {
+                print_r($this->container_stack);
+
+                exit();
+            }
+
             $this->base_factory = new BaseFactory(
                 $this->get_main_db(),
                 $this->get_assert_service(),
             );
+
+            array_pop($this->container_stack);
         }
 
         return $this->base_factory;
@@ -134,6 +167,14 @@ class WF
     {
         if ($this->blacklist_service === null)
         {
+            $this->container_stack[] = 'blacklist_service';
+            if (count($this->container_stack) > 25)
+            {
+                print_r($this->container_stack);
+
+                exit();
+            }
+
             if ($this->get_config_service()->get('security.blacklist.enabled') == true)
             {
                 $this->blacklist_service = new Security\NullBlacklistService();
@@ -145,6 +186,8 @@ class WF
                     $this->get_config('security.blacklist'),
                 );
             }
+
+            array_pop($this->container_stack);
         }
 
         return $this->blacklist_service;
@@ -154,6 +197,14 @@ class WF
     {
         if ($this->browser_session_service === null)
         {
+            $this->container_stack[] = 'browser_session_service';
+            if (count($this->container_stack) > 25)
+            {
+                print_r($this->container_stack);
+
+                exit();
+            }
+
             $browser_session_service = new BrowserSessionService();
             $browser_session_service->start(
                 $this->get_config('host_name'),
@@ -161,6 +212,8 @@ class WF
             );
 
             $this->browser_session_service = $browser_session_service;
+
+            array_pop($this->container_stack);
         }
 
         return $this->browser_session_service;
@@ -170,6 +223,14 @@ class WF
     {
         if ($this->config_service === null)
         {
+            $this->container_stack[] = 'config_service';
+            if (count($this->container_stack) > 25)
+            {
+                print_r($this->container_stack);
+
+                exit();
+            }
+
             $config_builder = new ConfigBuilder(
                 $this->get_app_dir(),
             );
@@ -181,6 +242,8 @@ class WF
             $config_service = new ConfigService($config_builder->get_config());
 
             $this->config_service = $config_service;
+
+            array_pop($this->container_stack);
         }
 
         return $this->config_service;
@@ -190,9 +253,19 @@ class WF
     {
         if ($this->csrf_service === null)
         {
+            $this->container_stack[] = 'csrf_service';
+            if (count($this->container_stack) > 25)
+            {
+                print_r($this->container_stack);
+
+                exit();
+            }
+
             $this->csrf_service = new Security\CsrfService(
                 $this->get_browser_session_service(),
             );
+
+            array_pop($this->container_stack);
         }
 
         return $this->csrf_service;
@@ -202,11 +275,21 @@ class WF
     {
         if ($this->database_manager === null)
         {
+            $this->container_stack[] = 'database_manager';
+            if (count($this->container_stack) > 25)
+            {
+                print_r($this->container_stack);
+
+                exit();
+            }
+
             $this->database_manager = new DatabaseManager(
                 $this->get_assert_service(),
                 $this->get_main_db(),
                 new StoredValues($this->get_main_db(), 'db'),
             );
+
+            array_pop($this->container_stack);
         }
 
         return $this->database_manager;
@@ -216,11 +299,21 @@ class WF
     {
         if ($this->debug_service === null)
         {
+            $this->container_stack[] = 'debug_service';
+            if (count($this->container_stack) > 25)
+            {
+                print_r($this->container_stack);
+
+                exit();
+            }
+
             $this->debug_service = new DebugService(
                 $this,
                 $this->get_app_dir(),
                 $this->get_config('server_name'),
             );
+
+            array_pop($this->container_stack);
         }
 
         return $this->debug_service;
@@ -230,11 +323,21 @@ class WF
     {
         if ($this->report_function === null)
         {
+            $this->container_stack[] = 'report_function';
+            if (count($this->container_stack) > 25)
+            {
+                print_r($this->container_stack);
+
+                exit();
+            }
+
             $this->report_function = new MailReportFunction(
                 $this->get_cache(),
                 $this->get_mail_service(),
                 $this->get_config('sender_core.assert_recipient'),
             );
+
+            array_pop($this->container_stack);
         }
 
         return $this->report_function;
@@ -244,9 +347,19 @@ class WF
     {
         if ($this->route_service === null)
         {
+            $this->container_stack[] = 'route_service';
+            if (count($this->container_stack) > 25)
+            {
+                print_r($this->container_stack);
+
+                exit();
+            }
+
             $this->route_service = new RouteService(
                 $this->get_config('base_url'),
             );
+
+            array_pop($this->container_stack);
         }
 
         return $this->route_service;
@@ -256,9 +369,19 @@ class WF
     {
         if ($this->secure_config_service === null)
         {
+            $this->container_stack[] = 'secure_config_service';
+            if (count($this->container_stack) > 25)
+            {
+                print_r($this->container_stack);
+
+                exit();
+            }
+
             $this->secure_config_service = new Security\ConfigService(
                 $this->get_app_dir().$this->get_config('security.auth_dir'),
             );
+
+            array_pop($this->container_stack);
         }
 
         return $this->secure_config_service;
@@ -268,9 +391,19 @@ class WF
     {
         if ($this->protect_service === null)
         {
+            $this->container_stack[] = 'protect_service';
+            if (count($this->container_stack) > 25)
+            {
+                print_r($this->container_stack);
+
+                exit();
+            }
+
             $this->protect_service = new Security\ProtectService(
                 $this->get_config('security'),
             );
+
+            array_pop($this->container_stack);
         }
 
         return $this->protect_service;
@@ -280,10 +413,20 @@ class WF
     {
         if ($this->user_mailer === null)
         {
+            $this->container_stack[] = 'user_mailer';
+            if (count($this->container_stack) > 25)
+            {
+                print_r($this->container_stack);
+
+                exit();
+            }
+
             $this->user_mailer = new UserMailer(
                 $this->get_mail_service(),
                 $this->get_config('sender_core.default_sender'),
             );
+
+            array_pop($this->container_stack);
         }
 
         return $this->user_mailer;
@@ -293,6 +436,14 @@ class WF
     {
         if ($this->mail_service === null)
         {
+            $this->container_stack[] = 'mail_service';
+            if (count($this->container_stack) > 25)
+            {
+                print_r($this->container_stack);
+
+                exit();
+            }
+
             $api_key = $this->get_secure_config_service()->get_auth_config('postmark');
 
             $this->mail_service = new PostmarkMailService(
@@ -300,6 +451,8 @@ class WF
                 $this->get_config('sender_core.default_sender'),
                 $this->get_config('server_name'),
             );
+
+            array_pop($this->container_stack);
         }
 
         return $this->mail_service;
@@ -309,9 +462,19 @@ class WF
     {
         if ($this->postmark_client_factory === null)
         {
+            $this->container_stack[] = 'postmark_client_factory';
+            if (count($this->container_stack) > 25)
+            {
+                print_r($this->container_stack);
+
+                exit();
+            }
+
             $api_key = $this->get_secure_config_service()->get_auth_config('postmark');
 
             $this->postmark_client_factory = new PostmarkClientFactory($api_key);
+
+            array_pop($this->container_stack);
         }
 
         return $this->postmark_client_factory;
