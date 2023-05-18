@@ -15,4 +15,3 @@ parameters:
             - ../vendor
     ignoreErrors:
         - '#^Call to static method WebFramework\\Core\\WF\:\:verify\(\) with false and .* will always evaluate to false\.$#'
-        - '#^Call to method WebFramework\\Core\\WF\:\:internal_verify\(\) with false and .* will always evaluate to false\.$#'

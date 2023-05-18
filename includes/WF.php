@@ -40,6 +40,8 @@ class WF
     // Services
     //
     protected ?AssertService $assert_service = null;
+    protected ?BaseFactory $base_factory = null;
+    protected ?Security\AuthenticationService $authentication_service = null;
     protected ?Security\BlacklistService $blacklist_service = null;
     protected ?BrowserSessionService $browser_session_service = null;
     protected ?Security\CsrfService $csrf_service = null;
@@ -117,6 +119,7 @@ class WF
             'unique_identifier' => 'email',
             'auth_required_message' => 'Authentication required. Please login.',
             'session_timeout' => 900,
+            'user_class' => User::class,
         ],
         'security' => [
             'auth_dir' => '/includes/auth', // Relative directory with auth configuration files
@@ -197,6 +200,33 @@ class WF
         }
 
         return $this->assert_service;
+    }
+
+    public function get_authentication_service(): Security\AuthenticationService
+    {
+        if ($this->authentication_service === null)
+        {
+            $this->authentication_service = new Security\DatabaseAuthenticationService(
+                $this->get_cache(),
+                $this->get_main_db(),
+                $this->get_browser_session_service(),
+                $this->get_base_factory(),
+                $this->get_config('authenticator.session_timeout'),
+                $this->get_config('authenticator.user_class'),
+            );
+        }
+
+        return $this->authentication_service;
+    }
+
+    public function get_base_factory(): BaseFactory
+    {
+        if ($this->base_factory === null)
+        {
+            $this->base_factory = new BaseFactory();
+        }
+
+        return $this->base_factory;
     }
 
     public function get_blacklist_service(): Security\BlacklistService
@@ -430,7 +460,8 @@ class WF
         $user_id = null;
         if ($this->is_authenticated())
         {
-            $user_id = $this->get_authenticated('user_id');
+            $user = $this->get_authentication_service()->get_authenticated_user();
+            $user_id = $user->id;
         }
 
         $this->get_blacklist_service()->add_entry($ip, $user_id, $reason, $severity);
@@ -1092,29 +1123,27 @@ class WF
 
     public function is_authenticated(): bool
     {
-        return false;
+        return $this->get_authentication_service()->is_authenticated();
     }
 
     public function authenticate(User $user): void
     {
-        $this->internal_verify(false, 'Cannot authenticate in script mode');
+        $this->get_authentication_service()->authenticate($user);
     }
 
     public function deauthenticate(): void
     {
-        $this->internal_verify(false, 'Cannot deauthenticate in script mode');
+        $this->get_authentication_service()->deauthenticate();
     }
 
     public function invalidate_sessions(int $user_id): void
     {
-        $this->internal_verify(false, 'Cannot invalidate sessions in script mode');
+        $this->get_authentication_service()->invalidate_sessions($user_id);
     }
 
-    public function get_authenticated(string $item = ''): mixed
+    public function get_authenticated_user(): User
     {
-        $this->internal_verify(false, 'Cannot retrieve authenticated data in script mode');
-
-        return false;
+        return $this->get_authentication_service()->get_authenticated_user();
     }
 
     /**
@@ -1122,7 +1151,7 @@ class WF
      */
     public function user_has_permissions(array $permissions): bool
     {
-        return false;
+        return $this->get_authentication_service()->user_has_permissions($permissions);
     }
 
     /**

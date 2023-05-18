@@ -111,16 +111,6 @@ parameters:
 			path: includes/WF.php
 
 		-
-			message: "#^Cannot access offset 'user' on array\\|bool\\.$#"
-			count: 1
-			path: includes/WFWebHandler.php
-
-		-
-			message: "#^Cannot access offset string on array\\|bool\\.$#"
-			count: 1
-			path: includes/WFWebHandler.php
-
-		-
 			message: "#^Parameter \\#3 \\$response_code of function header expects int, string given\\.$#"
 			count: 1
 			path: includes/WFWebHandler.php

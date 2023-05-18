@@ -1,6 +1,9 @@
 <?php
 
-namespace WebFramework\Core;
+namespace WebFramework\Core\Security;
+
+use WebFramework\Core\DataCore;
+use WebFramework\Core\Helpers;
 
 /**
  * @property array<string> $base_fields

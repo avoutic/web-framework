@@ -213,8 +213,12 @@ TXT;
 
         if ($this->framework->is_authenticated())
         {
-            $auth_array = $this->framework->get_authenticated();
-            WFHelpers::scrub_state($auth_array);
+            $user = $this->framework->get_authenticated_user();
+            $auth_array = [
+                'user_id' => $user->id,
+                'username' => $user->username,
+                'email' => $user->email,
+            ];
 
             $auth_data = print_r($auth_array, true);
         }

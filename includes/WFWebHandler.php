@@ -4,13 +4,6 @@ namespace WebFramework\Core;
 
 class WFWebHandler extends WF
 {
-    protected Authenticator $authenticator;
-
-    /**
-     * @var array<mixed>|bool
-     */
-    protected bool|array $auth_array = false;
-
     /**
      * @var array<array{type: string, regex: string, include_file: string, class: string, args: array<string>}>
      */
@@ -52,9 +45,7 @@ class WFWebHandler extends WF
 
         // Run WebHandler
         //
-        $this->create_authenticator();
-        $this->authenticator->cleanup();
-        $this->auth_array = $this->authenticator->get_logged_in();
+        $this->get_authentication_service()->cleanup();
 
         if ($this->internal_get_config('security.blacklist.enabled') == true)
         {
@@ -63,7 +54,8 @@ class WFWebHandler extends WF
             $user_id = null;
             if ($this->is_authenticated())
             {
-                $user_id = $this->get_authenticated('user_id');
+                $user = $this->get_authenticated_user();
+                $user_id = $user->id;
             }
 
             if (isset($_SERVER['REMOTE_ADDR'])
@@ -151,37 +143,6 @@ class WFWebHandler extends WF
         {
             $site_filter = site_get_filter();
             array_walk($site_filter, [$this, 'validate_input']);
-        }
-    }
-
-    private function create_authenticator(): void
-    {
-        // Create Authenticator
-        //
-        $auth_mode = $this->internal_get_config('auth_mode');
-
-        if ($auth_mode == 'redirect')
-        {
-            $this->authenticator = new AuthRedirect();
-        }
-        elseif ($auth_mode == 'www-authenticate')
-        {
-            $this->authenticator = new AuthWwwAuthenticate();
-        }
-        elseif ($auth_mode == 'custom'
-                && strlen($this->internal_get_config('auth_module')))
-        {
-            $class_name = $this->internal_get_config('auth_module');
-            $this->verify(class_exists($class_name), "Custom auth module '{$class_name}' not found");
-
-            $obj = new $class_name();
-            $this->internal_verify($obj instanceof Authenticator, 'Custom authentication module not derived from Authenticator');
-
-            $this->authenticator = $obj;
-        }
-        else
-        {
-            $this->internal_verify(false, 'No valid authenticator found.');
         }
     }
 
@@ -280,10 +241,16 @@ class WFWebHandler extends WF
             return;
         }
 
-        if (!$this->is_authenticated())
+        $is_json = (isset($_SERVER['CONTENT_TYPE']) && $_SERVER['CONTENT_TYPE'] == 'application/json');
+
+        if (!$this->is_authenticated() && !$is_json)
         {
-            $redirect_type = $object_name::redirect_login_type();
-            $this->authenticator->redirect_login($redirect_type, $this->request_uri);
+            $query = (isset($_SERVER['QUERY_STRING'])) ? $_SERVER['QUERY_STRING'] : '';
+            $msg = ['mtype' => 'info', 'message' => $this->get_config('authenticator.auth_required_message'), 'extra_message' => ''];
+
+            $msg_fmt = 'msg='.$this->get_protect_service()->encode_and_auth_array($msg);
+
+            header('Location: '.$this->get_config('base_url').$this->get_config('actions.login.location').'?return_page='.urlencode($this->request_uri).'&return_query='.urlencode($query).'&'.$msg_fmt, true, 302);
 
             exit();
         }
@@ -424,82 +391,6 @@ class WFWebHandler extends WF
         exit();
     }
 
-    public function is_authenticated(): bool
-    {
-        return $this->auth_array !== false;
-    }
-
-    public function authenticate(User $user): void
-    {
-        $this->authenticator->set_logged_in($user);
-    }
-
-    public function deauthenticate(): void
-    {
-        $this->authenticator->logoff();
-    }
-
-    public function invalidate_sessions(int $user_id): void
-    {
-        $this->authenticator->auth_invalidate_sessions($user_id);
-    }
-
-    public function get_authenticated(string $item = ''): mixed
-    {
-        if (!strlen($item))
-        {
-            return $this->auth_array;
-        }
-
-        $this->internal_verify(is_array($this->auth_array), 'Authenticated item not present');
-        $this->internal_verify(isset($this->auth_array[$item]), 'Authenticated item not present');
-
-        return $this->auth_array[$item];
-    }
-
-    /**
-     * @param array<string> $permissions
-     */
-    public function user_has_permissions(array $permissions): bool
-    {
-        if (count($permissions) == 0)
-        {
-            return true;
-        }
-
-        if (!$this->is_authenticated())
-        {
-            return false;
-        }
-
-        foreach ($permissions as $permission)
-        {
-            if ($permission == 'logged_in')
-            {
-                continue;
-            }
-
-            try
-            {
-                if (!$this->auth_array['user']->has_right($permission))
-                {
-                    return false;
-                }
-            }
-            catch (\Throwable $e)
-            {
-                // In case the user object changed (in name / namespace) an exception for
-                // deserialization will be thrown. Deauthenticate instead.
-                //
-                $this->deauthenticate();
-
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     public function get_csrf_token(): string
     {
         return $this->get_csrf_service()->get_token();
@@ -515,7 +406,8 @@ class WFWebHandler extends WF
         $user_id = null;
         if ($this->is_authenticated())
         {
-            $user_id = $this->get_authenticated('user_id');
+            $user = $this->get_authenticated_user();
+            $user_id = $user->id;
         }
 
         $this->get_blacklist_service()->add_entry($_SERVER['REMOTE_ADDR'], $user_id, $reason, $severity);

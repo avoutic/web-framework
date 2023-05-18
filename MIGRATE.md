@@ -2,20 +2,29 @@
 
 Major internal changes to move to dependency injection
 
-As a result:
+As a result there are some internal and external changes. Internal breaking changes only affect you if you used internal classes directly. External breaking changes affect the public interface.
 
+External:
 * CacheInterface is now called Cache
 * Database constructor has changed
 * Image, constructor has changes and does not automatically analyze when constructed.
 * Recaptcha constructor has changed.
 * RedisCache constructor has changed.
-* SenderCore has been deprecated. Use mail_service instead.
+* SenderCore has been deprecated. Use MailService instead.
 * Config option: sender_core.handler_class has been removed.
+* Config option: authenticator.user_class introduced for class of user objects to retrieve
 * StripeFactory constructor has changed
 * StoredValues constructor has changed
 * UserStoredValues constructor has changed
 * Webhook interface has changed
+* WF->get_authenticated() is removed. Use WF->get_authenticated_user() instead
+* WF->auth_array is removed. Use WF->get_authenticated_user() instead
 * WF->throw_exception_on_error() is removed. Exception always thrown from AssertService
+
+Internal:
+* AuthRedirect has been refactored to Security\DatabaseAuthenticationService
+* AuthWwwAuthenticate has been removed
+* Authenticator has been refactored to Security\AuthenticationService
 * WFSecurity has been split into CsrfService, ConfigService and ProtectService
 
 # v5 release

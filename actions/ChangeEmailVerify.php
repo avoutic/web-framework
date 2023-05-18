@@ -67,7 +67,8 @@ class ChangeEmailVerify extends PageAction
 
         // Only allow for current user
         //
-        if ($user_id != $this->get_authenticated('user_id'))
+        $user = $this->get_authenticated_user();
+        if ($user_id != $user->id)
         {
             $this->deauthenticate();
             $login_page = $this->get_base_url().$this->get_config('actions.login.location');
@@ -78,9 +79,6 @@ class ChangeEmailVerify extends PageAction
 
         // Change email
         //
-        $user = $this->get_user($this->get_authenticated('username'));
-        $this->verify($user !== false, 'Failed to retrieve user');
-
         $old_email = $user->email;
 
         if (!isset($msg['params']) || !isset($msg['params']['iterator'])

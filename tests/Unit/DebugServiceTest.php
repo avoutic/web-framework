@@ -7,6 +7,7 @@ use Slim\Psr7\Factory\StreamFactory;
 use Slim\Psr7\Request;
 use WebFramework\Core\Database;
 use WebFramework\Core\DebugService;
+use WebFramework\Core\User;
 use WebFramework\Core\WF;
 
 /**
@@ -122,45 +123,23 @@ final class DebugServiceTest extends \Codeception\Test\Unit
 
     public function testGetAuthenticationStatusSimple()
     {
-        $auth_data = ['var1' => 'val1', 'var2' => 'val2'];
-        $framework = $this->makeEmpty(WF::class, ['is_authenticated' => true, 'get_authenticated' => $auth_data]);
+        $user_data = ['id' => 1, 'username' => 'TestUser', 'email' => 'TestEmail'];
+        $auth_data = ['user_id' => 1, 'username' => 'TestUser', 'email' => 'TestEmail'];
+        $framework = $this->makeEmpty(
+            WF::class,
+            [
+                'is_authenticated' => true,
+                'get_authenticated_user' => $this->makeEmpty(
+                    User::class,
+                    $user_data,
+                ),
+            ]
+        );
 
         $instance = new DebugService($framework, '', '');
 
         verify($instance->get_authentication_status())
             ->equals(print_r($auth_data, true));
-    }
-
-    public function testGetAuthenticationStatusScrubbed()
-    {
-        $auth_data = [
-            'var1' => 'val1',
-            'database' => 'val2',
-            'databases' => 'val3',
-            'config' => 'val4',
-            'recursive' => [
-                'regular' => 'val5',
-                'config' => 'val6',
-            ],
-        ];
-
-        $auth_scrubbed = [
-            'var1' => 'val1',
-            'database' => 'scrubbed',
-            'databases' => 'scrubbed',
-            'config' => 'scrubbed',
-            'recursive' => [
-                'regular' => 'val5',
-                'config' => 'scrubbed',
-            ],
-        ];
-
-        $framework = $this->makeEmpty(WF::class, ['is_authenticated' => true, 'get_authenticated' => $auth_data]);
-
-        $instance = new DebugService($framework, '', '');
-
-        verify($instance->get_authentication_status())
-            ->equals(print_r($auth_scrubbed, true));
     }
 
     public function testFilterTraceSkipStart()
@@ -653,6 +632,14 @@ TXT;
 
     public function testErrorReportContent()
     {
+        $user_data = ['id' => 1, 'username' => 'TestUser', 'email' => 'TestEmail'];
+
+        $framework = $this->makeEmpty(
+            WF::class,
+            [
+                'is_authenticated' => true,
+            ]
+        );
         $instance = $this->construct(
             DebugService::class,
             [
@@ -660,7 +647,10 @@ TXT;
                     WF::class,
                     [
                         'is_authenticated' => true,
-                        'get_authenticated' => ['var1' => 'val1', 'var2' => 'val2'],
+                        'get_authenticated_user' => $this->makeEmpty(
+                            User::class,
+                            $user_data,
+                        ),
                     ],
                 ),
                 'app_dir' => '',
@@ -744,8 +734,9 @@ No inputs
 Auth:
 Array
 (
-    [var1] => val1
-    [var2] => val2
+    [user_id] => 1
+    [username] => TestUser
+    [email] => TestEmail
 )
 
 Backtrace:

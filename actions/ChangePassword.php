@@ -85,8 +85,7 @@ class ChangePassword extends PageAction
             return;
         }
 
-        $user = $this->get_user($this->get_authenticated('username'));
-        $this->verify($user !== false, 'Failed to retrieve user');
+        $user = $this->get_authenticated_user();
 
         $result = $user->change_password($orig_password, $password);
 

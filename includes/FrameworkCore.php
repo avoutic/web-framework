@@ -211,9 +211,9 @@ class FrameworkCore
         return $this->framework->is_authenticated();
     }
 
-    protected function get_authenticated(string $field = ''): mixed
+    protected function get_authenticated_user(): User
     {
-        return $this->framework->get_authenticated($field);
+        return $this->framework->get_authenticated_user();
     }
 
     /**

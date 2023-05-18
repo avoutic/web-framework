@@ -59,9 +59,7 @@ class ChangeEmail extends PageAction
 
         // Change email
         //
-        $user = $this->get_user($this->get_authenticated('username'));
-        $this->verify($user !== false, 'Failed to retrieve user');
-
+        $user = $this->get_authenticated_user();
         $old_email = $user->email;
 
         // Send verification mail
