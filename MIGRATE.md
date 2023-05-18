@@ -11,6 +11,7 @@ External:
 * Recaptcha constructor has changed.
 * RedisCache constructor has changed.
 * SenderCore has been deprecated. Use MailService instead.
+* Config option: actions.default_action has been removed. All routes are explicit
 * Config option: document_root has been removed
 * Config option: sender_core.handler_class has been removed.
 * Config option: authenticator.user_class introduced for class of user objects to retrieve

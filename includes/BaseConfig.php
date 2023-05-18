@@ -76,7 +76,6 @@ return [
         '500' => '',
     ],
     'actions' => [
-        'default_action' => 'Main.html_main',
         'default_frame_file' => 'default_frame.inc.php',
         'app_namespace' => 'App\\Actions\\',
         'login' => [
