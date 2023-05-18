@@ -1040,7 +1040,14 @@ class WF
                 0,
                 ['auth' => $cache_config['password']]
             );
-            self::verify($result === true, 'Failed to connect to Redis cache');
+
+            if ($result !== true)
+            {
+                $this->exit_error(
+                    'Cache connection failed',
+                    '',
+                );
+            }
 
             $cache_pool = new RedisCachePool($redis_client);
 
@@ -1052,7 +1059,10 @@ class WF
             }
             catch (\Throwable $e)
             {
-                self::verify(false, 'Failed to connect to Redis cache');
+                $this->exit_error(
+                    'Cache connection failed',
+                    '',
+                );
             }
             $this->cache = new RedisCache($cache_pool);
 
