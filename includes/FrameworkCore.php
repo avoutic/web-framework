@@ -49,7 +49,7 @@ class FrameworkCore
 
     protected function get_config(string $path): mixed
     {
-        return $this->framework->internal_get_config($path);
+        return $this->framework->get_config_service()->get($path);
     }
 
     // Database related

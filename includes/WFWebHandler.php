@@ -11,7 +11,7 @@ class WFWebHandler extends WF
     public function init(): void
     {
         parent::init();
-        if ($this->internal_get_config('database_enabled') == false)
+        if ($this->get_config_service()->get('database_enabled') == false)
         {
             $this->exit_error(
                 'Database required',
@@ -40,7 +40,7 @@ class WFWebHandler extends WF
         //
         $this->get_authentication_service()->cleanup();
 
-        if ($this->internal_get_config('security.blacklist.enabled') == true)
+        if ($this->get_config_service()->get('security.blacklist.enabled') == true)
         {
             // Check blacklist
             //
@@ -317,7 +317,7 @@ class WFWebHandler extends WF
             exit();
         }
 
-        $mapping = $this->internal_get_config('error_handlers.'.$code);
+        $mapping = $this->get_config_service()->get('error_handlers.'.$code);
         $class = '';
 
         if (is_array($mapping))
@@ -345,7 +345,7 @@ class WFWebHandler extends WF
         $this->input['error_title'] = $title;
         $this->input['error_message'] = $message;
 
-        $object_name = $this->internal_get_config('actions.app_namespace').$class;
+        $object_name = $this->get_config_service()->get('actions.app_namespace').$class;
         $function_name = 'html_main';
 
         $this->call_obj_func($object_name, $function_name);
@@ -360,7 +360,7 @@ class WFWebHandler extends WF
 
     public function add_blacklist_entry(string $reason, int $severity = 1): void
     {
-        if ($this->internal_get_config('security.blacklist.enabled') != true)
+        if ($this->get_config_service()->get('security.blacklist.enabled') != true)
         {
             return;
         }

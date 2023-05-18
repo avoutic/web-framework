@@ -44,6 +44,7 @@ class WF
     protected ?Security\AuthenticationService $authentication_service = null;
     protected ?Security\BlacklistService $blacklist_service = null;
     protected ?BrowserSessionService $browser_session_service = null;
+    protected ?ConfigService $config_service = null;
     protected ?Security\CsrfService $csrf_service = null;
     protected ?DatabaseManager $database_manager = null;
     protected ?DebugService $debug_service = null;
@@ -64,6 +65,7 @@ class WF
      * @var array<string>
      */
     private array $configs = [
+        '/vendor/avoutic/web-framework/includes/BaseConfig.php',
         '/includes/config.php',
         '?/includes/config_local.php',
     ];
@@ -71,111 +73,6 @@ class WF
     private bool $check_db = true;
     private bool $check_app_db_version = true;
     private bool $check_wf_db_version = true;
-
-    // Default configuration
-    //
-    /**
-     * @var array<mixed>
-     */
-    private array $global_config = [
-        'debug' => false,
-        'debug_mail' => true,
-        'preload' => false,
-        'timezone' => 'UTC',
-        'registration' => [
-            'allow_registration' => true,
-            'after_verify_page' => '/',
-        ],
-        'database_enabled' => false,
-        'database_config' => 'main',        // main database tag.
-        'databases' => [],             // list of extra database tags to load.
-        // files will be retrieved from 'includes/db_config.{TAG}.php'
-        'versions' => [
-            'supported_framework' => -1,    // Default is always -1. App should set supported semantic
-            // version of this framework it supports in own config.
-            'required_app_db' => 1,         // Default is always 1. App should set this if it tracks its
-            // own database version in the db.app_db_version config value
-            // in the database and wants the framework to indicate
-            // a mismatch between required and current value
-        ],
-        'site_name' => 'Unknown',
-        'server_name' => '',                // Set to $_SERVER['SERVER_NAME'] or 'app' automatically
-        // For use in URLs. Is allowed to contain colon with port
-        // number at the end.
-        'host_name' => '',                  // Set to $_SERVER['SERVER_NAME'] or 'app' automatically
-        // Pure host name. Cannot include port number information.
-        'http_mode' => 'https',
-        'base_url' => '',                   // Add a base_url to be used in external urls
-        'document_root' => '',              // Set to $_SERVER['DOCUMENT_ROOT'] automatically
-        'cache_enabled' => false,
-        'auth_mode' => 'redirect',          // redirect, www-authenticate, custom (requires auth_module)
-        'auth_module' => '',                // class name with full namespace
-        'sanity_check_module' => '',        // class name with full namespace (Deprecated)
-        'sanity_check_modules' => [],       // associative array with class names with full namespace as key
-                                            // and their config array as the value
-        'sanity_check' => [
-            'required_auth' => [],          // Auth files that should be present
-        ],
-        'authenticator' => [
-            'unique_identifier' => 'email',
-            'auth_required_message' => 'Authentication required. Please login.',
-            'session_timeout' => 900,
-            'user_class' => User::class,
-        ],
-        'security' => [
-            'auth_dir' => '/includes/auth', // Relative directory with auth configuration files
-            'blacklist' => [
-                'enabled' => true,
-                'trigger_period' => 14400,  // Period to consider for blacklisting (default: 4 hours)
-                'store_period' => 2592000,  // Period to keep entries (default: 30 days)
-                'threshold' => 25,          // Points before blacklisting occurs (default: 25)
-            ],
-            'hash' => 'sha256',
-            'hmac_key' => '',
-            'crypt_key' => '',
-            'recaptcha' => [
-                'site_key' => '',
-                'secret_key' => '',
-            ],
-        ],
-        'error_handlers' => [
-            '403' => '',
-            '404' => '',
-            '500' => '',
-        ],
-        'actions' => [
-            'default_action' => 'Main.html_main',
-            'default_frame_file' => 'default_frame.inc.php',
-            'app_namespace' => 'App\\Actions\\',
-            'login' => [
-                'location' => '/login',
-                'send_verify_page' => '/send-verify',
-                'verify_page' => '/verify',
-                'after_verify_page' => '/',
-                'default_return_page' => '/',
-                'bruteforce_protection' => true,
-            ],
-            'forgot_password' => [
-                'location' => '/forgot-password',
-                'reset_password_page' => '/reset-password',
-            ],
-            'change_password' => [
-                'return_page' => '/',
-            ],
-            'change_email' => [
-                'location' => '/change-email',
-                'verify_page' => '/change-email-verify',
-                'return_page' => '/',
-            ],
-            'send_verify' => [
-                'after_verify_page' => '/',
-            ],
-        ],
-        'sender_core' => [
-            'default_sender' => '',
-            'assert_recipient' => '',
-        ],
-    ];
 
     public function __construct()
     {
@@ -234,7 +131,7 @@ class WF
     {
         if ($this->blacklist_service === null)
         {
-            if ($this->internal_get_config('security.blacklist.enabled') == true)
+            if ($this->get_config_service()->get('security.blacklist.enabled') == true)
             {
                 $this->blacklist_service = new Security\NullBlacklistService();
             }
@@ -264,6 +161,26 @@ class WF
         }
 
         return $this->browser_session_service;
+    }
+
+    public function get_config_service(): ConfigService
+    {
+        if ($this->config_service === null)
+        {
+            $config_builder = new ConfigBuilder(
+                $this->get_app_dir(),
+            );
+            $config_builder->build_config(
+                $this->configs,
+            );
+            $config_builder->populate_internals($_SERVER['SERVER_NAME'] ?? '', $_SERVER['SERVER_NAME'] ?? '');
+
+            $config_service = new ConfigService($config_builder->get_config());
+
+            $this->config_service = $config_service;
+        }
+
+        return $this->config_service;
     }
 
     public function get_csrf_service(): Security\CsrfService
@@ -539,26 +456,14 @@ class WF
     {
         $framework = self::get_framework();
 
-        return $framework->internal_get_config($location);
+        return $framework->get_config_service()->get($location);
     }
 
     public function internal_get_config(string $location = ''): mixed
     {
-        if (!strlen($location))
-        {
-            return $this->global_config;
-        }
+        @trigger_error('Deprecated. Directly call ConfigService instead', E_USER_DEPRECATED);
 
-        $path = explode('.', $location);
-        $part = $this->global_config;
-
-        foreach ($path as $step)
-        {
-            $this->internal_verify(isset($part[$step]), "Missing configuration {$location}");
-            $part = $part[$step];
-        }
-
-        return $part;
+        return $this->get_config_service()->get($location);
     }
 
     public function get_db(string $tag = ''): Database
@@ -707,11 +612,10 @@ class WF
         mt_srand();
 
         $this->check_file_requirements();
-        $this->merge_configs($this->configs);
 
         // Enable debugging if requested
         //
-        if ($this->internal_get_config('debug') == true)
+        if ($this->get_config_service()->get('debug') == true)
         {
             error_reporting(E_ALL | E_STRICT);
             ini_set('display_errors', '1');
@@ -723,12 +627,12 @@ class WF
 
         // Set default timezone
         //
-        date_default_timezone_set($this->internal_get_config('timezone'));
+        date_default_timezone_set($this->get_config_service()->get('timezone'));
 
         $this->check_config_requirements();
         $this->load_requirements();
 
-        if ($this->internal_get_config('database_enabled') == true)
+        if ($this->get_config_service()->get('database_enabled') == true)
         {
             $this->init_databases();
         }
@@ -755,7 +659,7 @@ class WF
     {
         // Check for special loads before anything else
         //
-        if ($this->internal_get_config('preload') == true)
+        if ($this->get_config_service()->get('preload') == true)
         {
             if (!file_exists("{$this->app_dir}/includes/preload.inc.php"))
             {
@@ -773,72 +677,11 @@ class WF
         require_once __DIR__.'/defines.inc.php';
     }
 
-    /**
-     * @param array<string> $configs Config files to merge on top of each other in order.
-     *                               File locations should be relative to the app dir
-     *                               including leading /. If it starts with a '?' the file
-     *                               does not have to be present.
-     */
-    private function merge_configs(array $configs): void
-    {
-        $merge_config = $this->global_config;
-
-        // Merge configurations
-        //
-        foreach ($configs as $config_location)
-        {
-            if ($config_location[0] == '?')
-            {
-                $config_location = substr($config_location, 1);
-
-                if (!file_exists("{$this->app_dir}{$config_location}"))
-                {
-                    continue;
-                }
-            }
-
-            $file_config = require "{$this->app_dir}{$config_location}";
-            if (!is_array($file_config))
-            {
-                $this->exit_error('Config invalid', "No config array found in '{$config_location}'");
-            }
-
-            $merge_config = array_replace_recursive($merge_config, $file_config);
-        }
-
-        // Force server_name and host_name to 'app' if run locally.
-        // Otherwise only set dynamically to SERVER_NAME if not defined in the merged config.
-        // server_name is meant to be used in urls and can contain port information.
-        // host_name is meant to be used as host and cannot contain port information.
-        //
-        if (!isset($_SERVER['SERVER_NAME']))
-        {
-            $merge_config['server_name'] = 'app';
-            $merge_config['host_name'] = 'app';
-        }
-        else
-        {
-            if (!strlen($merge_config['server_name']))
-            {
-                $merge_config['server_name'] = $_SERVER['SERVER_NAME'];
-            }
-
-            if (!strlen($merge_config['host_name']))
-            {
-                $merge_config['host_name'] = $_SERVER['SERVER_NAME'];
-            }
-        }
-
-        $merge_config['document_root'] = $_SERVER['DOCUMENT_ROOT'];
-
-        $this->global_config = $merge_config;
-    }
-
     private function check_config_requirements(): void
     {
         // Check for required values
         //
-        if (!strlen($this->internal_get_config('sender_core.default_sender')))
+        if (!strlen($this->get_config_service()->get('sender_core.default_sender')))
         {
             $this->exit_error(
                 'No default sender specified',
@@ -847,7 +690,7 @@ class WF
             );
         }
 
-        if (!strlen($this->internal_get_config('sender_core.assert_recipient')))
+        if (!strlen($this->get_config_service()->get('sender_core.assert_recipient')))
         {
             $this->exit_error(
                 'No assert recipient specified',
@@ -856,7 +699,7 @@ class WF
             );
         }
 
-        if (strlen($this->internal_get_config('security.hmac_key')) < 20)
+        if (strlen($this->get_config_service()->get('security.hmac_key')) < 20)
         {
             $this->exit_error(
                 'Required config value missing',
@@ -864,7 +707,7 @@ class WF
             );
         }
 
-        if (strlen($this->internal_get_config('security.crypt_key')) < 20)
+        if (strlen($this->get_config_service()->get('security.crypt_key')) < 20)
         {
             $this->exit_error(
                 'Required config value missing',
@@ -877,7 +720,7 @@ class WF
     {
         // Start the database connection(s)
         //
-        $main_db_tag = $this->internal_get_config('database_config');
+        $main_db_tag = $this->get_config_service()->get('database_config');
         $main_config = $this->get_secure_config_service()->get_auth_config('db_config.'.$main_db_tag);
 
         $mysql = new \mysqli(
@@ -904,7 +747,7 @@ class WF
 
         // Open auxilary database connections
         //
-        foreach ($this->internal_get_config('databases') as $tag)
+        foreach ($this->get_config_service()->get('databases') as $tag)
         {
             $tag_config = $this->get_secure_config_service()->get_auth_config('db_config.'.$tag);
 
@@ -932,7 +775,7 @@ class WF
         // Verify all versions for compatibility
         //
         $required_wf_version = FRAMEWORK_VERSION;
-        $supported_wf_version = $this->internal_get_config('versions.supported_framework');
+        $supported_wf_version = $this->get_config_service()->get('versions.supported_framework');
 
         if ($supported_wf_version == -1)
         {
@@ -952,13 +795,13 @@ class WF
             );
         }
 
-        if ($this->internal_get_config('database_enabled') != true || !$this->check_db)
+        if ($this->get_config_service()->get('database_enabled') != true || !$this->check_db)
         {
             return;
         }
 
         $required_wf_db_version = FRAMEWORK_DB_VERSION;
-        $required_app_db_version = $this->internal_get_config('versions.required_app_db');
+        $required_app_db_version = $this->get_config_service()->get('versions.required_app_db');
 
         // Check if base table is present
         //
@@ -1002,7 +845,7 @@ class WF
 
     private function init_cache(): void
     {
-        if ($this->internal_get_config('cache_enabled') == true)
+        if ($this->get_config_service()->get('cache_enabled') == true)
         {
             // Start the Redis cache connection
             //
@@ -1043,7 +886,7 @@ class WF
     public function get_sanity_check(): SanityCheckInterface
     {
         @trigger_error('WF->get_sanity_check()', E_USER_DEPRECATED);
-        $class_name = $this->internal_get_config('sanity_check_module');
+        $class_name = $this->get_config_service()->get('sanity_check_module');
 
         return $this->instantiate_sanity_check($class_name);
     }
@@ -1066,8 +909,8 @@ class WF
      */
     public function get_sanity_checks_to_run(): array
     {
-        $class_name = $this->internal_get_config('sanity_check_module');
-        $class_names = $this->internal_get_config('sanity_check_modules');
+        $class_name = $this->get_config_service()->get('sanity_check_module');
+        $class_names = $this->get_config_service()->get('sanity_check_modules');
 
         if (strlen($class_name))
         {

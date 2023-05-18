@@ -11,6 +11,7 @@ External:
 * Recaptcha constructor has changed.
 * RedisCache constructor has changed.
 * SenderCore has been deprecated. Use MailService instead.
+* Config option: document_root has been removed
 * Config option: sender_core.handler_class has been removed.
 * Config option: authenticator.user_class introduced for class of user objects to retrieve
 * StripeFactory constructor has changed
@@ -19,14 +20,16 @@ External:
 * Webhook interface has changed
 * WF->get_authenticated() is removed. Use WF->get_authenticated_user() instead
 * WF->auth_array is removed. Use WF->get_authenticated_user() instead
-* WF->register_redirect() is deprecated(). User RouteService->register_redirect() instead
-* WF->register_route() is deprecated(). User RouteService->register_action() instead
+* WFWebHandler->register_redirect() is deprecated(). User RouteService->register_redirect() instead
+* WFWebHandler->register_route() is deprecated(). User RouteService->register_action() instead
+* WF->set_configs() should now include the base config as well (by default at /vendor/avoutic/web-framework/includes/BaseConfig.php)
 * WF->throw_exception_on_error() is removed. Exception always thrown from AssertService
 
 Internal:
 * AuthRedirect has been refactored to Security\DatabaseAuthenticationService
 * AuthWwwAuthenticate has been removed
 * Authenticator has been refactored to Security\AuthenticationService
+* WF->internal_get_config() is deprecated. Use ConfigService->get() instead
 * WFSecurity has been split into CsrfService, ConfigService and ProtectService
 
 # v5 release
