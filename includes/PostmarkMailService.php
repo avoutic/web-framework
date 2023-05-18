@@ -8,11 +8,15 @@ use Postmark\PostmarkClient;
 class PostmarkMailService implements MailService
 {
     public function __construct(
-        protected AssertService $assert_service,
-        protected PostmarkClient $client,
+        protected PostmarkClientFactory $client_factory,
         protected string $default_sender,
         protected string $server_name,
     ) {
+    }
+
+    protected function get_client(): PostmarkClient
+    {
+        return $this->client_factory->get_client();
     }
 
     public function send_raw_mail(?string $from, string $to, string $subject, string $message): bool
@@ -21,34 +25,21 @@ class PostmarkMailService implements MailService
 
         if (!strlen($to))
         {
-            $this->assert_service->report_error('No recipient e-mail specified. Failing silently');
-
-            return true;
+            throw new \RuntimeException('No recipient e-mail specified');
         }
 
         if (!strlen($from))
         {
-            $this->assert_service->report_error('No source e-mail specified. Failing silently');
-
-            return true;
+            throw new \RuntimeException('No source e-mail specified');
         }
 
-        try
-        {
-            $result = $this->client->sendEmail(
-                $from,
-                $to,
-                $subject,
-                null,
-                $message
-            );
-        }
-        catch (\Exception $e)
-        {
-            $this->assert_service->report_error($e->getMessage());
-
-            return false;
-        }
+        $result = $this->get_client()->sendEmail(
+            $from,
+            $to,
+            $subject,
+            null,
+            $message
+        );
 
         return true;
     }
@@ -63,9 +54,12 @@ class PostmarkMailService implements MailService
 
         if (!strlen($to))
         {
-            $this->assert_service->report_error('No recipient e-mail specified. Failing silently');
+            throw new \RuntimeException('No recipient e-mail specified');
+        }
 
-            return true;
+        if (!strlen($from))
+        {
+            throw new \RuntimeException('No source e-mail specified');
         }
 
         if (!isset($template_variables['server_name']))
@@ -75,7 +69,7 @@ class PostmarkMailService implements MailService
 
         try
         {
-            $result = $this->client->sendEmailWithTemplate(
+            $result = $this->get_client()->sendEmailWithTemplate(
                 $from,
                 $to,
                 $template_id,

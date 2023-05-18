@@ -46,6 +46,7 @@ class WF
     protected ?DatabaseManager $database_manager = null;
     protected ?DebugService $debug_service = null;
     protected ?MailService $mail_service = null;
+    protected ?PostmarkClientFactory $postmark_client_factory = null;
     protected ?ReportFunction $report_function = null;
     protected ?Security\ConfigService $secure_config_service = null;
     protected ?Security\ProtectService $protect_service = null;
@@ -327,18 +328,28 @@ class WF
     {
         if ($this->mail_service === null)
         {
-            $api_key = $this->get_secure_config_service()->get_auth_config('postmark.php');
-            $postmark_client = new \Postmark\PostmarkClient($api_key);
+            $api_key = $this->get_secure_config_service()->get_auth_config('postmark');
 
             $this->mail_service = new PostmarkMailService(
-                $this->get_assert_service(),
-                $postmark_client,
+                new PostmarkClientFactory($api_key),
                 $this->get_config('sender_core.default_sender'),
                 $this->get_config('server_name'),
             );
         }
 
         return $this->mail_service;
+    }
+
+    public function get_postmark_client_factory(): PostmarkClientFactory
+    {
+        if ($this->postmark_client_factory === null)
+        {
+            $api_key = $this->get_secure_config_service()->get_auth_config('postmark');
+
+            $this->postmark_client_factory = new PostmarkClientFactory($api_key);
+        }
+
+        return $this->postmark_client_factory;
     }
 
     public static function assert_handler(string $file, int $line, string $message, string $error_type): void
