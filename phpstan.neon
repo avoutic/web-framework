@@ -13,5 +13,3 @@ parameters:
     excludePaths:
         analyse:
             - ../vendor
-    ignoreErrors:
-        - '#^Call to static method WebFramework\\Core\\WF\:\:verify\(\) with false and .* will always evaluate to false\.$#'

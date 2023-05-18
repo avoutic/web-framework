@@ -9,9 +9,10 @@ class FrameworkCore
 {
     protected Cache $cache;
     protected WF $framework;
-    private ProtectService $protect_service;
-    private ConfigService $secure_config_service;
-    private Database $database;
+    protected ProtectService $protect_service;
+    protected ConfigService $secure_config_service;
+    protected WFWebHandler $web_handler;
+    protected Database $database;
 
     public function __construct()
     {
@@ -20,6 +21,7 @@ class FrameworkCore
         $this->database = $this->framework->get_db();
         $this->protect_service = $this->framework->get_protect_service();
         $this->secure_config_service = $this->framework->get_secure_config_service();
+        $this->web_handler = $this->framework->get_web_handler();
     }
 
     /**
@@ -40,6 +42,7 @@ class FrameworkCore
         $this->database = $this->framework->get_db();
         $this->protect_service = $this->framework->get_protect_service();
         $this->secure_config_service = $this->framework->get_secure_config_service();
+        $this->web_handler = $this->framework->get_web_handler();
     }
 
     protected function get_app_dir(): string
@@ -92,7 +95,7 @@ class FrameworkCore
      */
     protected function get_input(): array
     {
-        return $this->framework->get_input();
+        return $this->web_handler->get_input();
     }
 
     /**
@@ -100,7 +103,7 @@ class FrameworkCore
      */
     protected function get_raw_input(): array
     {
-        return $this->framework->get_raw_input();
+        return $this->web_handler->get_raw_input();
     }
 
     // Message related
@@ -110,12 +113,12 @@ class FrameworkCore
      */
     protected function get_messages(): array
     {
-        return $this->framework->get_messages();
+        return $this->web_handler->get_messages();
     }
 
     protected function add_message(string $mtype, string $message, string $extra_message = ''): void
     {
-        $this->framework->add_message($mtype, $message, $extra_message);
+        $this->web_handler->add_message($mtype, $message, $extra_message);
     }
 
     protected function get_message_for_url(string $mtype, string $message, string $extra_message = ''): string

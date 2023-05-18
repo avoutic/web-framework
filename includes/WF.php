@@ -13,21 +13,6 @@ class WF
     private static Database $main_db;       // Only for DataCore and StoredValues abstraction
     private static Cache $static_cache;     // Only for DataCore and StoredValues abstraction
 
-    /**
-     * @var array<mixed>
-     */
-    protected array $input = [];
-
-    /**
-     * @var array<mixed>
-     */
-    protected array $raw_input = [];
-
-    /**
-     * @var array<mixed>
-     */
-    protected array $raw_post = [];
-
     protected bool $initialized = false;
     private Database $main_database;
 
@@ -55,11 +40,7 @@ class WF
     protected ?Security\ConfigService $secure_config_service = null;
     protected ?Security\ProtectService $protect_service = null;
     protected ?UserMailer $user_mailer = null;
-
-    /**
-     * @var array<array{mtype: string, message: string, extra_message: string}>
-     */
-    private array $messages = [];
+    protected ?WFWebHandler $web_handler = null;
 
     /** @var array<string> */
     private array $container_stack = [];
@@ -432,6 +413,34 @@ class WF
         return $this->user_mailer;
     }
 
+    public function get_web_handler(): WFWebHandler
+    {
+        if ($this->web_handler === null)
+        {
+            $this->container_stack[] = 'web_handler';
+            if (count($this->container_stack) > 25)
+            {
+                print_r($this->container_stack);
+
+                exit();
+            }
+
+            $this->web_handler = new WFWebHandler(
+                $this->get_assert_service(),
+                $this->get_authentication_service(),
+                $this->get_blacklist_service(),
+                $this->get_config_service(),
+                $this->get_csrf_service(),
+                $this->get_protect_service(),
+                $this->get_route_service(),
+            );
+
+            array_pop($this->container_stack);
+        }
+
+        return $this->web_handler;
+    }
+
     public function get_mail_service(): MailService
     {
         if ($this->mail_service === null)
@@ -603,13 +612,6 @@ class WF
         return self::$framework;
     }
 
-    public static function get_web_handler(): WFWebHandler
-    {
-        self::verify(self::$framework instanceof WFWebHandler, 'Not started as WFWebHandler');
-
-        return self::$framework;
-    }
-
     public static function get_app_dir(): string
     {
         $framework = self::get_framework();
@@ -665,86 +667,6 @@ class WF
     public static function get_static_cache(): Cache
     {
         return self::$static_cache;
-    }
-
-    public function validate_input(string $filter, string $item): void
-    {
-        $this->internal_verify(strlen($filter), 'No filter provided');
-
-        if (substr($item, -2) == '[]')
-        {
-            $item = substr($item, 0, -2);
-
-            // Expect multiple values
-            //
-            $info = [];
-            $this->input[$item] = [];
-            $this->raw_input[$item] = [];
-
-            if (isset($this->raw_post[$item]))
-            {
-                $info = $this->raw_post[$item];
-            }
-            elseif (isset($_POST[$item]))
-            {
-                $info = $_POST[$item];
-            }
-            elseif (isset($_GET[$item]))
-            {
-                $info = $_GET[$item];
-            }
-
-            foreach ($info as $k => $val)
-            {
-                $this->raw_input[$item][$k] = trim($val);
-                if (preg_match("/^\\s*{$filter}\\s*$/m", $val))
-                {
-                    $this->input[$item][$k] = trim($val);
-                }
-            }
-        }
-        else
-        {
-            $str = '';
-            $this->input[$item] = '';
-
-            if (isset($this->raw_post[$item]))
-            {
-                $str = $this->raw_post[$item];
-            }
-            elseif (isset($_POST[$item]))
-            {
-                $str = $_POST[$item];
-            }
-            elseif (isset($_GET[$item]))
-            {
-                $str = $_GET[$item];
-            }
-
-            $this->raw_input[$item] = trim($str);
-
-            if (preg_match("/^\\s*{$filter}\\s*$/m", $str))
-            {
-                $this->input[$item] = trim($str);
-            }
-        }
-    }
-
-    /**
-     * @return array<array{mtype: string, message: string, extra_message: string}>
-     */
-    public function get_messages(): array
-    {
-        return $this->messages;
-    }
-
-    public function add_message(string $type, string $message, string $extra_message): void
-    {
-        $this->messages[] = [
-            'mtype' => $type,
-            'message' => $message,
-            'extra_message' => $extra_message,
-        ];
     }
 
     public function skip_db_check(): void
@@ -1213,7 +1135,9 @@ class WF
      */
     public function get_input(): array
     {
-        return $this->input;
+        @trigger_error('Deprecated. Will be removed', E_USER_DEPRECATED);
+
+        return $this->get_web_handler()->get_input();
     }
 
     /**
@@ -1221,7 +1145,9 @@ class WF
      */
     public function get_raw_input(): array
     {
-        return $this->raw_input;
+        @trigger_error('Deprecated. Will be removed', E_USER_DEPRECATED);
+
+        return $this->get_web_handler()->get_raw_input();
     }
 
     /**

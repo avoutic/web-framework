@@ -4,8 +4,6 @@ namespace WebFramework\Core;
 
 abstract class ActionCore extends FrameworkCore
 {
-    protected WFWebHandler $web_handler;
-
     /**
      * @var array<array<string>|string>
      */
@@ -20,9 +18,8 @@ abstract class ActionCore extends FrameworkCore
     {
         parent::__construct();
 
-        $this->web_handler = WF::get_web_handler();
-        $this->input = $this->framework->get_input();
-        $this->raw_input = $this->framework->get_raw_input();
+        $this->input = $this->get_input();
+        $this->raw_input = $this->get_raw_input();
     }
 
     /**

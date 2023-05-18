@@ -21,14 +21,20 @@ External:
 * StoredValues constructor has changed
 * UserStoredValues constructor has changed
 * Webhook interface has changed
+* WF->add_message() is deprecated. Use WebHandler instead
 * WF->auth_array is removed. Use AuthenticationService->get_authenticated_user() instead
 * WF->authenticate() is deprecated. Use AuthenticationService instead
 * WF->deauthenticate() is deprecated. Use AuthenticationService instead
 * WF->get_authenticated() is removed. Use AuthenticationService->get_authenticated_user() instead
 * WF->get_build_info() is removed. Use DebugService instead
+* WF->get_input() is deprecated. Use WebHandler instead
+* WF->get_messages() is deprecated. Use WebHandler instead
+* WF->get_raw_input() is deprecated. Use WebHandler instead
 * WF->invalidate_sessions() is deprecated. Use AuthenticationService instead
 * WF->is_authenticated() is deprecated. Use AuthenticationService instead
 * WF->user_has_permissions() is deprecated. Use AuthenticationService instead
+* WF->validate_inpute() is removed. Use WebHandler instead
+* WFWebHandler has been re-factored and should be retrieved via WF->get_web_handler()
 * WFWebHandler->register_redirect() is deprecated. User RouteService->register_redirect() instead
 * WFWebHandler->register_route() is deprecated(). User RouteService->register_action() instead
 * WF->set_configs() should now include the base config as well (by default at /vendor/avoutic/web-framework/includes/BaseConfig.php)

@@ -9,24 +9,28 @@ if (!file_exists(__DIR__.'/../vendor/autoload.php'))
 
 require_once __DIR__.'/../vendor/autoload.php';
 
+use Slim\Psr7\Factory\ServerRequestFactory;
 use WebFramework\Core\WF;
-use WebFramework\Core\WFWebHandler;
 
-$framework = new WFWebHandler();
+$core_framework = new WF();
+$framework = null;
 
 try
 {
     // Initialize WF
     //
-    $framework->init();
+    $core_framework->init();
 
     // Allow app to check data and config sanity
     //
-    $framework->check_sanity();
+    $core_framework->check_sanity();
 
     // Load route and hooks array and site specific logic if available
     //
-    $app_dir = $framework->get_app_dir();
+    $app_dir = $core_framework->get_app_dir();
+
+    $framework = $core_framework->get_web_handler();
+
     if (is_file("{$app_dir}/includes/site_logic.inc.php"))
     {
         include_once "{$app_dir}/includes/site_logic.inc.php";
@@ -36,18 +40,26 @@ try
 }
 catch (Throwable $e)
 {
-    echo('Unhandled exception'.PHP_EOL);
+    $message = 'Final catch block';
+    $request = ServerRequestFactory::createFromGlobals();
 
-    if ($framework->get_config('debug') == true)
+    $debug_service = $core_framework->get_debug_service();
+    $error_report = $debug_service->get_error_report($e->getTrace(), $request, 'unhandled_exception', $e->getMessage());
+
+    $report_function = $core_framework->get_report_function();
+    $report_function->report($e->getMessage(), 'unhandled_exception', $error_report);
+
+    $title = 'Unhandled exception';
+    $message = "<pre>{$error_report['message']}</pre>";
+
+    if ($framework !== null)
     {
-        echo($e->getMessage().PHP_EOL);
-        print_r($e->getTrace());
+        $framework->exit_send_error(500, $title, 'generic', $message);
     }
-
-    if (!$e instanceof WebFramework\Core\VerifyException)
+    else
     {
-        WF::report_error($e->getMessage(), $e->getTrace());
-    }
+        echo "{$title} {$message}";
 
-    exit();
+        exit();
+    }
 }
