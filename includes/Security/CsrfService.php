@@ -2,8 +2,15 @@
 
 namespace WebFramework\Core\Security;
 
+use WebFramework\Core\BrowserSessionService;
+
 class CsrfService
 {
+    public function __construct(
+        private BrowserSessionService $browser_session_service,
+    ) {
+    }
+
     protected function get_random_bytes(): string
     {
         return openssl_random_pseudo_bytes(16);
@@ -11,17 +18,19 @@ class CsrfService
 
     protected function store_new_token(): void
     {
-        $_SESSION['csrf_token'] = $this->get_random_bytes();
+        $this->browser_session_service->set('csrf_token', $this->get_random_bytes());
     }
 
     protected function get_stored_token(): string
     {
-        return $_SESSION['csrf_token'];
+        return $this->browser_session_service->get('csrf_token');
     }
 
     protected function is_valid_token_stored(): bool
     {
-        return (isset($_SESSION['csrf_token']) && strlen($_SESSION['csrf_token']) == 16);
+        $token = $this->browser_session_service->get('csrf_token');
+
+        return ($token !== null && strlen($token) == 16);
     }
 
     public function get_token(): string

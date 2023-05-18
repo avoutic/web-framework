@@ -239,7 +239,9 @@ class WF
     {
         if ($this->csrf_service === null)
         {
-            $this->csrf_service = new Security\CsrfService();
+            $this->csrf_service = new Security\CsrfService(
+                $this->get_browser_session_service(),
+            );
         }
 
         return $this->csrf_service;

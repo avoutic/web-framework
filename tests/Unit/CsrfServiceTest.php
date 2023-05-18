@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use WebFramework\Core\BrowserSessionService;
 use WebFramework\Core\Security\CsrfService;
 
 /**
@@ -13,8 +14,11 @@ final class CsrfServiceTest extends \Codeception\Test\Unit
 {
     public function testGetToken()
     {
-        $instance = $this->make(
+        $instance = $this->construct(
             CsrfService::class,
+            [
+                new BrowserSessionService(),
+            ],
             [
                 'get_random_bytes' => '1234567890123456',
             ]
