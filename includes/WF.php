@@ -521,13 +521,16 @@ class WF
             }
 
             $this->web_handler = new WFWebHandler(
-                $this->get_assert_service(),
                 $this->get_authentication_service(),
                 $this->get_blacklist_service(),
                 $this->get_config_service(),
                 $this->get_csrf_service(),
+                $this->get_object_function_caller(),
                 $this->get_protect_service(),
+                $this->get_response_emitter(),
+                $this->get_response_factory(),
                 $this->get_route_service(),
+                $this->get_validator_service(),
             );
 
             array_pop($this->container_stack);

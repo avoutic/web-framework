@@ -2,6 +2,8 @@
 
 namespace WebFramework\Core;
 
+use Psr\Http\Message\ServerRequestInterface;
+
 abstract class ActionCore extends FrameworkCore
 {
     /**
@@ -17,9 +19,17 @@ abstract class ActionCore extends FrameworkCore
     public function __construct()
     {
         parent::__construct();
+    }
 
-        $this->input = $this->get_input();
-        $this->raw_input = $this->get_raw_input();
+    public function set_inputs(ServerRequestInterface $request): void
+    {
+        $this->raw_input = $request->getAttribute('raw_inputs');
+        $this->input = $request->getAttribute('inputs');
+
+        $route_inputs = $request->getAttribute('route_inputs') ?? [];
+
+        $this->raw_input = array_merge($this->raw_input, $route_inputs);
+        $this->input = array_merge($this->input, $route_inputs);
     }
 
     /**

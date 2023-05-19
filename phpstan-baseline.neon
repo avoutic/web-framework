@@ -116,11 +116,6 @@ parameters:
 			path: includes/WF.php
 
 		-
-			message: "#^Parameter \\#3 \\$response_code of function header expects int, string given\\.$#"
-			count: 1
-			path: includes/WFWebHandler.php
-
-		-
 			message: "#^Parameter \\#1 \\$data of method WebFramework\\\\Core\\\\DatabaseManager\\:\\:execute\\(\\) expects array\\{target_version\\: int, actions\\: array\\<array\\>\\}, array given\\.$#"
 			count: 1
 			path: scripts/db_init.php

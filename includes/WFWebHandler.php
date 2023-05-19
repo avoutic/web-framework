@@ -2,7 +2,13 @@
 
 namespace WebFramework\Core;
 
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Slim\Psr7\Factory\ResponseFactory;
 use Slim\Psr7\Factory\ServerRequestFactory;
+use WebFramework\Exception\HttpForbiddenException;
+use WebFramework\Exception\HttpNotFoundException;
+use WebFramework\Exception\HttpUnauthorizedException;
 
 class WFWebHandler
 {
@@ -29,13 +35,16 @@ class WFWebHandler
     private array $messages = [];
 
     public function __construct(
-        private AssertService $assert_service,
         private Security\AuthenticationService $authentication_service,
         private Security\BlacklistService $blacklist_service,
         private ConfigService $config_service,
         private Security\CsrfService $csrf_service,
+        private ObjectFunctionCaller $object_function_caller,
         private Security\ProtectService $protect_service,
+        private ResponseEmitter $response_emitter,
+        private ResponseFactory $response_factory,
         private RouteService $route_service,
+        private ValidatorService $validator_service,
     ) {
     }
 
@@ -44,71 +53,82 @@ class WFWebHandler
         $this->exit_send_error(500, $short_message, 'generic', $message);
     }
 
-    public function handle_request(): void
+    public function handle_request(?ServerRequestInterface $request = null, ?ResponseInterface $response = null): ResponseInterface
     {
+        $request ??= ServerRequestFactory::createFromGlobals();
+        $response ??= $this->response_factory->createResponse();
+
         if (!$this->route_service->has_routes())
         {
-            $this->exit_error(
-                'No routes loaded',
-                'No routes have been loaded into Web handler.'
-            );
+            return $this->response_emitter->error($request, $response, 'No routes loaded');
         }
 
         // Run WebHandler
         //
         $this->authentication_service->cleanup();
 
-        if ($this->config_service->get('security.blacklist.enabled') == true)
-        {
-            // Check blacklist
-            //
-            $user_id = null;
-            if ($this->authentication_service->is_authenticated())
-            {
-                $user = $this->authentication_service->get_authenticated_user();
-                $user_id = $user->id;
-            }
+        $request = $this->set_default_attributes($request);
 
-            if (isset($_SERVER['REMOTE_ADDR'])
-                && $this->blacklist_service->is_blacklisted($_SERVER['REMOTE_ADDR'], $user_id))
-            {
-                $this->exit_error(
-                    'Blacklisted',
-                    'Too much suspicious activity. Do you think this is a mistake?'
-                );
-            }
+        // Check blacklist
+        //
+        if ($this->blacklist_service->is_blacklisted(
+            $request->getAttribute('ip'),
+            $request->getAttribute('user_id'),
+        ))
+        {
+            return $this->response_emitter->blacklisted($request, $response);
         }
 
-        $this->load_raw_input();
-        $this->add_security_headers();
-        $this->handle_fixed_input();
-        $this->handle_routing();
+        $request = $this->handle_fixed_input($request);
+        $response = $this->add_security_headers($response);
+
+        return $this->handle_routing($request, $response);
     }
 
-    private function load_raw_input(): void
+    private function set_default_attributes(ServerRequestInterface $request): ServerRequestInterface
     {
-        $data = file_get_contents('php://input');
-        if ($data === false)
+        $server_params = $request->getServerParams();
+
+        $ip = (isset($server_params['REMOTE_ADDR'])) ? $server_params['REMOTE_ADDR'] : 'app';
+        $request = $request->withAttribute('ip', $ip);
+
+        $content_type = $request->getHeaderLine('Content-Type');
+        $is_json = (str_contains($content_type, 'application/json'));
+        $request = $request->withAttribute('is_json', $is_json);
+
+        if ($is_json)
         {
-            return;
+            $body = (string) $request->getBody();
+            $data = json_decode($body, true);
+
+            if (json_last_error() === JSON_ERROR_NONE)
+            {
+                $request = $request->withAttribute('json_data', $data);
+            }
         }
 
-        $data = json_decode($data, true);
-        if ($data !== false && is_array($data))
+        $user = null;
+        $user_id = null;
+        if ($this->authentication_service->is_authenticated())
         {
-            $this->raw_post = $data;
+            $user = $this->authentication_service->get_authenticated_user();
+            $user_id = $user->id;
         }
+
+        $request = $request->withAttribute('user', $user);
+
+        return $request->withAttribute('user_id', $user_id);
     }
 
-    private function add_security_headers(): void
+    private function add_security_headers(ResponseInterface $response): ResponseInterface
     {
         // Add random header (against BREACH like attacks)
         //
-        header('X-Random:'.substr(sha1((string) time()), 0, mt_rand(1, 40)));
+        $response = $response->withHeader('X-Random', substr(sha1((string) time()), 0, mt_rand(1, 40)));
 
         // Add Clickjack prevention header
         //
-        header('X-Frame-Options: SAMEORIGIN');
+        return $response->withHeader('X-Frame-Options', 'SAMEORIGIN');
     }
 
     /**
@@ -140,70 +160,7 @@ class WFWebHandler
         $this->add_message($msg['mtype'], $msg['message'], $msg['extra_message']);
     }
 
-    public function validate_input(string $filter, string $item): void
-    {
-        $this->assert_service->verify(strlen($filter), 'No filter provided');
-
-        if (substr($item, -2) == '[]')
-        {
-            $item = substr($item, 0, -2);
-
-            // Expect multiple values
-            //
-            $info = [];
-            $this->input[$item] = [];
-            $this->raw_input[$item] = [];
-
-            if (isset($this->raw_post[$item]))
-            {
-                $info = $this->raw_post[$item];
-            }
-            elseif (isset($_POST[$item]))
-            {
-                $info = $_POST[$item];
-            }
-            elseif (isset($_GET[$item]))
-            {
-                $info = $_GET[$item];
-            }
-
-            foreach ($info as $k => $val)
-            {
-                $this->raw_input[$item][$k] = trim($val);
-                if (preg_match("/^\\s*{$filter}\\s*$/m", $val))
-                {
-                    $this->input[$item][$k] = trim($val);
-                }
-            }
-        }
-        else
-        {
-            $str = '';
-            $this->input[$item] = '';
-
-            if (isset($this->raw_post[$item]))
-            {
-                $str = $this->raw_post[$item];
-            }
-            elseif (isset($_POST[$item]))
-            {
-                $str = $_POST[$item];
-            }
-            elseif (isset($_GET[$item]))
-            {
-                $str = $_GET[$item];
-            }
-
-            $this->raw_input[$item] = trim($str);
-
-            if (preg_match("/^\\s*{$filter}\\s*$/m", $str))
-            {
-                $this->input[$item] = trim($str);
-            }
-        }
-    }
-
-    private function handle_fixed_input(): void
+    private function handle_fixed_input(ServerRequestInterface $request): ServerRequestInterface
     {
         $fixed_action_filter = [
             'msg' => '.*',
@@ -211,106 +168,65 @@ class WFWebHandler
             'do' => 'yes|preview',
         ];
 
-        array_walk($fixed_action_filter, [$this, 'validate_input']);
+        $request = $this->validator_service->filter_request($request, $fixed_action_filter);
 
-        if (strlen($this->input['msg']))
+        $inputs = $request->getAttribute('inputs');
+
+        if (strlen($inputs['msg']))
         {
-            $this->add_message_from_url($this->input['msg']);
+            $this->add_message_from_url($inputs['msg']);
         }
 
-        if (strlen($this->input['do']))
+        if (strlen($inputs['do']))
         {
-            if (!$this->csrf_service->validate_token($this->input['token']))
+            if (!$this->csrf_service->validate_token($inputs['token']))
             {
-                $this->input['do'] = '';
-                $this->add_blacklist_entry('missing-csrf');
+                $inputs['do'] = '';
+                $request = $request->withAttribute('inputs', $inputs);
+
+                $ip = $request->getAttribute('ip');
+                $user_id = $request->getAttribute('user_id');
+
+                $this->blacklist_service->add_entry($ip, $user_id, 'missing-csrf');
                 $this->add_message('error', 'CSRF token missing, possible attack.', '');
             }
         }
 
-        // Check if site logic has global filter
-        //
-        if (function_exists('site_get_filter'))
-        {
-            $site_filter = site_get_filter();
-            array_walk($site_filter, [$this, 'validate_input']);
-        }
+        return $request;
     }
 
-    private function handle_routing(): void
+    private function handle_routing(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $request = ServerRequestFactory::createFromGlobals();
-
         $redirect = $this->route_service->get_redirect($request);
         if ($redirect !== false)
         {
-            header('Location: '.$redirect['url'], true, $redirect['redirect_type']);
-
-            exit();
+            return $this->response_emitter->redirect($redirect['url'], $redirect['redirect_type']);
         }
 
         $action = $this->route_service->get_action($request);
         if ($action !== false)
         {
-            foreach ($action['args'] as $key => $value)
+            $request = $request->withAttribute('route_inputs', $action['args']);
+
+            try
             {
-                $this->raw_post[$key] = $value;
+                return $this->object_function_caller->execute($this->config_service->get('actions.app_namespace').$action['class'], $action['function'], $request, $response);
             }
-
-            $this->call_obj_func($this->config_service->get('actions.app_namespace').$action['class'], $action['function']);
-
-            exit();
+            catch (HttpForbiddenException $e)
+            {
+                return $this->response_emitter->forbidden($request, $response);
+            }
+            catch (HttpNotFoundException $e)
+            {
+                return $this->response_emitter->not_found($request, $response);
+            }
+            catch (HttpUnauthorizedException $e)
+            {
+                return $this->response_emitter->unauthorized($request, $response);
+            }
         }
 
-        $this->exit_send_404();
-    }
-
-    /**
-     * @param array<string> $permissions
-     */
-    private function enforce_permissions(string $object_name, array $permissions): void
-    {
-        $has_permissions = $this->authentication_service->user_has_permissions($permissions);
-
-        if ($has_permissions)
-        {
-            return;
-        }
-
-        $is_json = (isset($_SERVER['CONTENT_TYPE']) && $_SERVER['CONTENT_TYPE'] == 'application/json');
-
-        if (!$this->authentication_service->is_authenticated() && !$is_json)
-        {
-            $query = (isset($_SERVER['QUERY_STRING'])) ? $_SERVER['QUERY_STRING'] : '';
-            $msg = ['mtype' => 'info', 'message' => $this->config_service->get('authenticator.auth_required_message'), 'extra_message' => ''];
-
-            $msg_fmt = 'msg='.$this->protect_service->encode_and_auth_array($msg);
-
-            header('Location: '.$this->config_service->get('base_url').$this->config_service->get('actions.login.location').'?return_page='.urlencode($this->request_uri).'&return_query='.urlencode($query).'&'.$msg_fmt, true, 302);
-
-            exit();
-        }
-
-        $this->exit_send_403();
-    }
-
-    private function call_obj_func(string $object_name, string $function_name): void
-    {
-        $this->assert_service->verify(class_exists($object_name), "Requested object {$object_name} could not be located");
-        $parents = class_parents($object_name);
-        $this->assert_service->verify(isset($parents[ActionCore::class]), "Requested object {$object_name} does not derive from ActionCore");
-
-        $action_filter = $object_name::get_filter();
-        $action_permissions = $object_name::get_permissions();
-
-        array_walk($action_filter, [$this, 'validate_input']);
-
-        $this->enforce_permissions($object_name, $action_permissions);
-
-        $action_obj = new $object_name();
-
-        $this->assert_service->verify(method_exists($action_obj, $function_name), "Registered route function {$object_name}->{$function_name} does not exist");
-        $action_obj->{$function_name}();
+        return $this->response_emitter->not_found($request, $response);
     }
 
     /**
@@ -434,13 +350,22 @@ class WFWebHandler
             exit();
         }
 
-        $this->input['error_title'] = $title;
-        $this->input['error_message'] = $message;
-
         $object_name = $this->config_service->get('actions.app_namespace').$class;
         $function_name = 'html_main';
 
-        $this->call_obj_func($object_name, $function_name);
+        $request = ServerRequestFactory::createFromGlobals();
+
+        $response_factory = new ResponseFactory();
+        $response = $response_factory->createResponse();
+
+        $inputs = $request->getAttribute('inputs');
+
+        $inputs['error_title'] = $title;
+        $inputs['error_message'] = $message;
+
+        $request = $request->withAttribute('inputs', $inputs);
+
+        $this->object_function_caller->execute($object_name, $function_name, $request, $response);
 
         exit();
     }
@@ -450,6 +375,8 @@ class WFWebHandler
      */
     public function get_input(): array
     {
+        @trigger_error('Deprecated. Should use Request attributes', E_USER_DEPRECATED);
+
         return $this->input;
     }
 
@@ -458,6 +385,8 @@ class WFWebHandler
      */
     public function get_raw_input(): array
     {
+        @trigger_error('Deprecated. Should use Request attributes', E_USER_DEPRECATED);
+
         return $this->raw_input;
     }
 
@@ -470,11 +399,7 @@ class WFWebHandler
 
     public function add_blacklist_entry(string $reason, int $severity = 1): void
     {
-        if ($this->config_service->get('security.blacklist.enabled') != true)
-        {
-            return;
-        }
-
+        @trigger_error('Deprecated. Directly call BlacklistService instead', E_USER_DEPRECATED);
         $user_id = null;
         if ($this->authentication_service->is_authenticated())
         {
@@ -482,6 +407,11 @@ class WFWebHandler
             $user_id = $user->id;
         }
 
-        $this->blacklist_service->add_entry($_SERVER['REMOTE_ADDR'], $user_id, $reason, $severity);
+        $this->blacklist_service->add_entry(
+            $_SERVER['REMOTE_ADDR'],
+            $user_id,
+            $reason,
+            $severity,
+        );
     }
 }
