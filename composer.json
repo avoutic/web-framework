@@ -38,6 +38,7 @@
     "autoload": {
         "psr-4": {
             "WebFramework\\Core\\": "includes/",
+            "WebFramework\\Exception\\": "includes/Exception/",
             "WebFramework\\Actions\\": "actions/"
         }
     },
