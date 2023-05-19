@@ -34,6 +34,7 @@ class WF
     protected ?DatabaseManager $database_manager = null;
     protected ?DebugService $debug_service = null;
     protected ?MailService $mail_service = null;
+    protected ?ObjectFunctionCaller $object_function_caller = null;
     protected ?PostmarkClientFactory $postmark_client_factory = null;
     protected ?ReportFunction $report_function = null;
     protected ?RouteService $route_service = null;
@@ -323,6 +324,30 @@ class WF
         }
 
         return $this->report_function;
+    }
+
+    public function get_object_function_caller(): ObjectFunctionCaller
+    {
+        if ($this->object_function_caller === null)
+        {
+            $this->container_stack[] = 'object_function_caller';
+            if (count($this->container_stack) > 25)
+            {
+                print_r($this->container_stack);
+
+                exit();
+            }
+
+            $this->object_function_caller = new ObjectFunctionCaller(
+                $this->get_assert_service(),
+                $this->get_authentication_service(),
+                $this->get_validator_service(),
+            );
+
+            array_pop($this->container_stack);
+        }
+
+        return $this->object_function_caller;
     }
 
     public function get_route_service(): RouteService
