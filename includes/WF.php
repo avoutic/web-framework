@@ -3,6 +3,7 @@
 namespace WebFramework\Core;
 
 use Cache\Adapter\Redis\RedisCachePool;
+use Slim\Psr7\Factory\ResponseFactory;
 use Slim\Psr7\Factory\ServerRequestFactory;
 
 class WF
@@ -37,6 +38,8 @@ class WF
     protected ?ObjectFunctionCaller $object_function_caller = null;
     protected ?PostmarkClientFactory $postmark_client_factory = null;
     protected ?ReportFunction $report_function = null;
+    protected ?ResponseEmitter $response_emitter = null;
+    protected ?ResponseFactory $response_factory = null;
     protected ?RouteService $route_service = null;
     protected ?Security\ConfigService $secure_config_service = null;
     protected ?Security\ProtectService $protect_service = null;
@@ -348,6 +351,50 @@ class WF
         }
 
         return $this->object_function_caller;
+    }
+
+    public function get_response_emitter(): ResponseEmitter
+    {
+        if ($this->response_emitter === null)
+        {
+            $this->container_stack[] = 'response_emitter';
+            if (count($this->container_stack) > 25)
+            {
+                print_r($this->container_stack);
+
+                exit();
+            }
+
+            $this->response_emitter = new ResponseEmitter(
+                $this->get_config_service(),
+                $this->get_object_function_caller(),
+                $this->get_response_factory(),
+            );
+
+            array_pop($this->container_stack);
+        }
+
+        return $this->response_emitter;
+    }
+
+    public function get_response_factory(): ResponseFactory
+    {
+        if ($this->response_factory === null)
+        {
+            $this->container_stack[] = 'response_factory';
+            if (count($this->container_stack) > 25)
+            {
+                print_r($this->container_stack);
+
+                exit();
+            }
+
+            $this->response_factory = new ResponseFactory();
+
+            array_pop($this->container_stack);
+        }
+
+        return $this->response_factory;
     }
 
     public function get_route_service(): RouteService
