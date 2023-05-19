@@ -40,6 +40,7 @@ class WF
     protected ?Security\ConfigService $secure_config_service = null;
     protected ?Security\ProtectService $protect_service = null;
     protected ?UserMailer $user_mailer = null;
+    protected ?ValidatorService $validator_service = null;
     protected ?WFWebHandler $web_handler = null;
 
     /** @var array<string> */
@@ -411,6 +412,28 @@ class WF
         }
 
         return $this->user_mailer;
+    }
+
+    public function get_validator_service(): ValidatorService
+    {
+        if ($this->validator_service === null)
+        {
+            $this->container_stack[] = 'validator_service';
+            if (count($this->container_stack) > 25)
+            {
+                print_r($this->container_stack);
+
+                exit();
+            }
+
+            $this->validator_service = new ValidatorService(
+                $this->get_assert_service(),
+            );
+
+            array_pop($this->container_stack);
+        }
+
+        return $this->validator_service;
     }
 
     public function get_web_handler(): WFWebHandler
