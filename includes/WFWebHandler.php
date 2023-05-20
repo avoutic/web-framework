@@ -38,20 +38,28 @@ class WFWebHandler
         $this->exit_send_error(500, $short_message, 'generic', $message);
     }
 
-    public function handle_request(?ServerRequestInterface $request = null, ?ResponseInterface $response = null): ResponseInterface
+    public function handle_request(?ServerRequestInterface $request = null, ?ResponseInterface $response = null): void
     {
         $request ??= ServerRequestFactory::createFromGlobals();
         $response ??= $this->response_factory->createResponse();
 
         if (!$this->route_service->has_routes())
         {
-            return $this->response_emitter->error($request, $response, 'No routes loaded');
+            $response = $this->response_emitter->error($request, $response, 'No routes loaded');
+            $this->response_emitter->emit($response);
         }
 
         // Run WebHandler
         //
         $this->authentication_service->cleanup();
 
+        $response = $this->kick_off_request($request, $response);
+
+        $this->response_emitter->emit($response);
+    }
+
+    private function kick_off_request(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
         $request = $this->set_default_attributes($request);
 
         // Check blacklist

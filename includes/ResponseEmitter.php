@@ -15,6 +15,34 @@ class ResponseEmitter
     ) {
     }
 
+    public function emit(ResponseInterface $response): void
+    {
+        // Emit status line
+        //
+        header(sprintf(
+            'HTTP/%s %s %s',
+            $response->getProtocolVersion(),
+            $response->getStatusCode(),
+            $response->getReasonPhrase()
+        ), true, $response->getStatusCode());
+
+        // Emit headers
+        //
+        foreach ($response->getHeaders() as $name => $values)
+        {
+            foreach ($values as $value)
+            {
+                header(sprintf('%s: %s', $name, $value), false);
+            }
+        }
+
+        // Emit body
+        //
+        echo $response->getBody();
+
+        exit();
+    }
+
     public function blacklisted(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $response = $this->response_factory->createResponse(403, 'Forbidden');
