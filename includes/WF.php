@@ -345,6 +345,7 @@ class WF
             $this->object_function_caller = new ObjectFunctionCaller(
                 $this->get_assert_service(),
                 $this->get_authentication_service(),
+                $this,
                 $this->get_validator_service(),
             );
 
