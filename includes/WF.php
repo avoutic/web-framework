@@ -34,6 +34,7 @@ class WF
     protected ?Security\CsrfService $csrf_service = null;
     protected ?DatabaseManager $database_manager = null;
     protected ?DebugService $debug_service = null;
+    protected ?LatteRenderService $latte_render_service = null;
     protected ?MailService $mail_service = null;
     protected ?ObjectFunctionCaller $object_function_caller = null;
     protected ?PostmarkClientFactory $postmark_client_factory = null;
@@ -537,6 +538,31 @@ class WF
         }
 
         return $this->web_handler;
+    }
+
+    public function get_latte_render_service(): LatteRenderService
+    {
+        if ($this->latte_render_service === null)
+        {
+            $this->container_stack[] = 'latte_render_service';
+            if (count($this->container_stack) > 25)
+            {
+                print_r($this->container_stack);
+
+                exit();
+            }
+
+            $this->latte_render_service = new LatteRenderService(
+                $this->get_assert_service(),
+                new \Latte\Engine(),
+                $this->get_app_dir().'/templates',
+                '/tmp/latte',
+            );
+
+            array_pop($this->container_stack);
+        }
+
+        return $this->latte_render_service;
     }
 
     public function get_mail_service(): MailService
