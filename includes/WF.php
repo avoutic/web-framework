@@ -1255,26 +1255,6 @@ class WF
     }
 
     /**
-     * @return array<mixed>
-     */
-    public function get_input(): array
-    {
-        @trigger_error('Deprecated. Will be removed', E_USER_DEPRECATED);
-
-        return $this->get_web_handler()->get_input();
-    }
-
-    /**
-     * @return array<mixed>
-     */
-    public function get_raw_input(): array
-    {
-        @trigger_error('Deprecated. Will be removed', E_USER_DEPRECATED);
-
-        return $this->get_web_handler()->get_raw_input();
-    }
-
-    /**
      * Get build info.
      *
      * @return array{commit: null|string, timestamp: string}

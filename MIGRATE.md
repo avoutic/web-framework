@@ -27,13 +27,13 @@ External:
 * WF->deauthenticate() is deprecated. Use AuthenticationService instead
 * WF->get_authenticated() is removed. Use AuthenticationService->get_authenticated_user() instead
 * WF->get_build_info() is removed. Use DebugService instead
-* WF->get_input() is deprecated. Use WebHandler instead
-* WF->get_messages() is deprecated. Use WebHandler instead
-* WF->get_raw_input() is deprecated. Use WebHandler instead
+* WF->get_input() is removed. Use the Request instead
+* WF->get_messages() is removed. Use WebHandler instead
+* WF->get_raw_input() is deprecated. Use the Request instead
 * WF->invalidate_sessions() is deprecated. Use AuthenticationService instead
 * WF->is_authenticated() is deprecated. Use AuthenticationService instead
 * WF->user_has_permissions() is deprecated. Use AuthenticationService instead
-* WF->validate_inpute() is removed. Use WebHandler instead
+* WF->validate_input() is removed. Use ValidatorService instead
 * WFWebHandler has been re-factored and should be retrieved via WF->get_web_handler()
 * WFWebHandler->register_redirect() is deprecated. User RouteService->register_redirect() instead
 * WFWebHandler->register_route() is deprecated(). User RouteService->register_action() instead

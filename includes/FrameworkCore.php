@@ -88,24 +88,6 @@ class FrameworkCore
         $this->database->commit_transaction();
     }
 
-    // Input related
-    //
-    /**
-     * @return array<mixed>
-     */
-    protected function get_input(): array
-    {
-        return $this->web_handler->get_input();
-    }
-
-    /**
-     * @return array<mixed>
-     */
-    protected function get_raw_input(): array
-    {
-        return $this->web_handler->get_raw_input();
-    }
-
     // Message related
     //
     /**

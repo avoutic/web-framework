@@ -15,21 +15,6 @@ class WFWebHandler
     protected string $request_uri = '/';
 
     /**
-     * @var array<mixed>
-     */
-    protected array $input = [];
-
-    /**
-     * @var array<mixed>
-     */
-    protected array $raw_input = [];
-
-    /**
-     * @var array<mixed>
-     */
-    protected array $raw_post = [];
-
-    /**
      * @var array<array{mtype: string, message: string, extra_message: string}>
      */
     private array $messages = [];
@@ -368,26 +353,6 @@ class WFWebHandler
         $this->object_function_caller->execute($object_name, $function_name, $request, $response);
 
         exit();
-    }
-
-    /**
-     * @return array<mixed>
-     */
-    public function get_input(): array
-    {
-        @trigger_error('Deprecated. Should use Request attributes', E_USER_DEPRECATED);
-
-        return $this->input;
-    }
-
-    /**
-     * @return array<mixed>
-     */
-    public function get_raw_input(): array
-    {
-        @trigger_error('Deprecated. Should use Request attributes', E_USER_DEPRECATED);
-
-        return $this->raw_input;
     }
 
     public function get_csrf_token(): string
