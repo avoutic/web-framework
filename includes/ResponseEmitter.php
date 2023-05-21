@@ -10,6 +10,7 @@ class ResponseEmitter
 {
     public function __construct(
         private ConfigService $config_service,
+        private MessageService $message_service,
         private ObjectFunctionCaller $object_function_caller,
         private ResponseFactory $response_factory,
     ) {
@@ -135,8 +136,17 @@ class ResponseEmitter
             return $response->withHeader('Content-type', 'application/json');
         }
 
-        $mapping = $this->config_service->get('error_handlers.401');
+        $message = $this->message_service->get_for_url(
+            'info',
+            $this->config_service->get('authenticator.auth_required_message'),
+        );
 
-        return $this->object_function_caller->execute($this->config_service->get('actions.app_namespace').$mapping, 'html_main', $request, $response);
+        return $this->redirect(
+            $this->config_service->get('base_url').$this->config_service->get('actions.login.location').
+            '?return_page='.urlencode($request->getUri()->getPath()).
+            '&return_query='.urlencode($request->getUri()->getQuery()).
+            '&'.$message,
+            302
+        );
     }
 }

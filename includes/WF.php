@@ -370,6 +370,7 @@ class WF
 
             $this->response_emitter = new ResponseEmitter(
                 $this->get_config_service(),
+                $this->get_message_service(),
                 $this->get_object_function_caller(),
                 $this->get_response_factory(),
             );
