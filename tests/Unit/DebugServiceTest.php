@@ -2,9 +2,9 @@
 
 namespace Tests\Unit;
 
+use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Psr7\Factory\RequestFactory;
 use Slim\Psr7\Factory\StreamFactory;
-use Slim\Psr7\Request;
 use WebFramework\Core\Database;
 use WebFramework\Core\DebugService;
 use WebFramework\Core\User;

@@ -2,12 +2,12 @@
 
 namespace WebFramework\Exception;
 
-use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\ServerRequestInterface as Request;
 
 class FrameworkHttpException extends \RuntimeException
 {
     public function __construct(
-        protected ServerRequestInterface $request,
+        protected Request $request,
         string $message = '',
         int $code = 0,
         ?\Throwable $previous = null,
@@ -15,7 +15,7 @@ class FrameworkHttpException extends \RuntimeException
         parent::__construct($message, $code, $previous);
     }
 
-    public function get_request(): ServerRequestInterface
+    public function get_request(): Request
     {
         return $this->request;
     }

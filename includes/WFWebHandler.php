@@ -2,8 +2,8 @@
 
 namespace WebFramework\Core;
 
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Psr7\Factory\ResponseFactory;
 use Slim\Psr7\Factory\ServerRequestFactory;
 use WebFramework\Middleware\AuthenticationInfoMiddleware;
@@ -38,7 +38,7 @@ class WFWebHandler
         $this->exit_send_error(500, $short_message, 'generic', $message);
     }
 
-    public function handle_request(?ServerRequestInterface $request = null, ?ResponseInterface $response = null): void
+    public function handle_request(?Request $request = null, ?Response $response = null): void
     {
         $request ??= ServerRequestFactory::createFromGlobals();
         $response ??= $this->response_factory->createResponse();

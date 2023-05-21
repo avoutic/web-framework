@@ -3,6 +3,7 @@
 namespace WebFramework\Core;
 
 use GuzzleHttp\Client;
+use Psr\Http\Message\ResponseInterface as Response;
 
 class Webhook
 {
@@ -15,7 +16,7 @@ class Webhook
     /**
      * @param array<mixed> $data
      */
-    public function trigger(array $data): \Psr\Http\Message\ResponseInterface
+    public function trigger(array $data): Response
     {
         $json_encoded_data = json_encode($data);
         if ($json_encoded_data === false)

@@ -2,8 +2,8 @@
 
 namespace WebFramework\Core;
 
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
 use WebFramework\Exception\HttpForbiddenException;
 use WebFramework\Exception\HttpUnauthorizedException;
 
@@ -17,7 +17,7 @@ class ObjectFunctionCaller
     ) {
     }
 
-    public function execute(string $object_name, string $function_name, ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    public function execute(string $object_name, string $function_name, Request $request, Response $response): Response
     {
         $this->assert_service->verify(class_exists($object_name), "Requested object {$object_name} could not be located");
         $parents = class_parents($object_name);
@@ -25,7 +25,7 @@ class ObjectFunctionCaller
         if (isset($parents[ActionCore::class]))
         {
             // Derives from old-style ActionCore
-            // Handles own flow and response so will only return a ResponseInterface in case of an error
+            // Handles own flow and response so will only return a Response in case of an error
             //
             return $this->execute_action_core($object_name, $function_name, $request, $response);
         }
@@ -37,7 +37,7 @@ class ObjectFunctionCaller
         return $action_obj->{$function_name}($request, $response, $request->getAttribute('route_inputs'));
     }
 
-    private function execute_action_core(string $object_name, string $function_name, ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    private function execute_action_core(string $object_name, string $function_name, Request $request, Response $response): Response
     {
         $action_permissions = $object_name::get_permissions();
         $has_permissions = $this->authentication_service->user_has_permissions($action_permissions);

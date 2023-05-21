@@ -2,7 +2,7 @@
 
 namespace WebFramework\Core;
 
-use Slim\Psr7\Request;
+use Psr\Http\Message\ServerRequestInterface as Request;
 
 class AssertService
 {

@@ -2,12 +2,12 @@
 
 namespace WebFramework\Exception;
 
-use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\ServerRequestInterface as Request;
 
 class HttpErrorException extends FrameworkHttpException
 {
     public function __construct(
-        ServerRequestInterface $request,
+        Request $request,
         ?\Throwable $previous = null,
     ) {
         parent::__construct($request, 'Internal Error.', 500, $previous);

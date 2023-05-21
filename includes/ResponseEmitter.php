@@ -2,8 +2,8 @@
 
 namespace WebFramework\Core;
 
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Psr7\Factory\ResponseFactory;
 
 class ResponseEmitter
@@ -16,7 +16,7 @@ class ResponseEmitter
     ) {
     }
 
-    public function emit(ResponseInterface $response): void
+    public function emit(Response $response): void
     {
         // Emit status line
         //
@@ -44,7 +44,7 @@ class ResponseEmitter
         exit();
     }
 
-    public function blacklisted(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    public function blacklisted(Request $request, Response $response): Response
     {
         $response = $this->response_factory->createResponse(403, 'Forbidden');
 
@@ -66,7 +66,7 @@ class ResponseEmitter
         return $this->object_function_caller->execute($this->config_service->get('actions.app_namespace').$mapping, 'html_main', $request, $response);
     }
 
-    public function error(ServerRequestInterface $request, ResponseInterface $response, string $title, string $details = '', int $http_code = 500, string $reason_phrase = 'Internal error'): ResponseInterface
+    public function error(Request $request, Response $response, string $title, string $details = '', int $http_code = 500, string $reason_phrase = 'Internal error'): Response
     {
         $response = $this->response_factory->createResponse($http_code, $reason_phrase);
 
@@ -92,7 +92,7 @@ class ResponseEmitter
         return $this->object_function_caller->execute($this->config_service->get('actions.app_namespace').$mapping, 'html_main', $request, $response);
     }
 
-    public function forbidden(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    public function forbidden(Request $request, Response $response): Response
     {
         $response = $this->response_factory->createResponse(403, 'Forbidden');
 
@@ -106,7 +106,7 @@ class ResponseEmitter
         return $this->object_function_caller->execute($this->config_service->get('actions.app_namespace').$mapping, 'html_main', $request, $response);
     }
 
-    public function not_found(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    public function not_found(Request $request, Response $response): Response
     {
         $response = $this->response_factory->createResponse(404, 'Not Found');
 
@@ -120,14 +120,14 @@ class ResponseEmitter
         return $this->object_function_caller->execute($this->config_service->get('actions.app_namespace').$mapping, 'html_main', $request, $response);
     }
 
-    public function redirect(string $url, int $redirect_type): ResponseInterface
+    public function redirect(string $url, int $redirect_type): Response
     {
         $response = $this->response_factory->createResponse($redirect_type);
 
         return $response->withHeader('Location', $url);
     }
 
-    public function unauthorized(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    public function unauthorized(Request $request, Response $response): Response
     {
         $response = $this->response_factory->createResponse(401, 'Unauthorized');
 
