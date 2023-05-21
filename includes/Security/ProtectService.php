@@ -17,7 +17,7 @@ class ProtectService
         return openssl_random_pseudo_bytes($iv_len);
     }
 
-    protected function internal_encode_and_auth(string $str): string
+    protected function internal_pack_string(string $str): string
     {
         // First encrypt it
         //
@@ -54,15 +54,15 @@ class ProtectService
         return implode('--', $chunks);
     }
 
-    public function encode_and_auth_string(string $value): string
+    public function pack_string(string $value): string
     {
-        return $this->internal_encode_and_auth($value);
+        return $this->internal_pack_string($value);
     }
 
     /**
      * @param array<mixed> $array
      */
-    public function encode_and_auth_array(array $array): string
+    public function pack_array(array $array): string
     {
         $str = json_encode($array);
         if ($str === false)
@@ -70,10 +70,10 @@ class ProtectService
             return '';
         }
 
-        return $this->internal_encode_and_auth($str);
+        return $this->internal_pack_string($str);
     }
 
-    protected function internal_decode_and_verify_string(string $str): string|false
+    protected function internal_unpack_string(string $str): string|false
     {
         // Remove the double hyphens first
         //
@@ -123,17 +123,17 @@ class ProtectService
         return $original;
     }
 
-    public function decode_and_verify_string(string $str): string|false
+    public function unpack_string(string $str): string|false
     {
-        return $this->internal_decode_and_verify_string($str);
+        return $this->internal_unpack_string($str);
     }
 
     /**
      * @return array<mixed>|false
      */
-    public function decode_and_verify_array(string $str): array|false
+    public function unpack_array(string $str): array|false
     {
-        $json_encoded = $this->internal_decode_and_verify_string($str);
+        $json_encoded = $this->internal_unpack_string($str);
 
         if ($json_encoded === false)
         {

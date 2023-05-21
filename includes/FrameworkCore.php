@@ -110,7 +110,7 @@ class FrameworkCore
     {
         $msg = ['mtype' => $mtype, 'message' => $message, 'extra_message' => $extra_message];
 
-        return 'msg='.$this->protect_service->encode_and_auth_array($msg);
+        return 'msg='.$this->protect_service->pack_array($msg);
     }
 
     // Assert related
@@ -153,7 +153,7 @@ class FrameworkCore
 
     protected function encode_and_auth_string(string $value): string
     {
-        return $this->protect_service->encode_and_auth_string($value);
+        return $this->protect_service->pack_string($value);
     }
 
     /**
@@ -161,12 +161,12 @@ class FrameworkCore
      */
     protected function encode_and_auth_array(array $array): string
     {
-        return $this->protect_service->encode_and_auth_array($array);
+        return $this->protect_service->pack_array($array);
     }
 
     protected function decode_and_verify_string(string $str): string|false
     {
-        return $this->protect_service->decode_and_verify_string($str);
+        return $this->protect_service->unpack_string($str);
     }
 
     /**
@@ -174,7 +174,7 @@ class FrameworkCore
      */
     protected function decode_and_verify_array(string $str): array|false
     {
-        return $this->protect_service->decode_and_verify_array($str);
+        return $this->protect_service->unpack_array($str);
     }
 
     // Authentication related

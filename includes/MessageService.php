@@ -31,7 +31,7 @@ class MessageService
 
     public function add_from_url(string $data): void
     {
-        $msg = $this->protect_service->decode_and_verify_array($data);
+        $msg = $this->protect_service->unpack_array($data);
 
         if (!is_array($msg))
         {
@@ -49,6 +49,6 @@ class MessageService
     {
         $msg = ['mtype' => $mtype, 'message' => $message, 'extra_message' => $extra_message];
 
-        return 'msg='.$this->protect_service->encode_and_auth_array($msg);
+        return 'msg='.$this->protect_service->pack_array($msg);
     }
 }
