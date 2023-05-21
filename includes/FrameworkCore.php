@@ -9,6 +9,7 @@ class FrameworkCore
 {
     protected Cache $cache;
     protected WF $framework;
+    protected MessageService $message_service;
     protected ProtectService $protect_service;
     protected ConfigService $secure_config_service;
     protected WFWebHandler $web_handler;
@@ -19,6 +20,7 @@ class FrameworkCore
         $this->framework = WF::get_framework();
         $this->cache = $this->framework->get_cache();
         $this->database = $this->framework->get_db();
+        $this->message_service = $this->framework->get_message_service();
         $this->protect_service = $this->framework->get_protect_service();
         $this->secure_config_service = $this->framework->get_secure_config_service();
         $this->web_handler = $this->framework->get_web_handler();
@@ -40,6 +42,7 @@ class FrameworkCore
         $this->framework = WF::get_framework();
         $this->cache = $this->framework->get_cache();
         $this->database = $this->framework->get_db();
+        $this->message_service = $this->framework->get_message_service();
         $this->protect_service = $this->framework->get_protect_service();
         $this->secure_config_service = $this->framework->get_secure_config_service();
         $this->web_handler = $this->framework->get_web_handler();
@@ -95,12 +98,12 @@ class FrameworkCore
      */
     protected function get_messages(): array
     {
-        return $this->web_handler->get_messages();
+        return $this->message_service->get_messages();
     }
 
     protected function add_message(string $mtype, string $message, string $extra_message = ''): void
     {
-        $this->web_handler->add_message($mtype, $message, $extra_message);
+        $this->message_service->add($mtype, $message, $extra_message);
     }
 
     protected function get_message_for_url(string $mtype, string $message, string $extra_message = ''): string

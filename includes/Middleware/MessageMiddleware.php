@@ -6,13 +6,13 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use WebFramework\Core\Security\ProtectService;
+use WebFramework\Core\MessageService;
 use WebFramework\Core\ValidatorService;
 
 class MessageMiddleware implements MiddlewareInterface
 {
     public function __construct(
-        private ProtectService $protect_service,
+        private MessageService $message_service,
         private ValidatorService $validator_service,
     ) {
     }
@@ -28,11 +28,7 @@ class MessageMiddleware implements MiddlewareInterface
 
         if (strlen($params['msg']))
         {
-            $msg = $this->protect_service->decode_and_verify_array($params['msg']);
-
-            $messages = $request->getAttribute('messages', []);
-            $messages[] = $msg;
-            $request = $request->withAttribute('messages', $messages);
+            $this->message_service->add_from_url($params['msg']);
         }
 
         return $handler->handle($request);

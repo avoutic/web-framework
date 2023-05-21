@@ -18,18 +18,13 @@ class WFWebHandler
 {
     protected string $request_uri = '/';
 
-    /**
-     * @var array<array{mtype: string, message: string, extra_message: string}>
-     */
-    private array $messages = [];
-
     public function __construct(
         private Security\AuthenticationService $authentication_service,
         private Security\BlacklistService $blacklist_service,
         private ConfigService $config_service,
         private Security\CsrfService $csrf_service,
+        private MessageService $message_service,
         private ObjectFunctionCaller $object_function_caller,
-        private Security\ProtectService $protect_service,
         private ResponseEmitter $response_emitter,
         private ResponseFactory $response_factory,
         private RouteService $route_service,
@@ -66,7 +61,7 @@ class WFWebHandler
         ));
         $middleware_stack->push(new SecurityHeadersMiddleware());
         $middleware_stack->push(new MessageMiddleware(
-            $this->protect_service,
+            $this->message_service,
             $this->validator_service,
         ));
         $middleware_stack->push(new JsonParserMiddleware());

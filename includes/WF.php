@@ -36,6 +36,7 @@ class WF
     protected ?DebugService $debug_service = null;
     protected ?LatteRenderService $latte_render_service = null;
     protected ?MailService $mail_service = null;
+    protected ?MessageService $message_service = null;
     protected ?ObjectFunctionCaller $object_function_caller = null;
     protected ?PostmarkClientFactory $postmark_client_factory = null;
     protected ?ReportFunction $report_function = null;
@@ -527,8 +528,8 @@ class WF
                 $this->get_blacklist_service(),
                 $this->get_config_service(),
                 $this->get_csrf_service(),
+                $this->get_message_service(),
                 $this->get_object_function_caller(),
-                $this->get_protect_service(),
                 $this->get_response_emitter(),
                 $this->get_response_factory(),
                 $this->get_route_service(),
@@ -590,6 +591,28 @@ class WF
         }
 
         return $this->mail_service;
+    }
+
+    public function get_message_service(): MessageService
+    {
+        if ($this->message_service === null)
+        {
+            $this->container_stack[] = 'message_service';
+            if (count($this->container_stack) > 25)
+            {
+                print_r($this->container_stack);
+
+                exit();
+            }
+
+            $this->message_service = new MessageService(
+                $this->get_protect_service(),
+            );
+
+            array_pop($this->container_stack);
+        }
+
+        return $this->message_service;
     }
 
     public function get_postmark_client_factory(): PostmarkClientFactory

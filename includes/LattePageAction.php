@@ -24,7 +24,7 @@ abstract class LattePageAction
         $data['csrf_token'] = $this->container->get_csrf_service()->get_token();
         $data['build_info'] = $this->container->get_debug_service()->get_build_info();
         $data['config'] = $this->container->get_config('');
-        $data['messages'] = $this->container->get_web_handler()->get_messages();
+        $data['messages'] = $this->container->get_message_service()->get_messages();
 
         $data['content_title'] = '';
         $data['canonical'] = '';
