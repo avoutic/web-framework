@@ -8,6 +8,7 @@ use Slim\Psr7\Factory\ResponseFactory;
 use Slim\Psr7\Factory\ServerRequestFactory;
 use WebFramework\Middleware\AuthenticationInfoMiddleware;
 use WebFramework\Middleware\BlacklistMiddleware;
+use WebFramework\Middleware\CsrfValidationMiddleware;
 use WebFramework\Middleware\IpMiddleware;
 use WebFramework\Middleware\JsonParserMiddleware;
 use WebFramework\Middleware\MessageMiddleware;
@@ -67,6 +68,12 @@ class WFWebHandler
         $middleware_stack->push(new JsonParserMiddleware());
         $middleware_stack->push(new BlacklistMiddleware(
             $this->blacklist_service,
+        ));
+        $middleware_stack->push(new CsrfValidationMiddleware(
+            $this->blacklist_service,
+            $this->csrf_service,
+            $this->message_service,
+            $this->validator_service,
         ));
         $middleware_stack->push(new AuthenticationInfoMiddleware(
             $this->authentication_service,
