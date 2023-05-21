@@ -6,7 +6,6 @@ class BaseFactory
 {
     public function __construct(
         protected Database $database,
-        protected AssertService $assert_service,
     ) {
     }
 
@@ -17,9 +16,12 @@ class BaseFactory
      *
      * @return false|T
      */
-    public function get_user(int $user_id, string $type = '\\WebFramework\\Core\\User'): User|false
+    public function get_user(int $user_id, string $type = User::class): User|false
     {
-        $this->assert_service->verify(class_exists($type), 'Class does not exist');
+        if (!class_exists($type))
+        {
+            throw new \InvalidArgumentException("Class {$type} does not exist");
+        }
 
         return $type::get_object_by_id($user_id);
     }
@@ -31,9 +33,12 @@ class BaseFactory
      *
      * @return array<T>
      */
-    public function get_users(int $offset = 0, int $results = 10, string $type = '\\WebFramework\\Core\\User'): array
+    public function get_users(int $offset = 0, int $results = 10, string $type = User::class): array
     {
-        $this->assert_service->verify(class_exists($type), 'Class does not exist');
+        if (!class_exists($type))
+        {
+            throw new \InvalidArgumentException("Class {$type} does not exist");
+        }
 
         return $type::get_objects($offset, $results);
     }
@@ -45,9 +50,12 @@ class BaseFactory
      *
      * @return false|T
      */
-    public function get_user_by_username(string $username, string $type = '\\WebFramework\\Core\\User'): User|false
+    public function get_user_by_username(string $username, string $type = User::class): User|false
     {
-        $this->assert_service->verify(class_exists($type), 'Class does not exist');
+        if (!class_exists($type))
+        {
+            throw new \InvalidArgumentException("Class {$type} does not exist");
+        }
 
         return $type::get_object(['username' => $username]);
     }
@@ -59,9 +67,12 @@ class BaseFactory
      *
      * @return false|T
      */
-    public function get_user_by_email(string $email, string $type = '\\WebFramework\\Core\\User'): User|false
+    public function get_user_by_email(string $email, string $type = User::class): User|false
     {
-        $this->assert_service->verify(class_exists($type), 'Class does not exist');
+        if (!class_exists($type))
+        {
+            throw new \InvalidArgumentException("Class {$type} does not exist");
+        }
 
         return $type::get_object(['email' => $email]);
     }
@@ -73,8 +84,13 @@ class BaseFactory
      *
      * @return array<T>
      */
-    public function search_users(string $string, string $type = '\\WebFramework\\Core\\User'): array
+    public function search_users(string $string, string $type = User::class): array
     {
+        if (!class_exists($type))
+        {
+            throw new \InvalidArgumentException("Class {$type} does not exist");
+        }
+
         $query = <<<'SQL'
         SELECT id
         FROM users
@@ -88,13 +104,21 @@ SQL;
             "%{$string}%",
             "%{$string}%",
         ]);
-        $this->assert_service->verify($result !== false, 'Failed to search users');
+
+        if ($result === false)
+        {
+            throw new \RuntimeException('Failed to search users');
+        }
 
         $data = [];
         foreach ($result as $row)
         {
             $user = $this->get_user($row['id'], $type);
-            $this->assert_service->verify($user !== false, 'Failed to retrieve user');
+
+            if ($user === false)
+            {
+                throw new \RuntimeException('Failed to retrieve user');
+            }
 
             $data[] = $user;
         }
@@ -109,21 +133,21 @@ SQL;
      *
      * @return T
      */
-    public function create_user(string $username, string $password, string $email, int $terms_accepted, string $type = '\\WebFramework\\Core\\User'): User
+    public function create_user(string $username, string $password, string $email, int $terms_accepted, string $type = User::class): User
     {
-        $this->assert_service->verify(class_exists($type), 'Class does not exist');
+        if (!class_exists($type))
+        {
+            throw new \InvalidArgumentException("Class {$type} does not exist");
+        }
 
         $solid_password = User::new_hash_from_password($password);
 
-        $user = $type::create([
+        return $type::create([
             'username' => $username,
             'solid_password' => $solid_password,
             'email' => $email,
             'terms_accepted' => $terms_accepted,
             'registered' => time(),
         ]);
-        $this->assert_service->verify($user !== false, 'Failed to create new user');
-
-        return $user;
     }
 }
