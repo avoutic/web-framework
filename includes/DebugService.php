@@ -30,11 +30,42 @@ class DebugService
     }
 
     /**
+     * @return array{title: string, low_info_message: string, message: string, hash: string}
+     */
+    public function get_throwable_report(\Throwable $e, ?Request $request): array
+    {
+        $stack = $this->filter_trace($e->getTrace());
+
+        $file = $e->getFile();
+        $line = $e->getLine();
+        $error_type = 'Unhandled exception';
+        $message = $e->getMessage();
+
+        return $this->get_report($file, $line, $stack, $request, $error_type, $message);
+    }
+
+    /**
      * @param array<mixed> $trace
      *
      * @return array{title: string, low_info_message: string, message: string, hash: string}
      */
     public function get_error_report(array $trace, ?Request $request, string $error_type, string $message): array
+    {
+        $stack = $this->filter_trace($trace);
+        $stack_top = reset($stack);
+
+        $file = ($stack_top) ? $stack_top['file'] : 'unknown';
+        $line = ($stack_top) ? $stack_top['line'] : 0;
+
+        return $this->get_report($file, $line, $stack, $request, $error_type, $message);
+    }
+
+    /**
+     * @param array<mixed> $filtered_stack
+     *
+     * @return array{title: string, low_info_message: string, message: string, hash: string}
+     */
+    private function get_report(string $file, int $line, array $filtered_stack, ?Request $request, string $error_type, string $message): array
     {
         $info = [
             'title' => "{$this->server_name} - {$error_type}: {$message}",
@@ -55,12 +86,6 @@ class DebugService
             $request_source = $request_method.' '.$uri;
         }
 
-        $stack = $this->filter_trace($trace);
-        $stack_top = reset($stack);
-
-        $file = ($stack_top) ? $stack_top['file'] : 'unknown';
-        $line = ($stack_top) ? $stack_top['line'] : 0;
-
         // Cache hash
         //
         $info['hash'] = $this->generate_hash($this->server_name, $request_source, $file, $line, $message);
@@ -74,7 +99,7 @@ Line: {$line}
 TXT;
 
         $error_type = WFHelpers::get_error_type_string($error_type);
-        $condensed_stack = $this->condense_stack($stack);
+        $condensed_stack = $this->condense_stack($filtered_stack);
 
         $db_error = $this->get_database_error($this->database);
 
@@ -92,7 +117,7 @@ TXT;
         }
 
         $auth_data = $this->get_authentication_status();
-        $stack_fmt = (count($stack)) ? print_r($stack, true) : "No stack\n";
+        $stack_fmt = (count($filtered_stack)) ? print_r($filtered_stack, true) : "No stack\n";
 
         $info['message'] .= <<<TXT
 File: {$file}

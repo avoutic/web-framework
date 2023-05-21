@@ -44,7 +44,7 @@ catch (Throwable $e)
     $request = ServerRequestFactory::createFromGlobals();
 
     $debug_service = $core_framework->get_debug_service();
-    $error_report = $debug_service->get_error_report($e->getTrace(), $request, 'unhandled_exception', $e->getMessage());
+    $error_report = $debug_service->get_throwable_report($e, $request);
 
     $report_function = $core_framework->get_report_function();
     $report_function->report($e->getMessage(), 'unhandled_exception', $error_report);
