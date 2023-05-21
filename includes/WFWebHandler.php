@@ -14,16 +14,19 @@ use WebFramework\Middleware\JsonParserMiddleware;
 use WebFramework\Middleware\MessageMiddleware;
 use WebFramework\Middleware\RoutingMiddleware;
 use WebFramework\Middleware\SecurityHeadersMiddleware;
+use WebFramework\Security\AuthenticationService;
+use WebFramework\Security\BlacklistService;
+use WebFramework\Security\CsrfService;
 
 class WFWebHandler
 {
     protected string $request_uri = '/';
 
     public function __construct(
-        private Security\AuthenticationService $authentication_service,
-        private Security\BlacklistService $blacklist_service,
+        private AuthenticationService $authentication_service,
+        private BlacklistService $blacklist_service,
         private ConfigService $config_service,
-        private Security\CsrfService $csrf_service,
+        private CsrfService $csrf_service,
         private MessageService $message_service,
         private ObjectFunctionCaller $object_function_caller,
         private ResponseEmitter $response_emitter,

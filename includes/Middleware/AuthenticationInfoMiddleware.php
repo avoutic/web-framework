@@ -6,7 +6,7 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use WebFramework\Core\Security\AuthenticationService;
+use WebFramework\Security\AuthenticationService;
 
 class AuthenticationInfoMiddleware implements MiddlewareInterface
 {

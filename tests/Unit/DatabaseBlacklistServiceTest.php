@@ -4,7 +4,7 @@ namespace Tests\Unit;
 
 use WebFramework\Core\Database;
 use WebFramework\Core\DatabaseResultWrapper;
-use WebFramework\Core\Security\DatabaseBlacklistService;
+use WebFramework\Security\DatabaseBlacklistService;
 
 /**
  * @internal

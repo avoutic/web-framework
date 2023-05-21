@@ -43,6 +43,7 @@
             "WebFramework\\Core\\": "includes/",
             "WebFramework\\Exception\\": "includes/Exception/",
             "WebFramework\\Middleware\\": "includes/Middleware/",
+            "WebFramework\\Security\\": "includes/Security/",
             "WebFramework\\Actions\\": "actions/"
         }
     },

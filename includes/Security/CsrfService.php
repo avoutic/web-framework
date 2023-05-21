@@ -1,6 +1,6 @@
 <?php
 
-namespace WebFramework\Core\Security;
+namespace WebFramework\Security;
 
 use WebFramework\Core\BrowserSessionService;
 

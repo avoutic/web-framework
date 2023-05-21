@@ -2,7 +2,7 @@
 
 namespace Tests\Unit;
 
-use WebFramework\Core\Security\ConfigService;
+use WebFramework\Security\ConfigService as SecureConfigService;
 
 /**
  * @internal
@@ -14,7 +14,7 @@ final class ConfigServiceTest extends \Codeception\Test\Unit
     public function testGetAuthConfigNonExisting()
     {
         $instance = $this->construct(
-            ConfigService::class,
+            SecureConfigService::class,
             [
                 '/appdir/auth',
             ],
@@ -32,7 +32,7 @@ final class ConfigServiceTest extends \Codeception\Test\Unit
     public function testGetAuthConfigEmpty()
     {
         $instance = $this->construct(
-            ConfigService::class,
+            SecureConfigService::class,
             [
                 '/appdir/auth',
             ],
@@ -50,7 +50,7 @@ final class ConfigServiceTest extends \Codeception\Test\Unit
     public function testGetAuthConfigString()
     {
         $instance = $this->construct(
-            ConfigService::class,
+            SecureConfigService::class,
             [
                 '/appdir/auth',
             ],
@@ -66,7 +66,7 @@ final class ConfigServiceTest extends \Codeception\Test\Unit
     public function testGetAuthConfigArray()
     {
         $instance = $this->construct(
-            ConfigService::class,
+            SecureConfigService::class,
             [
                 '/appdir/auth',
             ],

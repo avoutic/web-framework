@@ -5,6 +5,14 @@ namespace WebFramework\Core;
 use Cache\Adapter\Redis\RedisCachePool;
 use Slim\Psr7\Factory\ResponseFactory;
 use Slim\Psr7\Factory\ServerRequestFactory;
+use WebFramework\Security\AuthenticationService;
+use WebFramework\Security\BlacklistService;
+use WebFramework\Security\ConfigService as SecureConfigService;
+use WebFramework\Security\CsrfService;
+use WebFramework\Security\DatabaseAuthenticationService;
+use WebFramework\Security\DatabaseBlacklistService;
+use WebFramework\Security\NullBlacklistService;
+use WebFramework\Security\ProtectService;
 
 class WF
 {
@@ -27,11 +35,11 @@ class WF
     //
     protected ?AssertService $assert_service = null;
     protected ?BaseFactory $base_factory = null;
-    protected ?Security\AuthenticationService $authentication_service = null;
-    protected ?Security\BlacklistService $blacklist_service = null;
+    protected ?AuthenticationService $authentication_service = null;
+    protected ?BlacklistService $blacklist_service = null;
     protected ?BrowserSessionService $browser_session_service = null;
     protected ?ConfigService $config_service = null;
-    protected ?Security\CsrfService $csrf_service = null;
+    protected ?CsrfService $csrf_service = null;
     protected ?DatabaseManager $database_manager = null;
     protected ?DebugService $debug_service = null;
     protected ?LatteRenderService $latte_render_service = null;
@@ -43,8 +51,8 @@ class WF
     protected ?ResponseEmitter $response_emitter = null;
     protected ?ResponseFactory $response_factory = null;
     protected ?RouteService $route_service = null;
-    protected ?Security\ConfigService $secure_config_service = null;
-    protected ?Security\ProtectService $protect_service = null;
+    protected ?SecureConfigService $secure_config_service = null;
+    protected ?ProtectService $protect_service = null;
     protected ?UserMailer $user_mailer = null;
     protected ?ValidatorService $validator_service = null;
     protected ?WFWebHandler $web_handler = null;
@@ -101,7 +109,7 @@ class WF
         return $this->assert_service;
     }
 
-    public function get_authentication_service(): Security\AuthenticationService
+    public function get_authentication_service(): AuthenticationService
     {
         if ($this->authentication_service === null)
         {
@@ -113,7 +121,7 @@ class WF
                 exit();
             }
 
-            $this->authentication_service = new Security\DatabaseAuthenticationService(
+            $this->authentication_service = new DatabaseAuthenticationService(
                 $this->get_cache(),
                 $this->get_main_db(),
                 $this->get_browser_session_service(),
@@ -151,7 +159,7 @@ class WF
         return $this->base_factory;
     }
 
-    public function get_blacklist_service(): Security\BlacklistService
+    public function get_blacklist_service(): BlacklistService
     {
         if ($this->blacklist_service === null)
         {
@@ -165,11 +173,11 @@ class WF
 
             if ($this->get_config_service()->get('security.blacklist.enabled') == true)
             {
-                $this->blacklist_service = new Security\NullBlacklistService();
+                $this->blacklist_service = new NullBlacklistService();
             }
             else
             {
-                $this->blacklist_service = new Security\DatabaseBlacklistService(
+                $this->blacklist_service = new DatabaseBlacklistService(
                     $this->get_main_db(),
                     $this->get_config('security.blacklist'),
                 );
@@ -237,7 +245,7 @@ class WF
         return $this->config_service;
     }
 
-    public function get_csrf_service(): Security\CsrfService
+    public function get_csrf_service(): CsrfService
     {
         if ($this->csrf_service === null)
         {
@@ -249,7 +257,7 @@ class WF
                 exit();
             }
 
-            $this->csrf_service = new Security\CsrfService(
+            $this->csrf_service = new CsrfService(
                 $this->get_browser_session_service(),
             );
 
@@ -423,7 +431,7 @@ class WF
         return $this->route_service;
     }
 
-    public function get_secure_config_service(): Security\ConfigService
+    public function get_secure_config_service(): SecureConfigService
     {
         if ($this->secure_config_service === null)
         {
@@ -435,7 +443,7 @@ class WF
                 exit();
             }
 
-            $this->secure_config_service = new Security\ConfigService(
+            $this->secure_config_service = new SecureConfigService(
                 $this->get_app_dir().$this->get_config('security.auth_dir'),
             );
 
@@ -445,7 +453,7 @@ class WF
         return $this->secure_config_service;
     }
 
-    public function get_protect_service(): Security\ProtectService
+    public function get_protect_service(): ProtectService
     {
         if ($this->protect_service === null)
         {
@@ -457,7 +465,7 @@ class WF
                 exit();
             }
 
-            $this->protect_service = new Security\ProtectService(
+            $this->protect_service = new ProtectService(
                 $this->get_config('security'),
             );
 

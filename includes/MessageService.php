@@ -2,13 +2,15 @@
 
 namespace WebFramework\Core;
 
+use WebFramework\Security\ProtectService;
+
 class MessageService
 {
     /** @var array<array{mtype: string, message: string, extra_message: string}> */
     private array $messages = [];
 
     public function __construct(
-        private Security\ProtectService $protect_service,
+        private ProtectService $protect_service,
     ) {
     }
 

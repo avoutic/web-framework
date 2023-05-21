@@ -7,9 +7,9 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use WebFramework\Core\MessageService;
-use WebFramework\Core\Security\BlacklistService;
-use WebFramework\Core\Security\CsrfService;
 use WebFramework\Core\ValidatorService;
+use WebFramework\Security\BlacklistService;
+use WebFramework\Security\CsrfService;
 
 class CsrfValidationMiddleware implements MiddlewareInterface
 {

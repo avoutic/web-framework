@@ -2,8 +2,8 @@
 
 namespace WebFramework\Core;
 
-use WebFramework\Core\Security\ConfigService;
-use WebFramework\Core\Security\ProtectService;
+use WebFramework\Security\ConfigService;
+use WebFramework\Security\ProtectService;
 
 class FrameworkCore
 {

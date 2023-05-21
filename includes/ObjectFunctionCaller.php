@@ -6,12 +6,13 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use WebFramework\Exception\HttpForbiddenException;
 use WebFramework\Exception\HttpUnauthorizedException;
+use WebFramework\Security\AuthenticationService;
 
 class ObjectFunctionCaller
 {
     public function __construct(
         private AssertService $assert_service,
-        private Security\AuthenticationService $authentication_service,
+        private AuthenticationService $authentication_service,
         private WF $container_service,
         private ValidatorService $validator_service,
     ) {

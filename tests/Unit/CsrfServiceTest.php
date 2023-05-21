@@ -3,7 +3,7 @@
 namespace Tests\Unit;
 
 use WebFramework\Core\BrowserSessionService;
-use WebFramework\Core\Security\CsrfService;
+use WebFramework\Security\CsrfService;
 
 /**
  * @internal

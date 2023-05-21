@@ -6,8 +6,8 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use WebFramework\Core\Security\BlacklistService;
 use WebFramework\Exception\FrameworkHttpException;
+use WebFramework\Security\BlacklistService;
 
 class BlacklistMiddleware implements MiddlewareInterface
 {

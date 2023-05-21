@@ -2,7 +2,7 @@
 
 namespace Tests\Unit;
 
-use WebFramework\Core\Security\ProtectService;
+use WebFramework\Security\ProtectService;
 
 /**
  * @internal
