@@ -102,4 +102,32 @@ class ConfigBuilder
     {
         return $this->global_config;
     }
+
+    public function get_flattened_config(): array
+    {
+        return $this->flatten($this->global_config);
+    }
+
+    /**
+     * @param array<string, mixed> $array
+     *
+     * @return array<string, mixed>
+     */
+    private function flatten(array $array, string $prefix = ''): array
+    {
+        $result = [];
+        foreach ($array as $key => $value)
+        {
+            if (is_array($value))
+            {
+                $result = $result + $this->flatten($value, $prefix.$key.'.');
+            }
+            else
+            {
+                $result[$prefix.$key] = $value;
+            }
+        }
+
+        return $result;
+    }
 }
