@@ -2,7 +2,7 @@
 
 namespace WebFramework\Core;
 
-use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\ServerRequestInterface as Request;
 
 class ValidatorService
 {
@@ -14,10 +14,30 @@ class ValidatorService
     /**
      * @param array<string, string> $filters
      */
-    public function filter_request(ServerRequestInterface $request, array $filters): ServerRequestInterface
+    public function filter_request(Request $request, array $filters): Request
     {
         $raw_inputs = $request->getAttribute('raw_inputs', []);
         $inputs = $request->getAttribute('inputs', []);
+
+        $results = $this->get_filter_results($request, $filters);
+
+        $raw_inputs = array_merge($raw_inputs, $results['raw']);
+        $inputs = array_merge($inputs, $results['filtered']);
+
+        $request = $request->withAttribute('raw_inputs', $raw_inputs);
+
+        return $request->withAttribute('inputs', $inputs);
+    }
+
+    /**
+     * @param array<string, string> $filters
+     *
+     * @return array{raw:array<string, mixed>, filtered:array<string, mixed>}
+     */
+    public function get_filter_results(Request $request, array $filters): array
+    {
+        $raw = [];
+        $filtered = [];
 
         $query_params = $request->getQueryParams();
         $post_params = [];
@@ -38,8 +58,8 @@ class ValidatorService
 
                 // Expect multiple values
                 //
-                $inputs[$name] = [];
-                $raw_inputs[$name] = [];
+                $filtered[$name] = [];
+                $raw[$name] = [];
                 $params = [];
 
                 if (isset($post_params[$name]))
@@ -53,17 +73,17 @@ class ValidatorService
 
                 foreach ($params as $key => $value)
                 {
-                    $raw_inputs[$name][$key] = trim($value);
+                    $raw[$name][$key] = trim($value);
                     if (preg_match("/^\\s*{$regex}\\s*$/m", $value))
                     {
-                        $inputs[$name][$key] = trim($value);
+                        $filtered[$name][$key] = trim($value);
                     }
                 }
             }
             else
             {
                 $param = '';
-                $inputs[$name] = '';
+                $filtered[$name] = '';
 
                 if (isset($post_params[$name]))
                 {
@@ -74,17 +94,30 @@ class ValidatorService
                     $param = $query_params[$name];
                 }
 
-                $raw_inputs[$name] = trim($param);
+                $raw[$name] = trim($param);
 
                 if (preg_match("/^\\s*{$regex}\\s*$/m", $param))
                 {
-                    $inputs[$name] = trim($param);
+                    $filtered[$name] = trim($param);
                 }
             }
         }
 
-        $request = $request->withAttribute('raw_inputs', $raw_inputs);
+        return [
+            'raw' => $raw,
+            'filtered' => $filtered,
+        ];
+    }
 
-        return $request->withAttribute('inputs', $inputs);
+    /**
+     * @param array<string, string> $filters
+     *
+     * @return array<string, mixed>
+     */
+    public function get_filtered_params(Request $request, array $filters): array
+    {
+        $results = $this->get_filter_results($request, $filters);
+
+        return $results['filtered'];
     }
 }
