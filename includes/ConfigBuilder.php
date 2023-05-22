@@ -48,6 +48,10 @@ class ConfigBuilder
 
     public function populate_internals(string $server_name, string $host_name): void
     {
+        $this->merge_config_on_top([
+            'app_dir' => $this->app_dir,
+        ]);
+
         /*
          * Force server_name and host_name to 'app' if run locally.
          * Otherwise only set dynamically to given parameters if not defined in the merged config.

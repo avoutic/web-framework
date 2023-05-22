@@ -116,11 +116,6 @@ parameters:
 			path: includes/WF.php
 
 		-
-			message: "#^Parameter \\#1 \\$data of method WebFramework\\\\Core\\\\DatabaseManager\\:\\:execute\\(\\) expects array\\{target_version\\: int, actions\\: array\\<array\\>\\}, array given\\.$#"
+			message: "#^Method Redis\\:\\:pconnect\\(\\) invoked with 7 parameters, 1\\-5 required\\.$#"
 			count: 1
-			path: scripts/db_init.php
-
-		-
-			message: "#^Parameter \\#1 \\$data of method WebFramework\\\\Core\\\\DatabaseManager\\:\\:execute\\(\\) expects array\\{target_version\\: int, actions\\: array\\<array\\>\\}, array given\\.$#"
-			count: 1
-			path: scripts/db_update.php
+			path: includes/di_definitions.php

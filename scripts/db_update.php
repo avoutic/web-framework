@@ -9,11 +9,42 @@ if (!file_exists(__DIR__.'/../vendor/autoload.php'))
 
 require_once __DIR__.'/../vendor/autoload.php';
 
+use WebFramework\Core\ConfigBuilder;
+use WebFramework\Core\DatabaseManager;
+use WebFramework\Core\DebugService;
+use WebFramework\Core\ReportFunction;
 use WebFramework\Core\WF;
 
-$framework = new WF();
-
 header('content-type: text/plain');
+
+// Build config
+//
+$app_dir = __DIR__.'/..';
+$configs = [
+    '/vendor/avoutic/web-framework/includes/BaseConfig.php',
+    '/includes/config.php',
+    '?/includes/config_local.php',
+];
+
+$config_builder = new ConfigBuilder($app_dir);
+$config_builder->build_config(
+    $configs,
+);
+$config_builder->populate_internals('app', 'app');
+
+// Build container
+//
+$builder = new DI\ContainerBuilder();
+$builder->addDefinitions(['config_tree' => $config_builder->get_config()]);
+$builder->addDefinitions($config_builder->get_flattened_config());
+$builder->addDefinitions("{$app_dir}/vendor/avoutic/web-framework/includes/di_definitions.php");
+$builder->addDefinitions("{$app_dir}/includes/di_definitions.php");
+$container = $builder->build();
+
+// Create and start framework
+//
+$framework = new WF($container);
+$container->set('framework', $framework);
 
 try
 {
@@ -22,9 +53,8 @@ try
     $framework->skip_app_db_version_check();
     $framework->skip_wf_db_version_check();
     $framework->init();
-    $app_dir = $framework->get_app_dir();
 
-    $db_manager = $framework->get_database_manager();
+    $db_manager = $container->get(DatabaseManager::class);
 
     $current_version = $db_manager->get_current_version();
     $required_version = WF::get_config('versions.required_app_db');
@@ -50,7 +80,10 @@ try
         }
 
         $change_set = require $version_file;
-        WF::verify(is_array($change_set), 'No change set array found');
+        if (!is_array($change_set))
+        {
+            throw new \RuntimeException('No change set array found');
+        }
 
         $db_manager->execute($change_set);
         $current_version = $db_manager->get_current_version();
@@ -59,18 +92,18 @@ try
 }
 catch (Throwable $e)
 {
-    echo('Unhandled exception');
+    $debug_service = $container->get(DebugService::class);
+    $error_report = $debug_service->get_throwable_report($e);
 
-    if ($framework->get_config('debug') == true)
+    $report_function = $container->get(ReportFunction::class);
+    $report_function->report($e->getMessage(), 'unhandled_exception', $error_report);
+
+    if ($container->get('debug') == true)
     {
-        echo($e->getMessage().PHP_EOL);
-        print_r($e->getTrace());
+        echo $error_report['message'];
     }
-
-    if (!$e instanceof WebFramework\Core\VerifyException)
+    else
     {
-        WF::report_error($e->getMessage(), $e->getTrace());
+        echo $error_report['low_info_message'];
     }
-
-    exit();
 }

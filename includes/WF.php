@@ -3,15 +3,13 @@
 namespace WebFramework\Core;
 
 use Cache\Adapter\Redis\RedisCachePool;
+use Psr\Container\ContainerInterface;
 use Slim\Psr7\Factory\ResponseFactory;
 use Slim\Psr7\Factory\ServerRequestFactory;
 use WebFramework\Security\AuthenticationService;
 use WebFramework\Security\BlacklistService;
 use WebFramework\Security\ConfigService as SecureConfigService;
 use WebFramework\Security\CsrfService;
-use WebFramework\Security\DatabaseAuthenticationService;
-use WebFramework\Security\DatabaseBlacklistService;
-use WebFramework\Security\NullBlacklistService;
 use WebFramework\Security\ProtectService;
 
 class WF
@@ -57,9 +55,6 @@ class WF
     protected ?ValidatorService $validator_service = null;
     protected ?WFWebHandler $web_handler = null;
 
-    /** @var array<string> */
-    private array $container_stack = [];
-
     /**
      * @var array<string>
      */
@@ -73,11 +68,10 @@ class WF
     private bool $check_app_db_version = true;
     private bool $check_wf_db_version = true;
 
-    public function __construct()
-    {
-        // Immediately initialize cache with NullCache so that a cache is always available
-        //
-        $this->cache = new NullCache();
+    public function __construct(
+        private ContainerInterface $container
+    ) {
+        $this->cache = $this->container->get(Cache::class);
         self::$static_cache = $this->cache;
 
         // Determine app dir
@@ -88,562 +82,117 @@ class WF
 
     public function get_assert_service(): AssertService
     {
-        if ($this->assert_service === null)
-        {
-            $this->container_stack[] = 'assert_service';
-            if (count($this->container_stack) > 25)
-            {
-                print_r($this->container_stack);
-
-                exit();
-            }
-
-            $this->assert_service = new AssertService(
-                $this->get_debug_service(),
-                $this->get_report_function(),
-            );
-
-            array_pop($this->container_stack);
-        }
-
-        return $this->assert_service;
+        return $this->container->get(AssertService::class);
     }
 
     public function get_authentication_service(): AuthenticationService
     {
-        if ($this->authentication_service === null)
-        {
-            $this->container_stack[] = 'authentication_service';
-            if (count($this->container_stack) > 25)
-            {
-                print_r($this->container_stack);
-
-                exit();
-            }
-
-            $this->authentication_service = new DatabaseAuthenticationService(
-                $this->get_cache(),
-                $this->get_main_db(),
-                $this->get_browser_session_service(),
-                $this->get_base_factory(),
-                $this->get_config('authenticator.session_timeout'),
-                $this->get_config('authenticator.user_class'),
-            );
-
-            array_pop($this->container_stack);
-        }
-
-        return $this->authentication_service;
+        return $this->container->get(AuthenticationService::class);
     }
 
     public function get_base_factory(): BaseFactory
     {
-        if ($this->base_factory === null)
-        {
-            $this->container_stack[] = 'base_factory';
-            if (count($this->container_stack) > 25)
-            {
-                print_r($this->container_stack);
-
-                exit();
-            }
-
-            $this->base_factory = new BaseFactory(
-                $this->get_main_db(),
-                $this->get_assert_service(),
-            );
-
-            array_pop($this->container_stack);
-        }
-
-        return $this->base_factory;
+        return $this->container->get(BaseFactory::class);
     }
 
     public function get_blacklist_service(): BlacklistService
     {
-        if ($this->blacklist_service === null)
-        {
-            $this->container_stack[] = 'blacklist_service';
-            if (count($this->container_stack) > 25)
-            {
-                print_r($this->container_stack);
-
-                exit();
-            }
-
-            if ($this->get_config_service()->get('security.blacklist.enabled') == true)
-            {
-                $this->blacklist_service = new NullBlacklistService();
-            }
-            else
-            {
-                $this->blacklist_service = new DatabaseBlacklistService(
-                    $this->get_main_db(),
-                    $this->get_config('security.blacklist'),
-                );
-            }
-
-            array_pop($this->container_stack);
-        }
-
-        return $this->blacklist_service;
+        return $this->container->get(BlacklistService::class);
     }
 
     public function get_browser_session_service(): BrowserSessionService
     {
-        if ($this->browser_session_service === null)
-        {
-            $this->container_stack[] = 'browser_session_service';
-            if (count($this->container_stack) > 25)
-            {
-                print_r($this->container_stack);
-
-                exit();
-            }
-
-            $browser_session_service = new BrowserSessionService();
-            $browser_session_service->start(
-                $this->get_config('host_name'),
-                $this->get_config('http_mode'),
-            );
-
-            $this->browser_session_service = $browser_session_service;
-
-            array_pop($this->container_stack);
-        }
-
-        return $this->browser_session_service;
+        return $this->container->get(BrowserSessionService::class);
     }
 
     public function get_config_service(): ConfigService
     {
-        if ($this->config_service === null)
-        {
-            $this->container_stack[] = 'config_service';
-            if (count($this->container_stack) > 25)
-            {
-                print_r($this->container_stack);
-
-                exit();
-            }
-
-            $config_builder = new ConfigBuilder(
-                $this->get_app_dir(),
-            );
-            $config_builder->build_config(
-                $this->configs,
-            );
-            $config_builder->populate_internals($_SERVER['SERVER_NAME'] ?? '', $_SERVER['SERVER_NAME'] ?? '');
-
-            $config_service = new ConfigService($config_builder->get_config());
-
-            $this->config_service = $config_service;
-
-            array_pop($this->container_stack);
-        }
-
-        return $this->config_service;
+        return $this->container->get(ConfigService::class);
     }
 
     public function get_csrf_service(): CsrfService
     {
-        if ($this->csrf_service === null)
-        {
-            $this->container_stack[] = 'csrf_service';
-            if (count($this->container_stack) > 25)
-            {
-                print_r($this->container_stack);
-
-                exit();
-            }
-
-            $this->csrf_service = new CsrfService(
-                $this->get_browser_session_service(),
-            );
-
-            array_pop($this->container_stack);
-        }
-
-        return $this->csrf_service;
+        return $this->container->get(CsrfService::class);
     }
 
     public function get_database_manager(): DatabaseManager
     {
-        if ($this->database_manager === null)
-        {
-            $this->container_stack[] = 'database_manager';
-            if (count($this->container_stack) > 25)
-            {
-                print_r($this->container_stack);
-
-                exit();
-            }
-
-            $this->database_manager = new DatabaseManager(
-                $this->get_assert_service(),
-                $this->get_main_db(),
-                new StoredValues($this->get_main_db(), 'db'),
-            );
-
-            array_pop($this->container_stack);
-        }
-
-        return $this->database_manager;
+        return $this->container->get(DatabaseManager::class);
     }
 
     public function get_debug_service(): DebugService
     {
-        if ($this->debug_service === null)
-        {
-            $this->container_stack[] = 'debug_service';
-            if (count($this->container_stack) > 25)
-            {
-                print_r($this->container_stack);
-
-                exit();
-            }
-
-            $this->debug_service = new DebugService(
-                $this,
-                $this->get_app_dir(),
-                $this->get_config('server_name'),
-            );
-
-            array_pop($this->container_stack);
-        }
-
-        return $this->debug_service;
+        return $this->container->get(DebugService::class);
     }
 
     public function get_report_function(): ReportFunction
     {
-        if ($this->report_function === null)
-        {
-            $this->container_stack[] = 'report_function';
-            if (count($this->container_stack) > 25)
-            {
-                print_r($this->container_stack);
-
-                exit();
-            }
-
-            $this->report_function = new MailReportFunction(
-                $this->get_cache(),
-                $this->get_mail_service(),
-                $this->get_config('sender_core.assert_recipient'),
-            );
-
-            array_pop($this->container_stack);
-        }
-
-        return $this->report_function;
+        return $this->container->get(ReportFunction::class);
     }
 
     public function get_object_function_caller(): ObjectFunctionCaller
     {
-        if ($this->object_function_caller === null)
-        {
-            $this->container_stack[] = 'object_function_caller';
-            if (count($this->container_stack) > 25)
-            {
-                print_r($this->container_stack);
-
-                exit();
-            }
-
-            $this->object_function_caller = new ObjectFunctionCaller(
-                $this->get_assert_service(),
-                $this->get_authentication_service(),
-                $this,
-                $this->get_validator_service(),
-            );
-
-            array_pop($this->container_stack);
-        }
-
-        return $this->object_function_caller;
+        return $this->container->get(ObjectFunctionCaller::class);
     }
 
     public function get_response_emitter(): ResponseEmitter
     {
-        if ($this->response_emitter === null)
-        {
-            $this->container_stack[] = 'response_emitter';
-            if (count($this->container_stack) > 25)
-            {
-                print_r($this->container_stack);
-
-                exit();
-            }
-
-            $this->response_emitter = new ResponseEmitter(
-                $this->get_config_service(),
-                $this->get_message_service(),
-                $this->get_object_function_caller(),
-                $this->get_response_factory(),
-            );
-
-            array_pop($this->container_stack);
-        }
-
-        return $this->response_emitter;
+        return $this->container->get(ResponseEmitter::class);
     }
 
     public function get_response_factory(): ResponseFactory
     {
-        if ($this->response_factory === null)
-        {
-            $this->container_stack[] = 'response_factory';
-            if (count($this->container_stack) > 25)
-            {
-                print_r($this->container_stack);
-
-                exit();
-            }
-
-            $this->response_factory = new ResponseFactory();
-
-            array_pop($this->container_stack);
-        }
-
-        return $this->response_factory;
+        return $this->container->get(ResponseFactory::class);
     }
 
     public function get_route_service(): RouteService
     {
-        if ($this->route_service === null)
-        {
-            $this->container_stack[] = 'route_service';
-            if (count($this->container_stack) > 25)
-            {
-                print_r($this->container_stack);
-
-                exit();
-            }
-
-            $this->route_service = new RouteService(
-                $this->get_config('base_url'),
-            );
-
-            array_pop($this->container_stack);
-        }
-
-        return $this->route_service;
+        return $this->container->get(RouteService::class);
     }
 
     public function get_secure_config_service(): SecureConfigService
     {
-        if ($this->secure_config_service === null)
-        {
-            $this->container_stack[] = 'secure_config_service';
-            if (count($this->container_stack) > 25)
-            {
-                print_r($this->container_stack);
-
-                exit();
-            }
-
-            $this->secure_config_service = new SecureConfigService(
-                $this->get_app_dir().$this->get_config('security.auth_dir'),
-            );
-
-            array_pop($this->container_stack);
-        }
-
-        return $this->secure_config_service;
+        return $this->container->get(SecureConfigService::class);
     }
 
     public function get_protect_service(): ProtectService
     {
-        if ($this->protect_service === null)
-        {
-            $this->container_stack[] = 'protect_service';
-            if (count($this->container_stack) > 25)
-            {
-                print_r($this->container_stack);
-
-                exit();
-            }
-
-            $this->protect_service = new ProtectService(
-                $this->get_config('security'),
-            );
-
-            array_pop($this->container_stack);
-        }
-
-        return $this->protect_service;
+        return $this->container->get(ProtectService::class);
     }
 
     public function get_user_mailer(): UserMailer
     {
-        if ($this->user_mailer === null)
-        {
-            $this->container_stack[] = 'user_mailer';
-            if (count($this->container_stack) > 25)
-            {
-                print_r($this->container_stack);
-
-                exit();
-            }
-
-            $this->user_mailer = new UserMailer(
-                $this->get_mail_service(),
-                $this->get_config('sender_core.default_sender'),
-            );
-
-            array_pop($this->container_stack);
-        }
-
-        return $this->user_mailer;
+        return $this->container->get(UserMailer::class);
     }
 
     public function get_validator_service(): ValidatorService
     {
-        if ($this->validator_service === null)
-        {
-            $this->container_stack[] = 'validator_service';
-            if (count($this->container_stack) > 25)
-            {
-                print_r($this->container_stack);
-
-                exit();
-            }
-
-            $this->validator_service = new ValidatorService(
-                $this->get_assert_service(),
-            );
-
-            array_pop($this->container_stack);
-        }
-
-        return $this->validator_service;
+        return $this->container->get(ValidatorService::class);
     }
 
     public function get_web_handler(): WFWebHandler
     {
-        if ($this->web_handler === null)
-        {
-            $this->container_stack[] = 'web_handler';
-            if (count($this->container_stack) > 25)
-            {
-                print_r($this->container_stack);
-
-                exit();
-            }
-
-            $this->web_handler = new WFWebHandler(
-                $this->get_authentication_service(),
-                $this->get_blacklist_service(),
-                $this->get_config_service(),
-                $this->get_csrf_service(),
-                $this->get_message_service(),
-                $this->get_object_function_caller(),
-                $this->get_response_emitter(),
-                $this->get_response_factory(),
-                $this->get_route_service(),
-                $this->get_validator_service(),
-            );
-
-            array_pop($this->container_stack);
-        }
-
-        return $this->web_handler;
+        return $this->container->get(WFWebHandler::class);
     }
 
     public function get_latte_render_service(): LatteRenderService
     {
-        if ($this->latte_render_service === null)
-        {
-            $this->container_stack[] = 'latte_render_service';
-            if (count($this->container_stack) > 25)
-            {
-                print_r($this->container_stack);
-
-                exit();
-            }
-
-            $this->latte_render_service = new LatteRenderService(
-                $this->get_assert_service(),
-                new \Latte\Engine(),
-                $this->get_app_dir().'/templates',
-                '/tmp/latte',
-            );
-
-            array_pop($this->container_stack);
-        }
-
-        return $this->latte_render_service;
+        return $this->container->get(LatteRenderService::class);
     }
 
     public function get_mail_service(): MailService
     {
-        if ($this->mail_service === null)
-        {
-            $this->container_stack[] = 'mail_service';
-            if (count($this->container_stack) > 25)
-            {
-                print_r($this->container_stack);
-
-                exit();
-            }
-
-            $api_key = $this->get_secure_config_service()->get_auth_config('postmark');
-
-            $this->mail_service = new PostmarkMailService(
-                new PostmarkClientFactory($api_key),
-                $this->get_config('sender_core.default_sender'),
-                $this->get_config('server_name'),
-            );
-
-            array_pop($this->container_stack);
-        }
-
-        return $this->mail_service;
+        return $this->container->get(MailService::class);
     }
 
     public function get_message_service(): MessageService
     {
-        if ($this->message_service === null)
-        {
-            $this->container_stack[] = 'message_service';
-            if (count($this->container_stack) > 25)
-            {
-                print_r($this->container_stack);
-
-                exit();
-            }
-
-            $this->message_service = new MessageService(
-                $this->get_protect_service(),
-            );
-
-            array_pop($this->container_stack);
-        }
-
-        return $this->message_service;
+        return $this->container->get(MessageService::class);
     }
 
     public function get_postmark_client_factory(): PostmarkClientFactory
     {
-        if ($this->postmark_client_factory === null)
-        {
-            $this->container_stack[] = 'postmark_client_factory';
-            if (count($this->container_stack) > 25)
-            {
-                print_r($this->container_stack);
-
-                exit();
-            }
-
-            $api_key = $this->get_secure_config_service()->get_auth_config('postmark');
-
-            $this->postmark_client_factory = new PostmarkClientFactory($api_key);
-
-            array_pop($this->container_stack);
-        }
-
-        return $this->postmark_client_factory;
+        return $this->container->get(PostmarkClientFactory::class);
     }
 
     public static function assert_handler(string $file, int $line, string $message, string $error_type): void
@@ -974,7 +523,7 @@ class WF
         }
     }
 
-    private function init_databases(): void
+    public function init_databases(): void
     {
         // Start the database connection(s)
         //
@@ -998,10 +547,6 @@ class WF
 
         $this->main_database = new MysqliDatabase($mysql);
         self::$main_db = $this->main_database;
-
-        // Set the Database in the DebugService after init
-        //
-        $this->get_debug_service()->set_database($this->main_database);
 
         // Open auxilary database connections
         //
@@ -1028,7 +573,7 @@ class WF
         }
     }
 
-    private function check_compatibility(): void
+    public function check_compatibility(): void
     {
         // Verify all versions for compatibility
         //

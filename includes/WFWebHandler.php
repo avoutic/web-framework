@@ -6,14 +6,6 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Psr7\Factory\ResponseFactory;
 use Slim\Psr7\Factory\ServerRequestFactory;
-use WebFramework\Middleware\AuthenticationInfoMiddleware;
-use WebFramework\Middleware\BlacklistMiddleware;
-use WebFramework\Middleware\CsrfValidationMiddleware;
-use WebFramework\Middleware\IpMiddleware;
-use WebFramework\Middleware\JsonParserMiddleware;
-use WebFramework\Middleware\MessageMiddleware;
-use WebFramework\Middleware\RoutingMiddleware;
-use WebFramework\Middleware\SecurityHeadersMiddleware;
 use WebFramework\Security\AuthenticationService;
 use WebFramework\Security\BlacklistService;
 use WebFramework\Security\CsrfService;
@@ -27,12 +19,11 @@ class WFWebHandler
         private BlacklistService $blacklist_service,
         private ConfigService $config_service,
         private CsrfService $csrf_service,
-        private MessageService $message_service,
+        private MiddlewareStack $middleware_stack,
         private ObjectFunctionCaller $object_function_caller,
         private ResponseEmitter $response_emitter,
         private ResponseFactory $response_factory,
         private RouteService $route_service,
-        private ValidatorService $validator_service,
     ) {
     }
 
@@ -56,34 +47,7 @@ class WFWebHandler
         //
         $this->authentication_service->cleanup();
 
-        $middleware_stack = new MiddlewareStack(new RoutingMiddleware(
-            $this->object_function_caller,
-            $this->response_emitter,
-            $this->response_factory,
-            $this->route_service,
-            $this->config_service->get('actions.app_namespace'),
-        ));
-        $middleware_stack->push(new SecurityHeadersMiddleware());
-        $middleware_stack->push(new MessageMiddleware(
-            $this->message_service,
-            $this->validator_service,
-        ));
-        $middleware_stack->push(new JsonParserMiddleware());
-        $middleware_stack->push(new BlacklistMiddleware(
-            $this->blacklist_service,
-        ));
-        $middleware_stack->push(new CsrfValidationMiddleware(
-            $this->blacklist_service,
-            $this->csrf_service,
-            $this->message_service,
-            $this->validator_service,
-        ));
-        $middleware_stack->push(new AuthenticationInfoMiddleware(
-            $this->authentication_service,
-        ));
-        $middleware_stack->push(new IpMiddleware());
-
-        $response = $middleware_stack->handle($request);
+        $response = $this->middleware_stack->handle($request);
 
         $this->response_emitter->emit($response);
     }

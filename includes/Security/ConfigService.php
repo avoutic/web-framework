@@ -5,6 +5,7 @@ namespace WebFramework\Security;
 class ConfigService
 {
     public function __construct(
+        protected string $app_dir,
         protected string $auth_dir,
     ) {
     }
@@ -26,7 +27,7 @@ class ConfigService
      */
     protected function load_file(string $name): array|string
     {
-        $filename = "{$this->auth_dir}/{$name}.php";
+        $filename = "{$this->app_dir}{$this->auth_dir}/{$name}.php";
 
         if (!file_exists($filename))
         {

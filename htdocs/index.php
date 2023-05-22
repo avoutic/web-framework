@@ -10,9 +10,39 @@ if (!file_exists(__DIR__.'/../vendor/autoload.php'))
 require_once __DIR__.'/../vendor/autoload.php';
 
 use Slim\Psr7\Factory\ServerRequestFactory;
+use WebFramework\Core\ConfigBuilder;
+use WebFramework\Core\DebugService;
+use WebFramework\Core\ReportFunction;
 use WebFramework\Core\WF;
 
-$core_framework = new WF();
+// Build config
+//
+$app_dir = __DIR__.'/..';
+$configs = [
+    '/vendor/avoutic/web-framework/includes/BaseConfig.php',
+    '/includes/config.php',
+    '?/includes/config_local.php',
+];
+
+$config_builder = new ConfigBuilder($app_dir);
+$config_builder->build_config(
+    $configs,
+);
+$config_builder->populate_internals($_SERVER['SERVER_NAME'] ?? '', $_SERVER['SERVER_NAME'] ?? '');
+
+// Build container
+//
+$builder = new DI\ContainerBuilder();
+$builder->addDefinitions(['config_tree' => $config_builder->get_config()]);
+$builder->addDefinitions($config_builder->get_flattened_config());
+$builder->addDefinitions("{$app_dir}/vendor/avoutic/web-framework/includes/di_definitions.php");
+$builder->addDefinitions("{$app_dir}/includes/di_definitions.php");
+$container = $builder->build();
+
+// Create and start framework
+//
+$core_framework = new WF($container);
+$container->set('framework', $core_framework);
 $framework = null;
 
 try
@@ -25,11 +55,9 @@ try
     //
     $core_framework->check_sanity();
 
-    // Load route and hooks array and site specific logic if available
+    // Load routes
     //
-    $app_dir = $core_framework->get_app_dir();
-
-    $framework = $core_framework->get_web_handler();
+    $framework = $container->get(WebFramework\Core\WFWebHandler::class);
 
     if (is_file("{$app_dir}/includes/site_logic.inc.php"))
     {
@@ -40,26 +68,24 @@ try
 }
 catch (Throwable $e)
 {
-    $message = 'Final catch block';
     $request = ServerRequestFactory::createFromGlobals();
 
-    $debug_service = $core_framework->get_debug_service();
+    $debug_service = $container->get(DebugService::class);
     $error_report = $debug_service->get_throwable_report($e, $request);
 
-    $report_function = $core_framework->get_report_function();
+    $report_function = $container->get(ReportFunction::class);
     $report_function->report($e->getMessage(), 'unhandled_exception', $error_report);
 
-    $title = 'Unhandled exception';
-    $message = "<pre>{$error_report['message']}</pre>";
+    $message = ($container->get('debug')) ? $error_report['message'] : $error_report['low_info_message'];
 
     if ($framework !== null)
     {
-        $framework->exit_send_error(500, $title, 'generic', $message);
+        $message = "<pre>{$message}</pre>";
+        $framework->exit_send_error(500, 'Unhandled exception', 'generic', $message);
     }
     else
     {
-        echo "{$title} {$message}";
-
-        exit();
+        header('Content-type: text/plain');
+        echo $message;
     }
 }

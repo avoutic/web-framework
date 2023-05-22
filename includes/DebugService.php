@@ -3,13 +3,14 @@
 namespace WebFramework\Core;
 
 use Psr\Http\Message\ServerRequestInterface as Request;
+use WebFramework\Security\AuthenticationService;
 
 class DebugService
 {
     private ?Database $database = null;
 
     public function __construct(
-        private WF $framework,
+        private AuthenticationService $authentication_service,
         private string $app_dir,
         private string $server_name,
     ) {
@@ -236,9 +237,9 @@ TXT;
     {
         $auth_data = "Not authenticated\n";
 
-        if ($this->framework->is_authenticated())
+        if ($this->authentication_service->is_authenticated())
         {
-            $user = $this->framework->get_authenticated_user();
+            $user = $this->authentication_service->get_authenticated_user();
             $auth_array = [
                 'user_id' => $user->id,
                 'username' => $user->username,
