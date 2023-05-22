@@ -204,6 +204,22 @@ class FrameworkCore
         return $this->framework->get_authenticated_user();
     }
 
+    protected function get_authenticated(string $type): mixed
+    {
+        $user = $this->get_authenticated_user();
+        if ($type === 'user')
+        {
+            return $user;
+        }
+
+        if ($type === 'user_id')
+        {
+            return $user->id;
+        }
+
+        throw new \RuntimeException('Cannot return requested value');
+    }
+
     /**
      * @param array<string> $permissions
      */
