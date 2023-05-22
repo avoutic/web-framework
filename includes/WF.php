@@ -583,12 +583,15 @@ TXT;
                 break;
 
             default:
-                $this->internal_assert_handler(
-                    $last_error['file'],
-                    $last_error['line'],
-                    $last_error['message'],
-                    (string) $last_error['type']
-                );
+                if ($this->get_config('debug'))
+                {
+                    $this->internal_assert_handler(
+                        $last_error['file'],
+                        $last_error['line'],
+                        $last_error['message'],
+                        (string) $last_error['type']
+                    );
+                }
 
                 break;
         }
