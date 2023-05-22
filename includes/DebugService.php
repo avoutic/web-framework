@@ -93,9 +93,8 @@ class DebugService
 
         // Construct base message
         //
-        $info['low_info_message'] = <<<TXT
-File: {$file}
-Line: {$line}
+        $info['low_info_message'] = <<<'TXT'
+An error occurred.
 
 TXT;
 

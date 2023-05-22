@@ -8,7 +8,7 @@ use Slim\Psr7\Factory\StreamFactory;
 use WebFramework\Core\Database;
 use WebFramework\Core\DebugService;
 use WebFramework\Core\User;
-use WebFramework\Core\WF;
+use WebFramework\Security\NullAuthenticationService;
 
 /**
  * @internal
@@ -19,9 +19,7 @@ final class DebugServiceTest extends \Codeception\Test\Unit
 {
     public function testGenerateHash()
     {
-        $framework = $this->makeEmpty(WF::class);
-
-        $instance = new DebugService($framework, '', '');
+        $instance = $this->makeEmptyExcept(DebugService::class, 'generate_hash');
 
         verify($instance->generate_hash('ServerName', 'RequestSource', 'File', 1, 'Message'))
             ->equals('5bd8c554bf94a90d97e9f31c63b69fde17ac4bb9');
@@ -29,9 +27,7 @@ final class DebugServiceTest extends \Codeception\Test\Unit
 
     public function testGenerateHashNoServerName()
     {
-        $framework = $this->makeEmpty(WF::class);
-
-        $instance = new DebugService($framework, '', '');
+        $instance = $this->makeEmptyExcept(DebugService::class, 'generate_hash');
 
         verify($instance->generate_hash('', 'RequestSource', 'File', 1, 'Message'))
             ->equals('bf0a0f18bf3c2e20ea0fe62092376caccefcbb7a');
@@ -39,9 +35,7 @@ final class DebugServiceTest extends \Codeception\Test\Unit
 
     public function testGenerateHashNoRequestSource()
     {
-        $framework = $this->makeEmpty(WF::class);
-
-        $instance = new DebugService($framework, '', '');
+        $instance = $this->makeEmptyExcept(DebugService::class, 'generate_hash');
 
         verify($instance->generate_hash('ServerName', '', 'File', 1, 'Message'))
             ->equals('bf0f9b3a2f36e3e1a8359c289494a41a3c673c45');
@@ -49,9 +43,7 @@ final class DebugServiceTest extends \Codeception\Test\Unit
 
     public function testGenerateHashNoFile()
     {
-        $framework = $this->makeEmpty(WF::class);
-
-        $instance = new DebugService($framework, '', '');
+        $instance = $this->makeEmptyExcept(DebugService::class, 'generate_hash');
 
         verify($instance->generate_hash('ServerName', 'RequestSource', 'unknown', 1, 'Message'))
             ->equals('8bdac8c96d84253c28d5981d096550747be0d2f8');
@@ -59,9 +51,7 @@ final class DebugServiceTest extends \Codeception\Test\Unit
 
     public function testGenerateHasNoLine()
     {
-        $framework = $this->makeEmpty(WF::class);
-
-        $instance = new DebugService($framework, '', '');
+        $instance = $this->makeEmptyExcept(DebugService::class, 'generate_hash');
 
         verify($instance->generate_hash('ServerName', 'RequestSource', 'File', 0, 'Message'))
             ->equals('72a2066e2671474739c142d668a25da79b8184a0');
@@ -69,9 +59,7 @@ final class DebugServiceTest extends \Codeception\Test\Unit
 
     public function testGenerateHashNoMessage()
     {
-        $framework = $this->makeEmpty(WF::class);
-
-        $instance = new DebugService($framework, '', '');
+        $instance = $this->makeEmptyExcept(DebugService::class, 'generate_hash');
 
         verify($instance->generate_hash('ServerName', 'RequestSource', 'File', 1, ''))
             ->equals('2d63a5522289108ab2091fd5b99f0ba0499bff76');
@@ -79,9 +67,7 @@ final class DebugServiceTest extends \Codeception\Test\Unit
 
     public function testGetDatabaseErrorNull()
     {
-        $framework = $this->makeEmpty(WF::class);
-
-        $instance = new DebugService($framework, '', '');
+        $instance = $this->makeEmptyExcept(DebugService::class, 'get_database_error');
 
         verify($instance->get_database_error(null))
             ->equals('Not initialized yet');
@@ -89,10 +75,9 @@ final class DebugServiceTest extends \Codeception\Test\Unit
 
     public function testGetDatabaseErrorNoError()
     {
-        $framework = $this->makeEmpty(WF::class);
+        $instance = $this->make(DebugService::class);
         $database = $this->makeEmpty(Database::class, ['get_last_error' => '']);
 
-        $instance = new DebugService($framework, '', '');
         $instance->set_database($database);
 
         verify($instance->get_database_error($database))
@@ -101,11 +86,8 @@ final class DebugServiceTest extends \Codeception\Test\Unit
 
     public function testGetDatabaseErrorError()
     {
-        $framework = $this->makeEmpty(WF::class);
+        $instance = $this->make(DebugService::class);
         $database = $this->makeEmpty(Database::class, ['get_last_error' => 'DB ERROR']);
-
-        $instance = new DebugService($framework, '', '');
-        $instance->set_database($database);
 
         verify($instance->get_database_error($database))
             ->equals('DB ERROR');
@@ -113,9 +95,17 @@ final class DebugServiceTest extends \Codeception\Test\Unit
 
     public function testGetAuthenticationStatusNone()
     {
-        $framework = $this->makeEmpty(WF::class, ['is_authenticated' => false]);
-
-        $instance = new DebugService($framework, '', '');
+        $instance = $this->make(
+            DebugService::class,
+            [
+                'authentication_service' => $this->makeEmpty(
+                    NullAuthenticationService::class,
+                    [
+                        'is_authenticated' => false,
+                    ]
+                ),
+            ]
+        );
 
         verify($instance->get_authentication_status())
             ->equals("Not authenticated\n");
@@ -125,18 +115,22 @@ final class DebugServiceTest extends \Codeception\Test\Unit
     {
         $user_data = ['id' => 1, 'username' => 'TestUser', 'email' => 'TestEmail'];
         $auth_data = ['user_id' => 1, 'username' => 'TestUser', 'email' => 'TestEmail'];
-        $framework = $this->makeEmpty(
-            WF::class,
+
+        $instance = $this->make(
+            DebugService::class,
             [
-                'is_authenticated' => true,
-                'get_authenticated_user' => $this->makeEmpty(
-                    User::class,
-                    $user_data,
+                'authentication_service' => $this->makeEmpty(
+                    NullAuthenticationService::class,
+                    [
+                        'is_authenticated' => true,
+                        'get_authenticated_user' => $this->makeEmpty(
+                            User::class,
+                            $user_data,
+                        ),
+                    ]
                 ),
             ]
         );
-
-        $instance = new DebugService($framework, '', '');
 
         verify($instance->get_authentication_status())
             ->equals(print_r($auth_data, true));
@@ -186,9 +180,7 @@ final class DebugServiceTest extends \Codeception\Test\Unit
             ],
         ];
 
-        $framework = $this->makeEmpty(WF::class);
-
-        $instance = new DebugService($framework, '', '');
+        $instance = $this->make(DebugService::class);
 
         verify($instance->filter_trace($trace, true, false))
             ->equals($trace_filtered);
@@ -244,9 +236,7 @@ final class DebugServiceTest extends \Codeception\Test\Unit
             ],
         ];
 
-        $framework = $this->makeEmpty(WF::class);
-
-        $instance = new DebugService($framework, '', '');
+        $instance = $this->make(DebugService::class);
 
         verify($instance->filter_trace($trace, true, false))
             ->equals($trace_filtered);
@@ -277,9 +267,7 @@ final class DebugServiceTest extends \Codeception\Test\Unit
             ],
         ];
 
-        $framework = $this->makeEmpty(WF::class);
-
-        $instance = new DebugService($framework, '', '');
+        $instance = $this->make(DebugService::class);
 
         verify($instance->filter_trace($trace, false, false))
             ->equals($trace);
@@ -324,9 +312,7 @@ final class DebugServiceTest extends \Codeception\Test\Unit
             ],
         ];
 
-        $framework = $this->makeEmpty(WF::class);
-
-        $instance = new DebugService($framework, '', '');
+        $instance = $this->make(DebugService::class);
 
         verify($instance->filter_trace($trace, false, true))
             ->equals($trace_filtered);
@@ -358,9 +344,7 @@ final class DebugServiceTest extends \Codeception\Test\Unit
             ],
         ];
 
-        $framework = $this->makeEmpty(WF::class);
-
-        $instance = new DebugService($framework, '', '');
+        $instance = $this->make(DebugService::class);
 
         verify($instance->filter_trace($trace, false, false))
             ->equals($trace_filtered);
@@ -389,9 +373,7 @@ File1(11): function1()
 
 TXT;
 
-        $framework = $this->makeEmpty(WF::class);
-
-        $instance = new DebugService($framework, '', '');
+        $instance = $this->make(DebugService::class);
 
         verify($instance->condense_stack($trace))
             ->equals($condensed_stack);
@@ -412,9 +394,7 @@ TXT;
             'key3' => 'val4',
         ];
 
-        $framework = $this->makeEmpty(WF::class);
-
-        $instance = new DebugService($framework, '', '');
+        $instance = $this->make(DebugService::class);
 
         verify($instance->scrub_request_headers($headers))
             ->equals($headers_scrubbed);
@@ -435,9 +415,7 @@ TXT;
             'key3' => 'val4',
         ];
 
-        $framework = $this->makeEmpty(WF::class);
-
-        $instance = new DebugService($framework, '', '');
+        $instance = $this->make(DebugService::class);
 
         verify($instance->scrub_request_headers($headers))
             ->equals($headers_scrubbed);
@@ -445,9 +423,7 @@ TXT;
 
     public function testGetInputsReportEmpty()
     {
-        $framework = $this->makeEmpty(WF::class);
-
-        $instance = new DebugService($framework, '', '');
+        $instance = $this->make(DebugService::class);
 
         $request = $this->makeEmpty(Request::class, [
             'getQueryParams' => [],
@@ -462,9 +438,7 @@ TXT;
 
     public function testGetInputsReportJustGet()
     {
-        $framework = $this->makeEmpty(WF::class);
-
-        $instance = new DebugService($framework, '', '');
+        $instance = $this->make(DebugService::class);
 
         $query_params = ['key1' => 'val1', 'key2' => 'val2'];
 
@@ -488,9 +462,7 @@ TXT;
 
     public function testGetInputsReportJustPost()
     {
-        $framework = $this->makeEmpty(WF::class);
-
-        $instance = new DebugService($framework, '', '');
+        $instance = $this->make(DebugService::class);
 
         $post_params = ['key1' => 'val1', 'key2' => 'val2'];
 
@@ -514,9 +486,7 @@ TXT;
 
     public function testGetInputsReportJustJson()
     {
-        $framework = $this->makeEmpty(WF::class);
-
-        $instance = new DebugService($framework, '', '');
+        $instance = $this->make(DebugService::class);
 
         $post_params = ['key1' => 'val1', 'key2' => 'val2'];
 
@@ -544,9 +514,7 @@ TXT;
 
     public function testGetInputsReportBadJson()
     {
-        $framework = $this->makeEmpty(WF::class);
-
-        $instance = new DebugService($framework, '', '');
+        $instance = $this->make(DebugService::class);
 
         $bad_json = '{"key1" : "val1","key2":"val2"';
 
@@ -575,7 +543,7 @@ TXT;
         $instance = $this->construct(
             DebugService::class,
             [
-                'framework' => $this->makeEmpty(WF::class),
+                'authentication_service' => $this->makeEmpty(NullAuthenticationService::class),
                 'app_dir' => '',
                 'server_name' => 'TestServer',
             ],
@@ -585,8 +553,7 @@ TXT;
         );
 
         $low_info_report_fmt = <<<'TXT'
-File: unknown
-Line: 0
+An error occurred.
 
 TXT;
 
@@ -634,17 +601,11 @@ TXT;
     {
         $user_data = ['id' => 1, 'username' => 'TestUser', 'email' => 'TestEmail'];
 
-        $framework = $this->makeEmpty(
-            WF::class,
-            [
-                'is_authenticated' => true,
-            ]
-        );
         $instance = $this->construct(
             DebugService::class,
             [
-                'framework' => $this->makeEmpty(
-                    WF::class,
+                'authentication_service' => $this->makeEmpty(
+                    NullAuthenticationService::class,
                     [
                         'is_authenticated' => true,
                         'get_authenticated_user' => $this->makeEmpty(
@@ -707,8 +668,7 @@ TXT;
         ];
 
         $low_info_report_fmt = <<<'TXT'
-File: Object2.php
-Line: 3
+An error occurred.
 
 TXT;
 

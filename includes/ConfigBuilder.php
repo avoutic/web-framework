@@ -107,6 +107,9 @@ class ConfigBuilder
         return $this->global_config;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function get_flattened_config(): array
     {
         return $this->flatten($this->global_config);

@@ -141,7 +141,7 @@ final class ConfigBuilderTest extends \Codeception\Test\Unit
         $instance = $this->construct(
             ConfigBuilder::class,
             [
-                '/appdir/auth',
+                '/appdir',
             ],
         );
 
@@ -151,6 +151,7 @@ final class ConfigBuilderTest extends \Codeception\Test\Unit
             ->equals([
                 'server_name' => 'app',
                 'host_name' => 'app',
+                'app_dir' => '/appdir',
             ]);
     }
 
@@ -159,7 +160,7 @@ final class ConfigBuilderTest extends \Codeception\Test\Unit
         $instance = $this->construct(
             ConfigBuilder::class,
             [
-                '/appdir/auth',
+                '/appdir',
             ],
         );
 
@@ -169,6 +170,7 @@ final class ConfigBuilderTest extends \Codeception\Test\Unit
             ->equals([
                 'server_name' => 'ServerName',
                 'host_name' => 'HostName',
+                'app_dir' => '/appdir',
             ]);
     }
 
@@ -177,7 +179,7 @@ final class ConfigBuilderTest extends \Codeception\Test\Unit
         $instance = $this->construct(
             ConfigBuilder::class,
             [
-                '/appdir/auth',
+                '/appdir',
             ],
         );
 
@@ -191,6 +193,7 @@ final class ConfigBuilderTest extends \Codeception\Test\Unit
             ->equals([
                 'server_name' => 'MyServer',
                 'host_name' => 'HostName',
+                'app_dir' => '/appdir',
             ]);
     }
 
@@ -199,7 +202,7 @@ final class ConfigBuilderTest extends \Codeception\Test\Unit
         $instance = $this->construct(
             ConfigBuilder::class,
             [
-                '/appdir/auth',
+                '/appdir',
             ],
         );
 
@@ -213,6 +216,7 @@ final class ConfigBuilderTest extends \Codeception\Test\Unit
             ->equals([
                 'server_name' => 'ServerName',
                 'host_name' => 'MyHost',
+                'app_dir' => '/appdir',
             ]);
     }
 }

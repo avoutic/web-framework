@@ -16,7 +16,8 @@ final class ConfigServiceTest extends \Codeception\Test\Unit
         $instance = $this->construct(
             SecureConfigService::class,
             [
-                '/appdir/auth',
+                '/appdir',
+                '/auth',
             ],
             [
                 'load_file' => function ($filename) { throw new \RuntimeException(); },
@@ -34,7 +35,8 @@ final class ConfigServiceTest extends \Codeception\Test\Unit
         $instance = $this->construct(
             SecureConfigService::class,
             [
-                '/appdir/auth',
+                '/appdir',
+                '/auth',
             ],
             [
                 'load_file' => '',
@@ -52,7 +54,8 @@ final class ConfigServiceTest extends \Codeception\Test\Unit
         $instance = $this->construct(
             SecureConfigService::class,
             [
-                '/appdir/auth',
+                '/appdir',
+                '/auth',
             ],
             [
                 'load_file' => 'TestString',
@@ -68,7 +71,8 @@ final class ConfigServiceTest extends \Codeception\Test\Unit
         $instance = $this->construct(
             SecureConfigService::class,
             [
-                '/appdir/auth',
+                '/appdir',
+                '/auth',
             ],
             [
                 'load_file' => ['key1' => 'val1'],
