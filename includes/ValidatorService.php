@@ -40,13 +40,12 @@ class ValidatorService
         $filtered = [];
 
         $query_params = $request->getQueryParams();
-        $post_params = [];
 
         $parsed_body = $request->getParsedBody();
-        if (is_array($parsed_body))
-        {
-            $post_params = $parsed_body;
-        }
+        $post_params = (is_array($parsed_body)) ? $parsed_body : [];
+
+        $json = $request->getAttribute('json_data', []);
+        $json_params = (is_array($json)) ? $json : [];
 
         foreach ($filters as $name => $regex)
         {
@@ -62,7 +61,11 @@ class ValidatorService
                 $raw[$name] = [];
                 $params = [];
 
-                if (isset($post_params[$name]))
+                if (isset($json_params[$name]))
+                {
+                    $params = $json_params[$name];
+                }
+                elseif (isset($post_params[$name]))
                 {
                     $params = $post_params[$name];
                 }
@@ -85,7 +88,11 @@ class ValidatorService
                 $param = '';
                 $filtered[$name] = '';
 
-                if (isset($post_params[$name]))
+                if (isset($json_params[$name]))
+                {
+                    $param = $json_params[$name];
+                }
+                elseif (isset($post_params[$name]))
                 {
                     $param = $post_params[$name];
                 }
