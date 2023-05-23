@@ -2,34 +2,23 @@
 
 namespace WebFramework\Core;
 
-class Browserless extends FrameworkCore
+use WebFramework\Security\ProtectService;
+
+class Browserless
 {
-    /**
-     * @var array<string, string>
-     */
-    private array $config;
     private string $footer_template = '';
     private string $header_template = '';
     private string $api_key = '';
 
     private const PDF_MAGIC = '%PDF-';
 
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->load_config();
-    }
-
-    private function load_config(): void
-    {
-        $config = $this->get_auth_config('browserless');
-
-        $this->verify(isset($config['local_server']), 'Local server is missing');
-        $this->verify(isset($config['pdf_endpoint']), 'PDF endpoint is missing');
-        $this->verify(isset($config['token']), 'Token is missing');
-
-        $this->config = $config;
+    public function __construct(
+        private AssertService $assert_service,
+        private ProtectService $protect_service,
+        private string $local_server,
+        private string $pdf_endpoint,
+        private string $token,
+    ) {
     }
 
     private function is_pdf(string $filename): bool
@@ -47,7 +36,7 @@ class Browserless extends FrameworkCore
      */
     public function set_api_key_data(array $data): void
     {
-        $this->api_key = $this->encode_and_auth_array($data);
+        $this->api_key = $this->protect_service->pack_array($data);
     }
 
     public function set_footer_template(string $template): void
@@ -62,7 +51,7 @@ class Browserless extends FrameworkCore
 
     public function output_pdf(string $relative_url, string $output_filename): void
     {
-        $target_url = "{$this->config['local_server']}{$relative_url}";
+        $target_url = "{$this->local_server}{$relative_url}";
 
         $query = parse_url($target_url, PHP_URL_QUERY);
         if ($query)
@@ -77,7 +66,7 @@ class Browserless extends FrameworkCore
         $filename = $output_filename;
 
         $result = $this->get_pdf_result($target_url);
-        $this->verify($this->is_pdf_string($result), 'Failed to generate NDA: '.$result);
+        $this->assert_service->verify($this->is_pdf_string($result), 'Failed to generate NDA: '.$result);
 
         header('Cache-Control: public');
         header('Content-type: application/pdf');
@@ -91,7 +80,7 @@ class Browserless extends FrameworkCore
 
     public function output_stream(string $relative_url): mixed
     {
-        $target_url = "{$this->config['local_server']}{$relative_url}";
+        $target_url = "{$this->local_server}{$relative_url}";
 
         $query = parse_url($target_url, PHP_URL_QUERY);
         if ($query)
@@ -104,18 +93,18 @@ class Browserless extends FrameworkCore
         }
 
         $tmp_file = tmpfile();
-        $this->verify($tmp_file !== false, 'Failed to get temporary stream');
+        $this->assert_service->verify($tmp_file !== false, 'Failed to get temporary stream');
 
         $result = $this->get_pdf_result($target_url, $tmp_file);
         $tmp_path = stream_get_meta_data($tmp_file)['uri'];
-        $this->verify($this->is_pdf($tmp_path), 'Failed to generate PDF: '.file_get_contents($tmp_path));
+        $this->assert_service->verify($this->is_pdf($tmp_path), 'Failed to generate PDF: '.file_get_contents($tmp_path));
 
         return $tmp_file;
     }
 
     private function get_pdf_result($url, $output_stream = false): mixed
     {
-        $pdf_endpoint = "{$this->config['pdf_endpoint']}?token={$this->config['token']}";
+        $pdf_endpoint = "{$this->pdf_endpoint}?token={$this->token}";
 
         $data = [
             'url' => "{$url}",
