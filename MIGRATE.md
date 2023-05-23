@@ -8,8 +8,19 @@ Old code can still run on top of the major overhaul with minimal changes.
 * Replace calls to WF::verify() with exception throwing
 * Replace calls to WF::get_config() with config_service->get or container->get
 * Remove calls to framework
+* Use init() instead of constructor modifications (for ActionCore / FactoryCore / DataCore dependents)
+* Add Database as first parameter to StoredValues constructor
+* Replace calls to SenderCore::send_raw with MessageHandler->send_raw_mail()
+* Replace calls to SenderCore::send with MessageHandler->send_template_mail()
+* Rewrite register_route() and register_redirect() to Slim route functions (Use RouteConvertor example in scripts)
+* Change prototype to (Request, Response, array) and call $this->handle_permissions_and_inputs() to all ApiAction derived functions
 
-As a result there are some internal and external changes. Internal breaking changes only affect you if you used internal classes directly. External breaking changes affect the public interface.
+Over time you should:
+* Move to Dependency Injection for all your classes
+* Move your actions to Slim prototype
+* Move away from using 'new'
+
+As a result of the fundamental changes there are some internal and external changes. Internal breaking changes only affect you if you used internal classes directly. External breaking changes affect the public interface.
 
 External:
 * BaseFactory constructor has changed
