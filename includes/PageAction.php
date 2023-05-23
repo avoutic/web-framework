@@ -11,17 +11,17 @@ abstract class PageAction extends ActionCore
      */
     protected array $page_content = [];
 
-    public function __construct()
+    public function init(): void
     {
-        parent::__construct();
+        parent::init();
 
-        $this->frame_file = $this->get_config('actions.default_frame_file');
-        $this->page_content['base_url'] = $this->get_base_url();
+        $this->frame_file = $this->config_service->get('actions.default_frame_file');
+        $this->page_content['base_url'] = $this->config_service->get('base_url');
     }
 
     protected function get_csrf_token(): string
     {
-        return $this->web_handler->get_csrf_token();
+        return $this->csrf_service->get_token();
     }
 
     protected function get_title(): string
@@ -83,7 +83,7 @@ abstract class PageAction extends ActionCore
      */
     public function load_template(string $name, array $args = []): void
     {
-        $app_dir = $this->get_app_dir();
+        $app_dir = $this->config_service->get('app_dir');
         $this->verify(file_exists("{$app_dir}/templates/{$name}.inc.php"), 'Requested template not present');
 
         include "{$app_dir}/templates/{$name}.inc.php";
@@ -140,7 +140,7 @@ abstract class PageAction extends ActionCore
             return;
         }
 
-        $this->verify(false, 'Not a supported template_system: '.$template_system);
+        $this->report_error('Not a supported template_system: '.$template_system);
     }
 
     /**
@@ -168,7 +168,7 @@ abstract class PageAction extends ActionCore
 
     protected function display_with_latte(): void
     {
-        $app_dir = $this->get_app_dir();
+        $app_dir = $this->config_service->get('app_dir');
         $template_dir = "{$app_dir}/templates";
 
         $this->page_content['core'] = $this->get_core_variables();
@@ -198,7 +198,7 @@ abstract class PageAction extends ActionCore
 
         if (strlen($this->get_frame_file()))
         {
-            $app_dir = $this->get_app_dir();
+            $app_dir = $this->config_service->get('app_dir');
             $frame_file = "{$app_dir}/frames/".$this->get_frame_file();
             $this->verify(file_exists($frame_file), 'Requested frame file not present');
 
