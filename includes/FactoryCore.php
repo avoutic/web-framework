@@ -36,6 +36,12 @@ class FactoryCore
         $this->message_service = $container->get(MessageService::class);
         $this->protect_service = $container->get(ProtectService::class);
         $this->secure_config_service = $container->get(SecureConfigService::class);
+
+        $this->init();
+    }
+
+    public function init(): void
+    {
     }
 
     protected function get_app_dir(): string

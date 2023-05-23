@@ -14,6 +14,8 @@ class Login extends PageAction
 
     public function init(): void
     {
+        parent::init();
+
         $this->unique_identifier = $this->get_config('authenticator.unique_identifier');
     }
 

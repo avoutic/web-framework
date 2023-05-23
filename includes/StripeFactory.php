@@ -13,10 +13,16 @@ class StripeFactory
 
     public function __construct(
         protected AssertService $assert_service,
+        protected ConfigService $config_service,
         protected StripeClient $stripe,
         protected string $api_key,
         protected string $endpoint_secret,
     ) {
+        $this->init();
+    }
+
+    public function init(): void
+    {
     }
 
     public function verify_request(string $payload, string $sig_header): bool
