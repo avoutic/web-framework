@@ -24,7 +24,11 @@ class InputHelpers
     public static function load_template(string $name, array $args = []): void
     {
         $app_dir = WF::get_app_dir();
-        WF::verify(file_exists("{$app_dir}/templates/{$name}.inc.php"), 'Requested template not present');
+
+        if (!file_exists("{$app_dir}/templates/{$name}.inc.php"))
+        {
+            throw new \InvalidArgumentException('Requested template not present');
+        }
 
         include "{$app_dir}/templates/{$name}.inc.php";
     }

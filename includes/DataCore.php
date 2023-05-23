@@ -213,7 +213,10 @@ SQL;
         $params = [$this->id];
 
         $result = $this->query($query, $params);
-        $this->verify($result !== false, "Failed to retrieve {$field} for {$table_name}");
+        if ($result === false)
+        {
+            throw new \RuntimeException("Failed to retrieve {$field} for {$table_name}");
+        }
 
         return $result->fields[$field];
     }
@@ -242,7 +245,10 @@ SQL;
 
         $result = $this->query($query, $params);
         $class = static::class;
-        $this->verify($result !== false, "Failed to update object ({$class})");
+        if ($result === false)
+        {
+            throw new \RuntimeException("Failed to update object ({$class})");
+        }
 
         foreach ($data as $key => $value)
         {
@@ -273,7 +279,10 @@ SQL;
 
         $result = $this->query($query, $params);
         $class = static::class;
-        $this->verify($result !== false, "Failed to update object ({$class})");
+        if ($result === false)
+        {
+            throw new \RuntimeException("Failed to update object ({$class})");
+        }
 
         $this->{$field} = $value;
 
@@ -308,7 +317,10 @@ SQL;
 
         $result = $this->query($query, $params);
         $class = static::class;
-        $this->verify($result !== false, "Failed to decrease field of object ({$class})");
+        if ($result === false)
+        {
+            throw new \RuntimeException("Failed to decrease field of object ({$class})");
+        }
 
         $this->{$field} = $this->get_field($field);
 
@@ -329,7 +341,10 @@ SQL;
 
         $result = $this->query($query, $params);
         $class = static::class;
-        $this->verify($result !== false, "Failed to increase field of object ({$class})");
+        if ($result === false)
+        {
+            throw new \RuntimeException("Failed to increase field of object ({$class})");
+        }
 
         $this->{$field} = $this->get_field($field);
 
@@ -350,7 +365,10 @@ SQL;
         $params = [$this->id];
 
         $result = $this->query($query, $params);
-        $this->verify($result !== false, 'Failed to delete item');
+        if ($result === false)
+        {
+            throw new \RuntimeException('Failed to delete item');
+        }
     }
 
     /**
@@ -384,10 +402,16 @@ SQL;
 
         $result = WF::get_main_db()->insert_query($query, $params);
         $class = static::class;
-        WF::verify($result !== false, "Failed to create object ({$class})");
+        if ($result === false)
+        {
+            throw new \RuntimeException("Failed to create object ({$class})");
+        }
 
         $obj = static::get_object_by_id($result, true);
-        WF::verify($obj !== false, "Failed to retrieve created object ({$class})");
+        if ($obj === false)
+        {
+            throw new \RuntimeException("Failed to retrieve created object ({$class})");
+        }
 
         return $obj;
     }
@@ -417,8 +441,15 @@ SQL;
 
         $result = WF::get_main_db()->query($query, $params);
         $class = static::class;
-        WF::verify($result !== false, "Failed to count objects ({$class})");
-        WF::verify($result->RecordCount() == 1, "Failed to count objects ({$class})");
+
+        if ($result === false)
+        {
+            throw new \RuntimeException("Failed to retrieve object ({$class})");
+        }
+        if ($result->RecordCount() != 1)
+        {
+            throw new \RuntimeException("Failed to count objects ({$class})");
+        }
 
         return $result->fields['cnt'];
     }
@@ -460,8 +491,14 @@ SQL;
 
             $result = WF::get_main_db()->query($query, $params);
 
-            WF::verify($result !== false, "Failed to retrieve object ({$class})");
-            WF::verify($result->RecordCount() <= 1, "Non-unique object request ({$class})");
+            if ($result === false)
+            {
+                throw new \RuntimeException("Failed to retrieve object ({$class})");
+            }
+            if ($result->RecordCount() > 1)
+            {
+                throw new \RuntimeException("Non-unique object request ({$class})");
+            }
 
             if ($result->RecordCount() == 0)
             {
@@ -507,8 +544,15 @@ SQL;
 
         $result = WF::get_main_db()->query($query, $params);
         $class = static::class;
-        WF::verify($result !== false, "Failed to retrieve object ({$class})");
-        WF::verify($result->RecordCount() <= 1, "Non-unique object request ({$class})");
+
+        if ($result === false)
+        {
+            throw new \RuntimeException("Failed to retrieve object ({$class})");
+        }
+        if ($result->RecordCount() > 1)
+        {
+            throw new \RuntimeException("Non-unique object request ({$class})");
+        }
 
         if ($result->RecordCount() == 0)
         {
@@ -605,15 +649,22 @@ SQL;
         {$limit_fmt}
 SQL;
 
-        $result = WF::get_main_db()->query($query, $params);
+        $container = \ContainerWrapper::get();
+        $result = $container->get(Database::class)->query($query, $params);
         $class = static::class;
-        WF::verify($result !== false, "Failed to retrieve objects ({$class})");
+        if ($result === false)
+        {
+            throw new \RuntimeException("Failed to retrieve objects ({$class})");
+        }
 
         $info = [];
         foreach ($result as $k => $row)
         {
             $obj = static::get_object_by_id($row['id'], true);
-            WF::verify($obj !== false, 'Failed to retrieve {$class}');
+            if ($obj === false)
+            {
+                throw new \RuntimeException("Failed to retrieve {$class}");
+            }
 
             $info[$row['id']] = $obj;
         }

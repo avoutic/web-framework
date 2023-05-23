@@ -1,18 +1,31 @@
 <?php
 
-use WebFramework\Core\WF;
-
-WF::verify(isset($args['template_parameters']['colors']), 'No colors defined');
+if (!isset($args['template_parameters']['colors']))
+{
+    throw new \InvalidArgumentException('No colors defined');
+}
 $colors = $args['template_parameters']['colors'];
 $required_colors = ['border', 'shadow-outline', 'text', 'hover:text', 'focus-within:ring'];
-WF::verify(array_diff(array_keys($colors), $required_colors) == array_diff($required_colors, array_keys($colors)), 'Missing required colors');
+if (array_diff(array_keys($colors), $required_colors) != array_diff($required_colors, array_keys($colors)))
+{
+    throw new \InvalidArgumentException('Missing required colors');
+}
 
-WF::verify(isset($args['template_parameters']['texts']), 'No texts defined');
+if (!isset($args['template_parameters']['texts']))
+{
+    throw new \InvalidArgumentException('No texts defined');
+}
 $texts = $args['template_parameters']['texts'];
 $required_texts = ['or_drag', 'selected', 'upload_file', 'with_maximum_of'];
-WF::verify(array_diff(array_keys($texts), $required_texts) == array_diff($required_texts, array_keys($texts)), 'Missing required texts');
+if (array_diff(array_keys($texts), $required_texts) != array_diff($required_texts, array_keys($texts)))
+{
+    throw new \InvalidArgumentException('Missing required texts');
+}
 
-WF::verify(isset($args['template_parameters']['default_width']), 'No default_width defined');
+if (!isset($args['template_parameters']['default_width']))
+{
+    throw new \InvalidArgumentException('No default_width defined');
+}
 $default_width = $args['template_parameters']['default_width'];
 
 $parameters = $args['parameters'];

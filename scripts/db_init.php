@@ -72,7 +72,10 @@ try
     }
 
     $change_set = require $scheme_file;
-    WF::verify(is_array($change_set), 'No change set array found');
+    if (!is_array($change_set))
+    {
+        throw new \RuntimeException('No change set array found');
+    }
 
     $db_manager->execute($change_set, true);
 }

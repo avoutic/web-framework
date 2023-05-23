@@ -1,13 +1,21 @@
 <?php
 
-use WebFramework\Core\WF;
-
-WF::verify(isset($args['template_parameters']['colors']), 'No colors defined');
+if (!isset($args['template_parameters']['colors']))
+{
+    throw new \InvalidArgumentException('No colors defined');
+}
 $colors = $args['template_parameters']['colors'];
 $required_colors = ['bg', 'border', 'text-input', 'text-label', 'text-extra-label', 'focus:ring'];
-WF::verify(array_diff(array_keys($colors), $required_colors) == array_diff($required_colors, array_keys($colors)), 'Missing required colors');
+if (array_diff(array_keys($colors), $required_colors) != array_diff($required_colors, array_keys($colors)))
+{
+    throw new \InvalidArgumentException('Missing required colors');
+}
 
-WF::verify(isset($args['template_parameters']['default_width']), 'No default_width defined');
+if (!isset($args['template_parameters']['default_width']))
+{
+    throw new \InvalidArgumentException('No default_width defined');
+}
+
 $default_width = $args['template_parameters']['default_width'];
 
 $parameters = $args['parameters'];
@@ -41,7 +49,10 @@ $count = 0;
 
 foreach ($parameters['options'] as $value => $option_info)
 {
-    WF::verify(isset($option_info['label']), 'Label of option not set');
+    if (!isset($options_info['label']))
+    {
+        throw new \InvalidArgumentException('Label of option not set');
+    }
 
     $count++;
     $id_fmt = "{$parameters['id']}-{$count}";

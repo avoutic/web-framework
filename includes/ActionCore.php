@@ -162,7 +162,12 @@ abstract class ActionCore extends FrameworkCore
 
     public static function encode(mixed $input, bool $double_encode = true): string
     {
-        WF::verify((is_string($input) || is_bool($input) || is_int($input) || is_float($input) || is_null($input)) && is_bool($double_encode), 'Not valid for encoding');
+        $value = (is_string($input) || is_bool($input) || is_int($input) || is_float($input) || is_null($input)) && is_bool($double_encode);
+
+        if (!$value)
+        {
+            throw new \InvalidArgumentException('Not valid for encoding');
+        }
 
         $str = htmlentities((string) $input, ENT_QUOTES, 'UTF-8', $double_encode);
         if (!strlen($str))
