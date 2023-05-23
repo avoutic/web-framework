@@ -39,7 +39,7 @@ class WFWebHandler
 
         if (!$this->route_service->has_routes())
         {
-            $response = $this->response_emitter->error($request, $response, 'No routes loaded');
+            $response = $this->response_emitter->error($request, 'No routes loaded');
             $this->response_emitter->emit($response);
         }
 

@@ -44,18 +44,18 @@ class RoutingMiddleware implements RequestHandlerInterface
             }
             catch (HttpForbiddenException $e)
             {
-                return $this->response_emitter->forbidden($request, $response);
+                return $this->response_emitter->forbidden($request);
             }
             catch (HttpNotFoundException $e)
             {
-                return $this->response_emitter->not_found($request, $response);
+                return $this->response_emitter->not_found($request);
             }
             catch (HttpUnauthorizedException $e)
             {
-                return $this->response_emitter->unauthorized($request, $response);
+                return $this->response_emitter->unauthorized($request);
             }
         }
 
-        return $this->response_emitter->not_found($request, $response);
+        return $this->response_emitter->not_found($request);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace WebFramework\Core;
 
+use Psr\Container\ContainerInterface as Container;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Psr7\Factory\ResponseFactory;
@@ -9,9 +10,9 @@ use Slim\Psr7\Factory\ResponseFactory;
 class ResponseEmitter
 {
     public function __construct(
+        private Container $container,
         private ConfigService $config_service,
         private MessageService $message_service,
-        private ObjectFunctionCaller $object_function_caller,
         private ResponseFactory $response_factory,
     ) {
     }
@@ -44,7 +45,7 @@ class ResponseEmitter
         exit();
     }
 
-    public function blacklisted(Request $request, Response $response): Response
+    public function blacklisted(Request $request): Response
     {
         $response = $this->response_factory->createResponse(403, 'Forbidden');
 
@@ -61,12 +62,14 @@ class ResponseEmitter
             return $response;
         }
 
-        $mapping = $this->config_service->get('error_handlers.blacklisted');
+        $class = $this->config_service->get('error_handlers.blacklisted');
 
-        return $this->object_function_caller->execute($this->config_service->get('actions.app_namespace').$mapping, 'html_main', $request, $response);
+        $error_handler = $this->container->get($class);
+
+        return $error_handler($request, $response);
     }
 
-    public function error(Request $request, Response $response, string $title, string $details = '', int $http_code = 500, string $reason_phrase = 'Internal error'): Response
+    public function error(Request $request, string $title, string $details = '', int $http_code = 500, string $reason_phrase = 'Internal error'): Response
     {
         $response = $this->response_factory->createResponse($http_code, $reason_phrase);
 
@@ -87,12 +90,14 @@ class ResponseEmitter
             return $response;
         }
 
-        $mapping = $this->config_service->get('error_handlers.500');
+        $class = $this->config_service->get('error_handlers.500');
 
-        return $this->object_function_caller->execute($this->config_service->get('actions.app_namespace').$mapping, 'html_main', $request, $response);
+        $error_handler = $this->container->get($class);
+
+        return $error_handler($request, $response);
     }
 
-    public function forbidden(Request $request, Response $response): Response
+    public function forbidden(Request $request): Response
     {
         $response = $this->response_factory->createResponse(403, 'Forbidden');
 
@@ -101,12 +106,14 @@ class ResponseEmitter
             return $response->withHeader('Content-type', 'application/json');
         }
 
-        $mapping = $this->config_service->get('error_handlers.403');
+        $class = $this->config_service->get('error_handlers.403');
 
-        return $this->object_function_caller->execute($this->config_service->get('actions.app_namespace').$mapping, 'html_main', $request, $response);
+        $error_handler = $this->container->get($class);
+
+        return $error_handler($request, $response);
     }
 
-    public function not_found(Request $request, Response $response): Response
+    public function not_found(Request $request): Response
     {
         $response = $this->response_factory->createResponse(404, 'Not Found');
 
@@ -115,9 +122,11 @@ class ResponseEmitter
             return $response->withHeader('Content-type', 'application/json');
         }
 
-        $mapping = $this->config_service->get('error_handlers.404');
+        $class = $this->config_service->get('error_handlers.404');
 
-        return $this->object_function_caller->execute($this->config_service->get('actions.app_namespace').$mapping, 'html_main', $request, $response);
+        $error_handler = $this->container->get($class);
+
+        return $error_handler($request, $response);
     }
 
     public function redirect(string $url, int $redirect_type): Response
@@ -127,7 +136,7 @@ class ResponseEmitter
         return $response->withHeader('Location', $url);
     }
 
-    public function unauthorized(Request $request, Response $response): Response
+    public function unauthorized(Request $request): Response
     {
         $response = $this->response_factory->createResponse(401, 'Unauthorized');
 
