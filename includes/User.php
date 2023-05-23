@@ -99,7 +99,10 @@ class User extends DataCore
         foreach ($user_rights as $user_right)
         {
             $right = $user_right->get_right();
-            $this->verify($right !== false, 'Failed to retrieve right');
+            if ($right === false)
+            {
+                throw new \RuntimeException('Failed to retrieve right');
+            }
 
             $this->rights[$right->short_name] = $right;
         }
@@ -144,7 +147,10 @@ class User extends DataCore
 
         if ($params[0] == 'sha256')
         {
-            $this->verify(count($params) == 4, 'Solid password format unknown');
+            if (count($params) !== 4)
+            {
+                throw new \InvalidArgumentException('Solid password format unknown');
+            }
 
             $stored_hash = $params[3];
             $calculated_hash = pbkdf2(
@@ -158,7 +164,10 @@ class User extends DataCore
         }
         elseif ($params[0] == 'bootstrap')
         {
-            $this->verify(count($params) == 2, 'Solid password format unknown');
+            if (count($params) !== 2)
+            {
+                throw new \InvalidArgumentException('Solid password format unknown');
+            }
 
             $stored_hash = $params[1];
             $calculated_hash = $password;
@@ -166,7 +175,10 @@ class User extends DataCore
         }
         elseif ($params[0] == 'dolphin')
         {
-            $this->verify(count($params) == 3, 'Solid password format unknown');
+            if (count($params) !== 3)
+            {
+                throw new \InvalidArgumentException('Solid password format unknown');
+            }
 
             $stored_hash = $params[2];
             $calculated_hash = sha1(md5($password).$params[1]);
@@ -175,9 +187,18 @@ class User extends DataCore
         else
         {
             $result = $this->get_custom_hash($params, $password);
-            $this->verify($result !== false, 'Unknown solid password format');
-            $this->verify(isset($result['stored_hash']), 'Invalid result from get_custom_hash');
-            $this->verify(isset($result['calculated_hash']), 'Invalid result from get_custom_hash');
+            if ($result === false)
+            {
+                throw new \InvalidArgumentException('Unknown solid password format');
+            }
+            if (!isset($result['stored_hash']))
+            {
+                throw new \RuntimeException('Invalid result from get_custom_hash');
+            }
+            if (!isset($result['calculated_hash']))
+            {
+                throw new \RuntimeException('Invalid result from get_custom_hash');
+            }
 
             $stored_hash = $result['stored_hash'];
             $calculated_hash = $result['calculated_hash'];
@@ -262,7 +283,10 @@ class User extends DataCore
 SQL;
 
             $result = $this->query($query, [$email]);
-            $this->verify($result !== false, 'Failed to search email');
+            if ($result === false)
+            {
+                throw new \RuntimeException('Failed to search email');
+            }
 
             if ($result->RecordCount() > 0)
             {
@@ -293,7 +317,10 @@ SQL;
             // Check if unique
             //
             $result = $this->query('SELECT id FROM users WHERE LOWER(email) = LOWER(?)', [$email]);
-            $this->verify($result !== false, 'Failed to check email');
+            if ($result === false)
+            {
+                throw new \RuntimeException('Failed to check email');
+            }
 
             if ($result->RecordCount() > 0)
             {
@@ -342,7 +369,10 @@ SQL;
         }
 
         $right = Right::get_object(['short_name' => $short_name]);
-        $this->verify($right !== false, 'Failed to locate right');
+        if ($right === false)
+        {
+            throw new \RuntimeException('Failed to locate right');
+        }
 
         UserRight::create([
             'user_id' => $this->id,
@@ -360,7 +390,10 @@ SQL;
         }
 
         $right = Right::get_object(['short_name' => $short_name]);
-        $this->verify($right !== false, 'Failed to locate right');
+        if ($right === false)
+        {
+            throw new \RuntimeException('Failed to locate right');
+        }
 
         $user_right = UserRight::get_object([
             'user_id' => $this->id,
