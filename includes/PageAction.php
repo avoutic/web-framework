@@ -2,6 +2,9 @@
 
 namespace WebFramework\Core;
 
+use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
+
 abstract class PageAction extends ActionCore
 {
     protected string $frame_file;
@@ -214,10 +217,20 @@ abstract class PageAction extends ActionCore
         echo($content);
     }
 
-    public function html_main(): void
+    /**
+     * @param array<string, string> $args
+     */
+    public function html_main(Request $request, Response $response, array $args): void
     {
+        $action_filter = static::get_filter();
+
+        $request = $this->validator_service->filter_request($request, $action_filter);
+        $this->set_inputs($request, $args);
+
         $this->check_sanity();
         $this->do_logic();
         $this->display_frame();
+
+        exit();
     }
 }
