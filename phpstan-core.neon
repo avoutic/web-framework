@@ -1,8 +1,6 @@
 parameters:
     universalObjectCratesClasses:
         - WebFramework\Core\DataCore
-    ignoreErrors:
-        - '#^Call to method WebFramework\\Core\\FrameworkCore\:\:verify\(\) with false and .* will always evaluate to false\.$#'
 
 services:
     -

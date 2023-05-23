@@ -4,20 +4,26 @@ namespace WebFramework\Core\SanityCheck;
 
 class RequiredAuth extends Base
 {
+    /**
+     * @param array<string> $required_auths
+     */
+    public function __construct(
+        private string $app_dir,
+        private array $required_auths,
+    ) {
+    }
+
     public function perform_checks(): bool
     {
         // Check if all required auth files are present
         //
         $this->add_output('Checking for auths:'.PHP_EOL);
 
-        $required_auths = $this->config;
-
         $error = false;
-        $app_dir = $this->get_app_dir();
 
-        foreach ($required_auths as $filename)
+        foreach ($this->required_auths as $filename)
         {
-            $path = "{$app_dir}/includes/auth/{$filename}";
+            $path = "{$this->app_dir}/includes/auth/{$filename}";
 
             $exists = file_exists($path);
 

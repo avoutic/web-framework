@@ -2,6 +2,7 @@
 
 namespace WebFramework\Actions;
 
+use WebFramework\Core\BaseFactory;
 use WebFramework\Core\PageAction;
 use WebFramework\Core\Recaptcha;
 use WebFramework\Core\User;
@@ -77,7 +78,7 @@ class Register extends PageAction
     //
     protected function create_user(string $username, string $password, string $email): User
     {
-        $factory = $this->framework->get_base_factory();
+        $factory = $this->container->get(BaseFactory::class);
         $user = $factory->create_user($username, $password, $email, time());
         $this->verify($user !== false, 'Failed to create user');
 
@@ -194,7 +195,7 @@ class Register extends PageAction
         }
 
         $recaptcha = new Recaptcha(
-            $this->framework->get_assert_service(),
+            $this->assert_service,
             new \GuzzleHttp\Client(),
             $this->get_config('security.recaptcha.secret_key'),
         );

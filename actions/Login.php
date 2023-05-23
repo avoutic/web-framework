@@ -2,26 +2,27 @@
 
 namespace WebFramework\Actions;
 
+use WebFramework\Core\BaseFactory;
+use WebFramework\Core\ContainerWrapper;
 use WebFramework\Core\PageAction;
 use WebFramework\Core\Recaptcha;
 use WebFramework\Core\User;
-use WebFramework\Core\WF;
 
 class Login extends PageAction
 {
     protected string $unique_identifier = '';
 
-    public function __construct()
+    public function init(): void
     {
-        parent::__construct();
-
         $this->unique_identifier = $this->get_config('authenticator.unique_identifier');
     }
 
     public static function get_filter(): array
     {
+        $container = ContainerWrapper::get();
+
         $username_format = FORMAT_USERNAME;
-        if (WF::get_config('authenticator.unique_identifier') == 'email')
+        if ($container->get('authenticator.unique_identifier') == 'email')
         {
             $username_format = FORMAT_EMAIL;
         }
@@ -67,7 +68,7 @@ class Login extends PageAction
     //
     protected function get_user(string $username): User|false
     {
-        $factory = $this->framework->get_base_factory();
+        $factory = $this->container->get(BaseFactory::class);
 
         return $factory->get_user_by_username($username);
     }
@@ -173,7 +174,7 @@ class Login extends PageAction
             }
 
             $recaptcha = new Recaptcha(
-                $this->framework->get_assert_service(),
+                $this->assert_service,
                 new \GuzzleHttp\Client(),
                 $this->get_config('security.recaptcha.secret_key'),
             );

@@ -33,6 +33,11 @@ return [
     \Latte\Engine::class => DI\create(),
     \Slim\Psr7\Factory\ResponseFactory::class => DI\create(),
 
+    'DbStoredValues' => DI\autowire(Core\StoredValues::class)
+        ->constructor(
+            module: 'db',
+        ),
+
     Core\AssertService::class => DI\autowire(),
     Core\BaseFactory::class => DI\autowire(),
     Core\BrowserSessionService::class => DI\autowire()
@@ -54,12 +59,23 @@ return [
             DI\get('config_tree'),
         ),
     Core\Database::class => function (ContainerInterface $c) {
-        $framework = $c->get('framework');
+        $secure_config_service = $c->get(Security\ConfigService::class);
 
-        $framework->init_databases();
-        $framework->check_compatibility();
+        $db_config = $secure_config_service->get_auth_config('db_config.main');
 
-        return $framework->get_main_db();
+        $mysql = new \mysqli(
+            $db_config['database_host'],
+            $db_config['database_user'],
+            $db_config['database_password'],
+            $db_config['database_database']
+        );
+
+        if ($mysql->connect_error)
+        {
+            throw new \RuntimeException('Mysqli Database connection failed');
+        }
+
+        return new Core\MysqliDatabase($mysql);
     },
     Core\DatabaseManager::class => DI\autowire()
         ->constructor(
@@ -72,7 +88,7 @@ return [
         ),
     Core\LatteRenderService::class => DI\autowire()
         ->constructor(
-            template_dir: DI\get('app_dir').'/templates',
+            template_dir: DI\string('{app_dir}/templates'),
             tmp_dir: '/tmp/latte',
         ),
     Core\MailService::class => DI\autowire(Core\NullMailService::class),
@@ -108,10 +124,7 @@ return [
     Core\ValidatorService::class => DI\autowire(),
     Core\WF::class => DI\autowire(),
     Core\WFWebHandler::class => DI\autowire(),
-    'DbStoredValues' => DI\autowire(Core\StoredValues::class)
-        ->constructor(
-            module: 'db',
-        ),
+    'WebFramework\Core\*' => DI\autowire(),
 
     Middleware\AuthenticationInfoMiddleware::class => DI\autowire(),
     Middleware\BlacklistMiddleware::class => DI\autowire(),

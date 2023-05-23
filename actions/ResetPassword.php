@@ -2,6 +2,7 @@
 
 namespace WebFramework\Actions;
 
+use WebFramework\Core\BaseFactory;
 use WebFramework\Core\PageAction;
 use WebFramework\Core\User;
 
@@ -23,7 +24,7 @@ class ResetPassword extends PageAction
     //
     protected function get_user(string $username): User|false
     {
-        $factory = $this->framework->get_base_factory();
+        $factory = $this->container->get(BaseFactory::class);
 
         return $factory->get_user_by_username($username);
     }

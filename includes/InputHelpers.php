@@ -23,7 +23,9 @@ class InputHelpers
      */
     public static function load_template(string $name, array $args = []): void
     {
-        $app_dir = WF::get_app_dir();
+        $container = ContainerWrapper::get();
+
+        $app_dir = $container->get('app_dir');
 
         if (!file_exists("{$app_dir}/templates/{$name}.inc.php"))
         {

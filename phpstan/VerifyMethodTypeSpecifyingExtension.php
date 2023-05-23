@@ -17,7 +17,7 @@ class VerifyMethodTypeSpecifyingExtension implements MethodTypeSpecifyingExtensi
 
     public function getClass(): string
     {
-        return "WebFramework\Core\FrameworkCore";
+        return "WebFramework\Core\ActionCore";
     }
 
     public function isMethodSupported(MethodReflection $methodReflection, MethodCall $node, TypeSpecifierContext $context): bool

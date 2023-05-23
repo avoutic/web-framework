@@ -2,15 +2,18 @@
 
 namespace WebFramework\Actions;
 
+use WebFramework\Core\BaseFactory;
+use WebFramework\Core\ContainerWrapper;
 use WebFramework\Core\PageAction;
-use WebFramework\Core\WF;
 
 class ForgotPassword extends PageAction
 {
     public static function get_filter(): array
     {
+        $container = ContainerWrapper::get();
+
         $username_format = FORMAT_USERNAME;
-        if (WF::get_config('authenticator.unique_identifier') == 'email')
+        if ($container->get('authenticator.unique_identifier') == 'email')
         {
             $username_format = FORMAT_EMAIL;
         }
@@ -44,7 +47,7 @@ class ForgotPassword extends PageAction
             return;
         }
 
-        $base_factory = $this->framework->get_base_factory();
+        $base_factory = $this->container->get(BaseFactory::class);
 
         // Retrieve user
         //
