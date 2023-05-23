@@ -4,6 +4,8 @@ namespace WebFramework\Core;
 
 use Psr\Container\ContainerInterface as Container;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use Slim\Exception\HttpForbiddenException;
+use Slim\Exception\HttpUnauthorizedException;
 use WebFramework\Security\AuthenticationService;
 use WebFramework\Security\BlacklistService;
 use WebFramework\Security\ConfigService as SecureConfigService;
@@ -43,6 +45,31 @@ abstract class ActionCore
 
     public function init(): void
     {
+    }
+
+    /**
+     * @param array<string, string> $args
+     */
+    public function handle_permissions_and_inputs(Request $request, array $args): void
+    {
+        $action_permissions = static::get_permissions();
+
+        $has_permissions = $this->authentication_service->user_has_permissions($action_permissions);
+
+        if (!$has_permissions)
+        {
+            if ($this->authentication_service->is_authenticated())
+            {
+                throw new HttpForbiddenException($request);
+            }
+
+            throw new HttpUnauthorizedException($request);
+        }
+
+        $action_filter = static::get_filter();
+
+        $request = $this->validator_service->filter_request($request, $action_filter);
+        $this->set_inputs($request, $args);
     }
 
     /**

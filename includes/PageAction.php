@@ -222,11 +222,7 @@ abstract class PageAction extends ActionCore
      */
     public function html_main(Request $request, Response $response, array $args): void
     {
-        $action_filter = static::get_filter();
-
-        $request = $this->validator_service->filter_request($request, $action_filter);
-        $this->set_inputs($request, $args);
-
+        $this->handle_permissions_and_inputs($request, $args);
         $this->check_sanity();
         $this->do_logic();
         $this->display_frame();
