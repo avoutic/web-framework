@@ -1,6 +1,13 @@
 # v6 release
 
-Major internal changes to move to dependency injection
+Major internal changes to move to move to Slim Framework v4 as core handler.
+WebFramework adds supporting code to quickly prototype and make applications.
+
+Old code can still run on top of the major overhaul with minimal changes.
+
+* Replace calls to WF::verify() with exception throwing
+* Replace calls to WF::get_config() with config_service->get or container->get
+* Remove calls to framework
 
 As a result there are some internal and external changes. Internal breaking changes only affect you if you used internal classes directly. External breaking changes affect the public interface.
 
