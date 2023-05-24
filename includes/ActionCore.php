@@ -4,8 +4,11 @@ namespace WebFramework\Core;
 
 use Psr\Container\ContainerInterface as Container;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use Slim\Exception\HttpBadRequestException;
 use Slim\Exception\HttpForbiddenException;
+use Slim\Exception\HttpNotFoundException;
 use Slim\Exception\HttpUnauthorizedException;
+use Slim\Psr7\Factory\ServerRequestFactory;
 use WebFramework\Security\AuthenticationService;
 use WebFramework\Security\BlacklistService;
 use WebFramework\Security\ConfigService as SecureConfigService;
@@ -38,7 +41,6 @@ abstract class ActionCore
         protected ProtectService $protect_service,
         protected SecureConfigService $secure_config_service,
         protected ValidatorService $validator_service,
-        protected WFWebHandler $web_handler,
     ) {
         $this->init();
     }
@@ -160,7 +162,7 @@ abstract class ActionCore
      */
     protected function exit_send_error(int $code, string $title, string $type = 'generic', string $message = ''): void
     {
-        $this->web_handler->exit_send_error($code, $title, $type, $message);
+        throw new \RuntimeException($message);
     }
 
     /**
@@ -168,7 +170,9 @@ abstract class ActionCore
      */
     protected function exit_send_400(string $type = 'generic'): void
     {
-        $this->web_handler->exit_send_400($type);
+        $request = ServerRequestFactory::createFromGlobals();
+
+        throw new HttpBadRequestException($request);
     }
 
     /**
@@ -176,7 +180,9 @@ abstract class ActionCore
      */
     protected function exit_send_403(string $type = 'generic'): void
     {
-        $this->web_handler->exit_send_403($type);
+        $request = ServerRequestFactory::createFromGlobals();
+
+        throw new HttpForbiddenException($request);
     }
 
     /**
@@ -184,7 +190,9 @@ abstract class ActionCore
      */
     protected function exit_send_404(string $type = 'generic'): void
     {
-        $this->web_handler->exit_send_404($type);
+        $request = ServerRequestFactory::createFromGlobals();
+
+        throw new HttpNotFoundException($request);
     }
 
     protected function blacklist_404(bool|int $bool, string $reason, string $type = 'generic'): void
