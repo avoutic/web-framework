@@ -93,13 +93,8 @@ return [
         ),
     Core\MailService::class => DI\autowire(Core\NullMailService::class),
     Core\MessageService::class => DI\autowire(),
-    Core\MiddlewareStack::class => DI\autowire()
-        ->constructor(
-            DI\get(Middleware\RoutingMiddleware::class),
-        ),
     Core\MysqliDatabase::class => DI\autowire(),
     Core\NullCache::class => DI\autowire(),
-    Core\ObjectFunctionCaller::class => DI\autowire(),
     Core\PostmarkClientFactory::class => DI\factory(function (ContainerInterface $c) {
         $secure_config_service = $c->get(Security\ConfigService::class);
 
@@ -113,17 +108,12 @@ return [
             assert_recipient: DI\get('sender_core.assert_recipient'),
         ),
     Core\ResponseEmitter::class => DI\autowire(),
-    Core\RouteService::class => DI\autowire()
-        ->constructor(
-            base_url: DI\get('base_url'),
-        ),
     Core\UserMailer::class => DI\autowire()
         ->constructor(
             default_sender: DI\get('sender_core.default_sender'),
         ),
     Core\ValidatorService::class => DI\autowire(),
     Core\WF::class => DI\autowire(),
-    Core\WFWebHandler::class => DI\autowire(),
     'WebFramework\Core\*' => DI\autowire(),
 
     Middleware\AuthenticationInfoMiddleware::class => DI\autowire(),
@@ -132,10 +122,6 @@ return [
     Middleware\IpMiddleware::class => DI\autowire(),
     Middleware\JsonParserMiddleware::class => DI\autowire(),
     Middleware\MessageMiddleware::class => DI\autowire(),
-    Middleware\RoutingMiddleware::class => DI\autowire()
-        ->constructor(
-            action_app_namespace: DI\get('actions.app_namespace'),
-        ),
     Middleware\SecurityHeadersMiddleware::class => DI\autowire(),
 
     Security\AuthenticationService::class => DI\autowire(Security\DatabaseAuthenticationService::class)

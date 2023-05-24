@@ -91,11 +91,6 @@ parameters:
 			path: includes/MysqliDatabase.php
 
 		-
-			message: "#^Parameter \\#3 \\$subject of function preg_replace expects array\\|string, string\\|null given\\.$#"
-			count: 1
-			path: includes/RouteService.php
-
-		-
 			message: "#^Offset 'calculated_hash' on array\\{calculated_hash\\: string, stored_hash\\: string\\} in isset\\(\\) always exists and is not nullable\\.$#"
 			count: 1
 			path: includes/User.php

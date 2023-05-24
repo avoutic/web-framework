@@ -43,17 +43,14 @@ class WF
     protected ?LatteRenderService $latte_render_service = null;
     protected ?MailService $mail_service = null;
     protected ?MessageService $message_service = null;
-    protected ?ObjectFunctionCaller $object_function_caller = null;
     protected ?PostmarkClientFactory $postmark_client_factory = null;
     protected ?ReportFunction $report_function = null;
     protected ?ResponseEmitter $response_emitter = null;
     protected ?ResponseFactory $response_factory = null;
-    protected ?RouteService $route_service = null;
     protected ?SecureConfigService $secure_config_service = null;
     protected ?ProtectService $protect_service = null;
     protected ?UserMailer $user_mailer = null;
     protected ?ValidatorService $validator_service = null;
-    protected ?WFWebHandler $web_handler = null;
 
     /**
      * @var array<string>
@@ -130,11 +127,6 @@ class WF
         return $this->container->get(ReportFunction::class);
     }
 
-    public function get_object_function_caller(): ObjectFunctionCaller
-    {
-        return $this->container->get(ObjectFunctionCaller::class);
-    }
-
     public function get_response_emitter(): ResponseEmitter
     {
         return $this->container->get(ResponseEmitter::class);
@@ -143,11 +135,6 @@ class WF
     public function get_response_factory(): ResponseFactory
     {
         return $this->container->get(ResponseFactory::class);
-    }
-
-    public function get_route_service(): RouteService
-    {
-        return $this->container->get(RouteService::class);
     }
 
     public function get_secure_config_service(): SecureConfigService
@@ -168,11 +155,6 @@ class WF
     public function get_validator_service(): ValidatorService
     {
         return $this->container->get(ValidatorService::class);
-    }
-
-    public function get_web_handler(): WFWebHandler
-    {
-        return $this->container->get(WFWebHandler::class);
     }
 
     public function get_latte_render_service(): LatteRenderService

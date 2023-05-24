@@ -9,11 +9,10 @@ if (!file_exists(__DIR__.'/../vendor/autoload.php'))
 
 require_once __DIR__.'/../vendor/autoload.php';
 
-use Slim\Psr7\Factory\ServerRequestFactory;
+use Psr\Container\ContainerInterface as Container;
+use Slim\Factory\AppFactory;
 use WebFramework\Core\ConfigBuilder;
-use WebFramework\Core\DebugService;
-use WebFramework\Core\ReportFunction;
-use WebFramework\Core\WF;
+use WebFramework\Core\ContainerWrapper;
 
 // Build config
 //
@@ -36,56 +35,38 @@ $builder = new DI\ContainerBuilder();
 $builder->addDefinitions(['config_tree' => $config_builder->get_config()]);
 $builder->addDefinitions($config_builder->get_flattened_config());
 $builder->addDefinitions("{$app_dir}/vendor/avoutic/web-framework/includes/di_definitions.php");
-$builder->addDefinitions("{$app_dir}/includes/di_definitions.php");
+
+// Add any app specific definitions
+//
+// $builder->addDefinitions("{$app_dir}/includes/di_definitions.php");
+
 $container = $builder->build();
+
+// If you have old-style code you probably need ContainerWrapper
+//
+require_once "{$app_dir}/vendor/avoutic/web-framework/includes/ContainerWrapper.php";
+
+require_once "{$app_dir}/vendor/avoutic/web-framework/includes/defines.inc.php";
+
+ContainerWrapper::setContainer($container);
+
+if ($container->get('preload'))
+{
+    require_once "{$app_dir}/includes/preload.inc.php";
+}
 
 // Create and start framework
 //
-$core_framework = new WF($container);
-$container->set('framework', $core_framework);
-$framework = null;
+AppFactory::setContainer($container);
+$app = AppFactory::create();
 
-try
-{
-    // Initialize WF
-    //
-    $core_framework->init();
+// Add global Middleware
+//
 
-    // Allow app to check data and config sanity
-    //
-    $core_framework->check_sanity();
+// Error Middleware should always be added last
+//
+$errorMiddleware = $app->addErrorMiddleware(true, false, false);
 
-    // Load routes
-    //
-    $framework = $container->get(WebFramework\Core\WFWebHandler::class);
+include_once "{$app_dir}/includes/routes/generic.php";
 
-    if (is_file("{$app_dir}/includes/site_logic.inc.php"))
-    {
-        include_once "{$app_dir}/includes/site_logic.inc.php";
-    }
-
-    $framework->handle_request();
-}
-catch (Throwable $e)
-{
-    $request = ServerRequestFactory::createFromGlobals();
-
-    $debug_service = $container->get(DebugService::class);
-    $error_report = $debug_service->get_throwable_report($e, $request);
-
-    $report_function = $container->get(ReportFunction::class);
-    $report_function->report($e->getMessage(), 'unhandled_exception', $error_report);
-
-    $message = ($container->get('debug')) ? $error_report['message'] : $error_report['low_info_message'];
-
-    if ($framework !== null)
-    {
-        $message = "<pre>{$message}</pre>";
-        $framework->exit_send_error(500, 'Unhandled exception', 'generic', $message);
-    }
-    else
-    {
-        header('Content-type: text/plain');
-        echo $message;
-    }
-}
+$app->run();
