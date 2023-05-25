@@ -51,8 +51,10 @@ class ConfigBuilder
      *                               File locations should be relative to the app dir
      *                               including leading /. If it starts with a '?' the file
      *                               does not have to be present.
+     *
+     * @return array<string, mixed>
      */
-    public function build_config(array $configs): void
+    public function build_config(array $configs): array
     {
         foreach ($configs as $config_location)
         {
@@ -60,6 +62,8 @@ class ConfigBuilder
 
             $this->merge_config_on_top($file_config);
         }
+
+        return $this->global_config;
     }
 
     /**

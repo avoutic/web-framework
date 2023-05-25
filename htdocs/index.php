@@ -29,11 +29,9 @@ $configs = [
 ];
 
 $config_builder = new ConfigBuilder($app_dir);
-$config_builder->build_config(
+$config = $config_builder->build_config(
     $configs,
 );
-
-$config = $config_builder->get_config();
 
 // Build container
 //
