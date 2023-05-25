@@ -29,7 +29,6 @@ $config_builder = new ConfigBuilder($app_dir);
 $config_builder->build_config(
     $configs,
 );
-$config_builder->populate_internals('app', 'app');
 
 // Build container
 //

@@ -86,7 +86,7 @@ abstract class PageAction extends ActionCore
      */
     public function load_template(string $name, array $args = []): void
     {
-        $app_dir = $this->config_service->get('app_dir');
+        $app_dir = $this->get_app_dir();
         $this->verify(file_exists("{$app_dir}/templates/{$name}.inc.php"), 'Requested template not present');
 
         include "{$app_dir}/templates/{$name}.inc.php";
@@ -171,7 +171,7 @@ abstract class PageAction extends ActionCore
 
     protected function display_with_latte(): void
     {
-        $app_dir = $this->config_service->get('app_dir');
+        $app_dir = $this->get_app_dir();
         $template_dir = "{$app_dir}/templates";
 
         $this->page_content['core'] = $this->get_core_variables();
@@ -201,7 +201,7 @@ abstract class PageAction extends ActionCore
 
         if (strlen($this->get_frame_file()))
         {
-            $app_dir = $this->config_service->get('app_dir');
+            $app_dir = $this->get_app_dir();
             $frame_file = "{$app_dir}/frames/".$this->get_frame_file();
             $this->verify(file_exists($frame_file), 'Requested frame file not present');
 

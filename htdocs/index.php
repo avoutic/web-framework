@@ -33,7 +33,6 @@ $config_builder->build_config(
     $configs,
 );
 
-$config_builder->populate_internals($_SERVER['SERVER_NAME'] ?? '', $_SERVER['SERVER_NAME'] ?? '');
 $config = $config_builder->get_config();
 
 // Build container

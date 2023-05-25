@@ -29,8 +29,6 @@ $config_builder->build_config(
     $configs,
 );
 
-$config_builder->populate_internals('app', 'app');
-
 // Build container
 //
 $builder = new DI\ContainerBuilder();

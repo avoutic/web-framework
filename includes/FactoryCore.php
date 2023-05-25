@@ -46,7 +46,7 @@ class FactoryCore
 
     protected function get_app_dir(): string
     {
-        return $this->config_service->get('app_dir');
+        return $this->container->get('app_dir');
     }
 
     protected function get_config(string $path): mixed

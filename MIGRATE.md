@@ -14,6 +14,7 @@ Old code can still run on top of the major overhaul with minimal changes.
 * Replace calls to SenderCore::send with MessageHandler->send_template_mail()
 * Rewrite register_route() and register_redirect() to Slim route functions (Use RouteConvertor example in scripts)
 * Change prototype to (Request, Response, array) and call $this->handle_permissions_and_inputs() to all ApiAction derived functions
+* Get app_dir, server_name and host_name via constructor or container
 
 Over time you should:
 * Move to Dependency Injection for all your classes

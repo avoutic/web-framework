@@ -33,11 +33,21 @@ return [
     \Latte\Engine::class => DI\create(),
     \Slim\Psr7\Factory\ResponseFactory::class => DI\create(),
 
+    'app_dir' => function (ContainerInterface $c) {
+        // Determine app dir
+        //
+        $reflection = new \ReflectionClass(\Composer\Autoload\ClassLoader::class);
+
+        return dirname($reflection->getFileName() ?: '', 3);
+    },
     'build_info' => function (ContainerInterface $c) {
         $debug_service = $c->get(Core\DebugService::class);
 
         return $debug_service->get_build_info();
     },
+    'host_name' => $_SERVER['SERVER_NAME'] ?? 'app',
+    'server_name' => $_SERVER['SERVER_NAME'] ?? 'app',
+
     'DbStoredValues' => DI\autowire(Core\StoredValues::class)
         ->constructor(
             module: 'db',

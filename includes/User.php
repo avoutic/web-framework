@@ -331,7 +331,7 @@ SQL;
         $security_iterator = $this->increase_security_iterator();
 
         $code = $this->generate_verify_code('change_email', ['email' => $email, 'iterator' => $security_iterator]);
-        $verify_url = $this->get_config('http_mode').'://'.$this->get_config('server_name').
+        $verify_url = $this->get_config('http_mode').'://'.$this->container->get('server_name').
                       $this->get_config('base_url').
                       $this->get_config('actions.change_email.verify_page').
                       '?code='.$code;
@@ -432,7 +432,7 @@ SQL;
     public function send_verify_mail(array $after_verify_data = []): bool|string
     {
         $code = $this->generate_verify_code('verify', $after_verify_data);
-        $verify_url = $this->get_config('http_mode').'://'.$this->get_config('server_name').
+        $verify_url = $this->get_config('http_mode').'://'.$this->container->get('server_name').
                       $this->get_config('base_url').
                       $this->get_config('actions.login.verify_page').
                       '?code='.$code;
@@ -469,7 +469,7 @@ SQL;
         $security_iterator = $this->increase_security_iterator();
 
         $code = $this->generate_verify_code('reset_password', ['iterator' => $security_iterator]);
-        $reset_url = $this->get_config('http_mode').'://'.$this->get_config('server_name').
+        $reset_url = $this->get_config('http_mode').'://'.$this->container->get('server_name').
                      $this->get_config('base_url').
                      $this->get_config('actions.forgot_password.reset_password_page').
                      '?code='.$code;

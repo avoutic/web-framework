@@ -46,43 +46,6 @@ class ConfigBuilder
         return $file_config;
     }
 
-    public function populate_internals(string $server_name, string $host_name): void
-    {
-        $this->merge_config_on_top([
-            'app_dir' => $this->app_dir,
-        ]);
-
-        /*
-         * Force server_name and host_name to 'app' if run locally.
-         * Otherwise only set dynamically to given parameters if not defined in the merged config.
-         * server_name is meant to be used in urls and can contain port information.
-         * host_name is meant to be used as host and cannot contain port information.
-         */
-        if (!strlen($server_name))
-        {
-            $this->merge_config_on_top([
-                'server_name' => 'app',
-                'host_name' => 'app',
-            ]);
-
-            return;
-        }
-
-        if (!strlen($this->global_config['server_name'] ?? ''))
-        {
-            $this->merge_config_on_top([
-                'server_name' => $server_name,
-            ]);
-        }
-
-        if (!strlen($this->global_config['host_name'] ?? ''))
-        {
-            $this->merge_config_on_top([
-                'host_name' => $host_name,
-            ]);
-        }
-    }
-
     /**
      * @param array<string> $configs Config files to merge on top of each other in order.
      *                               File locations should be relative to the app dir
