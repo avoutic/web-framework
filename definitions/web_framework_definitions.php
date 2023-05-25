@@ -86,7 +86,11 @@ return [
             throw new \RuntimeException('Mysqli Database connection failed');
         }
 
-        return new Core\MysqliDatabase($mysql);
+        $database = new Core\MysqliDatabase($mysql);
+
+        $c->get(Core\DebugService::class)->set_database($database);
+
+        return $database;
     },
     Core\DatabaseManager::class => DI\autowire()
         ->constructor(
