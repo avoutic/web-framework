@@ -125,6 +125,13 @@ return [
 
         return new Core\PostmarkClientFactory($api_key);
     }),
+    Core\Recaptcha::class => DI\Factory(function (ContainerInterface $c) {
+        return new Core\Recaptcha(
+            $c->get(Core\AssertService::class),
+            $c->get(\GuzzleHttp\Client::class),
+            $c->get('security.recaptcha.secret_key'),
+        );
+    }),
     Core\ReportFunction::class => DI\autowire(Core\MailReportFunction::class)
         ->constructor(
             assert_recipient: DI\get('sender_core.assert_recipient'),
