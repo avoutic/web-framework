@@ -2,6 +2,8 @@
 
 $finder = PhpCsFixer\Finder::create()
     ->in(__DIR__.'/actions')
+    ->in(__DIR__.'/config')
+    ->in(__DIR__.'/definitions')
     ->in(__DIR__.'/htdocs')
     ->in(__DIR__.'/includes')
     ->in(__DIR__.'/scripts')
