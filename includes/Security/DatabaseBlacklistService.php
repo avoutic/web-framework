@@ -33,10 +33,6 @@ SQL;
 
     public function add_entry(string $ip, ?int $user_id, string $reason, int $severity = 1): void
     {
-        // Auto cleanup old entries (Over 30 days old)
-        //
-        $this->cleanup();
-
         $full_reason = $reason;
 
         $entry = BlacklistEntry::create([

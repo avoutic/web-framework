@@ -4,7 +4,6 @@ namespace WebFramework\Security;
 
 use WebFramework\Core\BaseFactory;
 use WebFramework\Core\BrowserSessionService;
-use WebFramework\Core\Cache;
 use WebFramework\Core\Database;
 use WebFramework\Core\User;
 
@@ -16,7 +15,6 @@ class DatabaseAuthenticationService implements AuthenticationService
      * @param class-string<User> $user_class
      */
     public function __construct(
-        private Cache $cache,
         private Database $database,
         private BrowserSessionService $browser_session_service,
         private BaseFactory $user_factory,
@@ -27,20 +25,16 @@ class DatabaseAuthenticationService implements AuthenticationService
 
     public function cleanup(): void
     {
-        $cache_id = 'authentication.last_session_cleanup';
-        $timestamp = $this->cache->get($cache_id);
-
-        if ($timestamp !== false && $timestamp + 60 * 60 > time())
-        {
-            // Skip, because already cleaned in the last hour
-            return;
-        }
-
         $timestamp = date('Y-m-d H:i:s');
 
-        $this->database->query('DELETE FROM sessions WHERE ADDDATE(last_active, INTERVAL ? SECOND) < ?', [$this->session_timeout, $timestamp]);
+        $query = <<<'SQL'
+        DELETE FROM sessions
+        WHERE ADDDATE(last_active, INTERVAL ? SECOND) < ?
+SQL;
 
-        $this->cache->set($cache_id, time());
+        $params = [$this->session_timeout, $timestamp];
+
+        $this->database->query($query, $params);
     }
 
     protected function register_session(int $user_id, string|false $session_id): Session
