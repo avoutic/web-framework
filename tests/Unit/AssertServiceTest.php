@@ -6,7 +6,7 @@ use Codeception\Stub\Expected;
 use WebFramework\Core\AssertService;
 use WebFramework\Core\DebugService;
 use WebFramework\Core\MailReportFunction;
-use WebFramework\Core\VerifyException;
+use WebFramework\Exception\VerifyException;
 
 /**
  * @internal

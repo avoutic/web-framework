@@ -3,6 +3,7 @@
 namespace WebFramework\Core;
 
 use Psr\Http\Message\ServerRequestInterface as Request;
+use WebFramework\Exception\VerifyException;
 
 class AssertService
 {
