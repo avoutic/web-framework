@@ -26,47 +26,45 @@ External:
 * BaseFactory constructor has changed
 * CacheInterface is now called Cache
 * Database constructor has changed
-* Image, constructor has changes and does not automatically analyze when constructed.
-* Recaptcha constructor has changed.
-* RedisCache constructor has changed.
-* SenderCore has been deprecated. Use MailService instead.
+* Image, constructor has changes and does not automatically analyze when constructed
+* Recaptcha constructor has changed
+* RedisCache constructor has changed
+* SenderCore has been removed. Use MailService instead
 * Config option: actions.default_action has been removed. All routes are explicit
 * Config option: authenticator.user_class introduced for class of user objects to retrieve
 * Config option: document_root has been removed
-* Config option: sanity_check_module is deprecated. Use sanity_check_modules instead
-* Config option: sender_core.handler_class has been removed.
+* Config option: sanity_check_module has been removed. Use sanity_check_modules instead
+* Config option: sender_core.handler_class has been removed
 * StripeFactory constructor has changed
 * StoredValues constructor has changed
 * UserStoredValues constructor has changed
 * Webhook interface has changed
-* WF->add_message() is deprecated. Use WebHandler instead
-* WF->auth_array is removed. Use AuthenticationService->get_authenticated_user() instead
-* WF->authenticate() is deprecated. Use AuthenticationService instead
-* WF->deauthenticate() is deprecated. Use AuthenticationService instead
-* WF->get_authenticated() is removed. Use AuthenticationService->get_authenticated_user() instead
-* WF->get_build_info() is removed. Use DebugService instead
-* WF->get_input() is removed. Use the Request instead
-* WF->get_messages() is removed. Use WebHandler instead
-* WF->get_raw_input() is deprecated. Use the Request instead
-* WF->invalidate_sessions() is deprecated. Use AuthenticationService instead
-* WF->is_authenticated() is deprecated. Use AuthenticationService instead
-* WF->user_has_permissions() is deprecated. Use AuthenticationService instead
-* WF->validate_input() is removed. Use ValidatorService instead
-* WFWebHandler has been re-factored and should be retrieved via WF->get_web_handler()
-* WFWebHandler->register_redirect() is deprecated. User RouteService->register_redirect() instead
-* WFWebHandler->register_route() is deprecated(). User RouteService->register_action() instead
-* WF->set_configs() should now include the base config as well (by default at /vendor/avoutic/web-framework/includes/BaseConfig.php)
-* WF->throw_exception_on_error() is removed. Exception always thrown from AssertService
+* WF->add_message() has been removed. Use MessageService instead
+* WF->auth_array has been removed. Use AuthenticationService->get_authenticated_user() instead
+* WF->authenticate() has been removed. Use AuthenticationService instead
+* WF->deauthenticate() has been removed. Use AuthenticationService instead
+* WF->get_authenticated() has been removed. Use AuthenticationService->get_authenticated_user() instead
+* WF->get_build_info() has been removed. Use DebugService instead
+* WF->get_input() has been removed. Use the Request with ValidatorService instead
+* WF->get_messages() has been removed. Use MessageService instead
+* WF->get_raw_input() has been removed. Use the Request instead
+* WF->invalidate_sessions() has been removed. Use AuthenticationService instead
+* WF->is_authenticated() has been removed. Use AuthenticationService instead
+* WF->user_has_permissions() has been removed. Use AuthenticationService instead
+* WF->validate_input() has been removed. Use ValidatorService instead
+* WFWebHandler has been removed
+* WFWebHandler->register_redirect() has been removed. Use Slim routing instead
+* WFWebHandler->register_route() has been removed. Use Slim routing instead
+* WF->set_configs() has been removed. Should pass all configs to ConfigBuilder directly (Including the base config (by default at /vendor/avoutic/web-framework/includes/BaseConfig.php))
+* WF->throw_exception_on_error() has been removed. Exception always thrown from AssertService
 
 Internal:
 * AuthRedirect has been refactored to Security\DatabaseAuthenticationService
 * AuthWwwAuthenticate has been removed
 * Authenticator has been refactored to Security\AuthenticationService
-* WF::assert_handler() is deprecated. Will be removed
-* WF->get_sanity_check() is deprecated. Will be removed
-* WF->internal_assert_handler() is deprecated. Use AssertService instead
-* WF->internal_get_config() is deprecated. Use ConfigService->get() instead
-* WF::shutdown_handler() is deprecated. Will be removed
+* WF has been removed
+* WFWebHandler has been removed
+* FrameworkCore has been removed
 * WFSecurity has been split into CsrfService, ConfigService and ProtectService
 
 # v5 release
