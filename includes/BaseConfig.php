@@ -41,13 +41,10 @@ return [
     'cache_enabled' => false,
     'auth_mode' => 'redirect',          // redirect, www-authenticate, custom (requires auth_module)
     'auth_module' => '',                // class name with full namespace
-    'sanity_check_module' => '',        // class name with full namespace (Deprecated)
-    'sanity_check_modules' => [],       /* associative array with class names with full namespace as key
-                                         * and their config array as the value
-                                         */
-    'sanity_check' => [
-        'required_auth' => [],          // Auth files that should be present
-    ],
+    /* Associative array with application sanity check class names with
+     * full namespace as key and their config array as the value
+     */
+    'sanity_check_modules' => [],
     'authenticator' => [
         'unique_identifier' => 'email',
         'auth_required_message' => 'Authentication required. Please login.',
@@ -102,6 +99,7 @@ return [
             'after_verify_page' => '/',
         ],
     ],
+    'route_files' => [],                // The files in 'routes' to explicitly load
     'sender_core' => [
         'default_sender' => '',
         'assert_recipient' => '',

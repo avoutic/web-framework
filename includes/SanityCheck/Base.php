@@ -9,7 +9,18 @@ abstract class Base implements SanityCheckInterface
     protected bool $allow_fixing = false;
     protected bool $verbose = false;
 
+    /** @var array<mixed> */
+    protected array $config = [];
+
     abstract public function perform_checks(): bool;
+
+    /**
+     *  @param array<mixed> $config
+     */
+    public function set_config(array $config): void
+    {
+        $this->config = $config;
+    }
 
     public function allow_fixing(): void
     {

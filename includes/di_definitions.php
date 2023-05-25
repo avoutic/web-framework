@@ -33,13 +33,26 @@ return [
     \Latte\Engine::class => DI\create(),
     \Slim\Psr7\Factory\ResponseFactory::class => DI\create(),
 
+    'build_info' => function (ContainerInterface $c) {
+        $debug_service = $c->get(Core\DebugService::class);
+
+        return $debug_service->get_build_info();
+    },
     'DbStoredValues' => DI\autowire(Core\StoredValues::class)
         ->constructor(
             module: 'db',
         ),
+    'SanityCheckStoredValues' => DI\autowire(Core\StoredValues::class)
+        ->constructor(
+            module: 'sanity_check',
+        ),
 
     Core\AssertService::class => DI\autowire(),
     Core\BaseFactory::class => DI\autowire(),
+    Core\BootstrapService::class => DI\autowire()
+        ->constructor(
+            app_dir: DI\get('app_dir'),
+        ),
     Core\BrowserSessionService::class => DI\autowire()
         ->method(
             'start',
@@ -108,12 +121,16 @@ return [
             assert_recipient: DI\get('sender_core.assert_recipient'),
         ),
     Core\ResponseEmitter::class => DI\autowire(),
+    Core\SanityCheckRunner::class => DI\autowire()
+        ->constructor(
+            stored_values: DI\get('SanityCheckStoredValues'),
+            build_info: DI\get('build_info'),
+        ),
     Core\UserMailer::class => DI\autowire()
         ->constructor(
             default_sender: DI\get('sender_core.default_sender'),
         ),
     Core\ValidatorService::class => DI\autowire(),
-    Core\WF::class => DI\autowire(),
     'WebFramework\Core\*' => DI\autowire(),
 
     Middleware\AuthenticationInfoMiddleware::class => DI\autowire(),
