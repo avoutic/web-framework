@@ -132,10 +132,7 @@ return [
             $c->get('security.recaptcha.secret_key'),
         );
     }),
-    Core\ReportFunction::class => DI\autowire(Core\MailReportFunction::class)
-        ->constructor(
-            assert_recipient: DI\get('sender_core.assert_recipient'),
-        ),
+    Core\ReportFunction::class => DI\autowire(Core\NullReportFunction::class),
     Core\SanityCheckRunner::class => DI\autowire()
         ->constructor(
             stored_values: DI\get('SanityCheckStoredValues'),
@@ -147,17 +144,8 @@ return [
         ),
     Core\ValidatorService::class => DI\autowire(),
 
-    Security\AuthenticationService::class => DI\autowire(Security\DatabaseAuthenticationService::class)
-        ->constructor(
-            session_timeout: DI\get('authenticator.session_timeout'),
-            user_class: DI\get('authenticator.user_class'),
-        ),
-    Security\BlacklistService::class => DI\autowire(Security\DatabaseBlacklistService::class)
-        ->constructor(
-            store_period: DI\get('security.blacklist.store_period'),
-            threshold: DI\get('security.blacklist.threshold'),
-            trigger_period: DI\get('security.blacklist.trigger_period'),
-        ),
+    Security\AuthenticationService::class => DI\autowire(Security\NullAuthenticationService::class),
+    Security\BlacklistService::class => DI\autowire(Security\NullBlacklistService::class),
     Security\ProtectService::class => DI\autowire()
         ->constructor(
             [
