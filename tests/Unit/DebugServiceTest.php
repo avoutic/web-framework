@@ -6,6 +6,7 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Psr7\Factory\RequestFactory;
 use Slim\Psr7\Factory\StreamFactory;
 use WebFramework\Core\Database;
+use WebFramework\Core\DatabaseProvider;
 use WebFramework\Core\DebugService;
 use WebFramework\Core\User;
 use WebFramework\Security\NullAuthenticationService;
@@ -77,8 +78,6 @@ final class DebugServiceTest extends \Codeception\Test\Unit
     {
         $instance = $this->make(DebugService::class);
         $database = $this->makeEmpty(Database::class, ['get_last_error' => '']);
-
-        $instance->set_database($database);
 
         verify($instance->get_database_error($database))
             ->equals('None');
@@ -544,6 +543,7 @@ TXT;
             DebugService::class,
             [
                 'authentication_service' => $this->makeEmpty(NullAuthenticationService::class),
+                'database_provider' => $this->makeEmpty(DatabaseProvider::class),
                 'app_dir' => '',
                 'server_name' => 'TestServer',
             ],
@@ -601,6 +601,10 @@ TXT;
     {
         $user_data = ['id' => 1, 'username' => 'TestUser', 'email' => 'TestEmail'];
 
+        $database_provider = $this->make(
+            DatabaseProvider::class,
+        );
+
         $instance = $this->construct(
             DebugService::class,
             [
@@ -614,6 +618,7 @@ TXT;
                         ),
                     ],
                 ),
+                'database_provider' => $database_provider,
                 'app_dir' => '',
                 'server_name' => 'TestServer',
             ],
@@ -623,7 +628,7 @@ TXT;
         );
 
         $database = $this->makeEmpty(Database::class, ['get_last_error' => 'DB ERROR']);
-        $instance->set_database($database);
+        $database_provider->set($database);
 
         $request_factory = new RequestFactory();
         $request = $request_factory->createRequest('GET', 'https://test.com');

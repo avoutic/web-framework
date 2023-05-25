@@ -88,7 +88,7 @@ return [
 
         $database = new Core\MysqliDatabase($mysql);
 
-        $c->get(Core\DebugService::class)->set_database($database);
+        $c->get(Core\DatabaseProvider::class)->set($database);
 
         return $database;
     },

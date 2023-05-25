@@ -7,18 +7,12 @@ use WebFramework\Security\AuthenticationService;
 
 class DebugService
 {
-    private ?Database $database = null;
-
     public function __construct(
         private AuthenticationService $authentication_service,
+        private DatabaseProvider $database_provider,
         private string $app_dir,
         private string $server_name,
     ) {
-    }
-
-    public function set_database(Database $database): void
-    {
-        $this->database = $database;
     }
 
     // Generate Cache hash
@@ -101,7 +95,7 @@ TXT;
         $error_type = WFHelpers::get_error_type_string($error_type);
         $condensed_stack = $this->condense_stack($filtered_stack);
 
-        $db_error = $this->get_database_error($this->database);
+        $db_error = $this->get_database_error($this->database_provider->get());
 
         $input_report = "No request\n";
         $headers_fmt = "No request\n";
