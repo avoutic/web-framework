@@ -6,12 +6,11 @@ use WebFramework\Core\Database;
 
 class DatabaseBlacklistService implements BlacklistService
 {
-    /**
-     * @param array<mixed> $module_config
-     */
     public function __construct(
-        protected Database $database,
-        protected array $module_config,
+        private Database $database,
+        private int $store_period,
+        private int $threshold,
+        private int $trigger_period,
     ) {
     }
 
@@ -22,7 +21,7 @@ class DatabaseBlacklistService implements BlacklistService
         WHERE timestamp < ?
 SQL;
 
-        $cutoff = time() - $this->module_config['store_period'];
+        $cutoff = time() - $this->store_period;
 
         $result = $this->database->query($query, [$cutoff]);
         if ($result === false)
@@ -46,7 +45,7 @@ SQL;
 
     public function is_blacklisted(string $ip, ?int $user_id): bool
     {
-        $cutoff = time() - (int) $this->module_config['trigger_period'];
+        $cutoff = time() - $this->trigger_period;
         $params = [$cutoff, $ip];
         $user_fmt = '';
 
@@ -73,6 +72,6 @@ SQL;
             throw new \RuntimeException('Failed to sum blacklist entries');
         }
 
-        return $result->fields['total'] > $this->module_config['threshold'];
+        return $result->fields['total'] > $this->threshold;
     }
 }

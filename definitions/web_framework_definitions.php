@@ -134,6 +134,12 @@ return [
             session_timeout: DI\get('authenticator.session_timeout'),
             user_class: DI\get('authenticator.user_class'),
         ),
+    Security\BlacklistService::class => DI\autowire(Security\DatabaseBlacklistService::class)
+        ->constructor(
+            store_period: DI\get('security.blacklist.store_period'),
+            threshold: DI\get('security.blacklist.threshold'),
+            trigger_period: DI\get('security.blacklist.trigger_period'),
+        ),
     Security\ProtectService::class => DI\autowire()
         ->constructor(
             [

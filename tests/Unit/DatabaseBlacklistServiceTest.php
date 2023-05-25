@@ -31,10 +31,9 @@ final class DatabaseBlacklistServiceTest extends \Codeception\Test\Unit
                         ),
                     ],
                 ),
-                [
-                    'trigger_period' => 100,
-                    'threshold' => 10,
-                ],
+                'store_period' => 1000,
+                'trigger_period' => 100,
+                'threshold' => 10,
             ]
         );
 
@@ -60,10 +59,9 @@ final class DatabaseBlacklistServiceTest extends \Codeception\Test\Unit
                         ),
                     ],
                 ),
-                [
-                    'trigger_period' => 100,
-                    'threshold' => 10,
-                ],
+                'store_period' => 1000,
+                'trigger_period' => 100,
+                'threshold' => 10,
             ]
         );
 
