@@ -103,16 +103,6 @@ parameters:
 		-
 			message: "#^Method Redis\\:\\:pconnect\\(\\) invoked with 7 parameters, 1\\-5 required\\.$#"
 			count: 1
-			path: includes/WF.php
-
-		-
-			message: "#^Parameter \\#1 \\$path of function dirname expects string, string\\|false given\\.$#"
-			count: 1
-			path: includes/WF.php
-
-		-
-			message: "#^Method Redis\\:\\:pconnect\\(\\) invoked with 7 parameters, 1\\-5 required\\.$#"
-			count: 1
 			path: includes/di_definitions.php
 
 		-

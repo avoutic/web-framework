@@ -9,11 +9,10 @@ if (!file_exists(__DIR__.'/../vendor/autoload.php'))
 
 require_once __DIR__.'/../vendor/autoload.php';
 
+use WebFramework\Core\BootstrapService;
 use WebFramework\Core\ConfigBuilder;
 use WebFramework\Core\DatabaseManager;
 use WebFramework\Core\DebugService;
-use WebFramework\Core\ReportFunction;
-use WebFramework\Core\WF;
 
 header('content-type: text/plain');
 
@@ -21,9 +20,9 @@ header('content-type: text/plain');
 //
 $app_dir = __DIR__.'/..';
 $configs = [
-    '/vendor/avoutic/web-framework/includes/BaseConfig.php',
-    '/includes/config.php',
-    '?/includes/config_local.php',
+    '/config/base_config.php',
+    '/config/config.php',
+    '?/config/config_local.php',
 ];
 
 $config_builder = new ConfigBuilder($app_dir);
@@ -37,22 +36,22 @@ $config_builder->populate_internals('app', 'app');
 $builder = new DI\ContainerBuilder();
 $builder->addDefinitions(['config_tree' => $config_builder->get_config()]);
 $builder->addDefinitions($config_builder->get_flattened_config());
-$builder->addDefinitions("{$app_dir}/vendor/avoutic/web-framework/includes/di_definitions.php");
-$builder->addDefinitions("{$app_dir}/includes/di_definitions.php");
-$container = $builder->build();
 
-// Create and start framework
-//
-$framework = new WF($container);
-$container->set('framework', $framework);
+$definition_files = glob("{$app_dir}/definitions/*.php") ?: [];
+foreach ($definition_files as $file)
+{
+    $builder->addDefinitions($file);
+}
+
+$container = $builder->build();
 
 try
 {
-    // Initialize WF
-    //
-    $framework->skip_app_db_version_check();
-    $framework->skip_wf_db_version_check();
-    $framework->init();
+    $bootstrap_service = $container->get(BootstrapService::class);
+
+    $bootstrap_service->skip_sanity_checks();
+
+    $bootstrap_service->bootstrap();
 
     $db_manager = $container->get(DatabaseManager::class);
 
@@ -64,18 +63,17 @@ try
 }
 catch (Throwable $e)
 {
+    echo PHP_EOL.PHP_EOL;
+
+    if (!$container->get('debug'))
+    {
+        echo 'Unhandled exception'.PHP_EOL;
+
+        exit();
+    }
+
     $debug_service = $container->get(DebugService::class);
     $error_report = $debug_service->get_throwable_report($e);
 
-    $report_function = $container->get(ReportFunction::class);
-    $report_function->report($e->getMessage(), 'unhandled_exception', $error_report);
-
-    if ($container->get('debug') == true)
-    {
-        echo $error_report['message'];
-    }
-    else
-    {
-        echo $error_report['low_info_message'];
-    }
+    echo $error_report['message'];
 }

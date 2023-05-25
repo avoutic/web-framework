@@ -9,10 +9,9 @@ if (!file_exists(__DIR__.'/../vendor/autoload.php'))
 
 require_once __DIR__.'/../vendor/autoload.php';
 
+use WebFramework\Core\BootstrapService;
 use WebFramework\Core\ConfigBuilder;
 use WebFramework\Core\DebugService;
-use WebFramework\Core\ReportFunction;
-use WebFramework\Core\WF;
 
 header('content-type: text/plain');
 
@@ -20,15 +19,16 @@ header('content-type: text/plain');
 //
 $app_dir = __DIR__.'/..';
 $configs = [
-    '/vendor/avoutic/web-framework/includes/BaseConfig.php',
-    '/includes/config.php',
-    '?/includes/config_local.php',
+    '/config/base_config.php',
+    '/config/config.php',
+    '?/config/config_local.php',
 ];
 
 $config_builder = new ConfigBuilder($app_dir);
 $config_builder->build_config(
     $configs,
 );
+
 $config_builder->populate_internals('app', 'app');
 
 // Build container
@@ -36,45 +36,38 @@ $config_builder->populate_internals('app', 'app');
 $builder = new DI\ContainerBuilder();
 $builder->addDefinitions(['config_tree' => $config_builder->get_config()]);
 $builder->addDefinitions($config_builder->get_flattened_config());
-$builder->addDefinitions("{$app_dir}/vendor/avoutic/web-framework/includes/di_definitions.php");
-$builder->addDefinitions("{$app_dir}/includes/di_definitions.php");
-$container = $builder->build();
 
-// Create and start framework
-//
-$framework = new WF($container);
-$container->set('framework', $framework);
+$definition_files = glob("{$app_dir}/definitions/*.php") ?: [];
+foreach ($definition_files as $file)
+{
+    $builder->addDefinitions($file);
+}
+
+$container = $builder->build();
 
 try
 {
-    // Initialize WF
-    //
-    $framework->init();
+    $bootstrap_service = $container->get(BootstrapService::class);
 
-    $class_names = $framework->get_sanity_checks_to_run();
+    $bootstrap_service->set_sanity_check_fixing();
+    $bootstrap_service->set_sanity_check_verbose();
+    $bootstrap_service->set_sanity_check_force_run();
 
-    foreach ($class_names as $class_name => $module_config)
-    {
-        $sanity_check = $framework->instantiate_sanity_check($class_name, $module_config);
-        $sanity_check->allow_fixing();
-        $sanity_check->set_verbose();
-        $sanity_check->perform_checks();
-    }
+    $bootstrap_service->bootstrap();
 }
 catch (Throwable $e)
 {
+    echo PHP_EOL.PHP_EOL;
+
+    if (!$container->get('debug'))
+    {
+        echo 'Unhandled exception'.PHP_EOL;
+
+        exit();
+    }
+
     $debug_service = $container->get(DebugService::class);
     $error_report = $debug_service->get_throwable_report($e);
 
-    $report_function = $container->get(ReportFunction::class);
-    $report_function->report($e->getMessage(), 'unhandled_exception', $error_report);
-
-    if ($container->get('debug') == true)
-    {
-        echo $error_report['message'];
-    }
-    else
-    {
-        echo $error_report['low_info_message'];
-    }
+    echo $error_report['low_info_message'];
 }

@@ -11,62 +11,83 @@ require_once __DIR__.'/../vendor/autoload.php';
 
 use Psr\Container\ContainerInterface as Container;
 use Slim\Factory\AppFactory;
+use Slim\Psr7\Factory\ServerRequestFactory;
+use WebFramework\Core\BootstrapService;
 use WebFramework\Core\ConfigBuilder;
-use WebFramework\Core\ContainerWrapper;
+use WebFramework\Core\DebugService;
+use WebFramework\Core\MiddlewareRegistrar;
+use WebFramework\Core\ReportFunction;
+use WebFramework\Core\RouteRegistrar;
 
 // Build config
 //
 $app_dir = __DIR__.'/..';
 $configs = [
-    '/vendor/avoutic/web-framework/includes/BaseConfig.php',
-    '/includes/config.php',
-    '?/includes/config_local.php',
+    '/config/base_config.php',
+    '/config/config.php',
+    '?/config/config_local.php',
 ];
 
 $config_builder = new ConfigBuilder($app_dir);
 $config_builder->build_config(
     $configs,
 );
+
 $config_builder->populate_internals($_SERVER['SERVER_NAME'] ?? '', $_SERVER['SERVER_NAME'] ?? '');
+$config = $config_builder->get_config();
 
 // Build container
 //
 $builder = new DI\ContainerBuilder();
-$builder->addDefinitions(['config_tree' => $config_builder->get_config()]);
+$builder->addDefinitions(['config_tree' => $config]);
 $builder->addDefinitions($config_builder->get_flattened_config());
-$builder->addDefinitions("{$app_dir}/vendor/avoutic/web-framework/includes/di_definitions.php");
 
-// Add any app specific definitions
-//
-// $builder->addDefinitions("{$app_dir}/includes/di_definitions.php");
+$definition_files = glob("{$app_dir}/definitions/*.php") ?: [];
+foreach ($definition_files as $file)
+{
+    $builder->addDefinitions($file);
+}
 
 $container = $builder->build();
 
-// If you have old-style code you probably need ContainerWrapper
-//
-require_once "{$app_dir}/vendor/avoutic/web-framework/includes/ContainerWrapper.php";
-
-require_once "{$app_dir}/vendor/avoutic/web-framework/includes/defines.inc.php";
-
-ContainerWrapper::setContainer($container);
-
-if ($container->get('preload'))
+try
 {
-    require_once "{$app_dir}/includes/preload.inc.php";
+    // Create and start Slim framework
+    //
+    AppFactory::setContainer($container);
+    $app = AppFactory::create();
+
+    // Bootstrap WebFramework
+    //
+    $bootstrap_service = $container->get(BootstrapService::class);
+    $bootstrap_service->bootstrap();
+
+    // Registrer Middlewares
+    //
+    $middleware_registrar = new MiddlewareRegistrar($app);
+    $middleware_registrar->register($config['middlewares'], $config['debug']);
+
+    // Registrer Routes
+    //
+    $route_registrar = new RouteRegistrar($app, $container, $app_dir);
+    $route_registrar->register($config['route_files']);
+
+    // Handle the request
+    //
+    $app->run();
 }
+catch (Throwable $e)
+{
+    $request = ServerRequestFactory::createFromGlobals();
 
-// Create and start framework
-//
-AppFactory::setContainer($container);
-$app = AppFactory::create();
+    $debug_service = $container->get(DebugService::class);
+    $error_report = $debug_service->get_throwable_report($e, $request);
 
-// Add global Middleware
-//
+    $report_function = $container->get(ReportFunction::class);
+    $report_function->report($e->getMessage(), 'unhandled_exception', $error_report);
 
-// Error Middleware should always be added last
-//
-$errorMiddleware = $app->addErrorMiddleware(true, false, false);
+    $message = ($container->get('debug')) ? $error_report['message'] : $error_report['low_info_message'];
 
-include_once "{$app_dir}/includes/routes/generic.php";
-
-$app->run();
+    header('Content-type: text/plain');
+    echo $message;
+}
