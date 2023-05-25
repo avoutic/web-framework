@@ -18,6 +18,11 @@ class CamelCaseAutoLoader
     protected array $wf_namespaces = [
     ];
 
+    public function __construct(
+        private string $app_dir,
+    ) {
+    }
+
     public function register(): void
     {
         spl_autoload_register([$this, 'autoload'], true, true);
@@ -83,8 +88,7 @@ class CamelCaseAutoLoader
             $include_name = strtolower($include_name);
         }
 
-        $app_dir = WF::get_app_dir();
-        $full_path = "{$app_dir}{$dir}{$include_name}.inc.php";
+        $full_path = "{$this->app_dir}{$dir}{$include_name}.inc.php";
         if (file_exists($full_path))
         {
             include_once $full_path;
@@ -93,11 +97,11 @@ class CamelCaseAutoLoader
         }
     }
 
-    public static function get_loader(): self
+    public static function get_loader(string $app_dir): self
     {
         if (self::$loader === null)
         {
-            self::$loader = new self();
+            self::$loader = new self($app_dir);
             self::$loader->register();
         }
 
@@ -105,4 +109,6 @@ class CamelCaseAutoLoader
     }
 }
 
-CamelCaseAutoLoader::get_loader();
+global $app_dir;
+
+CamelCaseAutoLoader::get_loader($app_dir);
