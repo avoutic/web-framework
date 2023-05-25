@@ -4,7 +4,7 @@ namespace WebFramework\Exception;
 
 use Psr\Http\Message\ServerRequestInterface as Request;
 
-class FrameworkHttpException extends \RuntimeException
+class BlacklistException extends \RuntimeException
 {
     public function __construct(
         protected Request $request,

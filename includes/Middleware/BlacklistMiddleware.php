@@ -6,7 +6,7 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use WebFramework\Exception\FrameworkHttpException;
+use WebFramework\Exception\BlacklistException;
 use WebFramework\Security\BlacklistService;
 
 class BlacklistMiddleware implements MiddlewareInterface
@@ -23,7 +23,7 @@ class BlacklistMiddleware implements MiddlewareInterface
             $request->getAttribute('user_id'),
         ))
         {
-            throw new FrameworkHttpException($request, 'Blacklisted for suspicious behaviour');
+            throw new BlacklistException($request, 'Blacklisted for suspicious behaviour');
         }
 
         return $handler->handle($request);
