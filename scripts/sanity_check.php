@@ -35,10 +35,9 @@ $builder = new DI\ContainerBuilder();
 $builder->addDefinitions(['config_tree' => $config_builder->get_config()]);
 $builder->addDefinitions($config_builder->get_flattened_config());
 
-$definition_files = glob("{$app_dir}/definitions/*.php") ?: [];
-foreach ($definition_files as $file)
+foreach ($config['definition_files'] as $file)
 {
-    $builder->addDefinitions($file);
+    $builder->addDefinitions("{$app_dir}/definitions/{$file}");
 }
 
 $container = $builder->build();

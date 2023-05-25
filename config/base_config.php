@@ -92,6 +92,9 @@ return [
             'after_verify_page' => '/',
         ],
     ],
+    'definition_files' => [
+        'web_framework_definitions.php',
+    ],
     'route_files' => [],                // The files in 'routes' to explicitly load
     'sender_core' => [
         'default_sender' => '',
