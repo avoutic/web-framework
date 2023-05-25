@@ -47,8 +47,6 @@ return [
             module: 'sanity_check',
         ),
 
-    Core\AssertService::class => DI\autowire(),
-    Core\BaseFactory::class => DI\autowire(),
     Core\BootstrapService::class => DI\autowire()
         ->constructor(
             app_dir: DI\get('app_dir'),
@@ -105,9 +103,6 @@ return [
             tmp_dir: '/tmp/latte',
         ),
     Core\MailService::class => DI\autowire(Core\NullMailService::class),
-    Core\MessageService::class => DI\autowire(),
-    Core\MysqliDatabase::class => DI\autowire(),
-    Core\NullCache::class => DI\autowire(),
     Core\PostmarkClientFactory::class => DI\factory(function (ContainerInterface $c) {
         $secure_config_service = $c->get(Security\ConfigService::class);
 
@@ -115,12 +110,10 @@ return [
 
         return new Core\PostmarkClientFactory($api_key);
     }),
-    Core\RedisCache::class => DI\autowire(),
     Core\ReportFunction::class => DI\autowire(Core\MailReportFunction::class)
         ->constructor(
             assert_recipient: DI\get('sender_core.assert_recipient'),
         ),
-    Core\ResponseEmitter::class => DI\autowire(),
     Core\SanityCheckRunner::class => DI\autowire()
         ->constructor(
             stored_values: DI\get('SanityCheckStoredValues'),
@@ -133,21 +126,13 @@ return [
     Core\ValidatorService::class => DI\autowire(),
     'WebFramework\Core\*' => DI\autowire(),
 
-    Middleware\AuthenticationInfoMiddleware::class => DI\autowire(),
-    Middleware\BlacklistMiddleware::class => DI\autowire(),
-    Middleware\CsrfValidationMiddleware::class => DI\autowire(),
-    Middleware\IpMiddleware::class => DI\autowire(),
-    Middleware\JsonParserMiddleware::class => DI\autowire(),
-    Middleware\MessageMiddleware::class => DI\autowire(),
-    Middleware\SecurityHeadersMiddleware::class => DI\autowire(),
+    'WebFramework\Middleware\*' => DI\autowire(),
 
     Security\AuthenticationService::class => DI\autowire(Security\DatabaseAuthenticationService::class)
         ->constructor(
             session_timeout: DI\get('authenticator.session_timeout'),
             user_class: DI\get('authenticator.user_class'),
         ),
-    Security\BlacklistService::class => DI\autowire(Security\NullBlacklistService::class),
-    Security\CsrfService::class => DI\autowire(),
     Security\ProtectService::class => DI\autowire()
         ->constructor(
             [
@@ -161,4 +146,5 @@ return [
             DI\get('app_dir'),
             DI\get('security.auth_dir'),
         ),
+    'WebFramework\Security\*' => DI\autowire(),
 ];
