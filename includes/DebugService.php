@@ -33,7 +33,7 @@ class DebugService
 
         $file = $e->getFile();
         $line = $e->getLine();
-        $error_type = 'Unhandled exception';
+        $error_type = $e::class;
         $message = $e->getMessage();
 
         return $this->get_report($file, $line, $stack, $request, $error_type, $message);
@@ -196,7 +196,10 @@ TXT;
 
             if (isset($entry['class']))
             {
-                $stack_condensed .= $entry['class'].$entry['type'];
+                $pattern = '/@anonymous.*/';
+                $replacement = '@anonymous';
+                $class = preg_replace($pattern, $replacement, $entry['class']);
+                $stack_condensed .= $class.$entry['type'];
             }
 
             $stack_condensed .= $entry['function']."()\n";
