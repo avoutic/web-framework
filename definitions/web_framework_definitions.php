@@ -45,6 +45,7 @@ return [
 
         return $debug_service->get_build_info();
     },
+    'full_base_url' => DI\string('{http_mode}://{server_name}{base_url}'),
     'host_name' => $_SERVER['SERVER_NAME'] ?? 'app',
     'server_name' => $_SERVER['SERVER_NAME'] ?? 'app',
 
