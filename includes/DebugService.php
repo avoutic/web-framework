@@ -33,7 +33,7 @@ class DebugService
     /**
      * @return array{title: string, low_info_message: string, message: string, hash: string}
      */
-    public function get_throwable_report(\Throwable $e, ?Request $request): array
+    public function get_throwable_report(\Throwable $e, ?Request $request = null): array
     {
         $stack = $this->filter_trace($e->getTrace());
 
