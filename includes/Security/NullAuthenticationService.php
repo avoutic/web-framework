@@ -38,6 +38,11 @@ class NullAuthenticationService implements AuthenticationService
      */
     public function user_has_permissions(array $permissions): bool
     {
+        if (count($permissions) === 0)
+        {
+            return true;
+        }
+
         return false;
     }
 }
