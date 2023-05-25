@@ -124,9 +124,6 @@ return [
             default_sender: DI\get('sender_core.default_sender'),
         ),
     Core\ValidatorService::class => DI\autowire(),
-    'WebFramework\Core\*' => DI\autowire(),
-
-    'WebFramework\Middleware\*' => DI\autowire(),
 
     Security\AuthenticationService::class => DI\autowire(Security\DatabaseAuthenticationService::class)
         ->constructor(
@@ -146,5 +143,4 @@ return [
             DI\get('app_dir'),
             DI\get('security.auth_dir'),
         ),
-    'WebFramework\Security\*' => DI\autowire(),
 ];
