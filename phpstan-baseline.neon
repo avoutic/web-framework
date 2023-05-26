@@ -6,29 +6,34 @@ parameters:
 			path: definitions/web_framework_definitions.php
 
 		-
-			message: "#^Method WebFramework\\\\Core\\\\ActionCore\\:\\:get_input_var\\(\\) should return string but returns array\\<string\\>\\|string\\.$#"
+			message: "#^Method WebFramework\\\\Core\\\\ActionCore\\:\\:getInputVar\\(\\) should return string but returns array\\<string\\>\\|string\\.$#"
 			count: 1
 			path: includes/ActionCore.php
 
 		-
-			message: "#^Method WebFramework\\\\Core\\\\ActionCore\\:\\:get_raw_input_array\\(\\) should return array\\<string\\> but returns array\\<string\\>\\|string\\.$#"
+			message: "#^Method WebFramework\\\\Core\\\\ActionCore\\:\\:getRawInputArray\\(\\) should return array\\<string\\> but returns array\\<string\\>\\|string\\.$#"
 			count: 1
 			path: includes/ActionCore.php
 
 		-
-			message: "#^Method WebFramework\\\\Core\\\\ActionCore\\:\\:get_raw_input_var\\(\\) should return string but returns array\\<string\\>\\|string\\.$#"
+			message: "#^Method WebFramework\\\\Core\\\\ActionCore\\:\\:getRawInputVar\\(\\) should return string but returns array\\<string\\>\\|string\\.$#"
 			count: 1
 			path: includes/ActionCore.php
 
 		-
-			message: "#^Method WebFramework\\\\Core\\\\Browserless\\:\\:get_pdf_result\\(\\) has parameter \\$output_stream with no type specified\\.$#"
+			message: "#^Method WebFramework\\\\Core\\\\Browserless\\:\\:getPdfResult\\(\\) has parameter \\$outputStream with no type specified\\.$#"
 			count: 1
 			path: includes/Browserless.php
 
 		-
-			message: "#^Method WebFramework\\\\Core\\\\Browserless\\:\\:get_pdf_result\\(\\) has parameter \\$url with no type specified\\.$#"
+			message: "#^Method WebFramework\\\\Core\\\\Browserless\\:\\:getPdfResult\\(\\) has parameter \\$url with no type specified\\.$#"
 			count: 1
 			path: includes/Browserless.php
+
+		-
+			message: "#^Parameter \\#1 \\$string of function strtolower expects string, string\\|null given\\.$#"
+			count: 1
+			path: includes/DataCore.php
 
 		-
 			message: "#^Offset 'target_version' on array\\{target_version\\: int, actions\\: array\\<array\\>\\} in isset\\(\\) always exists and is not nullable\\.$#"
@@ -104,6 +109,21 @@ parameters:
 			message: "#^Offset 'stored_hash' on array\\{calculated_hash\\: string, stored_hash\\: string\\} in isset\\(\\) always exists and is not nullable\\.$#"
 			count: 1
 			path: includes/User.php
+
+		-
+			message: "#^Function convert\\(\\) should return string but returns string\\|null\\.$#"
+			count: 1
+			path: scripts/CaseConvertor.php
+
+		-
+			message: "#^Parameter \\#1 \\$str of function convert expects string, string\\|false given\\.$#"
+			count: 1
+			path: scripts/CaseConvertor.php
+
+		-
+			message: "#^Parameter \\#3 \\$subject of function preg_replace_callback expects array\\|string, string\\|null given\\.$#"
+			count: 1
+			path: scripts/CaseConvertor.php
 
 		-
 			message: "#^Parameter \\#3 \\$subject of function preg_replace expects array\\|string, string\\|null given\\.$#"

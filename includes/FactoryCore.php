@@ -13,14 +13,14 @@ class FactoryCore
     protected Cache $cache;
     protected Container $container;
     protected Database $database;
-    protected AssertService $assert_service;
-    protected AuthenticationService $authentication_service;
-    protected BlacklistService $blacklist_service;
-    protected ConfigService $config_service;
-    protected DebugService $debug_service;
-    protected MessageService $message_service;
-    protected ProtectService $protect_service;
-    protected SecureConfigService $secure_config_service;
+    protected AssertService $assertService;
+    protected AuthenticationService $authenticationService;
+    protected BlacklistService $blacklistService;
+    protected ConfigService $configService;
+    protected DebugService $debugService;
+    protected MessageService $messageService;
+    protected ProtectService $protectService;
+    protected SecureConfigService $secureConfigService;
 
     public function __construct()
     {
@@ -28,14 +28,14 @@ class FactoryCore
         $this->container = $container;
         $this->database = $container->get(Database::class);
         $this->cache = $container->get(Cache::class);
-        $this->assert_service = $container->get(AssertService::class);
-        $this->authentication_service = $container->get(AuthenticationService::class);
-        $this->blacklist_service = $container->get(BlacklistService::class);
-        $this->config_service = $container->get(ConfigService::class);
-        $this->debug_service = $container->get(DebugService::class);
-        $this->message_service = $container->get(MessageService::class);
-        $this->protect_service = $container->get(ProtectService::class);
-        $this->secure_config_service = $container->get(SecureConfigService::class);
+        $this->assertService = $container->get(AssertService::class);
+        $this->authenticationService = $container->get(AuthenticationService::class);
+        $this->blacklistService = $container->get(BlacklistService::class);
+        $this->configService = $container->get(ConfigService::class);
+        $this->debugService = $container->get(DebugService::class);
+        $this->messageService = $container->get(MessageService::class);
+        $this->protectService = $container->get(ProtectService::class);
+        $this->secureConfigService = $container->get(SecureConfigService::class);
 
         $this->init();
     }
@@ -44,19 +44,19 @@ class FactoryCore
     {
     }
 
-    protected function get_app_dir(): string
+    protected function getAppDir(): string
     {
         return $this->container->get('app_dir');
     }
 
-    protected function get_config(string $path): mixed
+    protected function getConfig(string $path): mixed
     {
-        return $this->config_service->get($path);
+        return $this->configService->get($path);
     }
 
     // Database related
     //
-    protected function get_db(string $tag = ''): Database
+    protected function getDb(string $tag = ''): Database
     {
         if (strlen($tag))
         {
@@ -77,19 +77,19 @@ class FactoryCore
     /**
      * @param array<null|bool|float|int|string> $params
      */
-    protected function insert_query(string $query, array $params): false|int
+    protected function insertQuery(string $query, array $params): false|int
     {
-        return $this->database->insert_query($query, $params);
+        return $this->database->insertQuery($query, $params);
     }
 
-    protected function start_transaction(): void
+    protected function startTransaction(): void
     {
-        $this->database->start_transaction();
+        $this->database->startTransaction();
     }
 
-    protected function commit_transaction(): void
+    protected function commitTransaction(): void
     {
-        $this->database->commit_transaction();
+        $this->database->commitTransaction();
     }
 
     // Message related
@@ -97,19 +97,19 @@ class FactoryCore
     /**
      * @return array<array{mtype: string, message: string, extra_message: string}>
      */
-    protected function get_messages(): array
+    protected function getMessages(): array
     {
-        return $this->message_service->get_messages();
+        return $this->messageService->getMessages();
     }
 
-    protected function add_message(string $mtype, string $message, string $extra_message = ''): void
+    protected function addMessage(string $mtype, string $message, string $extraMessage = ''): void
     {
-        $this->message_service->add($mtype, $message, $extra_message);
+        $this->messageService->add($mtype, $message, $extraMessage);
     }
 
-    protected function get_message_for_url(string $mtype, string $message, string $extra_message = ''): string
+    protected function getMessageForUrl(string $mtype, string $message, string $extraMessage = ''): string
     {
-        return $this->message_service->get_for_url($mtype, $message, $extra_message);
+        return $this->messageService->getForUrl($mtype, $message, $extraMessage);
     }
 
     // Assert related
@@ -117,100 +117,100 @@ class FactoryCore
     /**
      * @param array<mixed> $stack
      */
-    protected function report_error(string $message, array $stack = null): void
+    protected function reportError(string $message, array $stack = null): void
     {
         if ($stack === null)
         {
             $stack = debug_backtrace(0);
         }
 
-        $this->assert_service->report_error($message, $stack);
+        $this->assertService->reportError($message, $stack);
     }
 
     protected function verify(bool|int $bool, string $message): void
     {
-        $this->assert_service->verify($bool, $message);
+        $this->assertService->verify($bool, $message);
     }
 
-    protected function blacklist_verify(bool|int $bool, string $reason, int $severity = 1): void
+    protected function blacklistVerify(bool|int $bool, string $reason, int $severity = 1): void
     {
         if ($bool)
         {
             return;
         }
 
-        $this->blacklist_service->add_entry($_SERVER['REMOTE_ADDR'], $this->get_authenticated('user_id'), $reason, $severity);
+        $this->blacklistService->addEntry($_SERVER['REMOTE_ADDR'], $this->getAuthenticated('user_id'), $reason, $severity);
     }
 
     // Security related
     //
 
-    protected function get_auth_config(string $key_file): mixed
+    protected function getAuthConfig(string $keyFile): mixed
     {
-        return $this->secure_config_service->get_auth_config($key_file);
+        return $this->secureConfigService->getAuthConfig($keyFile);
     }
 
-    protected function add_blacklist_entry(string $reason, int $severity = 1): void
+    protected function addBlacklistEntry(string $reason, int $severity = 1): void
     {
-        $this->blacklist_service->add_entry($_SERVER['REMOTE_ADDR'], $this->get_authenticated('user_id'), $reason, $severity);
+        $this->blacklistService->addEntry($_SERVER['REMOTE_ADDR'], $this->getAuthenticated('user_id'), $reason, $severity);
     }
 
-    protected function encode_and_auth_string(string $value): string
+    protected function encodeAndAuthString(string $value): string
     {
-        return $this->protect_service->pack_string($value);
+        return $this->protectService->packString($value);
     }
 
     /**
      * @param array<mixed> $array
      */
-    protected function encode_and_auth_array(array $array): string
+    protected function encodeAndAuthArray(array $array): string
     {
-        return $this->protect_service->pack_array($array);
+        return $this->protectService->packArray($array);
     }
 
-    protected function decode_and_verify_string(string $str): string|false
+    protected function decodeAndVerifyString(string $str): string|false
     {
-        return $this->protect_service->unpack_string($str);
+        return $this->protectService->unpackString($str);
     }
 
     /**
      * @return array<mixed>|false
      */
-    protected function decode_and_verify_array(string $str): array|false
+    protected function decodeAndVerifyArray(string $str): array|false
     {
-        return $this->protect_service->unpack_array($str);
+        return $this->protectService->unpackArray($str);
     }
 
     // Authentication related
     //
     protected function authenticate(User $user): void
     {
-        $this->authentication_service->authenticate($user);
+        $this->authenticationService->authenticate($user);
     }
 
     protected function deauthenticate(): void
     {
-        $this->authentication_service->deauthenticate();
+        $this->authenticationService->deauthenticate();
     }
 
-    protected function invalidate_sessions(int $user_id): void
+    protected function invalidateSessions(int $userId): void
     {
-        $this->authentication_service->invalidate_sessions($user_id);
+        $this->authenticationService->invalidateSessions($userId);
     }
 
-    protected function is_authenticated(): bool
+    protected function isAuthenticated(): bool
     {
-        return $this->authentication_service->is_authenticated();
+        return $this->authenticationService->isAuthenticated();
     }
 
-    protected function get_authenticated_user(): User
+    protected function getAuthenticatedUser(): User
     {
-        return $this->authentication_service->get_authenticated_user();
+        return $this->authenticationService->getAuthenticatedUser();
     }
 
-    protected function get_authenticated(string $type): mixed
+    protected function getAuthenticated(string $type): mixed
     {
-        $user = $this->get_authenticated_user();
+        $user = $this->getAuthenticatedUser();
         if ($type === 'user')
         {
             return $user;
@@ -227,9 +227,9 @@ class FactoryCore
     /**
      * @param array<string> $permissions
      */
-    protected function user_has_permissions(array $permissions): bool
+    protected function userHasPermissions(array $permissions): bool
     {
-        return $this->authentication_service->user_has_permissions($permissions);
+        return $this->authenticationService->userHasPermissions($permissions);
     }
 
     // Build info
@@ -237,8 +237,8 @@ class FactoryCore
     /**
      * @return array{commit: null|string, timestamp: string}
      */
-    protected function get_build_info(): array
+    protected function getBuildInfo(): array
     {
-        return $this->debug_service->get_build_info();
+        return $this->debugService->getBuildInfo();
     }
 }

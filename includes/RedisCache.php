@@ -30,22 +30,22 @@ class RedisCache implements Cache
         return $item->get();
     }
 
-    public function set(string $path, mixed $obj, ?int $expires_after = null): void
+    public function set(string $path, mixed $obj, ?int $expiresAfter = null): void
     {
         $item = $this->pool->getItem($path);
         $item->set($obj);
-        $item->expiresAfter($expires_after);
+        $item->expiresAfter($expiresAfter);
         $this->pool->save($item);
     }
 
     /**
      * @param array<string> $tags
      */
-    public function set_with_tags(string $path, mixed $obj, array $tags, ?int $expires_after = null): void
+    public function setWithTags(string $path, mixed $obj, array $tags, ?int $expiresAfter = null): void
     {
         $item = $this->pool->getItem($path);
         $item->set($obj)->setTags($tags);
-        $item->expiresAfter($expires_after);
+        $item->expiresAfter($expiresAfter);
         $this->pool->save($item);
     }
 
@@ -57,7 +57,7 @@ class RedisCache implements Cache
     /**
      * @param array<string> $tags
      */
-    public function invalidate_tags(array $tags): void
+    public function invalidateTags(array $tags): void
     {
         $this->pool->invalidateTags($tags);
     }

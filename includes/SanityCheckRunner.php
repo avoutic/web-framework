@@ -8,28 +8,28 @@ class SanityCheckRunner
 {
     /** @var array<array{class: string, config: array<mixed>}> */
     private array $modules = [];
-    private bool $force_run = false;
+    private bool $forceRun = false;
     private bool $verbose = false;
     private bool $fixing = false;
 
     /**
-     * @param array<string, mixed> $build_info
+     * @param array<string, mixed> $buildInfo
      */
     public function __construct(
         private Container $container,
-        private StoredValues $stored_values,
-        private array $build_info,
+        private StoredValues $storedValues,
+        private array $buildInfo,
     ) {
     }
 
     /**
-     * @param array<mixed> $module_config
+     * @param array<mixed> $moduleConfig
      */
-    public function add(string $module_class, array $module_config): void
+    public function add(string $moduleClass, array $moduleConfig): void
     {
         $this->modules[] = [
-            'class' => $module_class,
-            'config' => $module_config,
+            'class' => $moduleClass,
+            'config' => $moduleConfig,
         ];
     }
 
@@ -40,10 +40,10 @@ class SanityCheckRunner
             return true;
         }
 
-        $commit = $this->build_info['commit'];
+        $commit = $this->buildInfo['commit'];
 
-        $needs_run = $this->needs_run($commit);
-        if (!$needs_run)
+        $needsRun = $this->needsRun($commit);
+        if (!$needsRun)
         {
             return true;
         }
@@ -51,19 +51,19 @@ class SanityCheckRunner
         foreach ($this->modules as $info)
         {
             $module = $this->container->get($info['class']);
-            $module->set_config($info['config']);
+            $module->setConfig($info['config']);
 
             if ($this->fixing)
             {
-                $module->allow_fixing();
+                $module->allowFixing();
             }
 
             if ($this->verbose)
             {
-                $module->set_verbose();
+                $module->setVerbose();
             }
 
-            $result = $module->perform_checks();
+            $result = $module->performChecks();
 
             if ($result === false)
             {
@@ -71,14 +71,14 @@ class SanityCheckRunner
             }
         }
 
-        $this->register_run($commit);
+        $this->registerRun($commit);
 
         return true;
     }
 
-    protected function needs_run(?string $commit): bool
+    protected function needsRun(?string $commit): bool
     {
-        if ($this->force_run)
+        if ($this->forceRun)
         {
             return true;
         }
@@ -89,14 +89,14 @@ class SanityCheckRunner
             // Prevent flooding. Only start check once per
             // five seconds.
             //
-            $last_timestamp = (int) $this->stored_values->get_value('last_check', '0');
+            $lastTimestamp = (int) $this->storedValues->getValue('last_check', '0');
 
-            if (time() - $last_timestamp < 5)
+            if (time() - $lastTimestamp < 5)
             {
                 return false;
             }
 
-            $this->stored_values->set_value('last_check', (string) time());
+            $this->storedValues->setValue('last_check', (string) time());
 
             return true;
         }
@@ -104,32 +104,32 @@ class SanityCheckRunner
         // We are in an image
         // Only check if this commit was not yet successfully checked
         //
-        $checked = $this->stored_values->get_value('checked_'.$commit, '0');
+        $checked = $this->storedValues->getValue('checked_'.$commit, '0');
 
         return ($checked === '0');
     }
 
-    protected function register_run(?string $commit): void
+    protected function registerRun(?string $commit): void
     {
         // Register successful check of this commit
         //
         if ($commit !== null)
         {
-            $this->stored_values->set_value('checked_'.$commit, '1');
+            $this->storedValues->setValue('checked_'.$commit, '1');
         }
     }
 
-    public function force_run(): void
+    public function forceRun(): void
     {
-        $this->force_run = true;
+        $this->forceRun = true;
     }
 
-    public function allow_fixing(): void
+    public function allowFixing(): void
     {
         $this->fixing = true;
     }
 
-    public function set_verbose(): void
+    public function setVerbose(): void
     {
         $this->verbose = true;
     }

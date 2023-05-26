@@ -20,75 +20,75 @@ final class DebugServiceTest extends \Codeception\Test\Unit
 {
     public function testGenerateHash()
     {
-        $instance = $this->makeEmptyExcept(DebugService::class, 'generate_hash');
+        $instance = $this->makeEmptyExcept(DebugService::class, 'generateHash');
 
-        verify($instance->generate_hash('ServerName', 'RequestSource', 'File', 1, 'Message'))
+        verify($instance->generateHash('ServerName', 'RequestSource', 'File', 1, 'Message'))
             ->equals('5bd8c554bf94a90d97e9f31c63b69fde17ac4bb9');
     }
 
     public function testGenerateHashNoServerName()
     {
-        $instance = $this->makeEmptyExcept(DebugService::class, 'generate_hash');
+        $instance = $this->makeEmptyExcept(DebugService::class, 'generateHash');
 
-        verify($instance->generate_hash('', 'RequestSource', 'File', 1, 'Message'))
+        verify($instance->generateHash('', 'RequestSource', 'File', 1, 'Message'))
             ->equals('bf0a0f18bf3c2e20ea0fe62092376caccefcbb7a');
     }
 
     public function testGenerateHashNoRequestSource()
     {
-        $instance = $this->makeEmptyExcept(DebugService::class, 'generate_hash');
+        $instance = $this->makeEmptyExcept(DebugService::class, 'generateHash');
 
-        verify($instance->generate_hash('ServerName', '', 'File', 1, 'Message'))
+        verify($instance->generateHash('ServerName', '', 'File', 1, 'Message'))
             ->equals('bf0f9b3a2f36e3e1a8359c289494a41a3c673c45');
     }
 
     public function testGenerateHashNoFile()
     {
-        $instance = $this->makeEmptyExcept(DebugService::class, 'generate_hash');
+        $instance = $this->makeEmptyExcept(DebugService::class, 'generateHash');
 
-        verify($instance->generate_hash('ServerName', 'RequestSource', 'unknown', 1, 'Message'))
+        verify($instance->generateHash('ServerName', 'RequestSource', 'unknown', 1, 'Message'))
             ->equals('8bdac8c96d84253c28d5981d096550747be0d2f8');
     }
 
     public function testGenerateHasNoLine()
     {
-        $instance = $this->makeEmptyExcept(DebugService::class, 'generate_hash');
+        $instance = $this->makeEmptyExcept(DebugService::class, 'generateHash');
 
-        verify($instance->generate_hash('ServerName', 'RequestSource', 'File', 0, 'Message'))
+        verify($instance->generateHash('ServerName', 'RequestSource', 'File', 0, 'Message'))
             ->equals('72a2066e2671474739c142d668a25da79b8184a0');
     }
 
     public function testGenerateHashNoMessage()
     {
-        $instance = $this->makeEmptyExcept(DebugService::class, 'generate_hash');
+        $instance = $this->makeEmptyExcept(DebugService::class, 'generateHash');
 
-        verify($instance->generate_hash('ServerName', 'RequestSource', 'File', 1, ''))
+        verify($instance->generateHash('ServerName', 'RequestSource', 'File', 1, ''))
             ->equals('2d63a5522289108ab2091fd5b99f0ba0499bff76');
     }
 
     public function testGetDatabaseErrorNull()
     {
-        $instance = $this->makeEmptyExcept(DebugService::class, 'get_database_error');
+        $instance = $this->makeEmptyExcept(DebugService::class, 'getDatabaseError');
 
-        verify($instance->get_database_error(null))
+        verify($instance->getDatabaseError(null))
             ->equals('Not initialized yet');
     }
 
     public function testGetDatabaseErrorNoError()
     {
         $instance = $this->make(DebugService::class);
-        $database = $this->makeEmpty(Database::class, ['get_last_error' => '']);
+        $database = $this->makeEmpty(Database::class, ['getLastError' => '']);
 
-        verify($instance->get_database_error($database))
+        verify($instance->getDatabaseError($database))
             ->equals('None');
     }
 
     public function testGetDatabaseErrorError()
     {
         $instance = $this->make(DebugService::class);
-        $database = $this->makeEmpty(Database::class, ['get_last_error' => 'DB ERROR']);
+        $database = $this->makeEmpty(Database::class, ['getLastError' => 'DB ERROR']);
 
-        verify($instance->get_database_error($database))
+        verify($instance->getDatabaseError($database))
             ->equals('DB ERROR');
     }
 
@@ -97,42 +97,42 @@ final class DebugServiceTest extends \Codeception\Test\Unit
         $instance = $this->make(
             DebugService::class,
             [
-                'authentication_service' => $this->makeEmpty(
+                'authenticationService' => $this->makeEmpty(
                     NullAuthenticationService::class,
                     [
-                        'is_authenticated' => false,
+                        'isAuthenticated' => false,
                     ]
                 ),
             ]
         );
 
-        verify($instance->get_authentication_status())
+        verify($instance->getAuthenticationStatus())
             ->equals("Not authenticated\n");
     }
 
     public function testGetAuthenticationStatusSimple()
     {
-        $user_data = ['id' => 1, 'username' => 'TestUser', 'email' => 'TestEmail'];
-        $auth_data = ['user_id' => 1, 'username' => 'TestUser', 'email' => 'TestEmail'];
+        $userData = ['id' => 1, 'username' => 'TestUser', 'email' => 'TestEmail'];
+        $authData = ['user_id' => 1, 'username' => 'TestUser', 'email' => 'TestEmail'];
 
         $instance = $this->make(
             DebugService::class,
             [
-                'authentication_service' => $this->makeEmpty(
+                'authenticationService' => $this->makeEmpty(
                     NullAuthenticationService::class,
                     [
-                        'is_authenticated' => true,
-                        'get_authenticated_user' => $this->makeEmpty(
+                        'isAuthenticated' => true,
+                        'getAuthenticatedUser' => $this->makeEmpty(
                             User::class,
-                            $user_data,
+                            $userData,
                         ),
                     ]
                 ),
             ]
         );
 
-        verify($instance->get_authentication_status())
-            ->equals(print_r($auth_data, true));
+        verify($instance->getAuthenticationStatus())
+            ->equals(print_r($authData, true));
     }
 
     public function testFilterTraceSkipStart()
@@ -164,7 +164,7 @@ final class DebugServiceTest extends \Codeception\Test\Unit
             ],
         ];
 
-        $trace_filtered = [
+        $traceFiltered = [
             [
                 'class' => 'Object2',
                 'function' => 'function2',
@@ -181,8 +181,8 @@ final class DebugServiceTest extends \Codeception\Test\Unit
 
         $instance = $this->make(DebugService::class);
 
-        verify($instance->filter_trace($trace, true, false))
-            ->equals($trace_filtered);
+        verify($instance->filterTrace($trace, true, false))
+            ->equals($traceFiltered);
     }
 
     public function testFilterTraceLeaveMiddle()
@@ -214,7 +214,7 @@ final class DebugServiceTest extends \Codeception\Test\Unit
             ],
         ];
 
-        $trace_filtered = [
+        $traceFiltered = [
             [
                 'class' => 'Object2',
                 'function' => 'function2',
@@ -237,8 +237,8 @@ final class DebugServiceTest extends \Codeception\Test\Unit
 
         $instance = $this->make(DebugService::class);
 
-        verify($instance->filter_trace($trace, true, false))
-            ->equals($trace_filtered);
+        verify($instance->filterTrace($trace, true, false))
+            ->equals($traceFiltered);
     }
 
     public function testFilterTraceNoSkip()
@@ -268,7 +268,7 @@ final class DebugServiceTest extends \Codeception\Test\Unit
 
         $instance = $this->make(DebugService::class);
 
-        verify($instance->filter_trace($trace, false, false))
+        verify($instance->filterTrace($trace, false, false))
             ->equals($trace);
     }
 
@@ -292,7 +292,7 @@ final class DebugServiceTest extends \Codeception\Test\Unit
             ],
         ];
 
-        $trace_filtered = [
+        $traceFiltered = [
             [
                 'class' => 'Object2',
                 'function' => 'function2',
@@ -313,8 +313,8 @@ final class DebugServiceTest extends \Codeception\Test\Unit
 
         $instance = $this->make(DebugService::class);
 
-        verify($instance->filter_trace($trace, false, true))
-            ->equals($trace_filtered);
+        verify($instance->filterTrace($trace, false, true))
+            ->equals($traceFiltered);
     }
 
     public function testFilterTraceUnsetExitArgs()
@@ -332,7 +332,7 @@ final class DebugServiceTest extends \Codeception\Test\Unit
             ],
         ];
 
-        $trace_filtered = [
+        $traceFiltered = [
             [
                 'class' => 'Object2',
                 'function' => 'exit_send_error',
@@ -345,8 +345,8 @@ final class DebugServiceTest extends \Codeception\Test\Unit
 
         $instance = $this->make(DebugService::class);
 
-        verify($instance->filter_trace($trace, false, false))
-            ->equals($trace_filtered);
+        verify($instance->filterTrace($trace, false, false))
+            ->equals($traceFiltered);
     }
 
     public function testCondenseStack()
@@ -366,7 +366,7 @@ final class DebugServiceTest extends \Codeception\Test\Unit
             ],
         ];
 
-        $condensed_stack = <<<'TXT'
+        $condensedStack = <<<'TXT'
 File2(10): Class2::function2()
 File1(11): function1()
 
@@ -374,8 +374,8 @@ TXT;
 
         $instance = $this->make(DebugService::class);
 
-        verify($instance->condense_stack($trace))
-            ->equals($condensed_stack);
+        verify($instance->condenseStack($trace))
+            ->equals($condensedStack);
     }
 
     public function testScrubRequestHeaders()
@@ -387,7 +387,7 @@ TXT;
             'key3' => 'val4',
         ];
 
-        $headers_scrubbed = [
+        $headersScrubbed = [
             'key1' => 'val1',
             'key2' => 'val2',
             'key3' => 'val4',
@@ -395,8 +395,8 @@ TXT;
 
         $instance = $this->make(DebugService::class);
 
-        verify($instance->scrub_request_headers($headers))
-            ->equals($headers_scrubbed);
+        verify($instance->scrubRequestHeaders($headers))
+            ->equals($headersScrubbed);
     }
 
     public function testScrubRequestHeadersCaseInsensitive()
@@ -408,7 +408,7 @@ TXT;
             'key3' => 'val4',
         ];
 
-        $headers_scrubbed = [
+        $headersScrubbed = [
             'key1' => 'val1',
             'key2' => 'val2',
             'key3' => 'val4',
@@ -416,8 +416,8 @@ TXT;
 
         $instance = $this->make(DebugService::class);
 
-        verify($instance->scrub_request_headers($headers))
-            ->equals($headers_scrubbed);
+        verify($instance->scrubRequestHeaders($headers))
+            ->equals($headersScrubbed);
     }
 
     public function testGetInputsReportEmpty()
@@ -431,7 +431,7 @@ TXT;
             'getParsedBody' => null,
         ]);
 
-        verify($instance->get_inputs_report($request))
+        verify($instance->getInputsReport($request))
             ->equals("No inputs\n");
     }
 
@@ -439,102 +439,102 @@ TXT;
     {
         $instance = $this->make(DebugService::class);
 
-        $query_params = ['key1' => 'val1', 'key2' => 'val2'];
+        $queryParams = ['key1' => 'val1', 'key2' => 'val2'];
 
-        $request_factory = new RequestFactory();
-        $request = $request_factory->createRequest('GET', 'https://test.com');
+        $requestFactory = new RequestFactory();
+        $request = $requestFactory->createRequest('GET', 'https://test.com');
 
         $request = $request
-            ->withQueryParams($query_params)
+            ->withQueryParams($queryParams)
         ;
 
-        $get_fmt = print_r($query_params, true);
+        $getFmt = print_r($queryParams, true);
 
-        $inputs_fmt = <<<TXT
+        $inputsFmt = <<<TXT
 GET:
-{$get_fmt}
+{$getFmt}
 
 TXT;
-        verify($instance->get_inputs_report($request))
-            ->equals($inputs_fmt);
+        verify($instance->getInputsReport($request))
+            ->equals($inputsFmt);
     }
 
     public function testGetInputsReportJustPost()
     {
         $instance = $this->make(DebugService::class);
 
-        $post_params = ['key1' => 'val1', 'key2' => 'val2'];
+        $postParams = ['key1' => 'val1', 'key2' => 'val2'];
 
-        $request_factory = new RequestFactory();
-        $request = $request_factory->createRequest('POST', 'https://test.com');
+        $requestFactory = new RequestFactory();
+        $request = $requestFactory->createRequest('POST', 'https://test.com');
 
         $request = $request
-            ->withParsedBody($post_params)
+            ->withParsedBody($postParams)
         ;
 
-        $post_fmt = print_r($post_params, true);
+        $postFmt = print_r($postParams, true);
 
-        $inputs_fmt = <<<TXT
+        $inputsFmt = <<<TXT
 POST:
-{$post_fmt}
+{$postFmt}
 
 TXT;
-        verify($instance->get_inputs_report($request))
-            ->equals($inputs_fmt);
+        verify($instance->getInputsReport($request))
+            ->equals($inputsFmt);
     }
 
     public function testGetInputsReportJustJson()
     {
         $instance = $this->make(DebugService::class);
 
-        $post_params = ['key1' => 'val1', 'key2' => 'val2'];
+        $postParams = ['key1' => 'val1', 'key2' => 'val2'];
 
-        $stream_factory = new StreamFactory();
-        $request_factory = new RequestFactory($stream_factory);
+        $streamFactory = new StreamFactory();
+        $requestFactory = new RequestFactory($streamFactory);
 
-        $stream = $stream_factory->createStream(json_encode($post_params));
-        $request = $request_factory->createRequest('POST', 'https://test.com');
+        $stream = $streamFactory->createStream(json_encode($postParams));
+        $request = $requestFactory->createRequest('POST', 'https://test.com');
 
         $request = $request
             ->withHeader('Content-Type', 'application/json')
             ->withBody($stream)
         ;
 
-        $json_fmt = print_r($post_params, true);
+        $jsonFmt = print_r($postParams, true);
 
-        $inputs_fmt = <<<TXT
+        $inputsFmt = <<<TXT
 JSON data:
-{$json_fmt}
+{$jsonFmt}
 
 TXT;
-        verify($instance->get_inputs_report($request))
-            ->equals($inputs_fmt);
+        verify($instance->getInputsReport($request))
+            ->equals($inputsFmt);
     }
 
     public function testGetInputsReportBadJson()
     {
         $instance = $this->make(DebugService::class);
 
-        $bad_json = '{"key1" : "val1","key2":"val2"';
+        $badJson = '{"key1" : "val1","key2":"val2"';
 
-        $stream_factory = new StreamFactory();
-        $request_factory = new RequestFactory($stream_factory);
+        $streamFactory = new StreamFactory();
+        $requestFactory = new RequestFactory($streamFactory);
 
-        $stream = $stream_factory->createStream($bad_json);
-        $request = $request_factory->createRequest('POST', 'https://test.com');
+        $stream = $streamFactory->createStream($badJson);
+        $request = $requestFactory->createRequest('POST', 'https://test.com');
 
         $request = $request
             ->withHeader('Content-Type', 'application/json')
             ->withBody($stream)
         ;
 
-        $inputs_fmt = <<<TXT
+        $inputsFmt = <<<TXT
 JSON parsing failed:
-{$bad_json}
+{$badJson}
 
 TXT;
-        verify($instance->get_inputs_report($request))
-            ->equals($inputs_fmt);
+        verify($instance->getInputsReport($request))
+            ->equals($inputsFmt);
     }
 
     public function testErrorReportEmpty()
@@ -542,22 +542,22 @@ TXT;
         $instance = $this->construct(
             DebugService::class,
             [
-                'authentication_service' => $this->makeEmpty(NullAuthenticationService::class),
-                'database_provider' => $this->makeEmpty(DatabaseProvider::class),
-                'app_dir' => '',
-                'server_name' => 'TestServer',
+                'authenticationService' => $this->makeEmpty(NullAuthenticationService::class),
+                'databaseProvider' => $this->makeEmpty(DatabaseProvider::class),
+                'appDir' => '',
+                'serverName' => 'TestServer',
             ],
             [
-                'generate_hash' => 'my_hash',
+                'generateHash' => 'my_hash',
             ]
         );
 
-        $low_info_report_fmt = <<<'TXT'
+        $lowInfoReportFmt = <<<'TXT'
 An error occurred.
 
 TXT;
 
-        $report_fmt = <<<'TXT'
+        $reportFmt = <<<'TXT'
 File: unknown
 Line: 0
 ErrorType: test
@@ -587,51 +587,51 @@ Server:
 No request
 
 TXT;
-        $report = $instance->get_error_report([], null, 'test', 'TestMessage');
+        $report = $instance->getErrorReport([], null, 'test', 'TestMessage');
 
         verify($report['hash'])
             ->equals('my_hash');
         verify($report['low_info_message'])
-            ->equals($low_info_report_fmt);
+            ->equals($lowInfoReportFmt);
         verify($report['message'])
-            ->equals($report_fmt);
+            ->equals($reportFmt);
     }
 
     public function testErrorReportContent()
     {
-        $user_data = ['id' => 1, 'username' => 'TestUser', 'email' => 'TestEmail'];
+        $userData = ['id' => 1, 'username' => 'TestUser', 'email' => 'TestEmail'];
 
-        $database_provider = $this->make(
+        $databaseProvider = $this->make(
             DatabaseProvider::class,
         );
 
         $instance = $this->construct(
             DebugService::class,
             [
-                'authentication_service' => $this->makeEmpty(
+                'authenticationService' => $this->makeEmpty(
                     NullAuthenticationService::class,
                     [
-                        'is_authenticated' => true,
-                        'get_authenticated_user' => $this->makeEmpty(
+                        'isAuthenticated' => true,
+                        'getAuthenticatedUser' => $this->makeEmpty(
                             User::class,
-                            $user_data,
+                            $userData,
                         ),
                     ],
                 ),
-                'database_provider' => $database_provider,
-                'app_dir' => '',
-                'server_name' => 'TestServer',
+                'databaseProvider' => $databaseProvider,
+                'appDir' => '',
+                'serverName' => 'TestServer',
             ],
             [
-                'generate_hash' => 'my_hash',
+                'generateHash' => 'my_hash',
             ]
         );
 
-        $database = $this->makeEmpty(Database::class, ['get_last_error' => 'DB ERROR']);
-        $database_provider->set($database);
+        $database = $this->makeEmpty(Database::class, ['getLastError' => 'DB ERROR']);
+        $databaseProvider->set($database);
 
-        $request_factory = new RequestFactory();
-        $request = $request_factory->createRequest('GET', 'https://test.com');
+        $requestFactory = new RequestFactory();
+        $request = $requestFactory->createRequest('GET', 'https://test.com');
 
         $trace = [
             [
@@ -672,12 +672,12 @@ TXT;
             ],
         ];
 
-        $low_info_report_fmt = <<<'TXT'
+        $lowInfoReportFmt = <<<'TXT'
 An error occurred.
 
 TXT;
 
-        $report_fmt = <<<'TXT'
+        $reportFmt = <<<'TXT'
 File: Object2.php
 Line: 3
 ErrorType: test
@@ -747,13 +747,13 @@ Array
 )
 
 TXT;
-        $report = $instance->get_error_report($trace, $request, 'test', 'TestMessage');
+        $report = $instance->getErrorReport($trace, $request, 'test', 'TestMessage');
 
         verify($report['hash'])
             ->equals('my_hash');
         verify($report['low_info_message'])
-            ->equals($low_info_report_fmt);
+            ->equals($lowInfoReportFmt);
         verify($report['message'])
-            ->equals($report_fmt);
+            ->equals($reportFmt);
     }
 }

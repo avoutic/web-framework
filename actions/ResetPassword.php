@@ -8,54 +8,54 @@ use WebFramework\Core\User;
 
 class ResetPassword extends PageAction
 {
-    public static function get_filter(): array
+    public static function getFilter(): array
     {
         return [
             'code' => '.*',
         ];
     }
 
-    protected function get_title(): string
+    protected function getTitle(): string
     {
         return 'Reset password';
     }
 
     // Can be overriden for project specific user factories and user classes
     //
-    protected function get_user(string $username): User|false
+    protected function getUser(string $username): User|false
     {
         $factory = $this->container->get(BaseFactory::class);
 
-        return $factory->get_user_by_username($username);
+        return $factory->getUserByUsername($username);
     }
 
-    protected function do_logic(): void
+    protected function doLogic(): void
     {
-        $forgot_password_page = $this->get_base_url().$this->get_config('actions.forgot_password.location');
-        $login_page = $this->get_base_url().$this->get_config('actions.login.location');
+        $forgotPasswordPage = $this->getBaseUrl().$this->getConfig('actions.forgot_password.location');
+        $loginPage = $this->getBaseUrl().$this->getConfig('actions.login.location');
 
         // Check if code is present
         //
-        $code = $this->get_input_var('code');
-        $this->blacklist_verify(strlen($code), 'missing-code');
+        $code = $this->getInputVar('code');
+        $this->blacklistVerify(strlen($code), 'missing-code');
 
-        $msg = $this->decode_and_verify_array($code);
+        $msg = $this->decodeAndVerifyArray($code);
         if (!$msg)
         {
             return;
         }
 
-        $this->blacklist_verify($msg['action'] == 'reset_password', 'wrong-action', 2);
+        $this->blacklistVerify($msg['action'] == 'reset_password', 'wrong-action', 2);
 
         if ($msg['timestamp'] + 600 < time())
         {
             // Expired
-            header("Location: {$forgot_password_page}?".$this->get_message_for_url('error', 'Password reset link expired'));
+            header("Location: {$forgotPasswordPage}?".$this->getMessageForUrl('error', 'Password reset link expired'));
 
             exit();
         }
 
-        $user = $this->get_user($msg['username']);
+        $user = $this->getUser($msg['username']);
 
         if ($user === false)
         {
@@ -63,22 +63,22 @@ class ResetPassword extends PageAction
         }
 
         if (!isset($msg['params']) || !isset($msg['params']['iterator'])
-            || $user->get_security_iterator() != $msg['params']['iterator'])
+            || $user->getSecurityIterator() != $msg['params']['iterator'])
         {
-            header("Location: {$forgot_password_page}?".$this->get_message_for_url('error', 'Password reset link expired'));
+            header("Location: {$forgotPasswordPage}?".$this->getMessageForUrl('error', 'Password reset link expired'));
 
             exit();
         }
 
-        $user->send_new_password();
+        $user->sendNewPassword();
 
         // Invalidate old sessions
         //
-        $this->invalidate_sessions($user->id);
+        $this->invalidateSessions($user->id);
 
         // Redirect to main sceen
         //
-        header("Location: {$login_page}?".$this->get_message_for_url('success', 'Password reset', 'You will receive a mail with your new password'));
+        header("Location: {$loginPage}?".$this->getMessageForUrl('success', 'Password reset', 'You will receive a mail with your new password'));
 
         exit();
     }

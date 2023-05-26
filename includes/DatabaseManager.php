@@ -5,18 +5,18 @@ namespace WebFramework\Core;
 class DatabaseManager
 {
     public function __construct(
-        protected AssertService $assert_service,
+        protected AssertService $assertService,
         protected Database $database,
-        protected StoredValues $stored_values,
+        protected StoredValues $storedValues,
     ) {
     }
 
-    public function is_initialized(): bool
+    public function isInitialized(): bool
     {
-        return $this->database->table_exists('config_values');
+        return $this->database->tableExists('config_values');
     }
 
-    public function calculate_hash(): string
+    public function calculateHash(): string
     {
         // Get tables
         //
@@ -27,24 +27,24 @@ SQL;
         $params = [];
 
         $result = $this->database->query($query, $params);
-        $this->assert_service->verify($result !== false, 'Failed to retrieve tables');
+        $this->assertService->verify($result !== false, 'Failed to retrieve tables');
 
-        $db_def = '';
+        $dbDef = '';
 
         foreach ($result as $row)
         {
-            $table_name = reset($row);
+            $tableName = reset($row);
 
             // Get tables
             //
             $query = <<<SQL
-            SHOW CREATE TABLE {$table_name}
+            SHOW CREATE TABLE {$tableName}
 SQL;
 
             $params = [];
 
             $result = $this->database->query($query, $params);
-            $this->assert_service->verify($result !== false, 'Failed to retrieve create table');
+            $this->assertService->verify($result !== false, 'Failed to retrieve create table');
 
             $statement = $result->fields['Create Table'].PHP_EOL;
 
@@ -52,50 +52,50 @@ SQL;
             //
             $statement = preg_replace('/ AUTO_INCREMENT=\d+/', '', $statement);
 
-            $db_def .= $statement;
+            $dbDef .= $statement;
         }
 
-        return sha1($db_def);
+        return sha1($dbDef);
     }
 
-    public function verify_hash(): bool
+    public function verifyHash(): bool
     {
-        $stored_hash = $this->get_stored_hash();
-        $actual_hash = $this->calculate_hash();
+        $storedHash = $this->getStoredHash();
+        $actualHash = $this->calculateHash();
 
-        return $stored_hash === $actual_hash;
+        return $storedHash === $actualHash;
     }
 
-    public function get_stored_hash(): string
+    public function getStoredHash(): string
     {
         // Retrieve hash
         //
-        return $this->stored_values->get_value('app_db_hash', '');
+        return $this->storedValues->getValue('app_db_hash', '');
     }
 
-    public function update_stored_hash(): void
+    public function updateStoredHash(): void
     {
-        $actual_hash = $this->calculate_hash();
+        $actualHash = $this->calculateHash();
 
-        $this->stored_values->set_value('app_db_hash', $actual_hash);
+        $this->storedValues->setValue('app_db_hash', $actualHash);
     }
 
     /**
      * @param array{target_version: int, actions: array<array<mixed>>} $data
      */
-    public function execute(array $data, bool $ignore_version = false): void
+    public function execute(array $data, bool $ignoreVersion = false): void
     {
-        $this->assert_service->verify(is_array($data['actions']), 'No action array specified');
+        $this->assertService->verify(is_array($data['actions']), 'No action array specified');
 
-        if (!$ignore_version)
+        if (!$ignoreVersion)
         {
-            $this->assert_service->verify(isset($data['target_version']), 'No target version specified');
+            $this->assertService->verify(isset($data['target_version']), 'No target version specified');
 
-            $start_version = $data['target_version'] - 1;
+            $startVersion = $data['target_version'] - 1;
 
-            echo " - Checking current version to match {$start_version}".PHP_EOL;
+            echo " - Checking current version to match {$startVersion}".PHP_EOL;
 
-            $this->check_version($start_version);
+            $this->checkVersion($startVersion);
         }
 
         echo ' - Preparing all statements'.PHP_EOL;
@@ -103,67 +103,67 @@ SQL;
 
         foreach ($data['actions'] as $action)
         {
-            $this->assert_service->verify(isset($action['type']), 'No action type specified');
+            $this->assertService->verify(isset($action['type']), 'No action type specified');
 
             if ($action['type'] == 'create_table')
             {
-                $this->assert_service->verify(isset($action['fields']) && is_array($action['fields']), 'No fields array specified');
-                $this->assert_service->verify(isset($action['constraints']) && is_array($action['constraints']), 'No constraints array specified');
+                $this->assertService->verify(isset($action['fields']) && is_array($action['fields']), 'No fields array specified');
+                $this->assertService->verify(isset($action['constraints']) && is_array($action['constraints']), 'No constraints array specified');
 
-                $result = $this->create_table($action['table_name'], $action['fields'], $action['constraints']);
+                $result = $this->createTable($action['table_name'], $action['fields'], $action['constraints']);
                 $queries[] = $result;
             }
             elseif ($action['type'] == 'create_trigger')
             {
-                $this->assert_service->verify(isset($action['trigger']) && is_array($action['trigger']), 'No trigger array specified');
+                $this->assertService->verify(isset($action['trigger']) && is_array($action['trigger']), 'No trigger array specified');
 
-                $result = $this->create_trigger($action['table_name'], $action['trigger']);
+                $result = $this->createTrigger($action['table_name'], $action['trigger']);
                 $queries[] = $result;
             }
             elseif ($action['type'] == 'add_column')
             {
-                $this->assert_service->verify(is_array($action['field']), 'No field array specified');
-                $result = $this->add_column($action['table_name'], $action['field']);
+                $this->assertService->verify(is_array($action['field']), 'No field array specified');
+                $result = $this->addColumn($action['table_name'], $action['field']);
                 $queries[] = $result;
             }
             elseif ($action['type'] == 'add_constraint')
             {
-                $this->assert_service->verify(is_array($action['constraint']), 'No constraint array specified');
-                $result = $this->add_constraint($action['table_name'], $action['constraint']);
+                $this->assertService->verify(is_array($action['constraint']), 'No constraint array specified');
+                $result = $this->addConstraint($action['table_name'], $action['constraint']);
                 $queries[] = $result;
             }
             elseif ($action['type'] == 'insert_row')
             {
-                $this->assert_service->verify(isset($action['values']) && is_array($action['values']), 'No values array specified');
+                $this->assertService->verify(isset($action['values']) && is_array($action['values']), 'No values array specified');
 
-                $result = $this->insert_row($action['table_name'], $action['values']);
+                $result = $this->insertRow($action['table_name'], $action['values']);
                 $queries[] = $result;
             }
             elseif ($action['type'] == 'modify_column_type')
             {
-                $this->assert_service->verify(is_array($action['field']), 'No field array specified');
-                $result = $this->modify_column_type($action['table_name'], $action['field']);
+                $this->assertService->verify(is_array($action['field']), 'No field array specified');
+                $result = $this->modifyColumnType($action['table_name'], $action['field']);
                 $queries[] = $result;
             }
             elseif ($action['type'] == 'rename_column')
             {
-                $this->assert_service->verify(isset($action['name']), 'No name specified');
-                $this->assert_service->verify(isset($action['new_name']), 'No new_name specified');
-                $result = $this->rename_column($action['table_name'], $action['name'], $action['new_name']);
+                $this->assertService->verify(isset($action['name']), 'No name specified');
+                $this->assertService->verify(isset($action['new_name']), 'No new_name specified');
+                $result = $this->renameColumn($action['table_name'], $action['name'], $action['new_name']);
                 $queries[] = $result;
             }
             elseif ($action['type'] == 'rename_table')
             {
-                $this->assert_service->verify(isset($action['new_name']), 'No new_name specified');
-                $result = $this->rename_table($action['table_name'], $action['new_name']);
+                $this->assertService->verify(isset($action['new_name']), 'No new_name specified');
+                $result = $this->renameTable($action['table_name'], $action['new_name']);
                 $queries[] = $result;
             }
             elseif ($action['type'] == 'raw_query')
             {
-                $this->assert_service->verify(isset($action['query']), 'No query specified');
-                $this->assert_service->verify(isset($action['params']) && is_array($action['params']), 'No params array specified');
+                $this->assertService->verify(isset($action['query']), 'No query specified');
+                $this->assertService->verify(isset($action['params']) && is_array($action['params']), 'No params array specified');
 
-                $result = $this->raw_query($action['query'], $action['params']);
+                $result = $this->rawQuery($action['query'], $action['params']);
                 $queries[] = $result;
             }
             else
@@ -174,7 +174,7 @@ SQL;
 
         echo ' - Executing queries'.PHP_EOL;
 
-        $this->database->start_transaction();
+        $this->database->startTransaction();
 
         foreach ($queries as $info)
         {
@@ -185,75 +185,75 @@ SQL;
             if ($result === false)
             {
                 echo '   Failed: ';
-                echo $this->database->get_last_error().PHP_EOL;
+                echo $this->database->getLastError().PHP_EOL;
 
                 exit();
             }
         }
 
-        if ($ignore_version)
+        if ($ignoreVersion)
         {
             return;
         }
 
         echo " - Updating version to {$data['target_version']}".PHP_EOL;
 
-        $this->set_version($data['target_version']);
+        $this->setVersion($data['target_version']);
 
-        $this->database->commit_transaction();
+        $this->database->commitTransaction();
     }
 
-    public function get_current_version(): int
+    public function getCurrentVersion(): int
     {
-        return (int) $this->stored_values->get_value('app_db_version', '0');
+        return (int) $this->storedValues->getValue('app_db_version', '0');
     }
 
-    private function check_version(int $app_db_version): void
+    private function checkVersion(int $appDbVersion): void
     {
-        $current_version = $this->get_current_version();
+        $currentVersion = $this->getCurrentVersion();
 
-        $this->assert_service->verify($current_version == $app_db_version, "DB version '{$current_version}' does not match requested version '{$app_db_version}'");
+        $this->assertService->verify($currentVersion == $appDbVersion, "DB version '{$currentVersion}' does not match requested version '{$appDbVersion}'");
     }
 
-    private function set_version(int $to): void
+    private function setVersion(int $to): void
     {
-        $this->stored_values->set_value('app_db_version', (string) $to);
+        $this->storedValues->setValue('app_db_version', (string) $to);
 
-        $this->update_stored_hash();
+        $this->updateStoredHash();
     }
 
     /**
      * @param array<string> $info
-     * @param array<string> $field_lines
-     * @param array<string> $constraint_lines
+     * @param array<string> $fieldLines
+     * @param array<string> $constraintLines
      */
-    private function get_field_statements(string $table_name, array $info, array &$field_lines, array &$constraint_lines): void
+    private function getFieldStatements(string $tableName, array $info, array &$fieldLines, array &$constraintLines): void
     {
-        $this->assert_service->verify(isset($info['type']), 'No field type specified');
-        $this->assert_service->verify(isset($info['name']), 'No field name specified');
+        $this->assertService->verify(isset($info['type']), 'No field type specified');
+        $this->assertService->verify(isset($info['name']), 'No field name specified');
 
-        $db_type = strtoupper($info['type']);
+        $dbType = strtoupper($info['type']);
         $null = (isset($info['null']) && $info['null']);
 
         // First get database type and check requirements
         //
         if ($info['type'] == 'foreign_key')
         {
-            $this->assert_service->verify(isset($info['foreign_table']), 'No target for foreign table set');
-            $this->assert_service->verify(isset($info['foreign_field']), 'No target for foreign field set');
+            $this->assertService->verify(isset($info['foreign_table']), 'No target for foreign table set');
+            $this->assertService->verify(isset($info['foreign_field']), 'No target for foreign field set');
 
-            $db_type = 'INT(11)';
+            $dbType = 'INT(11)';
         }
         elseif ($info['type'] == 'varchar')
         {
-            $this->assert_service->verify(isset($info['size']), 'No varchar size set');
+            $this->assertService->verify(isset($info['size']), 'No varchar size set');
 
-            $db_type = "VARCHAR({$info['size']})";
+            $dbType = "VARCHAR({$info['size']})";
         }
 
-        $null_fmt = $null ? 'NULL' : 'NOT NULL';
-        $default_fmt = (isset($info['default'])) ? "DEFAULT {$info['default']}" : '';
-        $after_fmt = (isset($info['after'])) ? "AFTER {$info['after']}" : '';
+        $nullFmt = $null ? 'NULL' : 'NOT NULL';
+        $defaultFmt = (isset($info['default'])) ? "DEFAULT {$info['default']}" : '';
+        $afterFmt = (isset($info['after'])) ? "AFTER {$info['after']}" : '';
 
         // Special changes to standard flow
         //
@@ -261,45 +261,45 @@ SQL;
         {
             if (isset($info['default']))
             {
-                $default_fmt = "DEFAULT '{$info['default']}'";
+                $defaultFmt = "DEFAULT '{$info['default']}'";
             }
         }
 
-        $str = "`{$info['name']}` {$db_type} {$null_fmt} {$default_fmt} {$after_fmt}";
+        $str = "`{$info['name']}` {$dbType} {$nullFmt} {$defaultFmt} {$afterFmt}";
 
-        $field_lines[] = $str;
+        $fieldLines[] = $str;
 
         // Special post actions
         //
         if ($info['type'] == 'foreign_key')
         {
-            $constraint_lines[] = "KEY `foreign_{$table_name}_{$info['name']}` (`{$info['name']}`)";
-            $on_delete = isset($info['on_delete']) ? "ON DELETE {$info['on_delete']}" : '';
-            $on_update = isset($info['on_update']) ? "ON UPDATE {$info['on_update']}" : '';
+            $constraintLines[] = "KEY `foreign_{$tableName}_{$info['name']}` (`{$info['name']}`)";
+            $onDelete = isset($info['on_delete']) ? "ON DELETE {$info['on_delete']}" : '';
+            $onUpdate = isset($info['on_update']) ? "ON UPDATE {$info['on_update']}" : '';
 
-            $line = "CONSTRAINT `foreign_{$table_name}_{$info['name']}` FOREIGN KEY (`{$info['name']}`) REFERENCES `{$info['foreign_table']}` (`{$info['foreign_field']}`) {$on_delete} {$on_update}";
+            $line = "CONSTRAINT `foreign_{$tableName}_{$info['name']}` FOREIGN KEY (`{$info['name']}`) REFERENCES `{$info['foreign_table']}` (`{$info['foreign_field']}`) {$onDelete} {$onUpdate}";
 
-            $constraint_lines[] = $line;
+            $constraintLines[] = $line;
         }
     }
 
     /**
      * @param array<mixed>  $info
-     * @param array<string> $constraint_lines
+     * @param array<string> $constraintLines
      */
-    private function get_constraint_statements(string $table_name, array $info, array &$constraint_lines): void
+    private function getConstraintStatements(string $tableName, array $info, array &$constraintLines): void
     {
-        $this->assert_service->verify(isset($info['type']), 'No constraint type specified');
+        $this->assertService->verify(isset($info['type']), 'No constraint type specified');
 
         if ($info['type'] == 'unique')
         {
-            $this->assert_service->verify(isset($info['values']), 'No values for unique specified');
-            $this->assert_service->verify(is_array($info['values']), 'Values is not an array');
+            $this->assertService->verify(isset($info['values']), 'No values for unique specified');
+            $this->assertService->verify(is_array($info['values']), 'Values is not an array');
 
-            $values_fmt = implode('_', $info['values']);
-            $fields_fmt = implode('`, `', $info['values']);
+            $valuesFmt = implode('_', $info['values']);
+            $fieldsFmt = implode('`, `', $info['values']);
 
-            $constraint_lines[] = "UNIQUE KEY `unique_{$table_name}_{$values_fmt}` (`{$fields_fmt}`)";
+            $constraintLines[] = "UNIQUE KEY `unique_{$tableName}_{$valuesFmt}` (`{$fieldsFmt}`)";
         }
         else
         {
@@ -313,32 +313,32 @@ SQL;
      *
      * @return array{query: string, params: array<string>}
      */
-    private function create_table(string $table_name, array $fields, array $constraints): array
+    private function createTable(string $tableName, array $fields, array $constraints): array
     {
-        $field_lines = [];
-        $constraint_lines = [];
+        $fieldLines = [];
+        $constraintLines = [];
 
         // Add id primary key to all tables
         //
-        $field_lines[] = '`id` int(11) NOT NULL AUTO_INCREMENT';
-        $constraint_lines[] = 'PRIMARY KEY (`id`)';
+        $fieldLines[] = '`id` int(11) NOT NULL AUTO_INCREMENT';
+        $constraintLines[] = 'PRIMARY KEY (`id`)';
 
         foreach ($fields as $info)
         {
-            $this->get_field_statements($table_name, $info, $field_lines, $constraint_lines);
+            $this->getFieldStatements($tableName, $info, $fieldLines, $constraintLines);
         }
 
         foreach ($constraints as $info)
         {
-            $this->get_constraint_statements($table_name, $info, $constraint_lines);
+            $this->getConstraintStatements($tableName, $info, $constraintLines);
         }
 
-        $lines = array_merge($field_lines, $constraint_lines);
-        $lines_fmt = implode(",\n    ", $lines);
+        $lines = array_merge($fieldLines, $constraintLines);
+        $linesFmt = implode(",\n    ", $lines);
 
         $query = <<<SQL
-CREATE TABLE `{$table_name}` (
-    {$lines_fmt}
+CREATE TABLE `{$tableName}` (
+    {$linesFmt}
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
 SQL;
 
@@ -355,15 +355,15 @@ SQL;
      *
      * @return array{query: string, params: array<string>}
      */
-    private function create_trigger(string $table_name, array $info): array
+    private function createTrigger(string $tableName, array $info): array
     {
-        $this->assert_service->verify(isset($info['name']), 'No trigger name specified');
-        $this->assert_service->verify(isset($info['time']), 'No trigger time specified');
-        $this->assert_service->verify(isset($info['event']), 'No trigger event specified');
-        $this->assert_service->verify(isset($info['action']), 'No trigger action specified');
+        $this->assertService->verify(isset($info['name']), 'No trigger name specified');
+        $this->assertService->verify(isset($info['time']), 'No trigger time specified');
+        $this->assertService->verify(isset($info['event']), 'No trigger event specified');
+        $this->assertService->verify(isset($info['action']), 'No trigger action specified');
 
         $query = <<<SQL
-CREATE TRIGGER `{$info['name']}` {$info['time']} {$info['event']} ON `{$table_name}`
+CREATE TRIGGER `{$info['name']}` {$info['time']} {$info['event']} ON `{$tableName}`
     FOR EACH ROW {$info['action']}
 SQL;
 
@@ -380,19 +380,19 @@ SQL;
      *
      * @return array{query: string, params: array<string>}
      */
-    private function add_column(string $table_name, array $info): array
+    private function addColumn(string $tableName, array $info): array
     {
-        $field_lines = [];
-        $constraint_lines = [];
+        $fieldLines = [];
+        $constraintLines = [];
 
-        $this->get_field_statements($table_name, $info, $field_lines, $constraint_lines);
+        $this->getFieldStatements($tableName, $info, $fieldLines, $constraintLines);
 
-        $lines = array_merge($field_lines, $constraint_lines);
-        $lines_fmt = implode(",\n    ADD ", $lines);
+        $lines = array_merge($fieldLines, $constraintLines);
+        $linesFmt = implode(",\n    ADD ", $lines);
 
         $query = <<<SQL
-ALTER TABLE `{$table_name}`
-    ADD {$lines_fmt}
+ALTER TABLE `{$tableName}`
+    ADD {$linesFmt}
 SQL;
 
         $params = [];
@@ -408,19 +408,19 @@ SQL;
      *
      * @return array{query: string, params: array<string>}
      */
-    private function add_constraint(string $table_name, array $info): array
+    private function addConstraint(string $tableName, array $info): array
     {
-        $field_lines = [];
-        $constraint_lines = [];
+        $fieldLines = [];
+        $constraintLines = [];
 
-        $this->get_constraint_statements($table_name, $info, $constraint_lines);
+        $this->getConstraintStatements($tableName, $info, $constraintLines);
 
-        $lines = array_merge($field_lines, $constraint_lines);
-        $lines_fmt = implode(",\n    ADD ", $lines);
+        $lines = array_merge($fieldLines, $constraintLines);
+        $linesFmt = implode(",\n    ADD ", $lines);
 
         $query = <<<SQL
-ALTER TABLE `{$table_name}`
-    ADD {$lines_fmt}
+ALTER TABLE `{$tableName}`
+    ADD {$linesFmt}
 SQL;
 
         $params = [];
@@ -436,9 +436,9 @@ SQL;
      *
      * @return array{query: string, params: array<string>}
      */
-    private function insert_row(string $table_name, array $values): array
+    private function insertRow(string $tableName, array $values): array
     {
-        $fields_fmt = '';
+        $fieldsFmt = '';
         $params = [];
         $first = true;
 
@@ -446,7 +446,7 @@ SQL;
         {
             if (!$first)
             {
-                $fields_fmt .= ', ';
+                $fieldsFmt .= ', ';
             }
             else
             {
@@ -455,18 +455,18 @@ SQL;
 
             if ($value === null)
             {
-                $fields_fmt .= "`{$key}` = NULL";
+                $fieldsFmt .= "`{$key}` = NULL";
             }
             else
             {
-                $fields_fmt .= "`{$key}` = ?";
+                $fieldsFmt .= "`{$key}` = ?";
                 $params[] = $value;
             }
         }
 
         $query = <<<SQL
-INSERT INTO `{$table_name}`
-    SET {$fields_fmt}
+INSERT INTO `{$tableName}`
+    SET {$fieldsFmt}
 SQL;
 
         return [
@@ -480,7 +480,7 @@ SQL;
      *
      * @return array{query: string, params: array<string>}
      */
-    private function raw_query(string $query, array $params): array
+    private function rawQuery(string $query, array $params): array
     {
         return [
             'query' => $query,
@@ -493,19 +493,19 @@ SQL;
      *
      * @return array{query: string, params: array<string>}
      */
-    private function modify_column_type(string $table_name, array $info): array
+    private function modifyColumnType(string $tableName, array $info): array
     {
-        $field_lines = [];
-        $constraint_lines = [];
+        $fieldLines = [];
+        $constraintLines = [];
 
-        $this->get_field_statements($table_name, $info, $field_lines, $constraint_lines);
+        $this->getFieldStatements($tableName, $info, $fieldLines, $constraintLines);
 
-        $lines = array_merge($field_lines, $constraint_lines);
-        $lines_fmt = implode(",\n    MODIFY ", $lines);
+        $lines = array_merge($fieldLines, $constraintLines);
+        $linesFmt = implode(",\n    MODIFY ", $lines);
 
         $query = <<<SQL
-ALTER TABLE `{$table_name}`
-    MODIFY {$lines_fmt}
+ALTER TABLE `{$tableName}`
+    MODIFY {$linesFmt}
 SQL;
 
         $params = [];
@@ -519,11 +519,11 @@ SQL;
     /**
      * @return array{query: string, params: array<string>}
      */
-    private function rename_column(string $table_name, string $current_name, string $new_name): array
+    private function renameColumn(string $tableName, string $currentName, string $newName): array
     {
         $query = <<<SQL
-ALTER TABLE `{$table_name}`
-    RENAME COLUMN `{$current_name}` TO `{$new_name}`
+ALTER TABLE `{$tableName}`
+    RENAME COLUMN `{$currentName}` TO `{$newName}`
 SQL;
 
         $params = [];
@@ -537,11 +537,11 @@ SQL;
     /**
      * @return array{query: string, params: array<string>}
      */
-    private function rename_table(string $table_name, string $new_name): array
+    private function renameTable(string $tableName, string $newName): array
     {
         $query = <<<SQL
-ALTER TABLE `{$table_name}`
-    RENAME TO `{$new_name}`
+ALTER TABLE `{$tableName}`
+    RENAME TO `{$newName}`
 SQL;
 
         $params = [];

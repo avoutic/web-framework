@@ -6,51 +6,51 @@ use Psr\Container\ContainerInterface as Container;
 
 class BootstrapService
 {
-    private bool $run_sanity_checks = true;
+    private bool $runSanityChecks = true;
 
     public function __construct(
         private Container $container,
-        private ConfigService $config_service,
-        private SanityCheckRunner $sanity_check_runner,
-        private string $app_dir,
+        private ConfigService $configService,
+        private SanityCheckRunner $sanityCheckRunner,
+        private string $appDir,
     ) {
     }
 
     public function bootstrap(): void
     {
-        $this->initialize_debugging();
-        $this->initialize_timezone();
-        $this->initialize_container_wrapper();
-        $this->initialize_preload();
-        $this->initialize_defines();
+        $this->initializeDebugging();
+        $this->initializeTimezone();
+        $this->initializeContainerWrapper();
+        $this->initializePreload();
+        $this->initializeDefines();
 
-        if ($this->run_sanity_checks)
+        if ($this->runSanityChecks)
         {
-            $this->initialize_core_sanity_checks();
-            $this->initialize_app_sanity_checks();
-            $this->run_sanity_checks();
+            $this->initializeCoreSanityChecks();
+            $this->initializeAppSanityChecks();
+            $this->runSanityChecks();
         }
     }
 
-    protected function initialize_debugging(): void
+    protected function initializeDebugging(): void
     {
         // Enable debugging if configured
         //
-        if ($this->config_service->get('debug') === true)
+        if ($this->configService->get('debug') === true)
         {
             error_reporting(E_ALL | E_STRICT);
             ini_set('display_errors', '1');
         }
     }
 
-    protected function initialize_timezone(): void
+    protected function initializeTimezone(): void
     {
         // Set default timezone
         //
-        date_default_timezone_set($this->config_service->get('timezone'));
+        date_default_timezone_set($this->configService->get('timezone'));
     }
 
-    protected function initialize_container_wrapper(): void
+    protected function initializeContainerWrapper(): void
     {
         // As long as old-style code is in WebFramework we need ContainerWrapper
         //
@@ -58,66 +58,66 @@ class BootstrapService
         ContainerWrapper::setContainer($this->container);
     }
 
-    protected function initialize_preload(): void
+    protected function initializePreload(): void
     {
         // Check for special loads before anything else
         //
-        if ($this->config_service->get('preload') === true)
+        if ($this->configService->get('preload') === true)
         {
-            if (!file_exists("{$this->app_dir}/includes/preload.inc.php"))
+            if (!file_exists("{$this->appDir}/includes/preload.inc.php"))
             {
                 throw new \InvalidArgumentException('The file "includes/preload.inc.php" does not exist');
             }
 
-            require_once "{$this->app_dir}/includes/preload.inc.php";
+            require_once "{$this->appDir}/includes/preload.inc.php";
         }
     }
 
-    protected function initialize_defines(): void
+    protected function initializeDefines(): void
     {
         // Load global and site specific defines
         //
         require_once __DIR__.'/defines.inc.php';
     }
 
-    protected function initialize_core_sanity_checks(): void
+    protected function initializeCoreSanityChecks(): void
     {
-        $this->sanity_check_runner->add(SanityCheck\RequiredCoreConfig::class, []);
-        $this->sanity_check_runner->add(SanityCheck\DatabaseCompatibility::class, []);
+        $this->sanityCheckRunner->add(SanityCheck\RequiredCoreConfig::class, []);
+        $this->sanityCheckRunner->add(SanityCheck\DatabaseCompatibility::class, []);
     }
 
-    protected function initialize_app_sanity_checks(): void
+    protected function initializeAppSanityChecks(): void
     {
-        $modules = $this->config_service->get('sanity_check_modules');
+        $modules = $this->configService->get('sanity_check_modules');
 
         foreach ($modules as $class => $config)
         {
-            $this->sanity_check_runner->add($class, $config);
+            $this->sanityCheckRunner->add($class, $config);
         }
     }
 
-    protected function run_sanity_checks(): void
+    protected function runSanityChecks(): void
     {
-        $this->sanity_check_runner->execute();
+        $this->sanityCheckRunner->execute();
     }
 
-    public function set_sanity_check_force_run(): void
+    public function setSanityCheckForceRun(): void
     {
-        $this->sanity_check_runner->force_run();
+        $this->sanityCheckRunner->forceRun();
     }
 
-    public function set_sanity_check_fixing(): void
+    public function setSanityCheckFixing(): void
     {
-        $this->sanity_check_runner->allow_fixing();
+        $this->sanityCheckRunner->allowFixing();
     }
 
-    public function set_sanity_check_verbose(): void
+    public function setSanityCheckVerbose(): void
     {
-        $this->sanity_check_runner->set_verbose();
+        $this->sanityCheckRunner->setVerbose();
     }
 
-    public function skip_sanity_checks(): void
+    public function skipSanityChecks(): void
     {
-        $this->run_sanity_checks = false;
+        $this->runSanityChecks = false;
     }
 }

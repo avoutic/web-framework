@@ -10,15 +10,15 @@ class StripeFactory
     /**
      * @var array<string>
      */
-    private array $event_handlers = [];
+    private array $eventHandlers = [];
 
     public function __construct(
         protected Container $container,
-        protected AssertService $assert_service,
-        protected ConfigService $config_service,
+        protected AssertService $assertService,
+        protected ConfigService $configService,
         protected StripeClient $stripe,
-        protected string $api_key,
-        protected string $endpoint_secret,
+        protected string $apiKey,
+        protected string $endpointSecret,
     ) {
         $this->init();
     }
@@ -27,14 +27,14 @@ class StripeFactory
     {
     }
 
-    public function verify_request(string $payload, string $sig_header): bool
+    public function verifyRequest(string $payload, string $sigHeader): bool
     {
         try
         {
             $event = \Stripe\Webhook::constructEvent(
                 $payload,
-                $sig_header,
-                $this->endpoint_secret,
+                $sigHeader,
+                $this->endpointSecret,
             );
         }
         catch (\UnexpectedValueException $e)
@@ -52,32 +52,32 @@ class StripeFactory
     /**
      * @param array<mixed> $payload
      */
-    public function handle_event(array $payload): bool|string
+    public function handleEvent(array $payload): bool|string
     {
-        $event_type = $payload['type'];
+        $eventType = $payload['type'];
         $object = $payload['data']['object'];
 
-        if (!isset($this->event_handlers[$event_type]))
+        if (!isset($this->eventHandlers[$eventType]))
         {
             return 'unhandled-event-type';
         }
 
-        $handler_function = $this->event_handlers[$event_type];
+        $handlerFunction = $this->eventHandlers[$eventType];
 
-        return $this->{$handler_function}($object);
+        return $this->{$handlerFunction}($object);
     }
 
-    protected function add_event_handler(string $event_type, string $handler_function): void
+    protected function addEventHandler(string $eventType, string $handlerFunction): void
     {
-        $this->event_handlers[$event_type] = $handler_function;
+        $this->eventHandlers[$eventType] = $handlerFunction;
     }
 
     /**
      * @return array<string>
      */
-    public function get_handled_events(): array
+    public function getHandledEvents(): array
     {
-        return array_keys($this->event_handlers);
+        return array_keys($this->eventHandlers);
     }
 
     // Customer object
@@ -87,7 +87,7 @@ class StripeFactory
      *
      * @return array<mixed>
      */
-    public function create_customer(array $data): array
+    public function createCustomer(array $data): array
     {
         $customer = \Stripe\Customer::create($data);
 
@@ -97,11 +97,11 @@ class StripeFactory
     /**
      * @return array<mixed>
      */
-    public function get_customer_data(string $customer_id): array
+    public function getCustomerData(string $customerId): array
     {
         $customer = \Stripe\Customer::retrieve(
             [
-                'id' => $customer_id,
+                'id' => $customerId,
             ]
         );
 
@@ -113,11 +113,11 @@ class StripeFactory
     /**
      * @return array<mixed>
      */
-    public function get_invoice_data(string $invoice_id): array
+    public function getInvoiceData(string $invoiceId): array
     {
         $invoice = \Stripe\Invoice::retrieve(
             [
-                'id' => $invoice_id,
+                'id' => $invoiceId,
             ]
         );
 
@@ -131,7 +131,7 @@ class StripeFactory
      *
      * @return array<mixed>
      */
-    public function create_price(array $data): array
+    public function createPrice(array $data): array
     {
         $price = $this->stripe->prices->create($data);
 
@@ -145,7 +145,7 @@ class StripeFactory
      *
      * @return array<mixed>
      */
-    public function create_product(array $data): array
+    public function createProduct(array $data): array
     {
         $product = $this->stripe->products->create($data);
 
@@ -157,7 +157,7 @@ class StripeFactory
      *
      * @return array<mixed>
      */
-    public function get_products_data(array $filter = []): array
+    public function getProductsData(array $filter = []): array
     {
         $products = \Stripe\Product::all();
 
@@ -168,11 +168,11 @@ class StripeFactory
 
     // Subscription object
     //
-    public function cancel_subscription(string $subscription_id): bool
+    public function cancelSubscription(string $subscriptionId): bool
     {
         $subscription = \Stripe\Subscription::retrieve(
             [
-                'id' => $subscription_id,
+                'id' => $subscriptionId,
             ]
         );
 
@@ -186,11 +186,11 @@ class StripeFactory
      *
      * @return array<mixed>
      */
-    public function get_subscription_data(string $subscription_id, array $expand = []): array
+    public function getSubscriptionData(string $subscriptionId, array $expand = []): array
     {
         $subscription = \Stripe\Subscription::retrieve(
             [
-                'id' => $subscription_id,
+                'id' => $subscriptionId,
                 'expand' => $expand,
             ]
         );
@@ -203,10 +203,10 @@ class StripeFactory
     /**
      * @return array<string>
      */
-    public function get_webhook_events(): array
+    public function getWebhookEvents(): array
     {
         $webhooks = $this->stripe->webhookEndpoints->all();
-        $this->assert_service->verify(count($webhooks) == 1, 'Not exactly 1 webhook in place');
+        $this->assertService->verify(count($webhooks) == 1, 'Not exactly 1 webhook in place');
 
         return $webhooks->data[0]->enabled_events;
     }

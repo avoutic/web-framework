@@ -12,14 +12,14 @@ class DatabaseAuthenticationService implements AuthenticationService
     private ?User $user = null;
 
     /**
-     * @param class-string<User> $user_class
+     * @param class-string<User> $userClass
      */
     public function __construct(
         private Database $database,
-        private BrowserSessionService $browser_session_service,
-        private BaseFactory $user_factory,
-        private int $session_timeout,
-        private string $user_class,
+        private BrowserSessionService $browserSessionService,
+        private BaseFactory $userFactory,
+        private int $sessionTimeout,
+        private string $userClass,
     ) {
     }
 
@@ -32,25 +32,25 @@ class DatabaseAuthenticationService implements AuthenticationService
         WHERE ADDDATE(last_active, INTERVAL ? SECOND) < ?
 SQL;
 
-        $params = [$this->session_timeout, $timestamp];
+        $params = [$this->sessionTimeout, $timestamp];
 
         $this->database->query($query, $params);
     }
 
-    protected function register_session(int $user_id, string|false $session_id): Session
+    protected function registerSession(int $userId, string|false $sessionId): Session
     {
         $timestamp = date('Y-m-d H:i:s');
 
         return Session::create([
-            'user_id' => $user_id,
-            'session_id' => $session_id,
+            'user_id' => $userId,
+            'session_id' => $sessionId,
             'last_active' => $timestamp,
         ]);
     }
 
-    public function invalidate_sessions(int $user_id): void
+    public function invalidateSessions(int $userId): void
     {
-        $result = $this->database->query('DELETE FROM sessions WHERE user_id = ?', [$user_id]);
+        $result = $this->database->query('DELETE FROM sessions WHERE user_id = ?', [$userId]);
 
         if ($result === false)
         {
@@ -62,46 +62,46 @@ SQL;
     {
         // Destroy running session
         //
-        $session_id = $this->browser_session_service->get('session_id');
-        if ($session_id !== null)
+        $sessionId = $this->browserSessionService->get('session_id');
+        if ($sessionId !== null)
         {
-            $session = Session::get_object_by_id($session_id);
+            $session = Session::getObjectById($sessionId);
             if ($session !== false)
             {
                 $session->delete();
             }
         }
 
-        $this->browser_session_service->regenerate();
+        $this->browserSessionService->regenerate();
 
-        $session = $this->register_session($user->id, $this->browser_session_service->get_session_id());
+        $session = $this->registerSession($user->id, $this->browserSessionService->getSessionId());
 
-        $this->browser_session_service->set('logged_in', true);
-        $this->browser_session_service->set('user_id', $user->id);
-        $this->browser_session_service->set('session_id', $session->id);
+        $this->browserSessionService->set('logged_in', true);
+        $this->browserSessionService->set('user_id', $user->id);
+        $this->browserSessionService->set('session_id', $session->id);
     }
 
-    protected function is_valid(): bool
+    protected function isValid(): bool
     {
-        $user_id = $this->browser_session_service->get('user_id');
-        if ($user_id === null)
+        $userId = $this->browserSessionService->get('user_id');
+        if ($userId === null)
         {
             return false;
         }
 
-        $session_id = $this->browser_session_service->get('session_id');
-        if ($session_id === null)
+        $sessionId = $this->browserSessionService->get('session_id');
+        if ($sessionId === null)
         {
             return false;
         }
 
-        $session = Session::get_object_by_id($session_id);
+        $session = Session::getObjectById($sessionId);
         if ($session === false)
         {
             return false;
         }
 
-        if (!$session->is_valid())
+        if (!$session->isValid())
         {
             $this->deauthenticate();
 
@@ -111,15 +111,15 @@ SQL;
         return true;
     }
 
-    public function is_authenticated(): bool
+    public function isAuthenticated(): bool
     {
-        $logged_in = $this->browser_session_service->get('logged_in');
-        if ($logged_in !== true)
+        $loggedIn = $this->browserSessionService->get('logged_in');
+        if ($loggedIn !== true)
         {
             return false;
         }
 
-        if (!$this->is_valid())
+        if (!$this->isValid())
         {
             return false;
         }
@@ -129,42 +129,42 @@ SQL;
 
     public function deauthenticate(): void
     {
-        $session_id = $this->browser_session_service->get('session_id');
-        if ($session_id !== null)
+        $sessionId = $this->browserSessionService->get('session_id');
+        if ($sessionId !== null)
         {
-            $session = Session::get_object_by_id($session_id);
+            $session = Session::getObjectById($sessionId);
             if ($session)
             {
                 $session->delete();
             }
         }
 
-        $this->browser_session_service->delete('logged_in');
-        $this->browser_session_service->delete('session_id');
+        $this->browserSessionService->delete('logged_in');
+        $this->browserSessionService->delete('session_id');
 
-        $this->browser_session_service->destroy();
+        $this->browserSessionService->destroy();
     }
 
-    public function get_authenticated_user(): User
+    public function getAuthenticatedUser(): User
     {
-        if (!$this->is_authenticated())
+        if (!$this->isAuthenticated())
         {
             throw new \RuntimeException('Not authenticated');
         }
 
-        $user_id = $this->browser_session_service->get('user_id');
-        if (!is_int($user_id))
+        $userId = $this->browserSessionService->get('user_id');
+        if (!is_int($userId))
         {
             throw new \RuntimeException('Browser Session invalid');
         }
 
-        if ($this->user !== null && $this->user->id == $user_id
-            && $this->user instanceof $this->user_class)
+        if ($this->user !== null && $this->user->id == $userId
+            && $this->user instanceof $this->userClass)
         {
             return $this->user;
         }
 
-        $user = $this->user_factory->get_user($user_id, $this->user_class);
+        $user = $this->userFactory->getUser($userId, $this->userClass);
         if ($user === false)
         {
             throw new \RuntimeException('User not present');
@@ -178,19 +178,19 @@ SQL;
     /**
      * @param array<string> $permissions
      */
-    public function user_has_permissions(array $permissions): bool
+    public function userHasPermissions(array $permissions): bool
     {
         if (count($permissions) == 0)
         {
             return true;
         }
 
-        if (!$this->is_authenticated())
+        if (!$this->isAuthenticated())
         {
             return false;
         }
 
-        $user = $this->get_authenticated_user();
+        $user = $this->getAuthenticatedUser();
 
         foreach ($permissions as $permission)
         {
@@ -201,7 +201,7 @@ SQL;
 
             try
             {
-                if (!$user->has_right($permission))
+                if (!$user->hasRight($permission))
                 {
                     return false;
                 }

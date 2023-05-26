@@ -7,68 +7,68 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 
 abstract class PageAction extends ActionCore
 {
-    protected string $frame_file;
+    protected string $frameFile;
 
     /**
      * @var array<mixed>
      */
-    protected array $page_content = [];
+    protected array $pageContent = [];
 
     public function init(): void
     {
         parent::init();
 
-        $this->frame_file = $this->config_service->get('actions.default_frame_file');
-        $this->page_content['base_url'] = $this->config_service->get('base_url');
+        $this->frameFile = $this->configService->get('actions.default_frame_file');
+        $this->pageContent['base_url'] = $this->configService->get('base_url');
     }
 
-    protected function get_csrf_token(): string
+    protected function getCsrfToken(): string
     {
-        return $this->csrf_service->get_token();
+        return $this->csrfService->getToken();
     }
 
-    protected function get_title(): string
+    protected function getTitle(): string
     {
         return 'No Title Defined';
     }
 
-    protected function get_content_title(): string
+    protected function getContentTitle(): string
     {
-        return $this->get_title();
+        return $this->getTitle();
     }
 
-    protected function get_canonical(): string
-    {
-        return '';
-    }
-
-    protected function get_onload(): string
+    protected function getCanonical(): string
     {
         return '';
     }
 
-    protected function get_keywords(): string
+    protected function getOnload(): string
     {
         return '';
     }
 
-    protected function get_description(): string
+    protected function getKeywords(): string
     {
         return '';
     }
 
-    protected function get_meta_robots(): string
+    protected function getDescription(): string
+    {
+        return '';
+    }
+
+    protected function getMetaRobots(): string
     {
         // Default behaviour is "index,follow"
         //
         return 'index,follow';
     }
 
-    protected function get_template_system(): string
+    protected function getTemplateSystem(): string
     {
-        $template_file = $this->get_template_file();
+        $templateFile = $this->getTemplateFile();
 
-        if (substr($template_file, -6) === '.latte')
+        if (substr($templateFile, -6) === '.latte')
         {
             return 'latte';
         }
@@ -76,140 +76,140 @@ abstract class PageAction extends ActionCore
         return 'native';
     }
 
-    protected function get_frame_file(): string
+    protected function getFrameFile(): string
     {
-        return $this->frame_file;
+        return $this->frameFile;
     }
 
     /**
      * @param array<mixed> $args
      */
-    public function load_template(string $name, array $args = []): void
+    public function loadTemplate(string $name, array $args = []): void
     {
-        $app_dir = $this->get_app_dir();
-        $this->verify(file_exists("{$app_dir}/templates/{$name}.inc.php"), 'Requested template not present');
+        $appDir = $this->getAppDir();
+        $this->verify(file_exists("{$appDir}/templates/{$name}.inc.php"), 'Requested template not present');
 
-        include "{$app_dir}/templates/{$name}.inc.php";
+        include "{$appDir}/templates/{$name}.inc.php";
     }
 
-    protected function is_blocked(string $name): bool
+    protected function isBlocked(string $name): bool
     {
-        return $this->input[$name] != $this->raw_input[$name];
+        return $this->input[$name] != $this->rawInput[$name];
     }
 
-    protected function check_sanity(): void
-    {
-    }
-
-    protected function do_logic(): void
+    protected function checkSanity(): void
     {
     }
 
-    protected function display_header(): void
+    protected function doLogic(): void
     {
     }
 
-    protected function display_footer(): void
+    protected function displayHeader(): void
     {
     }
 
-    protected function display_content(): void
+    protected function displayFooter(): void
     {
-        $template_file = $this->get_template_file();
-
-        $this->load_template($template_file, $this->page_content);
     }
 
-    protected function get_template_file(): string
+    protected function displayContent(): void
+    {
+        $templateFile = $this->getTemplateFile();
+
+        $this->loadTemplate($templateFile, $this->pageContent);
+    }
+
+    protected function getTemplateFile(): string
     {
         return '';
     }
 
-    protected function display_frame(): void
+    protected function displayFrame(): void
     {
-        $template_system = $this->get_template_system();
+        $templateSystem = $this->getTemplateSystem();
 
-        if ($template_system === 'latte')
+        if ($templateSystem === 'latte')
         {
-            $this->display_with_latte();
+            $this->displayWithLatte();
 
             return;
         }
 
-        if ($template_system === 'native')
+        if ($templateSystem === 'native')
         {
-            $this->display_with_native();
+            $this->displayWithNative();
 
             return;
         }
 
-        $this->report_error('Not a supported template_system: '.$template_system);
+        $this->reportError('Not a supported template_system: '.$templateSystem);
     }
 
     /**
      * @return array<string, mixed>
      */
-    protected function get_core_variables(): array
+    protected function getCoreVariables(): array
     {
         $data = [];
 
-        $data['base_url'] = $this->get_base_url();
-        $data['content_title'] = $this->get_content_title();
-        $data['csrf_token'] = $this->get_csrf_token();
-        $data['canonical'] = $this->get_canonical();
-        $data['description'] = $this->get_description();
-        $data['keywords'] = $this->get_keywords();
-        $data['meta_robots'] = $this->get_meta_robots();
-        $data['title'] = $this->get_title();
+        $data['base_url'] = $this->getBaseUrl();
+        $data['content_title'] = $this->getContentTitle();
+        $data['csrf_token'] = $this->getCsrfToken();
+        $data['canonical'] = $this->getCanonical();
+        $data['description'] = $this->getDescription();
+        $data['keywords'] = $this->getKeywords();
+        $data['meta_robots'] = $this->getMetaRobots();
+        $data['title'] = $this->getTitle();
 
-        $data['build_info'] = $this->get_build_info();
-        $data['config'] = $this->get_config('');
-        $data['messages'] = $this->get_messages();
+        $data['build_info'] = $this->getBuildInfo();
+        $data['config'] = $this->getConfig('');
+        $data['messages'] = $this->getMessages();
 
         return $data;
     }
 
-    protected function display_with_latte(): void
+    protected function displayWithLatte(): void
     {
-        $app_dir = $this->get_app_dir();
-        $template_dir = "{$app_dir}/templates";
+        $appDir = $this->getAppDir();
+        $templateDir = "{$appDir}/templates";
 
-        $this->page_content['core'] = $this->get_core_variables();
+        $this->pageContent['core'] = $this->getCoreVariables();
 
         $latte = new \Latte\Engine();
         $latte->setTempDirectory('/tmp/latte');
-        $latte->setLoader(new \Latte\Loaders\FileLoader($template_dir));
+        $latte->setLoader(new \Latte\Loaders\FileLoader($templateDir));
 
-        $template_file = $this->get_template_file();
+        $templateFile = $this->getTemplateFile();
 
-        $this->verify(file_exists("{$template_dir}/{$template_file}"), 'Requested template not present');
+        $this->verify(file_exists("{$templateDir}/{$templateFile}"), 'Requested template not present');
 
-        $output = $latte->renderToString($template_file, $this->page_content);
+        $output = $latte->renderToString($templateFile, $this->pageContent);
 
         echo($output);
     }
 
-    protected function display_with_native(): void
+    protected function displayWithNative(): void
     {
         // Unset availability of input in display
         // Forces explicit handling in do_logic()
         //
         $this->input = [];
-        $this->raw_input = [];
+        $this->rawInput = [];
 
         ob_start();
 
-        if (strlen($this->get_frame_file()))
+        if (strlen($this->getFrameFile()))
         {
-            $app_dir = $this->get_app_dir();
-            $frame_file = "{$app_dir}/frames/".$this->get_frame_file();
-            $this->verify(file_exists($frame_file), 'Requested frame file not present');
+            $appDir = $this->getAppDir();
+            $frameFile = "{$appDir}/frames/".$this->getFrameFile();
+            $this->verify(file_exists($frameFile), 'Requested frame file not present');
 
-            require $frame_file;
+            require $frameFile;
         }
         else
         {
-            $this->display_content();
+            $this->displayContent();
         }
 
         $content = ob_get_clean();
@@ -220,12 +220,12 @@ abstract class PageAction extends ActionCore
     /**
      * @param array<string, string> $args
      */
-    public function html_main(Request $request, Response $response, array $args): void
+    public function htmlMain(Request $request, Response $response, array $args): void
     {
-        $this->handle_permissions_and_inputs($request, $args);
-        $this->check_sanity();
-        $this->do_logic();
-        $this->display_frame();
+        $this->handlePermissionsAndInputs($request, $args);
+        $this->checkSanity();
+        $this->doLogic();
+        $this->displayFrame();
 
         exit();
     }

@@ -2,23 +2,23 @@
 
 namespace WebFramework\Core;
 
-function pbkdf2(string $algorithm, string $password, string $salt, int $count, int $key_length, bool $raw_output = false): string
+function pbkdf2(string $algorithm, string $password, string $salt, int $count, int $keyLength, bool $rawOutput = false): string
 {
     $algorithm = strtolower($algorithm);
     if (!in_array($algorithm, hash_algos(), true))
     {
         exit('PBKDF2 ERROR: Invalid hash algorithm.');
     }
-    if ($count <= 0 || $key_length <= 0)
+    if ($count <= 0 || $keyLength <= 0)
     {
         exit('PBKDF2 ERROR: Invalid parameters.');
     }
 
-    $hash_length = strlen(hash($algorithm, '', true));
-    $block_count = ceil($key_length / $hash_length);
+    $hashLength = strlen(hash($algorithm, '', true));
+    $blockCount = ceil($keyLength / $hashLength);
 
     $output = '';
-    for ($i = 1; $i <= $block_count; $i++)
+    for ($i = 1; $i <= $blockCount; $i++)
     {
         // $i encoded as 4 bytes, big endian.
         $last = $salt.pack('N', $i);
@@ -32,12 +32,12 @@ function pbkdf2(string $algorithm, string $password, string $salt, int $count, i
         $output .= $xorsum;
     }
 
-    if ($raw_output)
+    if ($rawOutput)
     {
-        return substr($output, 0, $key_length);
+        return substr($output, 0, $keyLength);
     }
 
-    return bin2hex(substr($output, 0, $key_length));
+    return bin2hex(substr($output, 0, $keyLength));
 }
 
 class User extends DataCore
@@ -49,15 +49,8 @@ class User extends DataCore
     public const ERR_ORIG_PASSWORD_MISMATCH = 2;
     public const ERR_NEW_PASSWORD_TOO_WEAK = 3;
 
-    protected static string $table_name = 'users';
-    protected static array $base_fields = ['username', 'email', 'terms_accepted', 'verified', 'last_login', 'failed_login'];
-
-    public string $username;
-    public string $email;
-    public int $terms_accepted;
-    public bool $verified;
-    public int $last_login;
-    public int $failed_login;
+    protected static string $tableName = 'users';
+    protected static array $baseFields = ['username', 'email', 'terms_accepted', 'verified', 'last_login', 'failed_login'];
 
     /**
      * @var array<Right>
@@ -67,8 +60,8 @@ class User extends DataCore
     /**
      * @var array<string, StoredUserValues>
      */
-    protected array $stored_values;
-    protected ?UserMailer $user_mailer = null;
+    protected array $storedValues;
+    protected ?UserMailer $userMailer = null;
 
     /**
      * @return array<string>
@@ -92,33 +85,33 @@ class User extends DataCore
         $this->rights = unserialize($data['rights']);
     }
 
-    protected function fill_complex_fields(): void
+    protected function fillComplexFields(): void
     {
-        $user_rights = UserRight::get_objects(0, -1, ['user_id' => $this->id]);
+        $userRights = UserRight::getObjects(0, -1, ['user_id' => $this->id]);
 
-        foreach ($user_rights as $user_right)
+        foreach ($userRights as $userRight)
         {
-            $right = $user_right->get_right();
+            $right = $userRight->getRight();
             if ($right === false)
             {
                 throw new \RuntimeException('Failed to retrieve right');
             }
 
-            $this->rights[$right->short_name] = $right;
+            $this->rights[$right->shortName] = $right;
         }
     }
 
-    protected function user_mailer(): UserMailer
+    protected function userMailer(): UserMailer
     {
-        if ($this->user_mailer === null)
+        if ($this->userMailer === null)
         {
-            $this->user_mailer = $this->framework->get_user_mailer();
+            $this->userMailer = $this->framework->getUserMailer();
         }
 
-        return $this->user_mailer;
+        return $this->userMailer;
     }
 
-    public static function new_hash_from_password(string $password): string
+    public static function newHashFromPassword(string $password): string
     {
         $salt = base64_encode(openssl_random_pseudo_bytes(24));
 
@@ -131,19 +124,19 @@ class User extends DataCore
      *
      * @return array{calculated_hash: string, stored_hash: string}
      */
-    protected function get_custom_hash(array $params, string $password): false|array
+    protected function getCustomHash(array $params, string $password): false|array
     {
         return false;
     }
 
-    public function check_password(string $password): bool
+    public function checkPassword(string $password): bool
     {
-        $solid_password = $this->get_field('solid_password');
-        $stored_hash = 'stored';
-        $calculated_hash = 'calculated';
+        $solidPassword = $this->getField('solid_password');
+        $storedHash = 'stored';
+        $calculatedHash = 'calculated';
 
-        $params = explode(':', $solid_password);
-        $migrate_password = false;
+        $params = explode(':', $solidPassword);
+        $migratePassword = false;
 
         if ($params[0] == 'sha256')
         {
@@ -152,13 +145,13 @@ class User extends DataCore
                 throw new \InvalidArgumentException('Solid password format unknown');
             }
 
-            $stored_hash = $params[3];
-            $calculated_hash = pbkdf2(
+            $storedHash = $params[3];
+            $calculatedHash = pbkdf2(
                 'sha256',
                 $password,
                 $params[2],
                 (int) $params[1],
-                (int) (strlen($stored_hash) / 2),
+                (int) (strlen($storedHash) / 2),
                 false
             );
         }
@@ -169,9 +162,9 @@ class User extends DataCore
                 throw new \InvalidArgumentException('Solid password format unknown');
             }
 
-            $stored_hash = $params[1];
-            $calculated_hash = $password;
-            $migrate_password = true;
+            $storedHash = $params[1];
+            $calculatedHash = $password;
+            $migratePassword = true;
         }
         elseif ($params[0] == 'dolphin')
         {
@@ -180,13 +173,13 @@ class User extends DataCore
                 throw new \InvalidArgumentException('Solid password format unknown');
             }
 
-            $stored_hash = $params[2];
-            $calculated_hash = sha1(md5($password).$params[1]);
-            $migrate_password = true;
+            $storedHash = $params[2];
+            $calculatedHash = sha1(md5($password).$params[1]);
+            $migratePassword = true;
         }
         else
         {
-            $result = $this->get_custom_hash($params, $password);
+            $result = $this->getCustomHash($params, $password);
             if ($result === false)
             {
                 throw new \InvalidArgumentException('Unknown solid password format');
@@ -200,26 +193,26 @@ class User extends DataCore
                 throw new \RuntimeException('Invalid result from get_custom_hash');
             }
 
-            $stored_hash = $result['stored_hash'];
-            $calculated_hash = $result['calculated_hash'];
-            $migrate_password = true;
+            $storedHash = $result['stored_hash'];
+            $calculatedHash = $result['calculated_hash'];
+            $migratePassword = true;
         }
 
         // Slow compare (time-constant)
-        $diff = strlen($stored_hash) ^ strlen($calculated_hash);
-        for ($i = 0; $i < strlen($stored_hash) && $i < strlen($calculated_hash); $i++)
+        $diff = strlen($storedHash) ^ strlen($calculatedHash);
+        for ($i = 0; $i < strlen($storedHash) && $i < strlen($calculatedHash); $i++)
         {
-            $diff |= ord($stored_hash[$i]) ^ ord($calculated_hash[$i]);
+            $diff |= ord($storedHash[$i]) ^ ord($calculatedHash[$i]);
         }
 
         $result = ($diff === 0);
 
         if ($result)
         {
-            if ($migrate_password)
+            if ($migratePassword)
             {
-                $solid_password = self::new_hash_from_password($password);
-                $this->update_field('solid_password', $solid_password);
+                $solidPassword = self::newHashFromPassword($password);
+                $this->updateField('solid_password', $solidPassword);
             }
 
             $this->update([
@@ -229,50 +222,50 @@ class User extends DataCore
         }
         else
         {
-            $this->increase_field('failed_login');
+            $this->increaseField('failed_login');
         }
 
         return $result;
     }
 
-    public function change_password(string $old_password, string $new_password): int
+    public function changePassword(string $oldPassword, string $newPassword): int
     {
         // Check if original password is correct
         //
-        if ($this->check_password($old_password) !== true)
+        if ($this->checkPassword($oldPassword) !== true)
         {
             return self::ERR_ORIG_PASSWORD_MISMATCH;
         }
 
-        if (strlen($new_password) < 8)
+        if (strlen($newPassword) < 8)
         {
             return self::ERR_NEW_PASSWORD_TOO_WEAK;
         }
 
         // Change password
         //
-        $solid_password = self::new_hash_from_password($new_password);
-        $this->update_field('solid_password', $solid_password);
+        $solidPassword = self::newHashFromPassword($newPassword);
+        $this->updateField('solid_password', $solidPassword);
 
         return self::RESULT_SUCCESS;
     }
 
-    public function update_password(string $new_password): int
+    public function updatePassword(string $newPassword): int
     {
         // Change password
         //
-        $solid_password = self::new_hash_from_password($new_password);
+        $solidPassword = self::newHashFromPassword($newPassword);
 
-        $this->update_field('solid_password', $solid_password);
+        $this->updateField('solid_password', $solidPassword);
 
-        $security_iterator = $this->increase_security_iterator();
+        $securityIterator = $this->increaseSecurityIterator();
 
         return self::RESULT_SUCCESS;
     }
 
-    public function change_email(string $email, bool $require_unique = true): int
+    public function changeEmail(string $email, bool $requireUnique = true): int
     {
-        if ($require_unique)
+        if ($requireUnique)
         {
             // Check if unique
             //
@@ -300,7 +293,7 @@ SQL;
             'email' => $email,
         ];
 
-        if ($this->get_config('authenticator.unique_identifier') == 'email')
+        if ($this->getConfig('authenticator.unique_identifier') == 'email')
         {
             $updates['username'] = $email;
         }
@@ -310,9 +303,9 @@ SQL;
         return self::RESULT_SUCCESS;
     }
 
-    public function send_change_email_verify(string $email, bool $require_unique = true): false|int
+    public function sendChangeEmailVerify(string $email, bool $requireUnique = true): false|int
     {
-        if ($require_unique)
+        if ($requireUnique)
         {
             // Check if unique
             //
@@ -328,19 +321,19 @@ SQL;
             }
         }
 
-        $security_iterator = $this->increase_security_iterator();
+        $securityIterator = $this->increaseSecurityIterator();
 
-        $code = $this->generate_verify_code('change_email', ['email' => $email, 'iterator' => $security_iterator]);
-        $verify_url = $this->get_config('http_mode').'://'.$this->container->get('server_name').
-                      $this->get_config('base_url').
-                      $this->get_config('actions.change_email.verify_page').
+        $code = $this->generateVerifyCode('change_email', ['email' => $email, 'iterator' => $securityIterator]);
+        $verifyUrl = $this->getConfig('http_mode').'://'.$this->container->get('server_name').
+                      $this->getConfig('base_url').
+                      $this->getConfig('actions.change_email.verify_page').
                       '?code='.$code;
 
-        $result = $this->user_mailer()->change_email_verification_link(
+        $result = $this->userMailer()->changeEmailVerificationLink(
             $email,
             [
                 'user' => $this,
-                'verify_url' => $verify_url,
+                'verify_url' => $verifyUrl,
             ]
         );
         if ($result == true)
@@ -351,24 +344,24 @@ SQL;
         return false;
     }
 
-    public function is_verified(): bool
+    public function isVerified(): bool
     {
         return $this->verified == 1;
     }
 
-    public function set_verified(): void
+    public function setVerified(): void
     {
-        $this->update_field('verified', 1);
+        $this->updateField('verified', 1);
     }
 
-    public function add_right(string $short_name): void
+    public function addRight(string $shortName): void
     {
-        if (isset($this->rights[$short_name]))
+        if (isset($this->rights[$shortName]))
         {
             return;
         }
 
-        $right = Right::get_object(['short_name' => $short_name]);
+        $right = Right::getObject(['short_name' => $shortName]);
         if ($right === false)
         {
             throw new \RuntimeException('Failed to locate right');
@@ -379,43 +372,43 @@ SQL;
             'right_id' => $right->id,
         ]);
 
-        $this->rights[$short_name] = $right;
+        $this->rights[$shortName] = $right;
     }
 
-    public function delete_right(string $short_name): void
+    public function deleteRight(string $shortName): void
     {
-        if (!isset($this->rights[$short_name]))
+        if (!isset($this->rights[$shortName]))
         {
             return;
         }
 
-        $right = Right::get_object(['short_name' => $short_name]);
+        $right = Right::getObject(['short_name' => $shortName]);
         if ($right === false)
         {
             throw new \RuntimeException('Failed to locate right');
         }
 
-        $user_right = UserRight::get_object([
+        $userRight = UserRight::getObject([
             'user_id' => $this->id,
             'right_id' => $right->id,
         ]);
 
-        if ($user_right !== false)
+        if ($userRight !== false)
         {
-            $user_right->delete();
-            unset($this->rights[$short_name]);
+            $userRight->delete();
+            unset($this->rights[$shortName]);
         }
     }
 
-    public function has_right(string $short_name): bool
+    public function hasRight(string $shortName): bool
     {
-        return isset($this->rights[$short_name]);
+        return isset($this->rights[$shortName]);
     }
 
     /**
      * @param array<mixed> $params
      */
-    public function generate_verify_code(string $action = '', array $params = []): string
+    public function generateVerifyCode(string $action = '', array $params = []): string
     {
         $msg = ['id' => $this->id,
             'username' => $this->username,
@@ -423,90 +416,90 @@ SQL;
             'params' => $params,
             'timestamp' => time(), ];
 
-        return $this->encode_and_auth_array($msg);
+        return $this->encodeAndAuthArray($msg);
     }
 
     /**
-     * @param array<mixed> $after_verify_data
+     * @param array<mixed> $afterVerifyData
      */
-    public function send_verify_mail(array $after_verify_data = []): bool|string
+    public function sendVerifyMail(array $afterVerifyData = []): bool|string
     {
-        $code = $this->generate_verify_code('verify', $after_verify_data);
-        $verify_url = $this->get_config('http_mode').'://'.$this->container->get('server_name').
-                      $this->get_config('base_url').
-                      $this->get_config('actions.login.verify_page').
+        $code = $this->generateVerifyCode('verify', $afterVerifyData);
+        $verifyUrl = $this->getConfig('http_mode').'://'.$this->container->get('server_name').
+                      $this->getConfig('base_url').
+                      $this->getConfig('actions.login.verify_page').
                       '?code='.$code;
 
-        return $this->user_mailer()->email_verification_link(
+        return $this->userMailer()->emailVerificationLink(
             $this->email,
             [
                 'user' => $this,
-                'verify_url' => $verify_url,
+                'verify_url' => $verifyUrl,
             ]
         );
     }
 
-    protected function increase_security_iterator(): int
+    protected function increaseSecurityIterator(): int
     {
-        $stored_values = $this->get_stored_values('account');
+        $storedValues = $this->getStoredValues('account');
 
-        $security_iterator = (int) $stored_values->get_value('security_iterator', '0');
-        $security_iterator++;
-        $stored_values->set_value('security_iterator', (string) $security_iterator);
+        $securityIterator = (int) $storedValues->getValue('security_iterator', '0');
+        $securityIterator++;
+        $storedValues->setValue('security_iterator', (string) $securityIterator);
 
-        return $security_iterator;
+        return $securityIterator;
     }
 
-    public function get_security_iterator(): int
+    public function getSecurityIterator(): int
     {
-        $stored_values = $this->get_stored_values('account');
+        $storedValues = $this->getStoredValues('account');
 
-        return (int) $stored_values->get_value('security_iterator', '0');
+        return (int) $storedValues->getValue('security_iterator', '0');
     }
 
-    public function send_password_reset_mail(): bool|string
+    public function sendPasswordResetMail(): bool|string
     {
-        $security_iterator = $this->increase_security_iterator();
+        $securityIterator = $this->increaseSecurityIterator();
 
-        $code = $this->generate_verify_code('reset_password', ['iterator' => $security_iterator]);
-        $reset_url = $this->get_config('http_mode').'://'.$this->container->get('server_name').
-                     $this->get_config('base_url').
-                     $this->get_config('actions.forgot_password.reset_password_page').
+        $code = $this->generateVerifyCode('reset_password', ['iterator' => $securityIterator]);
+        $resetUrl = $this->getConfig('http_mode').'://'.$this->container->get('server_name').
+                     $this->getConfig('base_url').
+                     $this->getConfig('actions.forgot_password.reset_password_page').
                      '?code='.$code;
 
-        return $this->user_mailer()->password_reset(
+        return $this->userMailer()->passwordReset(
             $this->email,
             [
                 'user' => $this,
-                'reset_url' => $reset_url,
+                'reset_url' => $resetUrl,
             ]
         );
     }
 
-    public function send_new_password(): bool|string
+    public function sendNewPassword(): bool|string
     {
         // Generate and store password
         //
-        $new_pw = bin2hex(substr(openssl_random_pseudo_bytes(24), 0, 10));
+        $newPw = bin2hex(substr(openssl_random_pseudo_bytes(24), 0, 10));
 
-        $this->update_password($new_pw);
+        $this->updatePassword($newPw);
 
-        return $this->user_mailer()->new_password(
+        return $this->userMailer()->newPassword(
             $this->email,
             [
                 'user' => $this,
-                'password' => $new_pw,
+                'password' => $newPw,
             ]
         );
     }
 
-    public function get_stored_values(string $module): StoredUserValues
+    public function getStoredValues(string $module): StoredUserValues
     {
-        if (!isset($this->stored_values[$module]))
+        if (!isset($this->storedValues[$module]))
         {
-            $this->stored_values[$module] = new StoredUserValues($this->database, $this->id, $module);
+            $this->storedValues[$module] = new StoredUserValues($this->database, $this->id, $module);
         }
 
-        return $this->stored_values[$module];
+        return $this->storedValues[$module];
     }
 }

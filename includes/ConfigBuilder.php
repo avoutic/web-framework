@@ -5,45 +5,45 @@ namespace WebFramework\Core;
 class ConfigBuilder
 {
     /** @var array<string, mixed> */
-    private array $global_config = [];
+    private array $globalConfig = [];
 
     public function __construct(
-        private string $app_dir,
+        private string $appDir,
     ) {
     }
 
     /**
      * @param array<string, mixed> $config
      */
-    public function merge_config_on_top(array $config): void
+    public function mergeConfigOnTop(array $config): void
     {
         // Merge configurations
         //
-        $this->global_config = array_replace_recursive($this->global_config, $config);
+        $this->globalConfig = array_replace_recursive($this->globalConfig, $config);
     }
 
     /**
      * @return array<string, mixed>
      */
-    private function load_config_file(string $config_location): array
+    private function loadConfigFile(string $configLocation): array
     {
-        if ($config_location[0] == '?')
+        if ($configLocation[0] == '?')
         {
-            $config_location = substr($config_location, 1);
+            $configLocation = substr($configLocation, 1);
 
-            if (!file_exists("{$this->app_dir}{$config_location}"))
+            if (!file_exists("{$this->appDir}{$configLocation}"))
             {
                 return [];
             }
         }
 
-        $file_config = require "{$this->app_dir}{$config_location}";
-        if (!is_array($file_config))
+        $fileConfig = require "{$this->appDir}{$configLocation}";
+        if (!is_array($fileConfig))
         {
-            throw new \RuntimeException("No valid config array found in '{$config_location}'");
+            throw new \RuntimeException("No valid config array found in '{$configLocation}'");
         }
 
-        return $file_config;
+        return $fileConfig;
     }
 
     /**
@@ -54,32 +54,32 @@ class ConfigBuilder
      *
      * @return array<string, mixed>
      */
-    public function build_config(array $configs): array
+    public function buildConfig(array $configs): array
     {
-        foreach ($configs as $config_location)
+        foreach ($configs as $configLocation)
         {
-            $file_config = $this->load_config_file($config_location);
+            $fileConfig = $this->loadConfigFile($configLocation);
 
-            $this->merge_config_on_top($file_config);
+            $this->mergeConfigOnTop($fileConfig);
         }
 
-        return $this->global_config;
+        return $this->globalConfig;
     }
 
     /**
      * @return array<string, mixed>
      */
-    public function get_config(): array
+    public function getConfig(): array
     {
-        return $this->global_config;
+        return $this->globalConfig;
     }
 
     /**
      * @return array<string, mixed>
      */
-    public function get_flattened_config(): array
+    public function getFlattenedConfig(): array
     {
-        return $this->flatten($this->global_config);
+        return $this->flatten($this->globalConfig);
     }
 
     /**

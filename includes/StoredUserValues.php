@@ -15,7 +15,7 @@ class StoredUserValues
 {
     public function __construct(
         private Database $database,
-        private int $user_id,
+        private int $userId,
         private string $module,
     ) {
     }
@@ -23,16 +23,16 @@ class StoredUserValues
     /**
      * @return array<string>
      */
-    public function get_values(): array
+    public function getValues(): array
     {
         $result = $this->database->query(
             'SELECT name, value FROM user_config_values WHERE user_id = ? AND module = ?',
-            [$this->user_id, $this->module]
+            [$this->userId, $this->module]
         );
 
         if ($result === false)
         {
-            throw new \RuntimeException("Failed to retrieve stored user values for {$this->user_id}:{$this->module}");
+            throw new \RuntimeException("Failed to retrieve stored user values for {$this->userId}:{$this->module}");
         }
 
         $info = [];
@@ -45,16 +45,16 @@ class StoredUserValues
         return $info;
     }
 
-    public function value_exists(string $name): bool
+    public function valueExists(string $name): bool
     {
         $result = $this->database->query(
             'SELECT value FROM user_config_values WHERE user_id = ? AND module = ? AND name = ?',
-            [$this->user_id, $this->module, $name]
+            [$this->userId, $this->module, $name]
         );
 
         if ($result === false)
         {
-            throw new \RuntimeException("Failed to retrieve stored user value for {$this->user_id}:{$this->module}:{$name}");
+            throw new \RuntimeException("Failed to retrieve stored user value for {$this->userId}:{$this->module}:{$name}");
         }
 
         if ($result->RecordCount() == 0)
@@ -65,16 +65,16 @@ class StoredUserValues
         return true;
     }
 
-    public function get_value(string $name, string $default = ''): string
+    public function getValue(string $name, string $default = ''): string
     {
         $result = $this->database->query(
             'SELECT value FROM user_config_values WHERE user_id = ? AND module = ? AND name = ?',
-            [$this->user_id, $this->module, $name]
+            [$this->userId, $this->module, $name]
         );
 
         if ($result === false)
         {
-            throw new \RuntimeException("Failed to retrieve stored user value {$this->user_id}:{$this->module}:{$name}");
+            throw new \RuntimeException("Failed to retrieve stored user value {$this->userId}:{$this->module}:{$name}");
         }
 
         if ($result->RecordCount() == 0)
@@ -90,29 +90,29 @@ class StoredUserValues
         return $result->fields['value'];
     }
 
-    public function set_value(string $name, string $value): void
+    public function setValue(string $name, string $value): void
     {
         $result = $this->database->query(
             'INSERT user_config_values SET user_id = ?, module = ?, name = ?, value = ? ON DUPLICATE KEY UPDATE value = ?',
-            [$this->user_id, $this->module, $name, $value, $value]
+            [$this->userId, $this->module, $name, $value, $value]
         );
 
         if ($result === false)
         {
-            throw new \RuntimeException("Failed to set stored user value {$this->user_id}:{$this->module}:{$name}");
+            throw new \RuntimeException("Failed to set stored user value {$this->userId}:{$this->module}:{$name}");
         }
     }
 
-    public function delete_value(string $name): void
+    public function deleteValue(string $name): void
     {
         $result = $this->database->query(
             'DELETE user_config_values WHERE user_id = ? AND module = ? AND name = ?',
-            [$this->user_id, $this->module, $name]
+            [$this->userId, $this->module, $name]
         );
 
         if ($result === false)
         {
-            throw new \RuntimeException("Failed to delete stored user value {$this->user_id}:{$this->module}:{$name}");
+            throw new \RuntimeException("Failed to delete stored user value {$this->userId}:{$this->module}:{$name}");
         }
     }
 }

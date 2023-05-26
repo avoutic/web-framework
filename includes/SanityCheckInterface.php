@@ -7,11 +7,11 @@ interface SanityCheckInterface
     /**
      * @param array<mixed> $config
      */
-    public function set_config(array $config): void;
+    public function setConfig(array $config): void;
 
-    public function allow_fixing(): void;
+    public function allowFixing(): void;
 
-    public function perform_checks(): bool;
+    public function performChecks(): bool;
 
-    public function set_verbose(): void;
+    public function setVerbose(): void;
 }

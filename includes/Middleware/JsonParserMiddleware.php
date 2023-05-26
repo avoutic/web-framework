@@ -11,11 +11,11 @@ class JsonParserMiddleware implements MiddlewareInterface
 {
     public function process(Request $request, RequestHandlerInterface $handler): Response
     {
-        $content_type = $request->getHeaderLine('Content-Type');
-        $is_json = (str_contains($content_type, 'application/json'));
-        $request = $request->withAttribute('is_json', $is_json);
+        $contentType = $request->getHeaderLine('Content-Type');
+        $isJson = (str_contains($contentType, 'application/json'));
+        $request = $request->withAttribute('is_json', $isJson);
 
-        if ($is_json)
+        if ($isJson)
         {
             $body = (string) $request->getBody();
             $data = json_decode($body, true);

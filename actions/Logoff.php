@@ -9,40 +9,40 @@ class Logoff extends PageAction
     /**
      * @return array<string, string>
      */
-    public static function get_filter(): array
+    public static function getFilter(): array
     {
         return [
             'return_page' => FORMAT_RETURN_PAGE,
         ];
     }
 
-    protected function get_title(): string
+    protected function getTitle(): string
     {
         return 'Logoff';
     }
 
-    protected function do_logic(): void
+    protected function doLogic(): void
     {
         $this->deauthenticate();
 
-        $return_page = $this->get_input_var('return_page');
+        $returnPage = $this->getInputVar('return_page');
 
-        if (!strlen($return_page) || substr($return_page, 0, 2) == '//')
+        if (!strlen($returnPage) || substr($returnPage, 0, 2) == '//')
         {
-            $return_page = '/';
+            $returnPage = '/';
         }
 
-        if (substr($return_page, 0, 1) != '/')
+        if (substr($returnPage, 0, 1) != '/')
         {
-            $return_page = '/'.$return_page;
+            $returnPage = '/'.$returnPage;
         }
 
-        header('Location: '.$this->get_base_url().$return_page);
+        header('Location: '.$this->getBaseUrl().$returnPage);
 
         exit();
     }
 
-    protected function display_content(): void
+    protected function displayContent(): void
     {
         echo <<<'HTML'
 <div>

@@ -15,6 +15,7 @@ Old code can still run on top of the major overhaul with minimal changes.
 * Rewrite register_route() and register_redirect() to Slim route functions (Use RouteConvertor example in scripts)
 * Change prototype to (Request, Response, array) and call $this->handle_permissions_and_inputs() to all ApiAction derived functions
 * Get app_dir, server_name and host_name via constructor or container
+* Change all calls to camelCase instead of snake_case (Use CaseConvertor exampls in scripts)
 
 Configuration changes:
 * 'debug_mail' has been removed
@@ -33,6 +34,7 @@ Over time you should:
 As a result of the fundamental changes there are some internal and external changes. Internal breaking changes only affect you if you used internal classes directly. External breaking changes affect the public interface.
 
 External:
+* Moved to camelCase from snake_case
 * BaseFactory constructor has changed
 * CacheInterface is now called Cache
 * Database constructor has changed

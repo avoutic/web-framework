@@ -4,7 +4,7 @@ namespace WebFramework\Core;
 
 class WFHelpers
 {
-    public static function get_error_type_string(int|string $type): string
+    public static function getErrorTypeString(int|string $type): string
     {
         switch ($type)
         {
@@ -57,7 +57,7 @@ class WFHelpers
         return (string) $type;
     }
 
-    public static function scrub_state(mixed &$item): void
+    public static function scrubState(mixed &$item): void
     {
         if (!is_array($item))
         {
@@ -78,7 +78,7 @@ class WFHelpers
 
             if (is_array($value))
             {
-                self::scrub_state($item[$key]);
+                self::scrubState($item[$key]);
             }
             elseif (!mb_detect_encoding($value, 'ASCII', true))
             {

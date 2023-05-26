@@ -10,7 +10,7 @@ class NullAuthenticationService implements AuthenticationService
     {
     }
 
-    public function is_authenticated(): bool
+    public function isAuthenticated(): bool
     {
         return false;
     }
@@ -24,11 +24,11 @@ class NullAuthenticationService implements AuthenticationService
     {
     }
 
-    public function invalidate_sessions(int $user_id): void
+    public function invalidateSessions(int $userId): void
     {
     }
 
-    public function get_authenticated_user(): User
+    public function getAuthenticatedUser(): User
     {
         throw new \RuntimeException('Cannot authenticate in null mode');
     }
@@ -36,7 +36,7 @@ class NullAuthenticationService implements AuthenticationService
     /**
      * @param array<string> $permissions
      */
-    public function user_has_permissions(array $permissions): bool
+    public function userHasPermissions(array $permissions): bool
     {
         if (count($permissions) === 0)
         {

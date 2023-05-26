@@ -25,7 +25,7 @@ class StoredValues
     /**
      * @return array<string>
      */
-    public function get_values(): array
+    public function getValues(): array
     {
         $result = $this->database->query(
             'SELECT name, value FROM config_values WHERE module = ?',
@@ -47,7 +47,7 @@ class StoredValues
         return $info;
     }
 
-    public function get_value(string $name, string $default = ''): string
+    public function getValue(string $name, string $default = ''): string
     {
         $result = $this->database->query(
             'SELECT value FROM config_values WHERE module = ? AND name = ?',
@@ -72,7 +72,7 @@ class StoredValues
         return $result->fields['value'];
     }
 
-    public function set_value(string $name, string $value): void
+    public function setValue(string $name, string $value): void
     {
         $result = $this->database->query(
             'INSERT INTO config_values SET module = ?, name = ?, value = ? ON DUPLICATE KEY UPDATE value = ?',
@@ -85,7 +85,7 @@ class StoredValues
         }
     }
 
-    public function delete_value(string $name): void
+    public function deleteValue(string $name): void
     {
         $result = $this->database->query(
             'DELETE config_values WHERE module = ? AND name = ?',

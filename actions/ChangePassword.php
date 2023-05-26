@@ -8,7 +8,7 @@ use WebFramework\Core\User;
 
 class ChangePassword extends PageAction
 {
-    public static function get_filter(): array
+    public static function getFilter(): array
     {
         return [
             'orig_password' => FORMAT_PASSWORD,
@@ -17,116 +17,116 @@ class ChangePassword extends PageAction
         ];
     }
 
-    public static function get_permissions(): array
+    public static function getPermissions(): array
     {
         return [
             'logged_in',
         ];
     }
 
-    protected function get_title(): string
+    protected function getTitle(): string
     {
         return 'Change password';
     }
 
     // Can be overriden for project specific user factories and user classes
     //
-    protected function get_user(string $username): User|false
+    protected function getUser(string $username): User|false
     {
         $factory = $this->container->get(BaseFactory::class);
 
-        return $factory->get_user_by_username($username);
+        return $factory->getUserByUsername($username);
     }
 
-    protected function custom_finalize_change(): void
+    protected function customFinalizeChange(): void
     {
     }
 
-    protected function do_logic(): void
+    protected function doLogic(): void
     {
         // Check if this is a true attempt
         //
-        if (!strlen($this->get_input_var('do')))
+        if (!strlen($this->getInputVar('do')))
         {
             return;
         }
 
-        $orig_password = $this->get_input_var('orig_password');
-        $password = $this->get_input_var('password');
-        $password2 = $this->get_input_var('password2');
+        $origPassword = $this->getInputVar('orig_password');
+        $password = $this->getInputVar('password');
+        $password2 = $this->getInputVar('password2');
 
         // Check if passwords are present
         //
-        if (!strlen($orig_password))
+        if (!strlen($origPassword))
         {
-            $this->add_message('error', 'Please enter your current password.');
+            $this->addMessage('error', 'Please enter your current password.');
 
             return;
         }
 
         if (!strlen($password))
         {
-            $this->add_message('error', 'Please enter a password.', 'Passwords can contain any printable character.');
+            $this->addMessage('error', 'Please enter a password.', 'Passwords can contain any printable character.');
 
             return;
         }
 
         if (!strlen($password2))
         {
-            $this->add_message('error', 'Please enter the password verification.', 'Password verification should match your password.');
+            $this->addMessage('error', 'Please enter the password verification.', 'Password verification should match your password.');
 
             return;
         }
 
         if ($password != $password2)
         {
-            $this->add_message('error', 'Passwords don\'t match.', 'Password and password verification should be the same.');
+            $this->addMessage('error', 'Passwords don\'t match.', 'Password and password verification should be the same.');
 
             return;
         }
 
-        $user = $this->get_authenticated_user();
+        $user = $this->getAuthenticatedUser();
 
-        $result = $user->change_password($orig_password, $password);
+        $result = $user->changePassword($origPassword, $password);
 
         if ($result == User::ERR_ORIG_PASSWORD_MISMATCH)
         {
-            $this->add_message('error', 'Original password is incorrect.', 'Please re-enter your password.');
+            $this->addMessage('error', 'Original password is incorrect.', 'Please re-enter your password.');
 
             return;
         }
 
         if ($result == User::ERR_NEW_PASSWORD_TOO_WEAK)
         {
-            $this->add_message('error', 'New password is too weak.', 'Use at least 8 characters.');
+            $this->addMessage('error', 'New password is too weak.', 'Use at least 8 characters.');
 
             return;
         }
 
         if ($result != User::RESULT_SUCCESS)
         {
-            $this->add_message('error', 'Unknown errorcode: \''.$result."'", 'Please inform the administrator.');
+            $this->addMessage('error', 'Unknown errorcode: \''.$result."'", 'Please inform the administrator.');
 
             return;
         }
 
-        $this->custom_finalize_change();
+        $this->customFinalizeChange();
 
         // Invalidate old sessions
         //
-        $this->invalidate_sessions($user->id);
+        $this->invalidateSessions($user->id);
         $this->authenticate($user);
 
         // Redirect to main sceen
         //
-        $return_page = $this->get_base_url().$this->get_config('actions.change_password.return_page');
-        header("Location: {$return_page}?".$this->get_message_for_url('success', 'Password changed successfully.'));
+        $returnPage = $this->getBaseUrl().$this->getConfig('actions.change_password.return_page');
+        header("Location: {$returnPage}?".$this->getMessageForUrl('success', 'Password changed successfully.'));
 
         exit();
     }
 
-    protected function display_content(): void
+    protected function displayContent(): void
     {
-        $this->load_template('change_password.tpl', $this->page_content);
+        $this->loadTemplate('change_password.tpl', $this->pageContent);
     }
 }

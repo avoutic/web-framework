@@ -5,8 +5,8 @@ if (!isset($args['template_parameters']['colors']))
     throw new \InvalidArgumentException('No colors defined');
 }
 $colors = $args['template_parameters']['colors'];
-$required_colors = ['border', 'shadow-outline', 'text', 'hover:text', 'focus-within:ring'];
-if (array_diff(array_keys($colors), $required_colors) != array_diff($required_colors, array_keys($colors)))
+$requiredColors = ['border', 'shadow-outline', 'text', 'hover:text', 'focus-within:ring'];
+if (array_diff(array_keys($colors), $requiredColors) != array_diff($requiredColors, array_keys($colors)))
 {
     throw new \InvalidArgumentException('Missing required colors');
 }
@@ -16,8 +16,8 @@ if (!isset($args['template_parameters']['texts']))
     throw new \InvalidArgumentException('No texts defined');
 }
 $texts = $args['template_parameters']['texts'];
-$required_texts = ['or_drag', 'selected', 'upload_file', 'with_maximum_of'];
-if (array_diff(array_keys($texts), $required_texts) != array_diff($required_texts, array_keys($texts)))
+$requiredTexts = ['or_drag', 'selected', 'upload_file', 'with_maximum_of'];
+if (array_diff(array_keys($texts), $requiredTexts) != array_diff($requiredTexts, array_keys($texts)))
 {
     throw new \InvalidArgumentException('Missing required texts');
 }
@@ -26,15 +26,15 @@ if (!isset($args['template_parameters']['default_width']))
 {
     throw new \InvalidArgumentException('No default_width defined');
 }
-$default_width = $args['template_parameters']['default_width'];
+$defaultWidth = $args['template_parameters']['default_width'];
 
 $parameters = $args['parameters'];
 
-$show_fmt = (strlen($parameters['show'])) ? "x-cloak x-show=\"{$parameters['show']}\"" : '';
-$width_fmt = (strlen($parameters['width'])) ? $parameters['width'] : $default_width;
+$showFmt = (strlen($parameters['show'])) ? "x-cloak x-show=\"{$parameters['show']}\"" : '';
+$widthFmt = (strlen($parameters['width'])) ? $parameters['width'] : $defaultWidth;
 
 echo <<<HTML
-<div {$show_fmt} x-data="{ fileSelected: false, filename: '' }" class="{$width_fmt}">
+<div {$showFmt} x-data="{ fileSelected: false, filename: '' }" class="{$widthFmt}">
   <label for="{$parameters['id']}" class="block text-sm font-medium text-gray-700">
     {$parameters['label']}
   </label>

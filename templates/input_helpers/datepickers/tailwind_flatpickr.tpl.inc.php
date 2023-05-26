@@ -5,8 +5,8 @@ if (!isset($args['template_parameters']['colors']))
     throw new \InvalidArgumentException('No colors defined');
 }
 $colors = $args['template_parameters']['colors'];
-$required_colors = ['focus:border', 'focus:ring'];
-if (array_diff(array_keys($colors), $required_colors) != array_diff($required_colors, array_keys($colors)))
+$requiredColors = ['focus:border', 'focus:ring'];
+if (array_diff(array_keys($colors), $requiredColors) != array_diff($requiredColors, array_keys($colors)))
 {
     throw new \InvalidArgumentException('Missing required colors');
 }
@@ -16,15 +16,15 @@ if (!isset($args['template_parameters']['default_width']))
     throw new \InvalidArgumentException('No default_width defined');
 }
 
-$default_width = $args['template_parameters']['default_width'];
+$defaultWidth = $args['template_parameters']['default_width'];
 
 $parameters = $args['parameters'];
 
-$show_fmt = (strlen($parameters['show'])) ? "x-cloak x-show=\"{$parameters['show']}\"" : '';
-$width_fmt = (strlen($parameters['width'])) ? $parameters['width'] : $default_width;
+$showFmt = (strlen($parameters['show'])) ? "x-cloak x-show=\"{$parameters['show']}\"" : '';
+$widthFmt = (strlen($parameters['width'])) ? $parameters['width'] : $defaultWidth;
 
 echo <<<HTML
-<div {$show_fmt}  class="{$width_fmt}">
+<div {$showFmt}  class="{$widthFmt}">
   <label for="{$parameters['id']}" class="block text-sm font-medium text-gray-700">
     {$parameters['label']}
   </label>

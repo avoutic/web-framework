@@ -18,45 +18,45 @@ header('content-type: text/plain');
 
 // Build config
 //
-$app_dir = __DIR__.'/..';
+$appDir = __DIR__.'/..';
 $configs = [
     '/config/base_config.php',
     '/config/config.php',
     '?/config/config_local.php',
 ];
 
-$config_builder = new ConfigBuilder($app_dir);
-$config = $config_builder->build_config(
+$configBuilder = new ConfigBuilder($appDir);
+$config = $configBuilder->buildConfig(
     $configs,
 );
 
 // Build container
 //
 $builder = new DI\ContainerBuilder();
-$builder->addDefinitions(['config_tree' => $config_builder->get_config()]);
-$builder->addDefinitions($config_builder->get_flattened_config());
+$builder->addDefinitions(['config_tree' => $configBuilder->getConfig()]);
+$builder->addDefinitions($configBuilder->getFlattenedConfig());
 
 foreach ($config['definition_files'] as $file)
 {
-    $builder->addDefinitions("{$app_dir}/definitions/{$file}");
+    $builder->addDefinitions("{$appDir}/definitions/{$file}");
 }
 
 $container = $builder->build();
 
 try
 {
-    $bootstrap_service = $container->get(BootstrapService::class);
+    $bootstrapService = $container->get(BootstrapService::class);
 
-    $bootstrap_service->skip_sanity_checks();
+    $bootstrapService->skipSanityChecks();
 
-    $bootstrap_service->bootstrap();
+    $bootstrapService->bootstrap();
 
-    $db_manager = $container->get(DatabaseManager::class);
+    $dbManager = $container->get(DatabaseManager::class);
 
-    $current_version = $db_manager->get_current_version();
-    $required_version = $container->get('versions.required_app_db');
+    $currentVersion = $dbManager->getCurrentVersion();
+    $requiredVersion = $container->get('versions.required_app_db');
 
-    if ($required_version <= $current_version)
+    if ($requiredVersion <= $currentVersion)
     {
         echo 'Nothing to be done'.PHP_EOL;
 
@@ -65,28 +65,28 @@ try
 
     // Retrieve relevant change set
     //
-    $next_version = $current_version + 1;
+    $nextVersion = $currentVersion + 1;
 
-    while ($next_version <= $required_version)
+    while ($nextVersion <= $requiredVersion)
     {
-        $version_file = "{$app_dir}/db_scheme/{$next_version}.inc.php";
+        $versionFile = "{$appDir}/db_scheme/{$nextVersion}.inc.php";
 
-        if (!file_exists($version_file))
+        if (!file_exists($versionFile))
         {
-            echo " - No changeset for {$next_version} available".PHP_EOL;
+            echo " - No changeset for {$nextVersion} available".PHP_EOL;
 
             exit();
         }
 
-        $change_set = require $version_file;
-        if (!is_array($change_set))
+        $changeSet = require $versionFile;
+        if (!is_array($changeSet))
         {
             throw new \RuntimeException('No change set array found');
         }
 
-        $db_manager->execute($change_set);
-        $current_version = $db_manager->get_current_version();
-        $next_version = $current_version + 1;
+        $dbManager->execute($changeSet);
+        $currentVersion = $dbManager->getCurrentVersion();
+        $nextVersion = $currentVersion + 1;
     }
 }
 catch (Throwable $e)
@@ -100,8 +100,8 @@ catch (Throwable $e)
         exit();
     }
 
-    $debug_service = $container->get(DebugService::class);
-    $error_report = $debug_service->get_throwable_report($e);
+    $debugService = $container->get(DebugService::class);
+    $errorReport = $debugService->getThrowableReport($e);
 
-    echo $error_report['message'];
+    echo $errorReport['message'];
 }

@@ -5,8 +5,8 @@ if (!isset($args['template_parameters']['colors']))
     throw new \InvalidArgumentException('No colors defined');
 }
 $colors = $args['template_parameters']['colors'];
-$required_colors = ['border', 'focus:ring'];
-if (array_diff(array_keys($colors), $required_colors) != array_diff($required_colors, array_keys($colors)))
+$requiredColors = ['border', 'focus:ring'];
+if (array_diff(array_keys($colors), $requiredColors) != array_diff($requiredColors, array_keys($colors)))
 {
     throw new \InvalidArgumentException('Missing required colors');
 }
@@ -16,8 +16,8 @@ if (!isset($args['template_parameters']['texts']))
     throw new \InvalidArgumentException('No texts defined');
 }
 $texts = $args['template_parameters']['texts'];
-$required_texts = ['clear'];
-if (array_diff(array_keys($texts), $required_texts) != array_diff($required_texts, array_keys($texts)))
+$requiredTexts = ['clear'];
+if (array_diff(array_keys($texts), $requiredTexts) != array_diff($requiredTexts, array_keys($texts)))
 {
     throw new \InvalidArgumentException('Missing required texts');
 }
@@ -27,15 +27,15 @@ if (!isset($args['template_parameters']['default_width']))
     throw new \InvalidArgumentException('No default_width defined');
 }
 
-$default_width = $args['template_parameters']['default_width'];
+$defaultWidth = $args['template_parameters']['default_width'];
 
 $parameters = $args['parameters'];
 
-$show_fmt = (strlen($parameters['show'])) ? "x-cloak x-show=\"{$parameters['show']}\"" : '';
-$width_fmt = (strlen($parameters['width'])) ? $parameters['width'] : $default_width;
+$showFmt = (strlen($parameters['show'])) ? "x-cloak x-show=\"{$parameters['show']}\"" : '';
+$widthFmt = (strlen($parameters['width'])) ? $parameters['width'] : $defaultWidth;
 
 echo <<<HTML
-<div {$show_fmt} x-data="canvas()" x-init="initializePad()" id="{$parameters['id']}" class="{$width_fmt}">
+<div {$showFmt} x-data="canvas()" x-init="initializePad()" id="{$parameters['id']}" class="{$widthFmt}">
   <input x-model="signatureData" type="hidden" name="{$parameters['name']}" value="" />
   <div x-on:mouseup="saveSignature()" x-on:touchend="saveSignature()" class="w-72 h-48 bg-gray-200 rounded-md border {$colors['border']}">
     <canvas x-ref="canvas" class="w-full h-full"></canvas>

@@ -6,20 +6,20 @@ class MailReportFunction implements ReportFunction
 {
     public function __construct(
         protected Cache $cache,
-        protected MailService $mail_service,
-        protected string $assert_recipient,
+        protected MailService $mailService,
+        protected string $assertRecipient,
     ) {
     }
 
     /**
-     * @param array{title: string, message: string, low_info_message: string, hash:string} $debug_info
+     * @param array{title: string, message: string, low_info_message: string, hash:string} $debugInfo
      */
-    public function report(string $message, string $error_type, array $debug_info): void
+    public function report(string $message, string $errorType, array $debugInfo): void
     {
         // Make sure we are not spamming the same error en masse
         //
-        $cache_id = "errors[{$debug_info['hash']}]";
-        $cached = $this->cache->get($cache_id);
+        $cacheId = "errors[{$debugInfo['hash']}]";
+        $cached = $this->cache->get($cacheId);
 
         if ($cached === false)
         {
@@ -34,7 +34,7 @@ class MailReportFunction implements ReportFunction
             $cached['last_timestamp'] = time();
         }
 
-        $this->cache->set($cache_id, $cached, time() + 10 * 60);
+        $this->cache->set($cacheId, $cached, time() + 10 * 60);
 
         // More than 3 in the last 10 minutes, update timestamp, and skip mail
         //
@@ -43,17 +43,17 @@ class MailReportFunction implements ReportFunction
             return;
         }
 
-        $title = $debug_info['title'];
+        $title = $debugInfo['title'];
         if ($cached['count'] % 25 === 0)
         {
             $title = "[{$cached['count']} times]: {$title}";
         }
 
-        $this->mail_service->send_raw_mail(
+        $this->mailService->sendRawMail(
             null,
-            $this->assert_recipient,
+            $this->assertRecipient,
             $title,
-            $debug_info['message']
+            $debugInfo['message']
         );
     }
 }

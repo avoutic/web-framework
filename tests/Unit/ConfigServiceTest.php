@@ -20,12 +20,12 @@ final class ConfigServiceTest extends \Codeception\Test\Unit
                 '/auth',
             ],
             [
-                'load_file' => function ($filename) { throw new \RuntimeException(); },
+                'loadFile' => function ($filename) { throw new \RuntimeException(); },
             ],
         );
 
         verify(function () use ($instance) {
-            $instance->get_auth_config('noname');
+            $instance->getAuthConfig('noname');
         })
             ->callableThrows(\RuntimeException::class);
     }
@@ -39,12 +39,12 @@ final class ConfigServiceTest extends \Codeception\Test\Unit
                 '/auth',
             ],
             [
-                'load_file' => '',
+                'loadFile' => '',
             ],
         );
 
         verify(function () use ($instance) {
-            $instance->get_auth_config('noname');
+            $instance->getAuthConfig('noname');
         })
             ->callableThrows(\RuntimeException::class, 'Auth Config noname invalid');
     }
@@ -58,11 +58,11 @@ final class ConfigServiceTest extends \Codeception\Test\Unit
                 '/auth',
             ],
             [
-                'load_file' => 'TestString',
+                'loadFile' => 'TestString',
             ],
         );
 
-        verify($instance->get_auth_config('noname'))
+        verify($instance->getAuthConfig('noname'))
             ->equals('TestString');
     }
 
@@ -75,11 +75,11 @@ final class ConfigServiceTest extends \Codeception\Test\Unit
                 '/auth',
             ],
             [
-                'load_file' => ['key1' => 'val1'],
+                'loadFile' => ['key1' => 'val1'],
             ],
         );
 
-        verify($instance->get_auth_config('noname'))
+        verify($instance->getAuthConfig('noname'))
             ->equals(['key1' => 'val1']);
     }
 }

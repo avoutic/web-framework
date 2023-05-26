@@ -4,14 +4,14 @@ namespace WebFramework\Core;
 
 class BrowserSessionService
 {
-    public function start(string $host_name, string $http_mode): void
+    public function start(string $hostName, string $httpMode): void
     {
-        session_name(preg_replace('/\./', '_', $host_name));
+        session_name(preg_replace('/\./', '_', $hostName));
         session_set_cookie_params(
             60 * 60 * 24,
             '/',
-            $host_name,
-            $http_mode === 'https',
+            $hostName,
+            $httpMode === 'https',
             true
         );
         session_start();
@@ -37,7 +37,7 @@ class BrowserSessionService
         unset($_SESSION[$key]);
     }
 
-    public function get_session_id(): string|false
+    public function getSessionId(): string|false
     {
         return session_id();
     }

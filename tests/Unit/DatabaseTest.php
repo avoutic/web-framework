@@ -27,7 +27,7 @@ final class DatabaseTest extends \Codeception\Test\Unit
         $mysql = $this->makeEmpty(\mysqli::class, ['ping' => false]);
         $instance = new MysqliDatabase($mysql);
 
-        verify(function () use ($instance) { $instance->insert_query('', []); })
+        verify(function () use ($instance) { $instance->insertQuery('', []); })
             ->callableThrows(\RuntimeException::class, 'Database connection not available');
     }
 
@@ -43,7 +43,7 @@ final class DatabaseTest extends \Codeception\Test\Unit
             ]
         );
 
-        verify(function () use ($instance) { $instance->table_exists('not_existing'); })
+        verify(function () use ($instance) { $instance->tableExists('not_existing'); })
             ->callableThrows(\RuntimeException::class, 'Check for table existence failed');
     }
 
@@ -59,18 +59,18 @@ final class DatabaseTest extends \Codeception\Test\Unit
             ]
         );
 
-        $instance->start_transaction();
-        $instance->start_transaction();
-        $instance->start_transaction();
+        $instance->startTransaction();
+        $instance->startTransaction();
+        $instance->startTransaction();
 
-        verify($instance->get_transaction_depth())
+        verify($instance->getTransactionDepth())
             ->equals(3);
 
-        $instance->commit_transaction();
-        $instance->commit_transaction();
-        $instance->commit_transaction();
+        $instance->commitTransaction();
+        $instance->commitTransaction();
+        $instance->commitTransaction();
 
-        verify($instance->get_transaction_depth())
+        verify($instance->getTransactionDepth())
             ->equals(0);
     }
 }

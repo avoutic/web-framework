@@ -18,64 +18,64 @@ header('content-type: text/plain');
 
 // Build config
 //
-$app_dir = __DIR__.'/..';
+$appDir = __DIR__.'/..';
 $configs = [
     '/config/base_config.php',
     '/config/config.php',
     '?/config/config_local.php',
 ];
 
-$config_builder = new ConfigBuilder($app_dir);
-$config = $config_builder->build_config(
+$configBuilder = new ConfigBuilder($appDir);
+$config = $configBuilder->buildConfig(
     $configs,
 );
 
 // Build container
 //
 $builder = new DI\ContainerBuilder();
-$builder->addDefinitions(['config_tree' => $config_builder->get_config()]);
-$builder->addDefinitions($config_builder->get_flattened_config());
+$builder->addDefinitions(['config_tree' => $configBuilder->getConfig()]);
+$builder->addDefinitions($configBuilder->getFlattenedConfig());
 
 foreach ($config['definition_files'] as $file)
 {
-    $builder->addDefinitions("{$app_dir}/definitions/{$file}");
+    $builder->addDefinitions("{$appDir}/definitions/{$file}");
 }
 
 $container = $builder->build();
 
 try
 {
-    $bootstrap_service = $container->get(BootstrapService::class);
+    $bootstrapService = $container->get(BootstrapService::class);
 
-    $bootstrap_service->skip_sanity_checks();
+    $bootstrapService->skipSanityChecks();
 
-    $bootstrap_service->bootstrap();
+    $bootstrapService->bootstrap();
 
-    $db_manager = $container->get(DatabaseManager::class);
+    $dbManager = $container->get(DatabaseManager::class);
 
-    if ($db_manager->is_initialized())
+    if ($dbManager->isInitialized())
     {
         echo ' - Already initialized. Exiting.'.PHP_EOL;
 
         exit();
     }
 
-    $scheme_file = "{$app_dir}/vendor/avoutic/web-framework/bootstrap/scheme_v1.inc.php";
+    $schemeFile = "{$appDir}/vendor/avoutic/web-framework/bootstrap/scheme_v1.inc.php";
 
-    if (!file_exists($scheme_file))
+    if (!file_exists($schemeFile))
     {
-        echo " - Scheme file {$scheme_file} not found".PHP_EOL;
+        echo " - Scheme file {$schemeFile} not found".PHP_EOL;
 
         exit();
     }
 
-    $change_set = require $scheme_file;
-    if (!is_array($change_set))
+    $changeSet = require $schemeFile;
+    if (!is_array($changeSet))
     {
         throw new \RuntimeException('No change set array found');
     }
 
-    $db_manager->execute($change_set, true);
+    $dbManager->execute($changeSet, true);
 }
 catch (Throwable $e)
 {
@@ -88,8 +88,8 @@ catch (Throwable $e)
         exit();
     }
 
-    $debug_service = $container->get(DebugService::class);
-    $error_report = $debug_service->get_throwable_report($e);
+    $debugService = $container->get(DebugService::class);
+    $errorReport = $debugService->getThrowableReport($e);
 
-    echo $error_report['message'];
+    echo $errorReport['message'];
 }

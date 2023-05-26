@@ -10,13 +10,13 @@ use WebFramework\Security\ProtectService;
 
 abstract class DataCore
 {
-    protected static string $table_name;
+    protected static string $tableName;
 
     /**
      * @var array<string>
      */
-    protected static array $base_fields;
-    protected static bool $is_cacheable = false;
+    protected static array $baseFields;
+    protected static bool $isCacheable = false;
 
     /** @var array<string, null|bool|float|int|string> */
     private array $properties = [];
@@ -24,56 +24,72 @@ abstract class DataCore
     protected Container $container;
     protected Cache $cache;
     protected Database $database;
-    protected AssertService $assert_service;
-    protected AuthenticationService $authentication_service;
-    protected BlacklistService $blacklist_service;
-    protected ConfigService $config_service;
-    protected DebugService $debug_service;
-    protected MessageService $message_service;
-    protected ProtectService $protect_service;
-    protected SecureConfigService $secure_config_service;
+    protected AssertService $assertService;
+    protected AuthenticationService $authenticationService;
+    protected BlacklistService $blacklistService;
+    protected ConfigService $configService;
+    protected DebugService $debugService;
+    protected MessageService $messageService;
+    protected ProtectService $protectService;
+    protected SecureConfigService $secureConfigService;
 
     public function __construct(
         public int $id,
-        private bool $fill_complex = true,
+        private bool $fillComplex = true,
     ) {
-        $this->fill_dependencies();
-        $this->fill_fields($this->fill_complex);
+        $this->fillDependencies();
+        $this->fillFields($this->fillComplex);
     }
 
-    private function fill_dependencies(): void
+    private function fillDependencies(): void
     {
         $container = ContainerWrapper::get();
         $this->container = $container;
         $this->database = $container->get(Database::class);
         $this->cache = $container->get(Cache::class);
-        $this->assert_service = $container->get(AssertService::class);
-        $this->authentication_service = $container->get(AuthenticationService::class);
-        $this->blacklist_service = $container->get(BlacklistService::class);
-        $this->config_service = $container->get(ConfigService::class);
-        $this->debug_service = $container->get(DebugService::class);
-        $this->message_service = $container->get(MessageService::class);
-        $this->protect_service = $container->get(ProtectService::class);
-        $this->secure_config_service = $container->get(SecureConfigService::class);
+        $this->assertService = $container->get(AssertService::class);
+        $this->authenticationService = $container->get(AuthenticationService::class);
+        $this->blacklistService = $container->get(BlacklistService::class);
+        $this->configService = $container->get(ConfigService::class);
+        $this->debugService = $container->get(DebugService::class);
+        $this->messageService = $container->get(MessageService::class);
+        $this->protectService = $container->get(ProtectService::class);
+        $this->secureConfigService = $container->get(SecureConfigService::class);
+    }
+
+    // Convert camelCase to snake_case
+    private function camelToSnake(string $input): string
+    {
+        return strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $input));
+    }
+
+    // Convert snake_case to camelCase
+    private function snakeToCamel(string $input): string
+    {
+        return lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $input))));
     }
 
     public function __get(string $name): mixed
     {
+        $name = $this->camelToSnake($name);
+
         if (array_key_exists($name, $this->properties))
         {
             return $this->properties[$name];
         }
 
-        $this->report_error('Undefined property via __get(): '.$name);
+        $this->reportError('Undefined property via __get(): '.$name);
 
         return null;
     }
 
     public function __set(string $name, null|bool|float|int|string $value): void
     {
+        $name = $this->camelToSnake($name);
+
         if (property_exists($this, $name))
         {
-            $this->report_error('Inaccessible property via __set(): '.$name);
+            $this->reportError('Inaccessible property via __set(): '.$name);
 
             return;
         }
@@ -86,7 +102,7 @@ abstract class DataCore
      */
     public function __serialize(): array
     {
-        return $this->get_base_fields();
+        return $this->getBaseFields();
     }
 
     /**
@@ -95,25 +111,25 @@ abstract class DataCore
     public function __unserialize(array $data): void
     {
         $this->id = (int) $data['id'];
-        $this->fill_dependencies();
-        $this->fill_base_fields_from_obj($data);
+        $this->fillDependencies();
+        $this->fillBaseFieldsFromObj($data);
     }
 
     public static function exists(int $id): bool
     {
         $container = ContainerWrapper::get();
 
-        if (static::$is_cacheable)
+        if (static::$isCacheable)
         {
             $cache = $container->get(Cache::class);
 
-            if ($cache->exists(static::get_cache_id($id)) === true)
+            if ($cache->exists(static::getCacheId($id)) === true)
             {
                 return true;
             }
         }
 
-        $result = $container->get(Database::class)->query('SELECT id FROM '.static::$table_name.
+        $result = $container->get(Database::class)->query('SELECT id FROM '.static::$tableName.
                                    ' WHERE id = ?', [$id]);
 
         if ($result === false)
@@ -129,37 +145,37 @@ abstract class DataCore
         return true;
     }
 
-    public static function get_cache_id(int $id): string
+    public static function getCacheId(int $id): string
     {
-        return static::$table_name.'['.$id.']';
+        return static::$tableName.'['.$id.']';
     }
 
-    protected function update_in_cache(): void
+    protected function updateInCache(): void
     {
-        if (static::$is_cacheable)
+        if (static::$isCacheable)
         {
-            $this->cache->set(static::get_cache_id($this->id), $this);
+            $this->cache->set(static::getCacheId($this->id), $this);
         }
     }
 
-    protected function delete_from_cache(): void
+    protected function deleteFromCache(): void
     {
-        if (static::$is_cacheable)
+        if (static::$isCacheable)
         {
-            $this->cache->invalidate(static::get_cache_id($this->id));
+            $this->cache->invalidate(static::getCacheId($this->id));
         }
     }
 
     /**
      * @return array<string>
      */
-    public function get_base_fields(): array
+    public function getBaseFields(): array
     {
         $info = [
             'id' => $this->id,
         ];
 
-        foreach (static::$base_fields as $name)
+        foreach (static::$baseFields as $name)
         {
             $info[$name] = $this->{$name};
         }
@@ -170,49 +186,49 @@ abstract class DataCore
     /**
      * @return array<mixed>
      */
-    public function get_info(): array
+    public function getInfo(): array
     {
-        return $this->get_base_fields();
+        return $this->getBaseFields();
     }
 
     /**
      * @return array<mixed>
      */
-    public function get_admin_info(): array
+    public function getAdminInfo(): array
     {
-        return $this->get_info();
+        return $this->getInfo();
     }
 
-    private function fill_fields(bool $fill_complex): void
+    private function fillFields(bool $fillComplex): void
     {
-        $this->fill_base_fields_from_db();
+        $this->fillBaseFieldsFromDb();
 
-        if ($fill_complex)
+        if ($fillComplex)
         {
-            $this->fill_complex_fields();
+            $this->fillComplexFields();
         }
     }
 
-    private function fill_base_fields_from_db(): void
+    private function fillBaseFieldsFromDb(): void
     {
-        $fields_fmt = implode('`, `', static::$base_fields);
-        $table_name = static::$table_name;
+        $fieldsFmt = implode('`, `', static::$baseFields);
+        $tableName = static::$tableName;
 
         $query = <<<SQL
-        SELECT `{$fields_fmt}`
-        FROM {$table_name}
+        SELECT `{$fieldsFmt}`
+        FROM {$tableName}
         WHERE id = ?
 SQL;
 
         $params = [$this->id];
 
         $result = $this->query($query, $params);
-        $this->verify($result !== false, "Failed to retrieve base fields for {$table_name}");
-        $this->verify($result->RecordCount() == 1, "Failed to select single item for {$this->id} in {$table_name}");
+        $this->verify($result !== false, "Failed to retrieve base fields for {$tableName}");
+        $this->verify($result->RecordCount() == 1, "Failed to select single item for {$this->id} in {$tableName}");
 
         $row = $result->fields;
 
-        foreach (static::$base_fields as $name)
+        foreach (static::$baseFields as $name)
         {
             $this->{$name} = $row[$name];
         }
@@ -221,25 +237,25 @@ SQL;
     /**
      * @param array<string> $fields
      */
-    private function fill_base_fields_from_obj(array $fields): void
+    private function fillBaseFieldsFromObj(array $fields): void
     {
-        foreach (static::$base_fields as $name)
+        foreach (static::$baseFields as $name)
         {
             $this->{$name} = $fields[$name];
         }
     }
 
-    protected function fill_complex_fields(): void
+    protected function fillComplexFields(): void
     {
     }
 
-    public function get_field(string $field): string
+    public function getField(string $field): string
     {
-        $table_name = static::$table_name;
+        $tableName = static::$tableName;
 
         $query = <<<SQL
         SELECT `{$field}`
-        FROM {$table_name}
+        FROM {$tableName}
         WHERE id = ?
 SQL;
 
@@ -248,7 +264,7 @@ SQL;
         $result = $this->query($query, $params);
         if ($result === false)
         {
-            throw new \RuntimeException("Failed to retrieve {$field} for {$table_name}");
+            throw new \RuntimeException("Failed to retrieve {$field} for {$tableName}");
         }
 
         return $result->fields[$field];
@@ -264,13 +280,13 @@ SQL;
             return;
         }
 
-        $table_name = static::$table_name;
-        $set_array = static::get_set_fmt($data);
-        $params = $set_array['params'];
+        $tableName = static::$tableName;
+        $setArray = static::getSetFmt($data);
+        $params = $setArray['params'];
 
         $query = <<<SQL
-        UPDATE {$table_name}
-        SET {$set_array['query']}
+        UPDATE {$tableName}
+        SET {$setArray['query']}
         WHERE id = ?
 SQL;
 
@@ -288,12 +304,12 @@ SQL;
             $this->{$key} = $value;
         }
 
-        $this->update_in_cache();
+        $this->updateInCache();
     }
 
-    public function update_field(string $field, null|bool|float|int|string $value): void
+    public function updateField(string $field, null|bool|float|int|string $value): void
     {
-        $table_name = static::$table_name;
+        $tableName = static::$tableName;
 
         // Mysqli does not accept empty for false, so force to zero
         //
@@ -303,7 +319,7 @@ SQL;
         }
 
         $query = <<<SQL
-        UPDATE {$table_name}
+        UPDATE {$tableName}
         SET `{$field}` = ?
         WHERE id = ?
 SQL;
@@ -319,30 +335,30 @@ SQL;
 
         $this->{$field} = $value;
 
-        $this->update_in_cache();
+        $this->updateInCache();
     }
 
-    public function decrease_field(string $field, int $value = 1, bool $minimum = false): void
+    public function decreaseField(string $field, int $value = 1, bool $minimum = false): void
     {
-        $table_name = static::$table_name;
+        $tableName = static::$tableName;
 
-        $new_value_fmt = '';
+        $newValueFmt = '';
         $params = [];
 
         if ($minimum)
         {
-            $new_value_fmt = "GREATEST(?, `{$field}` - ?)";
+            $newValueFmt = "GREATEST(?, `{$field}` - ?)";
             $params = [$minimum, $value];
         }
         else
         {
-            $new_value_fmt = "`{$field}` - ?";
+            $newValueFmt = "`{$field}` - ?";
             $params = [$value];
         }
 
         $query = <<<SQL
-        UPDATE {$table_name}
-        SET `{$field}` = {$new_value_fmt}
+        UPDATE {$tableName}
+        SET `{$field}` = {$newValueFmt}
         WHERE id = ?
 SQL;
 
@@ -355,17 +371,17 @@ SQL;
             throw new \RuntimeException("Failed to decrease field of object ({$class})");
         }
 
-        $this->{$field} = $this->get_field($field);
+        $this->{$field} = $this->getField($field);
 
-        $this->update_in_cache();
+        $this->updateInCache();
     }
 
-    public function increase_field(string $field, int $value = 1): void
+    public function increaseField(string $field, int $value = 1): void
     {
-        $table_name = static::$table_name;
+        $tableName = static::$tableName;
 
         $query = <<<SQL
-        UPDATE {$table_name}
+        UPDATE {$tableName}
         SET `{$field}` = `{$field}` + ?
         WHERE id = ?
 SQL;
@@ -379,19 +395,19 @@ SQL;
             throw new \RuntimeException("Failed to increase field of object ({$class})");
         }
 
-        $this->{$field} = $this->get_field($field);
+        $this->{$field} = $this->getField($field);
 
-        $this->update_in_cache();
+        $this->updateInCache();
     }
 
     public function delete(): void
     {
-        $table_name = static::$table_name;
+        $tableName = static::$tableName;
 
-        $this->delete_from_cache();
+        $this->deleteFromCache();
 
         $query = <<<SQL
-        DELETE FROM {$table_name}
+        DELETE FROM {$tableName}
         WHERE id = ?
 SQL;
 
@@ -411,37 +427,37 @@ SQL;
      */
     public static function create(array $data): self
     {
-        $table_name = static::$table_name;
+        $tableName = static::$tableName;
         $query = '';
         $params = [];
 
         if (count($data) == 0)
         {
             $query = <<<SQL
-        INSERT INTO {$table_name}
+        INSERT INTO {$tableName}
         VALUES()
 SQL;
         }
         else
         {
-            $set_array = static::get_set_fmt($data);
-            $params = $set_array['params'];
+            $setArray = static::getSetFmt($data);
+            $params = $setArray['params'];
 
             $query = <<<SQL
-        INSERT INTO {$table_name}
-        SET {$set_array['query']}
+        INSERT INTO {$tableName}
+        SET {$setArray['query']}
 SQL;
         }
 
         $container = ContainerWrapper::get();
-        $result = $container->get(Database::class)->insert_query($query, $params);
+        $result = $container->get(Database::class)->insertQuery($query, $params);
         $class = static::class;
         if ($result === false)
         {
             throw new \RuntimeException("Failed to create object ({$class})");
         }
 
-        $obj = static::get_object_by_id($result, true);
+        $obj = static::getObjectById($result, true);
         if ($obj === false)
         {
             throw new \RuntimeException("Failed to retrieve created object ({$class})");
@@ -453,24 +469,24 @@ SQL;
     /**
      * @param array<string, null|bool|float|int|string> $filter
      */
-    public static function count_objects(array $filter = []): int
+    public static function countObjects(array $filter = []): int
     {
-        $table_name = static::$table_name;
+        $tableName = static::$tableName;
 
         $params = [];
-        $where_fmt = '';
+        $whereFmt = '';
 
         if (count($filter))
         {
-            $filter_array = static::get_filter_array($filter);
-            $where_fmt = "WHERE {$filter_array['query']}";
-            $params = $filter_array['params'];
+            $filterArray = static::getFilterArray($filter);
+            $whereFmt = "WHERE {$filterArray['query']}";
+            $params = $filterArray['params'];
         }
 
         $query = <<<SQL
         SELECT COUNT(id) AS cnt
-        FROM {$table_name}
-        {$where_fmt}
+        FROM {$tableName}
+        {$whereFmt}
 SQL;
 
         $container = ContainerWrapper::get();
@@ -495,14 +511,14 @@ SQL;
     /**
      * @return false|static
      */
-    public static function get_object_by_id(int $id, bool $checked_presence = false): false|DataCore
+    public static function getObjectById(int $id, bool $checkedPresence = false): false|DataCore
     {
         $container = ContainerWrapper::get();
 
-        if (static::$is_cacheable)
+        if (static::$isCacheable)
         {
             $cache = $container->get(Cache::class);
-            $obj = $cache->get(static::get_cache_id($id));
+            $obj = $cache->get(static::getCacheId($id));
 
             // Cache hit
             //
@@ -514,13 +530,13 @@ SQL;
 
         $class = static::class;
 
-        if ($checked_presence == false)
+        if ($checkedPresence == false)
         {
-            $table_name = static::$table_name;
+            $tableName = static::$tableName;
 
             $query = <<<SQL
             SELECT id
-            FROM {$table_name}
+            FROM {$tableName}
             WHERE id = ?
 SQL;
 
@@ -547,7 +563,7 @@ SQL;
 
         // Cache miss
         //
-        $obj->update_in_cache();
+        $obj->updateInCache();
 
         return $obj;
     }
@@ -559,24 +575,24 @@ SQL;
      *
      * @return false|static
      */
-    public static function get_object(array $filter = []): false|DataCore
+    public static function getObject(array $filter = []): false|DataCore
     {
-        $table_name = static::$table_name;
+        $tableName = static::$tableName;
 
         $params = [];
-        $where_fmt = '';
+        $whereFmt = '';
 
         if (count($filter))
         {
-            $filter_array = static::get_filter_array($filter);
-            $where_fmt = "WHERE {$filter_array['query']}";
-            $params = $filter_array['params'];
+            $filterArray = static::getFilterArray($filter);
+            $whereFmt = "WHERE {$filterArray['query']}";
+            $params = $filterArray['params'];
         }
 
         $query = <<<SQL
         SELECT id
-        FROM {$table_name}
-        {$where_fmt}
+        FROM {$tableName}
+        {$whereFmt}
 SQL;
 
         $container = ContainerWrapper::get();
@@ -597,7 +613,7 @@ SQL;
             return false;
         }
 
-        return static::get_object_by_id($result->fields['id'], true);
+        return static::getObjectById($result->fields['id'], true);
     }
 
     /**
@@ -605,9 +621,9 @@ SQL;
      *
      * @return array<mixed>
      */
-    public static function get_object_info(array $filter = []): false|array
+    public static function getObjectInfo(array $filter = []): false|array
     {
-        return static::get_object_data('get_info', $filter);
+        return static::getObjectData('getInfo', $filter);
     }
 
     /**
@@ -615,39 +631,39 @@ SQL;
      *
      * @return array<mixed>|false
      */
-    public static function get_object_data(string $data_function, array $filter = []): false|array
+    public static function getObjectData(string $dataFunction, array $filter = []): false|array
     {
-        $obj = static::get_object($filter);
+        $obj = static::getObject($filter);
 
         if ($obj === false)
         {
             return false;
         }
 
-        return $obj->{$data_function}();
+        return $obj->{$dataFunction}();
     }
 
     /**
      * @return array<mixed>|false
      */
-    public static function get_object_info_by_id(int $id): false|array
+    public static function getObjectInfoById(int $id): false|array
     {
-        return static::get_object_data_by_id('get_info', $id);
+        return static::getObjectDataById('getInfo', $id);
     }
 
     /**
      * @return array<mixed>|false
      */
-    public static function get_object_data_by_id(string $data_function, int $id): false|array
+    public static function getObjectDataById(string $dataFunction, int $id): false|array
     {
-        $obj = static::get_object_by_id($id);
+        $obj = static::getObjectById($id);
 
         if ($obj === false)
         {
             return false;
         }
 
-        return $obj->{$data_function}();
+        return $obj->{$dataFunction}();
     }
 
     /**
@@ -655,36 +671,36 @@ SQL;
      *
      * @return array<static>
      */
-    public static function get_objects(int $offset = 0, int $results = 10, array $filter = [], string $order = ''): array
+    public static function getObjects(int $offset = 0, int $results = 10, array $filter = [], string $order = ''): array
     {
-        $table_name = static::$table_name;
+        $tableName = static::$tableName;
 
         $params = [];
-        $where_fmt = '';
+        $whereFmt = '';
 
         if (count($filter))
         {
-            $filter_array = static::get_filter_array($filter);
-            $where_fmt = "WHERE {$filter_array['query']}";
-            $params = $filter_array['params'];
+            $filterArray = static::getFilterArray($filter);
+            $whereFmt = "WHERE {$filterArray['query']}";
+            $params = $filterArray['params'];
         }
 
-        $order_fmt = (strlen($order)) ? "ORDER BY {$order}" : '';
-        $limit_fmt = '';
+        $orderFmt = (strlen($order)) ? "ORDER BY {$order}" : '';
+        $limitFmt = '';
 
         if ($results != -1)
         {
-            $limit_fmt = 'LIMIT ?,?';
+            $limitFmt = 'LIMIT ?,?';
             $params[] = (int) $offset;
             $params[] = (int) $results;
         }
 
         $query = <<<SQL
         SELECT id
-        FROM {$table_name}
-        {$where_fmt}
-        {$order_fmt}
-        {$limit_fmt}
+        FROM {$tableName}
+        {$whereFmt}
+        {$orderFmt}
+        {$limitFmt}
 SQL;
 
         $container = ContainerWrapper::get();
@@ -698,7 +714,7 @@ SQL;
         $info = [];
         foreach ($result as $k => $row)
         {
-            $obj = static::get_object_by_id($row['id'], true);
+            $obj = static::getObjectById($row['id'], true);
             if ($obj === false)
             {
                 throw new \RuntimeException("Failed to retrieve {$class}");
@@ -715,9 +731,9 @@ SQL;
      *
      * @return array<mixed>
      */
-    public static function get_objects_info(int $offset = 0, int $results = 10, array $filter = [], string $order = ''): array
+    public static function getObjectsInfo(int $offset = 0, int $results = 10, array $filter = [], string $order = ''): array
     {
-        return static::get_objects_data('get_info', $offset, $results, $filter, $order);
+        return static::getObjectsData('getInfo', $offset, $results, $filter, $order);
     }
 
     /**
@@ -725,14 +741,14 @@ SQL;
      *
      * @return array<mixed>
      */
-    public static function get_objects_data(string $data_function, int $offset = 0, int $results = 10, array $filter = [], string $order = ''): array
+    public static function getObjectsData(string $dataFunction, int $offset = 0, int $results = 10, array $filter = [], string $order = ''): array
     {
-        $objs = static::get_objects($offset, $results, $filter, $order);
+        $objs = static::getObjects($offset, $results, $filter, $order);
 
         $data = [];
         foreach ($objs as $obj)
         {
-            $data[] = $obj->{$data_function}();
+            $data[] = $obj->{$dataFunction}();
         }
 
         return $data;
@@ -743,9 +759,9 @@ SQL;
      *
      * @return array{query: string, params: array<bool|float|int|string>}
      */
-    public static function get_set_fmt(array $values): array
+    public static function getSetFmt(array $values): array
     {
-        $set_fmt = '';
+        $setFmt = '';
         $params = [];
         $first = true;
 
@@ -753,7 +769,7 @@ SQL;
         {
             if (!$first)
             {
-                $set_fmt .= ', ';
+                $setFmt .= ', ';
             }
             else
             {
@@ -769,17 +785,17 @@ SQL;
 
             if ($value === null)
             {
-                $set_fmt .= "`{$key}` = NULL";
+                $setFmt .= "`{$key}` = NULL";
             }
             else
             {
-                $set_fmt .= "`{$key}` = ?";
+                $setFmt .= "`{$key}` = ?";
                 $params[] = $value;
             }
         }
 
         return [
-            'query' => $set_fmt,
+            'query' => $setFmt,
             'params' => $params,
         ];
     }
@@ -789,9 +805,9 @@ SQL;
      *
      * @return array{query: string, params: array<bool|float|int|string>}
      */
-    public static function get_filter_array(array $filter): array
+    public static function getFilterArray(array $filter): array
     {
-        $filter_fmt = '';
+        $filterFmt = '';
         $params = [];
         $first = true;
 
@@ -799,7 +815,7 @@ SQL;
         {
             if (!$first)
             {
-                $filter_fmt .= ' AND ';
+                $filterFmt .= ' AND ';
             }
             else
             {
@@ -815,42 +831,42 @@ SQL;
 
             if ($value === null)
             {
-                $filter_fmt .= "`{$key}` IS NULL";
+                $filterFmt .= "`{$key}` IS NULL";
             }
             else
             {
-                $filter_fmt .= "`{$key}` = ?";
+                $filterFmt .= "`{$key}` = ?";
                 $params[] = $value;
             }
         }
 
         return [
-            'query' => $filter_fmt,
+            'query' => $filterFmt,
             'params' => $params,
         ];
     }
 
-    public function to_string(): string
+    public function toString(): string
     {
         $vars = call_user_func('get_object_vars', $this);
-        WFHelpers::scrub_state($vars);
+        WFHelpers::scrubState($vars);
 
         return $vars;
     }
 
-    protected function get_app_dir(): string
+    protected function getAppDir(): string
     {
         return $this->container->get('app_dir');
     }
 
-    protected function get_config(string $path): mixed
+    protected function getConfig(string $path): mixed
     {
-        return $this->config_service->get($path);
+        return $this->configService->get($path);
     }
 
     // Database related
     //
-    protected function get_db(string $tag = ''): Database
+    protected function getDb(string $tag = ''): Database
     {
         if (strlen($tag))
         {
@@ -871,19 +887,19 @@ SQL;
     /**
      * @param array<null|bool|float|int|string> $params
      */
-    protected function insert_query(string $query, array $params): false|int
+    protected function insertQuery(string $query, array $params): false|int
     {
-        return $this->database->insert_query($query, $params);
+        return $this->database->insertQuery($query, $params);
     }
 
-    protected function start_transaction(): void
+    protected function startTransaction(): void
     {
-        $this->database->start_transaction();
+        $this->database->startTransaction();
     }
 
-    protected function commit_transaction(): void
+    protected function commitTransaction(): void
     {
-        $this->database->commit_transaction();
+        $this->database->commitTransaction();
     }
 
     // Message related
@@ -891,19 +907,19 @@ SQL;
     /**
      * @return array<array{mtype: string, message: string, extra_message: string}>
      */
-    protected function get_messages(): array
+    protected function getMessages(): array
     {
-        return $this->message_service->get_messages();
+        return $this->messageService->getMessages();
     }
 
-    protected function add_message(string $mtype, string $message, string $extra_message = ''): void
+    protected function addMessage(string $mtype, string $message, string $extraMessage = ''): void
     {
-        $this->message_service->add($mtype, $message, $extra_message);
+        $this->messageService->add($mtype, $message, $extraMessage);
     }
 
-    protected function get_message_for_url(string $mtype, string $message, string $extra_message = ''): string
+    protected function getMessageForUrl(string $mtype, string $message, string $extraMessage = ''): string
     {
-        return $this->message_service->get_for_url($mtype, $message, $extra_message);
+        return $this->messageService->getForUrl($mtype, $message, $extraMessage);
     }
 
     // Assert related
@@ -911,100 +927,100 @@ SQL;
     /**
      * @param array<mixed> $stack
      */
-    protected function report_error(string $message, array $stack = null): void
+    protected function reportError(string $message, array $stack = null): void
     {
         if ($stack === null)
         {
             $stack = debug_backtrace(0);
         }
 
-        $this->assert_service->report_error($message, $stack);
+        $this->assertService->reportError($message, $stack);
     }
 
     protected function verify(bool|int $bool, string $message): void
     {
-        $this->assert_service->verify($bool, $message);
+        $this->assertService->verify($bool, $message);
     }
 
-    protected function blacklist_verify(bool|int $bool, string $reason, int $severity = 1): void
+    protected function blacklistVerify(bool|int $bool, string $reason, int $severity = 1): void
     {
         if ($bool)
         {
             return;
         }
 
-        $this->blacklist_service->add_entry($_SERVER['REMOTE_ADDR'], $this->get_authenticated('user_id'), $reason, $severity);
+        $this->blacklistService->addEntry($_SERVER['REMOTE_ADDR'], $this->getAuthenticated('user_id'), $reason, $severity);
     }
 
     // Security related
     //
 
-    protected function get_auth_config(string $key_file): mixed
+    protected function getAuthConfig(string $keyFile): mixed
     {
-        return $this->secure_config_service->get_auth_config($key_file);
+        return $this->secureConfigService->getAuthConfig($keyFile);
     }
 
-    protected function add_blacklist_entry(string $reason, int $severity = 1): void
+    protected function addBlacklistEntry(string $reason, int $severity = 1): void
     {
-        $this->blacklist_service->add_entry($_SERVER['REMOTE_ADDR'], $this->get_authenticated('user_id'), $reason, $severity);
+        $this->blacklistService->addEntry($_SERVER['REMOTE_ADDR'], $this->getAuthenticated('user_id'), $reason, $severity);
     }
 
-    protected function encode_and_auth_string(string $value): string
+    protected function encodeAndAuthString(string $value): string
     {
-        return $this->protect_service->pack_string($value);
+        return $this->protectService->packString($value);
     }
 
     /**
      * @param array<mixed> $array
      */
-    protected function encode_and_auth_array(array $array): string
+    protected function encodeAndAuthArray(array $array): string
     {
-        return $this->protect_service->pack_array($array);
+        return $this->protectService->packArray($array);
     }
 
-    protected function decode_and_verify_string(string $str): string|false
+    protected function decodeAndVerifyString(string $str): string|false
     {
-        return $this->protect_service->unpack_string($str);
+        return $this->protectService->unpackString($str);
     }
 
     /**
      * @return array<mixed>|false
      */
-    protected function decode_and_verify_array(string $str): array|false
+    protected function decodeAndVerifyArray(string $str): array|false
     {
-        return $this->protect_service->unpack_array($str);
+        return $this->protectService->unpackArray($str);
     }
 
     // Authentication related
     //
     protected function authenticate(User $user): void
     {
-        $this->authentication_service->authenticate($user);
+        $this->authenticationService->authenticate($user);
     }
 
     protected function deauthenticate(): void
     {
-        $this->authentication_service->deauthenticate();
+        $this->authenticationService->deauthenticate();
     }
 
-    protected function invalidate_sessions(int $user_id): void
+    protected function invalidateSessions(int $userId): void
     {
-        $this->authentication_service->invalidate_sessions($user_id);
+        $this->authenticationService->invalidateSessions($userId);
     }
 
-    protected function is_authenticated(): bool
+    protected function isAuthenticated(): bool
     {
-        return $this->authentication_service->is_authenticated();
+        return $this->authenticationService->isAuthenticated();
     }
 
-    protected function get_authenticated_user(): User
+    protected function getAuthenticatedUser(): User
     {
-        return $this->authentication_service->get_authenticated_user();
+        return $this->authenticationService->getAuthenticatedUser();
     }
 
-    protected function get_authenticated(string $type): mixed
+    protected function getAuthenticated(string $type): mixed
     {
-        $user = $this->get_authenticated_user();
+        $user = $this->getAuthenticatedUser();
         if ($type === 'user')
         {
             return $user;
@@ -1021,9 +1037,9 @@ SQL;
     /**
      * @param array<string> $permissions
      */
-    protected function user_has_permissions(array $permissions): bool
+    protected function userHasPermissions(array $permissions): bool
     {
-        return $this->authentication_service->user_has_permissions($permissions);
+        return $this->authenticationService->userHasPermissions($permissions);
     }
 
     // Build info
@@ -1031,8 +1047,8 @@ SQL;
     /**
      * @return array{commit: null|string, timestamp: string}
      */
-    protected function get_build_info(): array
+    protected function getBuildInfo(): array
     {
-        return $this->debug_service->get_build_info();
+        return $this->debugService->getBuildInfo();
     }
 }

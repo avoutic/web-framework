@@ -11,9 +11,9 @@ class ResponseEmitter
 {
     public function __construct(
         private Container $container,
-        private ConfigService $config_service,
-        private MessageService $message_service,
-        private ResponseFactory $response_factory,
+        private ConfigService $configService,
+        private MessageService $messageService,
+        private ResponseFactory $responseFactory,
     ) {
     }
 
@@ -47,7 +47,7 @@ class ResponseEmitter
 
     public function blacklisted(Request $request): Response
     {
-        $response = $this->response_factory->createResponse(403, 'Forbidden');
+        $response = $this->responseFactory->createResponse(403, 'Forbidden');
 
         if ($request->getAttribute('is_json') === true)
         {
@@ -62,16 +62,16 @@ class ResponseEmitter
             return $response;
         }
 
-        $class = $this->config_service->get('error_handlers.blacklisted');
+        $class = $this->configService->get('error_handlers.blacklisted');
 
-        $error_handler = $this->container->get($class);
+        $errorHandler = $this->container->get($class);
 
-        return $error_handler($request, $response);
+        return $errorHandler($request, $response);
     }
 
-    public function error(Request $request, string $title, string $details = '', int $http_code = 500, string $reason_phrase = 'Internal error'): Response
+    public function error(Request $request, string $title, string $details = '', int $httpCode = 500, string $reasonPhrase = 'Internal error'): Response
     {
-        $response = $this->response_factory->createResponse($http_code, $reason_phrase);
+        $response = $this->responseFactory->createResponse($httpCode, $reasonPhrase);
 
         if ($request->getAttribute('is_json') === true)
         {
@@ -90,68 +90,68 @@ class ResponseEmitter
             return $response;
         }
 
-        $class = $this->config_service->get('error_handlers.500');
+        $class = $this->configService->get('error_handlers.500');
 
-        $error_handler = $this->container->get($class);
+        $errorHandler = $this->container->get($class);
 
-        return $error_handler($request, $response);
+        return $errorHandler($request, $response);
     }
 
     public function forbidden(Request $request): Response
     {
-        $response = $this->response_factory->createResponse(403, 'Forbidden');
+        $response = $this->responseFactory->createResponse(403, 'Forbidden');
 
         if ($request->getAttribute('is_json') === true)
         {
             return $response->withHeader('Content-type', 'application/json');
         }
 
-        $class = $this->config_service->get('error_handlers.403');
+        $class = $this->configService->get('error_handlers.403');
 
-        $error_handler = $this->container->get($class);
+        $errorHandler = $this->container->get($class);
 
-        return $error_handler($request, $response);
+        return $errorHandler($request, $response);
     }
 
-    public function not_found(Request $request): Response
+    public function notFound(Request $request): Response
     {
-        $response = $this->response_factory->createResponse(404, 'Not Found');
+        $response = $this->responseFactory->createResponse(404, 'Not Found');
 
         if ($request->getAttribute('is_json') === true)
         {
             return $response->withHeader('Content-type', 'application/json');
         }
 
-        $class = $this->config_service->get('error_handlers.404');
+        $class = $this->configService->get('error_handlers.404');
 
-        $error_handler = $this->container->get($class);
+        $errorHandler = $this->container->get($class);
 
-        return $error_handler($request, $response);
+        return $errorHandler($request, $response);
     }
 
-    public function redirect(string $url, int $redirect_type): Response
+    public function redirect(string $url, int $redirectType): Response
     {
-        $response = $this->response_factory->createResponse($redirect_type);
+        $response = $this->responseFactory->createResponse($redirectType);
 
         return $response->withHeader('Location', $url);
     }
 
     public function unauthorized(Request $request): Response
     {
-        $response = $this->response_factory->createResponse(401, 'Unauthorized');
+        $response = $this->responseFactory->createResponse(401, 'Unauthorized');
 
         if ($request->getAttribute('is_json') === true)
         {
             return $response->withHeader('Content-type', 'application/json');
         }
 
-        $message = $this->message_service->get_for_url(
+        $message = $this->messageService->getForUrl(
             'info',
-            $this->config_service->get('authenticator.auth_required_message'),
+            $this->configService->get('authenticator.auth_required_message'),
         );
 
         return $this->redirect(
-            $this->config_service->get('base_url').$this->config_service->get('actions.login.location').
+            $this->configService->get('base_url').$this->configService->get('actions.login.location').
             '?return_page='.urlencode($request->getUri()->getPath()).
             '&return_query='.urlencode($request->getUri()->getQuery()).
             '&'.$message,

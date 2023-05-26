@@ -8,20 +8,20 @@ use Postmark\PostmarkClient;
 class PostmarkMailService implements MailService
 {
     public function __construct(
-        protected PostmarkClientFactory $client_factory,
-        protected string $default_sender,
-        protected string $server_name,
+        protected PostmarkClientFactory $clientFactory,
+        protected string $defaultSender,
+        protected string $serverName,
     ) {
     }
 
-    protected function get_client(): PostmarkClient
+    protected function getClient(): PostmarkClient
     {
-        return $this->client_factory->get_client();
+        return $this->clientFactory->getClient();
     }
 
-    public function send_raw_mail(?string $from, string $to, string $subject, string $message): bool
+    public function sendRawMail(?string $from, string $to, string $subject, string $message): bool
     {
-        $from = $this->default_sender;
+        $from = $this->defaultSender;
 
         if (!strlen($to))
         {
@@ -33,7 +33,7 @@ class PostmarkMailService implements MailService
             throw new \RuntimeException('No source e-mail specified');
         }
 
-        $result = $this->get_client()->sendEmail(
+        $result = $this->getClient()->sendEmail(
             $from,
             $to,
             $subject,
@@ -45,12 +45,12 @@ class PostmarkMailService implements MailService
     }
 
     /**
-     * @param array<mixed> $template_variables
+     * @param array<mixed> $templateVariables
      */
-    public function send_template_mail(string $template_id, ?string $from, string $to, array $template_variables): bool|string
+    public function sendTemplateMail(string $templateId, ?string $from, string $to, array $templateVariables): bool|string
     {
-        $from = $from ?? $this->default_sender;
-        $reply_to = $template_variables['reply_to'] ?? null;
+        $from = $from ?? $this->defaultSender;
+        $replyTo = $templateVariables['reply_to'] ?? null;
 
         if (!strlen($to))
         {
@@ -62,22 +62,22 @@ class PostmarkMailService implements MailService
             throw new \RuntimeException('No source e-mail specified');
         }
 
-        if (!isset($template_variables['server_name']))
+        if (!isset($templateVariables['server_name']))
         {
-            $template_variables['server_name'] = $this->server_name;
+            $templateVariables['server_name'] = $this->serverName;
         }
 
         try
         {
-            $result = $this->get_client()->sendEmailWithTemplate(
+            $result = $this->getClient()->sendEmailWithTemplate(
                 $from,
                 $to,
-                $template_id,
-                $template_variables,
+                $templateId,
+                $templateVariables,
                 true,               // inlineCSS
                 null,               // tag
                 true,               // trackOpens
-                $reply_to           // replyTo
+                $replyTo           // replyTo
             );
         }
         catch (PostmarkException $e)
@@ -89,7 +89,7 @@ class PostmarkMailService implements MailService
 
             if ($e->postmarkApiErrorCode == 1101)
             {
-                throw new \RuntimeException("Template ID {$template_id} not correct");
+                throw new \RuntimeException("Template ID {$templateId} not correct");
             }
 
             throw $e;

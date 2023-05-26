@@ -7,24 +7,24 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 class ValidatorService
 {
     public function __construct(
-        private AssertService $assert_service,
+        private AssertService $assertService,
     ) {
     }
 
     /**
      * @param array<string, string> $filters
      */
-    public function filter_request(Request $request, array $filters): Request
+    public function filterRequest(Request $request, array $filters): Request
     {
-        $raw_inputs = $request->getAttribute('raw_inputs', []);
+        $rawInputs = $request->getAttribute('raw_inputs', []);
         $inputs = $request->getAttribute('inputs', []);
 
-        $results = $this->get_filter_results($request, $filters);
+        $results = $this->getFilterResults($request, $filters);
 
-        $raw_inputs = array_merge($raw_inputs, $results['raw']);
+        $rawInputs = array_merge($rawInputs, $results['raw']);
         $inputs = array_merge($inputs, $results['filtered']);
 
-        $request = $request->withAttribute('raw_inputs', $raw_inputs);
+        $request = $request->withAttribute('raw_inputs', $rawInputs);
 
         return $request->withAttribute('inputs', $inputs);
     }
@@ -34,22 +34,22 @@ class ValidatorService
      *
      * @return array{raw:array<string, mixed>, filtered:array<string, mixed>}
      */
-    public function get_filter_results(Request $request, array $filters): array
+    public function getFilterResults(Request $request, array $filters): array
     {
         $raw = [];
         $filtered = [];
 
-        $query_params = $request->getQueryParams();
+        $queryParams = $request->getQueryParams();
 
-        $parsed_body = $request->getParsedBody();
-        $post_params = (is_array($parsed_body)) ? $parsed_body : [];
+        $parsedBody = $request->getParsedBody();
+        $postParams = (is_array($parsedBody)) ? $parsedBody : [];
 
         $json = $request->getAttribute('json_data', []);
-        $json_params = (is_array($json)) ? $json : [];
+        $jsonParams = (is_array($json)) ? $json : [];
 
         foreach ($filters as $name => $regex)
         {
-            $this->assert_service->verify(strlen($regex), 'No regex provided');
+            $this->assertService->verify(strlen($regex), 'No regex provided');
 
             if (substr($name, -2) == '[]')
             {
@@ -61,17 +61,17 @@ class ValidatorService
                 $raw[$name] = [];
                 $params = [];
 
-                if (isset($json_params[$name]))
+                if (isset($jsonParams[$name]))
                 {
-                    $params = $json_params[$name];
+                    $params = $jsonParams[$name];
                 }
-                elseif (isset($post_params[$name]))
+                elseif (isset($postParams[$name]))
                 {
-                    $params = $post_params[$name];
+                    $params = $postParams[$name];
                 }
-                elseif (isset($query_params[$name]))
+                elseif (isset($queryParams[$name]))
                 {
-                    $params = $query_params[$name];
+                    $params = $queryParams[$name];
                 }
 
                 foreach ($params as $key => $value)
@@ -88,17 +88,17 @@ class ValidatorService
                 $param = '';
                 $filtered[$name] = '';
 
-                if (isset($json_params[$name]))
+                if (isset($jsonParams[$name]))
                 {
-                    $param = $json_params[$name];
+                    $param = $jsonParams[$name];
                 }
-                elseif (isset($post_params[$name]))
+                elseif (isset($postParams[$name]))
                 {
-                    $param = $post_params[$name];
+                    $param = $postParams[$name];
                 }
-                elseif (isset($query_params[$name]))
+                elseif (isset($queryParams[$name]))
                 {
-                    $param = $query_params[$name];
+                    $param = $queryParams[$name];
                 }
 
                 $raw[$name] = trim($param);
@@ -121,9 +121,9 @@ class ValidatorService
      *
      * @return array<string, mixed>
      */
-    public function get_filtered_params(Request $request, array $filters): array
+    public function getFilteredParams(Request $request, array $filters): array
     {
-        $results = $this->get_filter_results($request, $filters);
+        $results = $this->getFilterResults($request, $filters);
 
         return $results['filtered'];
     }

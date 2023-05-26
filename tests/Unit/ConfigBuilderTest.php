@@ -20,9 +20,9 @@ final class ConfigBuilderTest extends \Codeception\Test\Unit
             ],
         );
 
-        $instance->merge_config_on_top([]);
+        $instance->mergeConfigOnTop([]);
 
-        verify($instance->get_config())
+        verify($instance->getConfig())
             ->equals([]);
     }
 
@@ -35,15 +35,15 @@ final class ConfigBuilderTest extends \Codeception\Test\Unit
             ],
         );
 
-        $instance->merge_config_on_top([
+        $instance->mergeConfigOnTop([
             'key1' => 'val1',
         ]);
 
-        $instance->merge_config_on_top([
+        $instance->mergeConfigOnTop([
             'key2' => 'val2',
         ]);
 
-        verify($instance->get_config())
+        verify($instance->getConfig())
             ->equals([
                 'key1' => 'val1',
                 'key2' => 'val2',
@@ -59,19 +59,19 @@ final class ConfigBuilderTest extends \Codeception\Test\Unit
             ],
         );
 
-        $instance->merge_config_on_top([
+        $instance->mergeConfigOnTop([
             'key1' => [
                 'key1.1' => 'val1.1',
             ],
         ]);
 
-        $instance->merge_config_on_top([
+        $instance->mergeConfigOnTop([
             'key1' => [
                 'key1.2' => 'val1.2',
             ],
         ]);
 
-        verify($instance->get_config())
+        verify($instance->getConfig())
             ->equals([
                 'key1' => [
                     'key1.1' => 'val1.1',
@@ -89,16 +89,16 @@ final class ConfigBuilderTest extends \Codeception\Test\Unit
             ],
         );
 
-        $instance->merge_config_on_top([
+        $instance->mergeConfigOnTop([
             'key1' => 'val1',
             'key2' => 'val2',
         ]);
 
-        $instance->merge_config_on_top([
+        $instance->mergeConfigOnTop([
             'key2' => 'val3',
         ]);
 
-        verify($instance->get_config())
+        verify($instance->getConfig())
             ->equals([
                 'key1' => 'val1',
                 'key2' => 'val3',
@@ -114,20 +114,20 @@ final class ConfigBuilderTest extends \Codeception\Test\Unit
             ],
         );
 
-        $instance->merge_config_on_top([
+        $instance->mergeConfigOnTop([
             'key1' => [
                 'key1.1' => 'val1.1',
                 'key1.2' => 'val1.2',
             ],
         ]);
 
-        $instance->merge_config_on_top([
+        $instance->mergeConfigOnTop([
             'key1' => [
                 'key1.2' => 'val1.3',
             ],
         ]);
 
-        verify($instance->get_config())
+        verify($instance->getConfig())
             ->equals([
                 'key1' => [
                     'key1.1' => 'val1.1',

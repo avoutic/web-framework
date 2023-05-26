@@ -17,9 +17,9 @@ use WebFramework\Exception\BlacklistException;
 class ErrorRedirectMiddleware implements MiddlewareInterface
 {
     public function __construct(
-        private DebugService $debug_service,
-        private ReportFunction $report_function,
-        private ResponseEmitter $response_emitter,
+        private DebugService $debugService,
+        private ReportFunction $reportFunction,
+        private ResponseEmitter $responseEmitter,
     ) {
     }
 
@@ -31,29 +31,29 @@ class ErrorRedirectMiddleware implements MiddlewareInterface
         }
         catch (HttpForbiddenException $e)
         {
-            return $this->response_emitter->forbidden($request);
+            return $this->responseEmitter->forbidden($request);
         }
         catch (HttpNotFoundException $e)
         {
-            return $this->response_emitter->not_found($request);
+            return $this->responseEmitter->notFound($request);
         }
         catch (HttpUnauthorizedException $e)
         {
-            return $this->response_emitter->unauthorized($request);
+            return $this->responseEmitter->unauthorized($request);
         }
         catch (BlacklistException $e)
         {
-            return $this->response_emitter->blacklisted($request);
+            return $this->responseEmitter->blacklisted($request);
         }
         catch (\Throwable $e)
         {
-            $error_report = $this->debug_service->get_throwable_report($e, $request);
+            $errorReport = $this->debugService->getThrowableReport($e, $request);
 
-            $request = $request->withAttribute('error_report', $error_report);
+            $request = $request->withAttribute('error_report', $errorReport);
 
-            $this->report_function->report($e->getMessage(), 'unhandled_exception', $error_report);
+            $this->reportFunction->report($e->getMessage(), 'unhandled_exception', $errorReport);
 
-            return $this->response_emitter->error($request, 'Error');
+            return $this->responseEmitter->error($request, 'Error');
         }
     }
 }

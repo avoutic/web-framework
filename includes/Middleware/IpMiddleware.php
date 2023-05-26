@@ -11,9 +11,9 @@ class IpMiddleware implements MiddlewareInterface
 {
     public function process(Request $request, RequestHandlerInterface $handler): Response
     {
-        $server_params = $request->getServerParams();
+        $serverParams = $request->getServerParams();
 
-        $ip = (isset($server_params['REMOTE_ADDR'])) ? $server_params['REMOTE_ADDR'] : 'app';
+        $ip = (isset($serverParams['REMOTE_ADDR'])) ? $serverParams['REMOTE_ADDR'] : 'app';
         $request = $request->withAttribute('ip', $ip);
 
         return $handler->handle($request);

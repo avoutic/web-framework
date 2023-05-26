@@ -92,6 +92,6 @@ final class AssertServiceTest extends \Codeception\Test\Unit
             ],
         );
 
-        verify($instance->report_error('TestMessage'));
+        verify($instance->reportError('TestMessage'));
     }
 }

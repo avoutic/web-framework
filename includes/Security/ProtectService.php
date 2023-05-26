@@ -5,31 +5,31 @@ namespace WebFramework\Security;
 class ProtectService
 {
     /**
-     * @param array<string> $module_config
+     * @param array<string> $moduleConfig
      */
     public function __construct(
-        private array $module_config,
+        private array $moduleConfig,
     ) {
     }
 
-    protected function get_random_bytes(int $iv_len): string
+    protected function getRandomBytes(int $ivLen): string
     {
-        return openssl_random_pseudo_bytes($iv_len);
+        return openssl_random_pseudo_bytes($ivLen);
     }
 
-    protected function internal_pack_string(string $str): string
+    protected function internalPackString(string $str): string
     {
         // First encrypt it
         //
         $cipher = 'AES-256-CBC';
-        $iv_len = openssl_cipher_iv_length($cipher);
-        if ($iv_len === false)
+        $ivLen = openssl_cipher_iv_length($cipher);
+        if ($ivLen === false)
         {
             return '';
         }
 
-        $iv = $this->get_random_bytes($iv_len);
-        $key = hash('sha256', $this->module_config['crypt_key'], true);
+        $iv = $this->getRandomBytes($ivLen);
+        $key = hash('sha256', $this->moduleConfig['crypt_key'], true);
         $str = openssl_encrypt($str, $cipher, $key, 0, $iv);
         if ($str === false)
         {
@@ -39,30 +39,30 @@ class ProtectService
         $str = strtr(base64_encode($str), '+/=', '._~');
         $iv = strtr(base64_encode($iv), '+/=', '._~');
 
-        $str_hmac = hash_hmac(
-            $this->module_config['hash'],
+        $strHmac = hash_hmac(
+            $this->moduleConfig['hash'],
             $iv.$str,
-            $this->module_config['hmac_key']
+            $this->moduleConfig['hmac_key']
         );
 
-        $full_str = $iv.'-'.$str.'-'.$str_hmac;
+        $fullStr = $iv.'-'.$str.'-'.$strHmac;
 
         // Add double hyphens every 16 characters for 'line-breaking in e-mail clients'
         //
-        $chunks = str_split($full_str, 16);
+        $chunks = str_split($fullStr, 16);
 
         return implode('--', $chunks);
     }
 
-    public function pack_string(string $value): string
+    public function packString(string $value): string
     {
-        return $this->internal_pack_string($value);
+        return $this->internalPackString($value);
     }
 
     /**
      * @param array<mixed> $array
      */
-    public function pack_array(array $array): string
+    public function packArray(array $array): string
     {
         $str = json_encode($array);
         if ($str === false)
@@ -70,10 +70,10 @@ class ProtectService
             return '';
         }
 
-        return $this->internal_pack_string($str);
+        return $this->internalPackString($str);
     }
 
-    protected function internal_unpack_string(string $str): string|false
+    protected function internalUnpackString(string $str): string|false
     {
         // Remove the double hyphens first
         //
@@ -85,8 +85,8 @@ class ProtectService
             return false;
         }
 
-        $part_iv = substr($str, 0, $idx);
-        $iv = base64_decode(strtr($part_iv, '._~', '+/='));
+        $partIv = substr($str, 0, $idx);
+        $iv = base64_decode(strtr($partIv, '._~', '+/='));
 
         $str = substr($str, $idx + 1);
 
@@ -96,23 +96,23 @@ class ProtectService
             return false;
         }
 
-        $part_msg = substr($str, 0, $idx);
-        $part_hmac = substr($str, $idx + 1);
+        $partMsg = substr($str, 0, $idx);
+        $partHmac = substr($str, $idx + 1);
 
-        $str_hmac = hash_hmac(
-            $this->module_config['hash'],
-            $part_iv.$part_msg,
-            $this->module_config['hmac_key']
+        $strHmac = hash_hmac(
+            $this->moduleConfig['hash'],
+            $partIv.$partMsg,
+            $this->moduleConfig['hmac_key']
         );
 
-        if ($str_hmac !== $part_hmac)
+        if ($strHmac !== $partHmac)
         {
             return false;
         }
 
-        $key = hash('sha256', $this->module_config['crypt_key'], true);
+        $key = hash('sha256', $this->moduleConfig['crypt_key'], true);
         $cipher = 'AES-256-CBC';
-        $msg = base64_decode(strtr($part_msg, '._~', '+/='));
+        $msg = base64_decode(strtr($partMsg, '._~', '+/='));
         $original = openssl_decrypt($msg, $cipher, $key, 0, $iv);
 
         if ($original === false || !strlen($original))
@@ -123,24 +123,24 @@ class ProtectService
         return $original;
     }
 
-    public function unpack_string(string $str): string|false
+    public function unpackString(string $str): string|false
     {
-        return $this->internal_unpack_string($str);
+        return $this->internalUnpackString($str);
     }
 
     /**
      * @return array<mixed>|false
      */
-    public function unpack_array(string $str): array|false
+    public function unpackArray(string $str): array|false
     {
-        $json_encoded = $this->internal_unpack_string($str);
+        $jsonEncoded = $this->internalUnpackString($str);
 
-        if ($json_encoded === false)
+        if ($jsonEncoded === false)
         {
             return false;
         }
 
-        $array = json_decode($json_encoded, true);
+        $array = json_decode($jsonEncoded, true);
         if (!is_array($array))
         {
             return false;

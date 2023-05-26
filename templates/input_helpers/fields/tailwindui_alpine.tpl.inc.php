@@ -6,8 +6,8 @@ if (!isset($args['template_parameters']['colors']))
 }
 
 $colors = $args['template_parameters']['colors'];
-$required_colors = ['readonly:bg', 'focus:ring', 'focus:border'];
-if (array_diff(array_keys($colors), $required_colors) != array_diff($required_colors, array_keys($colors)))
+$requiredColors = ['readonly:bg', 'focus:ring', 'focus:border'];
+if (array_diff(array_keys($colors), $requiredColors) != array_diff($requiredColors, array_keys($colors)))
 {
     throw new \InvalidArgumentException('Missing required colors');
 }
@@ -17,29 +17,29 @@ if (!isset($args['template_parameters']['default_width']))
     throw new \InvalidArgumentException('No default_width defined');
 }
 
-$default_width = $args['template_parameters']['default_width'];
+$defaultWidth = $args['template_parameters']['default_width'];
 
 $parameters = $args['parameters'];
 
-$model_fmt = (strlen($parameters['model'])) ? "x-model='{$parameters['model']}'" : "x-model='content'";
-$model_name = (strlen($parameters['model'])) ? $parameters['model'] : 'content';
-$on_change_fmt = (strlen($parameters['on_change'])) ? "x-on:change=\"{$parameters['on_change']}\"" : '';
-$on_keyup_fmt = (strlen($parameters['on_keyup'])) ? "x-on:keyup=\"{$parameters['on_keyup']}\"" : '';
-$required_fmt = ($parameters['required']) ? 'required' : '';
-$readonly_fmt = ($parameters['readonly']) ? 'readonly' : '';
-$readonly_class_fmt = ($parameters['readonly']) ? "{$colors['readonly:bg']}" : '';
-$show_fmt = (strlen($parameters['show'])) ? "x-cloak x-show=\"{$parameters['show']}\"" : '';
-$width_fmt = (strlen($parameters['width'])) ? $parameters['width'] : $default_width;
+$modelFmt = (strlen($parameters['model'])) ? "x-model='{$parameters['model']}'" : "x-model='content'";
+$modelName = (strlen($parameters['model'])) ? $parameters['model'] : 'content';
+$onChangeFmt = (strlen($parameters['on_change'])) ? "x-on:change=\"{$parameters['on_change']}\"" : '';
+$onKeyupFmt = (strlen($parameters['on_keyup'])) ? "x-on:keyup=\"{$parameters['on_keyup']}\"" : '';
+$requiredFmt = ($parameters['required']) ? 'required' : '';
+$readonlyFmt = ($parameters['readonly']) ? 'readonly' : '';
+$readonlyClassFmt = ($parameters['readonly']) ? "{$colors['readonly:bg']}" : '';
+$showFmt = (strlen($parameters['show'])) ? "x-cloak x-show=\"{$parameters['show']}\"" : '';
+$widthFmt = (strlen($parameters['width'])) ? $parameters['width'] : $defaultWidth;
 
-$counter_info = [
+$counterInfo = [
     'content' => $parameters['value'],
     'limit' => $parameters['max_length'],
 ];
 
-$counter_info_fmt = json_encode($counter_info, JSON_HEX_APOS);
+$counterInfoFmt = json_encode($counterInfo, JSON_HEX_APOS);
 
 echo <<<HTML
-<div {$show_fmt} x-data='{$counter_info_fmt}' class="{$width_fmt}">
+<div {$showFmt} x-data='{$counterInfoFmt}' class="{$widthFmt}">
   <label for="{$parameters['id']}" class="block text-sm font-medium text-gray-700">
     {$parameters['label']}
   </label>
@@ -60,16 +60,16 @@ if (strlen($parameters['prefix']))
       {$parameters['prefix']}
     </span>
     <input
-      {$model_fmt}
-      {$on_change_fmt}
-      {$on_keyup_fmt}
+      {$modelFmt}
+      {$onChangeFmt}
+      {$onKeyupFmt}
       type="{$parameters['type']}"
       id="{$parameters['id']}"
       name="{$parameters['name']}"
-      {$required_fmt}
-      {$readonly_fmt}
+      {$requiredFmt}
+      {$readonlyFmt}
       placeholder="{$parameters['placeholder']}"
-      class="{$readonly_class_fmt} {$colors['focus:ring']} {$colors['focus:border']} flex-1 block w-full rounded-none rounded-r-md sm:text-sm border-gray-300" />
+      class="{$readonlyClassFmt} {$colors['focus:ring']} {$colors['focus:border']} flex-1 block w-full rounded-none rounded-r-md sm:text-sm border-gray-300" />
   </div>
 HTML;
 }
@@ -77,24 +77,24 @@ else
 {
     echo <<<HTML
   <input
-    {$model_fmt}
-    {$on_change_fmt}
-    {$on_keyup_fmt}
+    {$modelFmt}
+    {$onChangeFmt}
+    {$onKeyupFmt}
     type="{$parameters['type']}"
     id="{$parameters['id']}"
     name="{$parameters['name']}"
-    {$required_fmt}
-    {$readonly_fmt}
+    {$requiredFmt}
+    {$readonlyFmt}
     placeholder="{$parameters['placeholder']}"
-    class="mt-1 {$readonly_class_fmt} {$colors['focus:ring']} {$colors['focus:border']} block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
+    class="mt-1 {$readonlyClassFmt} {$colors['focus:ring']} {$colors['focus:border']} block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
 HTML;
 }
 
-if ($counter_info['limit'] > 0)
+if ($counterInfo['limit'] > 0)
 {
     echo <<<'HTML'
   <div class="text-right">
-    <span x-ref="remaining" class="text-xs text-gray-500">( <span x-text="limit - {$model_name}.length"></span> / <span x-text="limit"></span> )</span>
+    <span x-ref="remaining" class="text-xs text-gray-500">( <span x-text="limit - {$modelName}.length"></span> / <span x-text="limit"></span> )</span>
   </div>
 HTML;
 }

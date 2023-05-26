@@ -7,7 +7,7 @@ class Helpers
     /**
      * Valid email adress?
      */
-    public static function valid_email(string $string): bool
+    public static function validEmail(string $string): bool
     {
         // filter_var has the weird tendency to accept emails like yourname or test@test
         return
@@ -18,7 +18,7 @@ class Helpers
     /**
      * Replace any accents in the string with ASCII characters.
      */
-    public static function remove_accents(string $str): string
+    public static function removeAccents(string $str): string
     {
         $lowercase = [
             'à' => 'a', 'ô' => 'o', 'ď' => 'd', 'ḟ' => 'f', 'ë' => 'e', 'š' => 's', 'ơ' => 'o',
@@ -80,7 +80,7 @@ class Helpers
         $str = html_entity_decode($str, ENT_QUOTES, 'UTF-8');
 
         // Convert accents (Montréal -> Montreal)
-        $str = strtolower(self::remove_Accents($str));
+        $str = strtolower(self::removeAccents($str));
 
         // Some characters should be replaced by words
         $str = str_replace('$', ' dollar ', $str);
@@ -98,9 +98,9 @@ class Helpers
         return preg_replace('/\\s+/s', '-', trim(preg_replace('/\\W/s', ' ', $str)));
     }
 
-    public static function mysql_datetime_to_timestamp(string $time_str): int|false
+    public static function mysqlDatetimeToTimestamp(string $timeStr): int|false
     {
-        $ftime = date_parse_from_format('Y-m-d H:i:s', $time_str);
+        $ftime = date_parse_from_format('Y-m-d H:i:s', $timeStr);
 
         return mktime(
             $ftime['hour'],
@@ -112,9 +112,9 @@ class Helpers
         );
     }
 
-    public static function mysql_date_to_timestamp(string $time_str): int|false
+    public static function mysqlDateToTimestamp(string $timeStr): int|false
     {
-        $ftime = date_parse_from_format('Y-m-d', $time_str);
+        $ftime = date_parse_from_format('Y-m-d', $timeStr);
 
         return mktime(
             $ftime['hour'],
@@ -126,7 +126,7 @@ class Helpers
         );
     }
 
-    public static function time_elapsed_string(int $ptime): string
+    public static function timeElapsedString(int $ptime): string
     {
         $etime = time() - $ptime;
 
@@ -142,7 +142,7 @@ class Helpers
             60 => 'minute',
             1 => 'second',
         ];
-        $a_plural = ['year' => 'years',
+        $aPlural = ['year' => 'years',
             'month' => 'months',
             'day' => 'days',
             'hour' => 'hours',
@@ -158,7 +158,7 @@ class Helpers
             {
                 $r = round($d);
 
-                return $r.' '.($r > 1 ? $a_plural[$str] : $str);
+                return $r.' '.($r > 1 ? $aPlural[$str] : $str);
             }
         }
 

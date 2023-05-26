@@ -4,7 +4,7 @@ namespace WebFramework\Core;
 
 class MysqliDatabase implements Database
 {
-    private int $transaction_depth = 0;
+    private int $transactionDepth = 0;
 
     public function __construct(
         private \mysqli $database,
@@ -12,9 +12,9 @@ class MysqliDatabase implements Database
     }
 
     /**
-     * @param array<null|bool|float|int|string> $value_array
+     * @param array<null|bool|float|int|string> $valueArray
      */
-    public function query(string $query_str, array $value_array): DatabaseResultWrapper|false
+    public function query(string $queryStr, array $valueArray): DatabaseResultWrapper|false
     {
         if (!$this->database->ping())
         {
@@ -23,13 +23,13 @@ class MysqliDatabase implements Database
 
         $result = null;
 
-        if (!count($value_array))
+        if (!count($valueArray))
         {
-            $result = $this->database->query($query_str);
+            $result = $this->database->query($queryStr);
         }
         else
         {
-            $result = $this->database->execute_query($query_str, $value_array);
+            $result = $this->database->execute_query($queryStr, $valueArray);
         }
 
         if (!$result)
@@ -43,7 +43,7 @@ class MysqliDatabase implements Database
     /**
      * @param array<null|bool|float|int|string> $params
      */
-    public function insert_query(string $query, array $params): int|false
+    public function insertQuery(string $query, array $params): int|false
     {
         $result = $this->query($query, $params);
 
@@ -55,14 +55,14 @@ class MysqliDatabase implements Database
         return false;
     }
 
-    public function get_last_error(): string
+    public function getLastError(): string
     {
         return $this->database->error;
     }
 
-    public function table_exists(string $table_name): bool
+    public function tableExists(string $tableName): bool
     {
-        $query = "SHOW TABLES LIKE '{$table_name}'";
+        $query = "SHOW TABLES LIKE '{$tableName}'";
 
         $result = $this->query($query, []);
         if ($result === false)
@@ -73,11 +73,11 @@ class MysqliDatabase implements Database
         return $result->RecordCount() == 1;
     }
 
-    public function start_transaction(): void
+    public function startTransaction(): void
     {
         // MariaDB does not support recursive transactions, so simulate by counting depth
         //
-        if ($this->transaction_depth == 0)
+        if ($this->transactionDepth == 0)
         {
             $result = $this->query('START TRANSACTION', []);
             if ($result === false)
@@ -86,14 +86,14 @@ class MysqliDatabase implements Database
             }
         }
 
-        $this->transaction_depth++;
+        $this->transactionDepth++;
     }
 
-    public function commit_transaction(): void
+    public function commitTransaction(): void
     {
         // MariaDB does not support recursive transactions, so only commit the final transaction
         //
-        if ($this->transaction_depth == 1)
+        if ($this->transactionDepth == 1)
         {
             $result = $this->query('COMMIT', []);
             if ($result === false)
@@ -102,11 +102,11 @@ class MysqliDatabase implements Database
             }
         }
 
-        $this->transaction_depth--;
+        $this->transactionDepth--;
     }
 
-    public function get_transaction_depth(): int
+    public function getTransactionDepth(): int
     {
-        return $this->transaction_depth;
+        return $this->transactionDepth;
     }
 }

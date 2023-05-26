@@ -12,14 +12,14 @@ use WebFramework\Core\ValidatorService;
 class MessageMiddleware implements MiddlewareInterface
 {
     public function __construct(
-        private MessageService $message_service,
-        private ValidatorService $validator_service,
+        private MessageService $messageService,
+        private ValidatorService $validatorService,
     ) {
     }
 
     public function process(Request $request, RequestHandlerInterface $handler): Response
     {
-        $params = $this->validator_service->get_filtered_params(
+        $params = $this->validatorService->getFilteredParams(
             $request,
             [
                 'msg' => '.*',
@@ -28,7 +28,7 @@ class MessageMiddleware implements MiddlewareInterface
 
         if (strlen($params['msg']))
         {
-            $this->message_service->add_from_url($params['msg']);
+            $this->messageService->addFromUrl($params['msg']);
         }
 
         return $handler->handle($request);

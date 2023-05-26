@@ -31,13 +31,13 @@ final class DatabaseBlacklistServiceTest extends \Codeception\Test\Unit
                         ),
                     ],
                 ),
-                'store_period' => 1000,
-                'trigger_period' => 100,
+                'storePeriod' => 1000,
+                'triggerPeriod' => 100,
                 'threshold' => 10,
             ]
         );
 
-        verify($instance->is_blacklisted('ip1', null))
+        verify($instance->isBlacklisted('ip1', null))
             ->equals(false);
     }
 
@@ -59,13 +59,13 @@ final class DatabaseBlacklistServiceTest extends \Codeception\Test\Unit
                         ),
                     ],
                 ),
-                'store_period' => 1000,
-                'trigger_period' => 100,
+                'storePeriod' => 1000,
+                'triggerPeriod' => 100,
                 'threshold' => 10,
             ]
         );
 
-        verify($instance->is_blacklisted('ip1', null))
+        verify($instance->isBlacklisted('ip1', null))
             ->equals(true);
     }
 }

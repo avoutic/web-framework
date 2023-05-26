@@ -14,14 +14,14 @@ class NullCache implements Cache
         return false;
     }
 
-    public function set(string $path, mixed $obj, ?int $expires_after = null): void
+    public function set(string $path, mixed $obj, ?int $expiresAfter = null): void
     {
     }
 
     /**
      * @param array<string> $tags
      */
-    public function set_with_tags(string $path, mixed $obj, array $tags, ?int $expires_after = null): void
+    public function setWithTags(string $path, mixed $obj, array $tags, ?int $expiresAfter = null): void
     {
     }
 
@@ -32,7 +32,7 @@ class NullCache implements Cache
     /**
      * @param array<string> $tags
      */
-    public function invalidate_tags(array $tags): void
+    public function invalidateTags(array $tags): void
     {
     }
 

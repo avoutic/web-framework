@@ -6,8 +6,8 @@ if (!isset($args['template_parameters']['colors']))
 }
 
 $colors = $args['template_parameters']['colors'];
-$required_colors = ['text', 'focus:ring'];
-if (array_diff(array_keys($colors), $required_colors) != array_diff($required_colors, array_keys($colors)))
+$requiredColors = ['text', 'focus:ring'];
+if (array_diff(array_keys($colors), $requiredColors) != array_diff($requiredColors, array_keys($colors)))
 {
     throw new \InvalidArgumentException('Missing required colors');
 }
@@ -17,24 +17,24 @@ if (!isset($args['template_parameters']['default_width']))
     throw new \InvalidArgumentException('No default_width defined');
 }
 
-$default_width = $args['template_parameters']['default_width'];
+$defaultWidth = $args['template_parameters']['default_width'];
 
 $parameters = $args['parameters'];
 
-$checked_fmt = ($parameters['checked']) ? 'checked' : '';
-$model_fmt = (strlen($parameters['model'])) ? "x-model='{$parameters['model']}'" : '';
-$show_fmt = (strlen($parameters['show'])) ? "x-cloak x-show=\"{$parameters['show']}\"" : '';
-$width_fmt = (strlen($parameters['width'])) ? $parameters['width'] : $default_width;
+$checkedFmt = ($parameters['checked']) ? 'checked' : '';
+$modelFmt = (strlen($parameters['model'])) ? "x-model='{$parameters['model']}'" : '';
+$showFmt = (strlen($parameters['show'])) ? "x-cloak x-show=\"{$parameters['show']}\"" : '';
+$widthFmt = (strlen($parameters['width'])) ? $parameters['width'] : $defaultWidth;
 
 echo <<<HTML
-<div {$show_fmt} class="flex items-start {$width_fmt}">
+<div {$showFmt} class="flex items-start {$widthFmt}">
   <div class="flex items-center h-5">
     <input id="{$parameters['id']}"
            name="{$parameters['name']}"
            type="checkbox"
            value="{$parameters['value']}"
-           {$model_fmt}
-           {$checked_fmt}
+           {$modelFmt}
+           {$checkedFmt}
            class="{$colors['focus:ring']} h-4 w-4 {$colors['text']} border-gray-300 rounded">
   </div>
   <div class="ml-3 text-sm">

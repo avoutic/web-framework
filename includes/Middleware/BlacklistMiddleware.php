@@ -12,13 +12,13 @@ use WebFramework\Security\BlacklistService;
 class BlacklistMiddleware implements MiddlewareInterface
 {
     public function __construct(
-        private BlacklistService $blacklist_service,
+        private BlacklistService $blacklistService,
     ) {
     }
 
     public function process(Request $request, RequestHandlerInterface $handler): Response
     {
-        if ($this->blacklist_service->is_blacklisted(
+        if ($this->blacklistService->isBlacklisted(
             $request->getAttribute('ip'),
             $request->getAttribute('user_id'),
         ))

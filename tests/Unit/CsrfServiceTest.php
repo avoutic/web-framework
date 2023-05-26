@@ -20,11 +20,11 @@ final class CsrfServiceTest extends \Codeception\Test\Unit
                 new BrowserSessionService(),
             ],
             [
-                'get_random_bytes' => '1234567890123456',
+                'getRandomBytes' => '1234567890123456',
             ]
         );
 
-        verify($instance->get_token())
+        verify($instance->getToken())
             ->equals('3132333435363738393031323334353600000000000000000000000000000000');
     }
 
@@ -33,12 +33,12 @@ final class CsrfServiceTest extends \Codeception\Test\Unit
         $instance = $this->make(
             CsrfService::class,
             [
-                'is_valid_token_stored' => true,
-                'get_stored_token' => '1234567890123456',
+                'isValidTokenStored' => true,
+                'getStoredToken' => '1234567890123456',
             ]
         );
 
-        verify($instance->validate_token('3132333435363738393031323334353600000000000000000000000000000000'))
+        verify($instance->validateToken('3132333435363738393031323334353600000000000000000000000000000000'))
             ->equals(true);
     }
 
@@ -47,12 +47,12 @@ final class CsrfServiceTest extends \Codeception\Test\Unit
         $instance = $this->make(
             CsrfService::class,
             [
-                'is_valid_token_stored' => true,
-                'get_stored_token' => '1234567890123457',
+                'isValidTokenStored' => true,
+                'getStoredToken' => '1234567890123457',
             ]
         );
 
-        verify($instance->validate_token('3132333435363738393031323334353600000000000000000000000000000000'))
+        verify($instance->validateToken('3132333435363738393031323334353600000000000000000000000000000000'))
             ->equals(false);
     }
 }

@@ -14,16 +14,16 @@ use WebFramework\Security\CsrfService;
 class CsrfValidationMiddleware implements MiddlewareInterface
 {
     public function __construct(
-        private BlacklistService $blacklist_service,
-        private CsrfService $csrf_service,
-        private MessageService $message_service,
-        private ValidatorService $validator_service,
+        private BlacklistService $blacklistService,
+        private CsrfService $csrfService,
+        private MessageService $messageService,
+        private ValidatorService $validatorService,
     ) {
     }
 
     public function process(Request $request, RequestHandlerInterface $handler): Response
     {
-        $params = $this->validator_service->get_filtered_params(
+        $params = $this->validatorService->getFilteredParams(
             $request,
             [
                 'token' => '.*',
@@ -36,15 +36,15 @@ class CsrfValidationMiddleware implements MiddlewareInterface
 
         if (strlen($params['do']))
         {
-            if (!$this->csrf_service->validate_token($params['token']))
+            if (!$this->csrfService->validateToken($params['token']))
             {
                 $inputs['do'] = '';
 
                 $ip = $request->getAttribute('ip');
-                $user_id = $request->getAttribute('user_id');
+                $userId = $request->getAttribute('user_id');
 
-                $this->blacklist_service->add_entry($ip, $user_id, 'missing-csrf');
-                $this->message_service->add('error', 'CSRF token missing, possible attack', '');
+                $this->blacklistService->addEntry($ip, $userId, 'missing-csrf');
+                $this->messageService->add('error', 'CSRF token missing, possible attack', '');
             }
         }
 

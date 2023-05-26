@@ -8,66 +8,66 @@ use WebFramework\Core\PageAction;
 
 class ForgotPassword extends PageAction
 {
-    public static function get_filter(): array
+    public static function getFilter(): array
     {
         $container = ContainerWrapper::get();
 
-        $username_format = FORMAT_USERNAME;
+        $usernameFormat = FORMAT_USERNAME;
         if ($container->get('authenticator.unique_identifier') == 'email')
         {
-            $username_format = FORMAT_EMAIL;
+            $usernameFormat = FORMAT_EMAIL;
         }
 
         return [
-            'username' => $username_format,
+            'username' => $usernameFormat,
         ];
     }
 
-    protected function get_title(): string
+    protected function getTitle(): string
     {
         return 'Forgot password';
     }
 
-    protected function do_logic(): void
+    protected function doLogic(): void
     {
         // Check if this is a true attempt
         //
-        if (!strlen($this->get_input_var('do')))
+        if (!strlen($this->getInputVar('do')))
         {
             return;
         }
 
         // Check if user present
         //
-        $username = $this->get_input_var('username');
+        $username = $this->getInputVar('username');
         if (!strlen($username))
         {
-            $this->add_message('error', 'Please enter a username.', '');
+            $this->addMessage('error', 'Please enter a username.', '');
 
             return;
         }
 
-        $base_factory = $this->container->get(BaseFactory::class);
+        $baseFactory = $this->container->get(BaseFactory::class);
 
         // Retrieve user
         //
-        $user = $base_factory->get_user_by_username($username);
+        $user = $baseFactory->getUserByUsername($username);
 
         if ($user !== false)
         {
-            $user->send_password_reset_mail();
+            $user->sendPasswordResetMail();
         }
 
         // Redirect to main sceen
         //
-        $login_page = $this->get_base_url().$this->get_config('actions.login.location');
-        header("Location: {$login_page}?".$this->get_message_for_url('success', 'Reset link mailed to registered email account.'));
+        $loginPage = $this->getBaseUrl().$this->getConfig('actions.login.location');
+        header("Location: {$loginPage}?".$this->getMessageForUrl('success', 'Reset link mailed to registered email account.'));
 
         exit();
     }
 
-    protected function display_content(): void
+    protected function displayContent(): void
     {
-        $this->load_template('forgot_password.tpl', $this->page_content);
+        $this->loadTemplate('forgot_password.tpl', $this->pageContent);
     }
 }

@@ -23,11 +23,11 @@ final class ProtectServiceTest extends \Codeception\Test\Unit
                 ],
             ],
             [
-                'get_random_bytes' => '1234567890123456',
+                'getRandomBytes' => '1234567890123456',
             ]
         );
 
-        verify($instance->pack_string(''))
+        verify($instance->packString(''))
             ->equals('MTIzNDU2Nzg5MDEy--MzQ1Ng~~-WjlFVkU--4R1BtS3ZwQlBUZ1B--0cHhlUT09-4e0a82--9ee9b1aafad0f84b--95bed9979c081d12--e5bf7ebdd7bda9ee--fa0037dc5b');
     }
 
@@ -43,11 +43,11 @@ final class ProtectServiceTest extends \Codeception\Test\Unit
                 ],
             ],
             [
-                'get_random_bytes' => '1234567890123456',
+                'getRandomBytes' => '1234567890123456',
             ]
         );
 
-        verify($instance->unpack_string('MTIzNDU2Nzg5MDEy--MzQ1Ng~~-WjlFVkU--4R1BtS3ZwQlBUZ1B--0cHhlUT09-4e0a82--9ee9b1aafad0f84b--95bed9979c081d12--e5bf7ebdd7bda9ee--fa0037dc5b'))
+        verify($instance->unpackString('MTIzNDU2Nzg5MDEy--MzQ1Ng~~-WjlFVkU--4R1BtS3ZwQlBUZ1B--0cHhlUT09-4e0a82--9ee9b1aafad0f84b--95bed9979c081d12--e5bf7ebdd7bda9ee--fa0037dc5b'))
             ->equals('');
     }
 
@@ -63,11 +63,11 @@ final class ProtectServiceTest extends \Codeception\Test\Unit
                 ],
             ],
             [
-                'get_random_bytes' => '1234567890123456',
+                'getRandomBytes' => '1234567890123456',
             ]
         );
 
-        verify($instance->pack_string('TestMessage'))
+        verify($instance->packString('TestMessage'))
             ->equals('MTIzNDU2Nzg5MDEy--MzQ1Ng~~-Nng2ZmJ--jMkZQa0VwVVBKUmc--zZTlkQT09-a0748e--6b775c146d632302--ad333fb5c4d5a326--742066db62d07a08--f7053e8730');
     }
 
@@ -83,11 +83,11 @@ final class ProtectServiceTest extends \Codeception\Test\Unit
                 ],
             ],
             [
-                'get_random_bytes' => '1234567890123456',
+                'getRandomBytes' => '1234567890123456',
             ]
         );
 
-        verify($instance->unpack_string('MTIzNDU2Nzg5MDEy--MzQ1Ng~~-Nng2ZmJ--jMkZQa0VwVVBKUmc--zZTlkQT09-a0748e--6b775c146d632302--ad333fb5c4d5a326--742066db62d07a08--f7053e8730'))
+        verify($instance->unpackString('MTIzNDU2Nzg5MDEy--MzQ1Ng~~-Nng2ZmJ--jMkZQa0VwVVBKUmc--zZTlkQT09-a0748e--6b775c146d632302--ad333fb5c4d5a326--742066db62d07a08--f7053e8730'))
             ->equals('TestMessage');
     }
 
@@ -103,11 +103,11 @@ final class ProtectServiceTest extends \Codeception\Test\Unit
                 ],
             ],
             [
-                'get_random_bytes' => '1234567890123456',
+                'getRandomBytes' => '1234567890123456',
             ]
         );
 
-        verify($instance->unpack_string('MTIzNDU2Nzg5MDEy--MzQ1Ng~~-Nng2ZmJ--jMkZQa0VwVVBKUmc--zZTlkQT09aa0748e--6b775c146d632302--ad333fb5c4d5a326--742066db62d07a08--f7053e8730'))
+        verify($instance->unpackString('MTIzNDU2Nzg5MDEy--MzQ1Ng~~-Nng2ZmJ--jMkZQa0VwVVBKUmc--zZTlkQT09aa0748e--6b775c146d632302--ad333fb5c4d5a326--742066db62d07a08--f7053e8730'))
             ->equals(false);
     }
 
@@ -123,11 +123,11 @@ final class ProtectServiceTest extends \Codeception\Test\Unit
                 ],
             ],
             [
-                'get_random_bytes' => '1234567890123456',
+                'getRandomBytes' => '1234567890123456',
             ]
         );
 
-        verify($instance->unpack_string('MTIzNDU2Nzg5MDEy--MzQ1Ng~~-Nng2ZmJ--jMkZQa0VwVVBKUmc--zZTlkQT09-a0748e--6b775c146d632302--ad333fb5c4d5a326--742066db62d07a08--f7053e8731'))
+        verify($instance->unpackString('MTIzNDU2Nzg5MDEy--MzQ1Ng~~-Nng2ZmJ--jMkZQa0VwVVBKUmc--zZTlkQT09-a0748e--6b775c146d632302--ad333fb5c4d5a326--742066db62d07a08--f7053e8731'))
             ->equals(false);
     }
 }

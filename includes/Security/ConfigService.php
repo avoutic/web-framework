@@ -5,29 +5,29 @@ namespace WebFramework\Security;
 class ConfigService
 {
     public function __construct(
-        protected string $app_dir,
-        protected string $auth_dir,
+        protected string $appDir,
+        protected string $authDir,
     ) {
     }
 
-    public function get_auth_config(string $name): mixed
+    public function getAuthConfig(string $name): mixed
     {
-        $auth_config = $this->load_file($name);
+        $authConfig = $this->loadFile($name);
 
-        if (!is_array($auth_config) && !strlen($auth_config))
+        if (!is_array($authConfig) && !strlen($authConfig))
         {
             throw new \RuntimeException('Auth Config '.$name.' invalid');
         }
 
-        return $auth_config;
+        return $authConfig;
     }
 
     /**
      * @return array<mixed>|string
      */
-    protected function load_file(string $name): array|string
+    protected function loadFile(string $name): array|string
     {
-        $filename = "{$this->app_dir}{$this->auth_dir}/{$name}.php";
+        $filename = "{$this->appDir}{$this->authDir}/{$name}.php";
 
         if (!file_exists($filename))
         {

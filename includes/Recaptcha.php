@@ -9,45 +9,45 @@ class Recaptcha
     /**
      * @var array<string>
      */
-    protected array $error_codes = [];
+    protected array $errorCodes = [];
 
     public function __construct(
-        protected AssertService $assert_service,
+        protected AssertService $assertService,
         protected Client $client,
-        protected string $secret_key,
+        protected string $secretKey,
     ) {
     }
 
-    public function set_secret_key(string $secret_key): void
+    public function setSecretKey(string $secretKey): void
     {
-        $this->secret_key = $secret_key;
+        $this->secretKey = $secretKey;
     }
 
     /**
      * @return array<string>
      */
-    public function get_error_codes(): array
+    public function getErrorCodes(): array
     {
-        return $this->error_codes;
+        return $this->errorCodes;
     }
 
-    public function verify_response(string $recaptcha_response): bool
+    public function verifyResponse(string $recaptchaResponse): bool
     {
-        if (!strlen($recaptcha_response))
+        if (!strlen($recaptchaResponse))
         {
             return false;
         }
 
-        $recaptcha_secret = $this->secret_key;
-        $this->error_codes = [];
+        $recaptchaSecret = $this->secretKey;
+        $this->errorCodes = [];
 
-        $recaptcha_data = [
-            'secret' => $recaptcha_secret,
-            'response' => $recaptcha_response,
+        $recaptchaData = [
+            'secret' => $recaptchaSecret,
+            'response' => $recaptchaResponse,
         ];
 
         $response = $this->client->post('https://www.google.com/recaptcha/api/siteverify', [
-            'form_params' => $recaptcha_data,
+            'form_params' => $recaptchaData,
         ]);
 
         $body = $response->getBody();
@@ -55,10 +55,10 @@ class Recaptcha
 
         if (isset($body['error_codes']))
         {
-            $this->error_codes = $body['error_codes'];
+            $this->errorCodes = $body['error_codes'];
 
-            $this->assert_service->verify(!in_array('invalid-input-secret', $body['error-codes']), 'Invalid reCAPTCHA input secret used');
-            $this->assert_service->verify(!in_array('invalid-keys-secret', $body['error-codes']), 'Invalid reCAPTCHA key used');
+            $this->assertService->verify(!in_array('invalid-input-secret', $body['error-codes']), 'Invalid reCAPTCHA input secret used');
+            $this->assertService->verify(!in_array('invalid-keys-secret', $body['error-codes']), 'Invalid reCAPTCHA key used');
         }
 
         return $body['success'];

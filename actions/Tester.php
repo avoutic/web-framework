@@ -15,18 +15,18 @@ use WebFramework\Exception\BlacklistException;
 class Tester
 {
     public function __construct(
-        protected AssertService $assert_service,
+        protected AssertService $assertService,
         protected LatteRenderService $renderer,
-        protected ValidatorService $validator_service,
+        protected ValidatorService $validatorService,
     ) {
     }
 
     /**
-     * @param array<string, string> $route_args
+     * @param array<string, string> $routeArgs
      */
-    public function __invoke(Request $request, Response $response, $route_args): Response
+    public function __invoke(Request $request, Response $response, $routeArgs): Response
     {
-        $inputs = $this->validator_service->get_filtered_params(
+        $inputs = $this->validatorService->getFilteredParams(
             $request,
             [
                 'action' => '\w+',
@@ -64,7 +64,7 @@ class Tester
 
         if ($inputs['action'] === 'report_error')
         {
-            $this->assert_service->report_error('Reported error');
+            $this->assertService->reportError('Reported error');
         }
 
         if ($inputs['action'] === 'warning')

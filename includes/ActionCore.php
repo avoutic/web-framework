@@ -25,22 +25,22 @@ abstract class ActionCore
     /**
      * @var array<array<string>|string>
      */
-    protected array $raw_input = [];
+    protected array $rawInput = [];
 
     public function __construct(
         protected Cache $cache,
         protected Container $container,
         protected Database $database,
-        protected AssertService $assert_service,
-        protected AuthenticationService $authentication_service,
-        protected BlacklistService $blacklist_service,
-        protected ConfigService $config_service,
-        protected CsrfService $csrf_service,
-        protected DebugService $debug_service,
-        protected MessageService $message_service,
-        protected ProtectService $protect_service,
-        protected SecureConfigService $secure_config_service,
-        protected ValidatorService $validator_service,
+        protected AssertService $assertService,
+        protected AuthenticationService $authenticationService,
+        protected BlacklistService $blacklistService,
+        protected ConfigService $configService,
+        protected CsrfService $csrfService,
+        protected DebugService $debugService,
+        protected MessageService $messageService,
+        protected ProtectService $protectService,
+        protected SecureConfigService $secureConfigService,
+        protected ValidatorService $validatorService,
     ) {
         $this->init();
     }
@@ -52,15 +52,15 @@ abstract class ActionCore
     /**
      * @param array<string, string> $args
      */
-    public function handle_permissions_and_inputs(Request $request, array $args): void
+    public function handlePermissionsAndInputs(Request $request, array $args): void
     {
-        $action_permissions = static::get_permissions();
+        $actionPermissions = static::getPermissions();
 
-        $has_permissions = $this->authentication_service->user_has_permissions($action_permissions);
+        $hasPermissions = $this->authenticationService->userHasPermissions($actionPermissions);
 
-        if (!$has_permissions)
+        if (!$hasPermissions)
         {
-            if ($this->authentication_service->is_authenticated())
+            if ($this->authenticationService->isAuthenticated())
             {
                 throw new HttpForbiddenException($request);
             }
@@ -68,38 +68,38 @@ abstract class ActionCore
             throw new HttpUnauthorizedException($request);
         }
 
-        $action_filter = static::get_filter();
+        $actionFilter = static::getFilter();
 
-        $request = $this->validator_service->filter_request($request, $action_filter);
-        $this->set_inputs($request, $args);
+        $request = $this->validatorService->filterRequest($request, $actionFilter);
+        $this->setInputs($request, $args);
     }
 
     /**
-     * @param array<string, string> $route_inputs
+     * @param array<string, string> $routeInputs
      */
-    public function set_inputs(Request $request, array $route_inputs): void
+    public function setInputs(Request $request, array $routeInputs): void
     {
-        $this->raw_input = $request->getAttribute('raw_inputs', []);
+        $this->rawInput = $request->getAttribute('raw_inputs', []);
         $this->input = $request->getAttribute('inputs', []);
 
-        $this->raw_input = array_merge($this->raw_input, $route_inputs);
-        $this->input = array_merge($this->input, $route_inputs);
+        $this->rawInput = array_merge($this->rawInput, $routeInputs);
+        $this->input = array_merge($this->input, $routeInputs);
     }
 
     /**
      * @return array<string>
      */
-    public static function get_filter(): array
+    public static function getFilter(): array
     {
         return [];
     }
 
-    protected function get_input_var(string $name, bool $content_required = false): string
+    protected function getInputVar(string $name, bool $contentRequired = false): string
     {
         $this->verify(isset($this->input[$name]), 'Missing input variable: '.$name);
         $this->verify(is_string($this->input[$name]), 'Not a string');
 
-        if ($content_required)
+        if ($contentRequired)
         {
             $this->verify(strlen($this->input[$name]), 'Missing input variable: '.$name);
         }
@@ -110,7 +110,7 @@ abstract class ActionCore
     /**
      * @return array<string>
      */
-    protected function get_input_array(string $name): array
+    protected function getInputArray(string $name): array
     {
         $this->verify(isset($this->input[$name]), 'Missing input variable: '.$name);
         $this->verify(is_array($this->input[$name]), 'Not an array');
@@ -121,11 +121,11 @@ abstract class ActionCore
     /**
      * @return array<array<string>|string>
      */
-    protected function get_input_vars(): array
+    protected function getInputVars(): array
     {
         $fields = [];
 
-        foreach (array_keys($this->get_filter()) as $key)
+        foreach (array_keys($this->getFilter()) as $key)
         {
             $fields[$key] = $this->input[$key];
         }
@@ -133,34 +133,34 @@ abstract class ActionCore
         return $fields;
     }
 
-    protected function get_raw_input_var(string $name): string
+    protected function getRawInputVar(string $name): string
     {
-        $this->verify(isset($this->raw_input[$name]), 'Missing input variable: '.$name);
+        $this->verify(isset($this->rawInput[$name]), 'Missing input variable: '.$name);
         $this->verify(is_string($this->input[$name]), 'Not a string');
 
-        return $this->raw_input[$name];
+        return $this->rawInput[$name];
     }
 
     /**
      * @return array<string>
      */
-    protected function get_raw_input_array(string $name): array
+    protected function getRawInputArray(string $name): array
     {
-        $this->verify(isset($this->raw_input[$name]), 'Missing input variable: '.$name);
+        $this->verify(isset($this->rawInput[$name]), 'Missing input variable: '.$name);
         $this->verify(is_array($this->input[$name]), 'Not an array');
 
-        return $this->raw_input[$name];
+        return $this->rawInput[$name];
     }
 
-    protected function get_base_url(): string
+    protected function getBaseUrl(): string
     {
-        return $this->config_service->get('base_url');
+        return $this->configService->get('base_url');
     }
 
     /**
      * @return never
      */
-    protected function exit_send_error(int $code, string $title, string $type = 'generic', string $message = ''): void
+    protected function exitSendError(int $code, string $title, string $type = 'generic', string $message = ''): void
     {
         throw new \RuntimeException($message);
     }
@@ -168,7 +168,7 @@ abstract class ActionCore
     /**
      * @return never
      */
-    protected function exit_send_400(string $type = 'generic'): void
+    protected function exitSend400(string $type = 'generic'): void
     {
         $request = ServerRequestFactory::createFromGlobals();
 
@@ -178,7 +178,7 @@ abstract class ActionCore
     /**
      * @return never
      */
-    protected function exit_send_403(string $type = 'generic'): void
+    protected function exitSend403(string $type = 'generic'): void
     {
         $request = ServerRequestFactory::createFromGlobals();
 
@@ -188,69 +188,69 @@ abstract class ActionCore
     /**
      * @return never
      */
-    protected function exit_send_404(string $type = 'generic'): void
+    protected function exitSend404(string $type = 'generic'): void
     {
         $request = ServerRequestFactory::createFromGlobals();
 
         throw new HttpNotFoundException($request);
     }
 
-    protected function blacklist_404(bool|int $bool, string $reason, string $type = 'generic'): void
+    protected function blacklist404(bool|int $bool, string $reason, string $type = 'generic'): void
     {
         if ($bool)
         {
             return;
         }
 
-        $this->add_blacklist_entry($reason);
+        $this->addBlacklistEntry($reason);
 
-        $this->exit_send_404($type);
+        $this->exitSend404($type);
     }
 
     /**
      * @return array<string>
      */
-    public static function get_permissions(): array
+    public static function getPermissions(): array
     {
         return [];
     }
 
-    public static function redirect_login_type(): string
+    public static function redirectLoginType(): string
     {
         return 'redirect';
     }
 
-    public static function encode(mixed $input, bool $double_encode = true): string
+    public static function encode(mixed $input, bool $doubleEncode = true): string
     {
-        $value = (is_string($input) || is_bool($input) || is_int($input) || is_float($input) || is_null($input)) && is_bool($double_encode);
+        $value = (is_string($input) || is_bool($input) || is_int($input) || is_float($input) || is_null($input)) && is_bool($doubleEncode);
 
         if (!$value)
         {
             throw new \InvalidArgumentException('Not valid for encoding');
         }
 
-        $str = htmlentities((string) $input, ENT_QUOTES, 'UTF-8', $double_encode);
+        $str = htmlentities((string) $input, ENT_QUOTES, 'UTF-8', $doubleEncode);
         if (!strlen($str))
         {
-            $str = htmlentities((string) $input, ENT_QUOTES, 'ISO-8859-1', $double_encode);
+            $str = htmlentities((string) $input, ENT_QUOTES, 'ISO-8859-1', $doubleEncode);
         }
 
         return $str;
     }
 
-    protected function get_app_dir(): string
+    protected function getAppDir(): string
     {
         return $this->container->get('app_dir');
     }
 
-    protected function get_config(string $path): mixed
+    protected function getConfig(string $path): mixed
     {
-        return $this->config_service->get($path);
+        return $this->configService->get($path);
     }
 
     // Database related
     //
-    protected function get_db(string $tag = ''): Database
+    protected function getDb(string $tag = ''): Database
     {
         if (strlen($tag))
         {
@@ -271,19 +271,19 @@ abstract class ActionCore
     /**
      * @param array<null|bool|float|int|string> $params
      */
-    protected function insert_query(string $query, array $params): false|int
+    protected function insertQuery(string $query, array $params): false|int
     {
-        return $this->database->insert_query($query, $params);
+        return $this->database->insertQuery($query, $params);
     }
 
-    protected function start_transaction(): void
+    protected function startTransaction(): void
     {
-        $this->database->start_transaction();
+        $this->database->startTransaction();
     }
 
-    protected function commit_transaction(): void
+    protected function commitTransaction(): void
     {
-        $this->database->commit_transaction();
+        $this->database->commitTransaction();
     }
 
     // Message related
@@ -291,19 +291,19 @@ abstract class ActionCore
     /**
      * @return array<array{mtype: string, message: string, extra_message: string}>
      */
-    protected function get_messages(): array
+    protected function getMessages(): array
     {
-        return $this->message_service->get_messages();
+        return $this->messageService->getMessages();
     }
 
-    protected function add_message(string $mtype, string $message, string $extra_message = ''): void
+    protected function addMessage(string $mtype, string $message, string $extraMessage = ''): void
     {
-        $this->message_service->add($mtype, $message, $extra_message);
+        $this->messageService->add($mtype, $message, $extraMessage);
     }
 
-    protected function get_message_for_url(string $mtype, string $message, string $extra_message = ''): string
+    protected function getMessageForUrl(string $mtype, string $message, string $extraMessage = ''): string
     {
-        return $this->message_service->get_for_url($mtype, $message, $extra_message);
+        return $this->messageService->getForUrl($mtype, $message, $extraMessage);
     }
 
     // Assert related
@@ -311,100 +311,100 @@ abstract class ActionCore
     /**
      * @param array<mixed> $stack
      */
-    protected function report_error(string $message, array $stack = null): void
+    protected function reportError(string $message, array $stack = null): void
     {
         if ($stack === null)
         {
             $stack = debug_backtrace(0);
         }
 
-        $this->assert_service->report_error($message, $stack);
+        $this->assertService->reportError($message, $stack);
     }
 
     protected function verify(bool|int $bool, string $message): void
     {
-        $this->assert_service->verify($bool, $message);
+        $this->assertService->verify($bool, $message);
     }
 
-    protected function blacklist_verify(bool|int $bool, string $reason, int $severity = 1): void
+    protected function blacklistVerify(bool|int $bool, string $reason, int $severity = 1): void
     {
         if ($bool)
         {
             return;
         }
 
-        $this->blacklist_service->add_entry($_SERVER['REMOTE_ADDR'], $this->get_authenticated('user_id'), $reason, $severity);
+        $this->blacklistService->addEntry($_SERVER['REMOTE_ADDR'], $this->getAuthenticated('user_id'), $reason, $severity);
     }
 
     // Security related
     //
 
-    protected function get_auth_config(string $key_file): mixed
+    protected function getAuthConfig(string $keyFile): mixed
     {
-        return $this->secure_config_service->get_auth_config($key_file);
+        return $this->secureConfigService->getAuthConfig($keyFile);
     }
 
-    protected function add_blacklist_entry(string $reason, int $severity = 1): void
+    protected function addBlacklistEntry(string $reason, int $severity = 1): void
     {
-        $this->blacklist_service->add_entry($_SERVER['REMOTE_ADDR'], $this->get_authenticated('user_id'), $reason, $severity);
+        $this->blacklistService->addEntry($_SERVER['REMOTE_ADDR'], $this->getAuthenticated('user_id'), $reason, $severity);
     }
 
-    protected function encode_and_auth_string(string $value): string
+    protected function encodeAndAuthString(string $value): string
     {
-        return $this->protect_service->pack_string($value);
+        return $this->protectService->packString($value);
     }
 
     /**
      * @param array<mixed> $array
      */
-    protected function encode_and_auth_array(array $array): string
+    protected function encodeAndAuthArray(array $array): string
     {
-        return $this->protect_service->pack_array($array);
+        return $this->protectService->packArray($array);
     }
 
-    protected function decode_and_verify_string(string $str): string|false
+    protected function decodeAndVerifyString(string $str): string|false
     {
-        return $this->protect_service->unpack_string($str);
+        return $this->protectService->unpackString($str);
     }
 
     /**
      * @return array<mixed>|false
      */
-    protected function decode_and_verify_array(string $str): array|false
+    protected function decodeAndVerifyArray(string $str): array|false
     {
-        return $this->protect_service->unpack_array($str);
+        return $this->protectService->unpackArray($str);
     }
 
     // Authentication related
     //
     protected function authenticate(User $user): void
     {
-        $this->authentication_service->authenticate($user);
+        $this->authenticationService->authenticate($user);
     }
 
     protected function deauthenticate(): void
     {
-        $this->authentication_service->deauthenticate();
+        $this->authenticationService->deauthenticate();
     }
 
-    protected function invalidate_sessions(int $user_id): void
+    protected function invalidateSessions(int $userId): void
     {
-        $this->authentication_service->invalidate_sessions($user_id);
+        $this->authenticationService->invalidateSessions($userId);
     }
 
-    protected function is_authenticated(): bool
+    protected function isAuthenticated(): bool
     {
-        return $this->authentication_service->is_authenticated();
+        return $this->authenticationService->isAuthenticated();
     }
 
-    protected function get_authenticated_user(): User
+    protected function getAuthenticatedUser(): User
     {
-        return $this->authentication_service->get_authenticated_user();
+        return $this->authenticationService->getAuthenticatedUser();
     }
 
-    protected function get_authenticated(string $type): mixed
+    protected function getAuthenticated(string $type): mixed
     {
-        $user = $this->get_authenticated_user();
+        $user = $this->getAuthenticatedUser();
         if ($type === 'user')
         {
             return $user;
@@ -421,9 +421,9 @@ abstract class ActionCore
     /**
      * @param array<string> $permissions
      */
-    protected function user_has_permissions(array $permissions): bool
+    protected function userHasPermissions(array $permissions): bool
     {
-        return $this->authentication_service->user_has_permissions($permissions);
+        return $this->authenticationService->userHasPermissions($permissions);
     }
 
     // Build info
@@ -431,8 +431,8 @@ abstract class ActionCore
     /**
      * @return array{commit: null|string, timestamp: string}
      */
-    protected function get_build_info(): array
+    protected function getBuildInfo(): array
     {
-        return $this->debug_service->get_build_info();
+        return $this->debugService->getBuildInfo();
     }
 }

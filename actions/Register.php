@@ -12,7 +12,7 @@ class Register extends PageAction
     /**
      * @return array<string, string>
      */
-    public static function custom_get_filter(): array
+    public static function customGetFilter(): array
     {
         return [];
     }
@@ -20,11 +20,11 @@ class Register extends PageAction
     /**
      * @return array<string, string>
      */
-    public static function get_filter(): array
+    public static function getFilter(): array
     {
-        $custom_filter = static::custom_get_filter();
+        $customFilter = static::customGetFilter();
 
-        $base_filter = [
+        $baseFilter = [
             'username' => FORMAT_USERNAME,
             'password' => FORMAT_PASSWORD,
             'password2' => FORMAT_PASSWORD,
@@ -33,22 +33,22 @@ class Register extends PageAction
             'g-recaptcha-response' => '.*',
         ];
 
-        return array_merge($base_filter, $custom_filter);
+        return array_merge($baseFilter, $customFilter);
     }
 
-    protected function check_sanity(): void
+    protected function checkSanity(): void
     {
-        $recaptcha_config = $this->get_config('security.recaptcha');
-        $this->verify(strlen($recaptcha_config['site_key']), 'Missing reCAPTCHA Site Key');
-        $this->verify(strlen($recaptcha_config['secret_key']), 'Missing reCAPTCHA Secret Key');
+        $recaptchaConfig = $this->getConfig('security.recaptcha');
+        $this->verify(strlen($recaptchaConfig['site_key']), 'Missing reCAPTCHA Site Key');
+        $this->verify(strlen($recaptchaConfig['secret_key']), 'Missing reCAPTCHA Secret Key');
     }
 
-    protected function get_title(): string
+    protected function getTitle(): string
     {
         return 'Register new account';
     }
 
-    protected function get_onload(): string
+    protected function getOnload(): string
     {
         return "$('#username').focus();";
     }
@@ -56,42 +56,42 @@ class Register extends PageAction
     /**
      * @return array<mixed>
      */
-    protected function get_after_verify_data(): array
+    protected function getAfterVerifyData(): array
     {
         return [];
     }
 
-    protected function custom_prepare_page_content(): void
+    protected function customPreparePageContent(): void
     {
     }
 
-    protected function custom_value_check(): bool
+    protected function customValueCheck(): bool
     {
         return true;
     }
 
-    protected function custom_finalize_create(User $user): void
+    protected function customFinalizeCreate(User $user): void
     {
     }
 
     // Can be overriden for project specific user factories and user classes
     //
-    protected function create_user(string $username, string $password, string $email): User
+    protected function createUser(string $username, string $password, string $email): User
     {
         $factory = $this->container->get(BaseFactory::class);
-        $user = $factory->create_user($username, $password, $email, time());
+        $user = $factory->createUser($username, $password, $email, time());
         $this->verify($user !== false, 'Failed to create user');
 
         return $user;
     }
 
-    protected function do_logic(): void
+    protected function doLogic(): void
     {
-        $identifier = $this->get_config('authenticator.unique_identifier');
+        $identifier = $this->getConfig('authenticator.unique_identifier');
 
-        $email = $this->get_input_var('email');
-        $password = $this->get_input_var('password');
-        $password2 = $this->get_input_var('password2');
+        $email = $this->getInputVar('email');
+        $password = $this->getInputVar('password');
+        $password2 = $this->getInputVar('password2');
 
         if ($identifier == 'email')
         {
@@ -99,36 +99,36 @@ class Register extends PageAction
         }
         else
         {
-            $username = $this->get_input_var('username');
+            $username = $this->getInputVar('username');
         }
 
-        $accept_terms = $this->get_input_var('accept_terms');
+        $acceptTerms = $this->getInputVar('accept_terms');
 
-        $this->page_content['username'] = $this->get_raw_input_var('username');
-        $this->page_content['password'] = $password;
-        $this->page_content['password2'] = $password2;
-        $this->page_content['email'] = $this->get_raw_input_var('email');
-        $this->page_content['accept_terms'] = $accept_terms;
-        $this->page_content['recaptcha_site_key'] = $this->get_config('security.recaptcha.site_key');
+        $this->pageContent['username'] = $this->getRawInputVar('username');
+        $this->pageContent['password'] = $password;
+        $this->pageContent['password2'] = $password2;
+        $this->pageContent['email'] = $this->getRawInputVar('email');
+        $this->pageContent['accept_terms'] = $acceptTerms;
+        $this->pageContent['recaptcha_site_key'] = $this->getConfig('security.recaptcha.site_key');
 
-        $this->custom_prepare_page_content();
+        $this->customPreparePageContent();
 
         // Check if already logged in
         //
-        if ($this->is_authenticated())
+        if ($this->isAuthenticated())
         {
             // Redirect to default page
             //
-            $return_page = $this->get_config('actions.login.default_return_page');
-            header('Location: '.$this->get_base_url().$return_page.'?'.
-                            $this->get_message_for_url('info', 'Already logged in'));
+            $returnPage = $this->getConfig('actions.login.default_return_page');
+            header('Location: '.$this->getBaseUrl().$returnPage.'?'.
+                            $this->getMessageForUrl('info', 'Already logged in'));
 
             exit();
         }
 
         // Check if this is a true attempt
         //
-        if (!strlen($this->get_input_var('do')))
+        if (!strlen($this->getInputVar('do')))
         {
             return;
         }
@@ -139,71 +139,71 @@ class Register extends PageAction
         //
         if ($identifier == 'username' && !strlen($username))
         {
-            $this->add_message('error', 'Please enter a correct username.', 'Usernames can contain letters, digits and underscores.');
+            $this->addMessage('error', 'Please enter a correct username.', 'Usernames can contain letters, digits and underscores.');
             $success = false;
         }
 
         if (!strlen($password))
         {
-            $this->add_message('error', 'Please enter a password.', 'Passwords can contain any printable character.');
+            $this->addMessage('error', 'Please enter a password.', 'Passwords can contain any printable character.');
             $success = false;
         }
 
         if (!strlen($password2))
         {
-            $this->add_message('error', 'Please enter the password verification.', 'Password verification should match password.');
+            $this->addMessage('error', 'Please enter the password verification.', 'Password verification should match password.');
             $success = false;
         }
 
         if (strlen($password) && strlen($password2) && $password != $password2)
         {
-            $this->add_message('error', 'Passwords don\'t match.', 'Password and password verification should be the same.');
+            $this->addMessage('error', 'Passwords don\'t match.', 'Password and password verification should be the same.');
             $success = false;
         }
 
         if (strlen($password) < 8)
         {
-            $this->add_message('error', 'Password is too weak.', 'Use at least 8 characters.');
+            $this->addMessage('error', 'Password is too weak.', 'Use at least 8 characters.');
             $success = false;
         }
 
         if (!strlen($email))
         {
-            $this->add_message('error', 'Please enter a correct e-mail address.', 'E-mail addresses can contain letters, digits, hyphens, underscores, dots and at\'s.');
+            $this->addMessage('error', 'Please enter a correct e-mail address.', 'E-mail addresses can contain letters, digits, hyphens, underscores, dots and at\'s.');
             $success = false;
         }
 
-        if ($accept_terms != 1)
+        if ($acceptTerms != 1)
         {
-            $this->add_message('error', 'Please accept our Terms.', 'To register for our site you need to accept our Privacy Policy and our Terms of Service.');
+            $this->addMessage('error', 'Please accept our Terms.', 'To register for our site you need to accept our Privacy Policy and our Terms of Service.');
             $success = false;
         }
 
-        if ($this->custom_value_check() !== true)
+        if ($this->customValueCheck() !== true)
         {
             $success = false;
         }
 
-        $recaptcha_response = $this->get_input_var('g-recaptcha-response');
+        $recaptchaResponse = $this->getInputVar('g-recaptcha-response');
 
-        if (!strlen($recaptcha_response))
+        if (!strlen($recaptchaResponse))
         {
-            $this->add_message('error', 'CAPTCHA required', 'To prevent bots registering account en masse, filling in a CAPTCHA is required!');
+            $this->addMessage('error', 'CAPTCHA required', 'To prevent bots registering account en masse, filling in a CAPTCHA is required!');
             $success = false;
 
             return;
         }
 
         $recaptcha = new Recaptcha(
-            $this->assert_service,
+            $this->assertService,
             new \GuzzleHttp\Client(),
-            $this->get_config('security.recaptcha.secret_key'),
+            $this->getConfig('security.recaptcha.secret_key'),
         );
-        $result = $recaptcha->verify_response($recaptcha_response);
+        $result = $recaptcha->verifyResponse($recaptchaResponse);
 
         if ($result != true)
         {
-            $this->add_message('error', 'The CAPTCHA code entered was incorrect.');
+            $this->addMessage('error', 'The CAPTCHA code entered was incorrect.');
             $success = false;
 
             return;
@@ -227,9 +227,9 @@ class Register extends PageAction
 
             if ($result->RecordCount() == 1)
             {
-                $forgot_password_page = $this->get_base_url().$this->get_config('actions.forgot_password.location');
+                $forgotPasswordPage = $this->getBaseUrl().$this->getConfig('actions.forgot_password.location');
 
-                $this->add_message('error', 'E-mail already registered.', 'An account has already been registered with this e-mail address. <a href="'.$forgot_password_page.'">Forgot your password?</a>');
+                $this->addMessage('error', 'E-mail already registered.', 'An account has already been registered with this e-mail address. <a href="'.$forgotPasswordPage.'">Forgot your password?</a>');
 
                 return;
             }
@@ -245,7 +245,7 @@ class Register extends PageAction
 
             if ($result->RecordCount() == 1)
             {
-                $this->add_message('error', 'Username already exists.', 'This username has already been taken. Please enter another username.');
+                $this->addMessage('error', 'Username already exists.', 'This username has already been taken. Please enter another username.');
 
                 return;
             }
@@ -253,37 +253,37 @@ class Register extends PageAction
 
         // Add account
         //
-        $result = $this->create_user($username, $password, $email);
+        $result = $this->createUser($username, $password, $email);
 
-        $this->custom_finalize_create($result);
-        $this->post_create_actions($result);
+        $this->customFinalizeCreate($result);
+        $this->postCreateActions($result);
     }
 
     /**
      * @return never
      */
-    protected function post_create_actions(User $user): void
+    protected function postCreateActions(User $user): void
     {
-        $code = $user->generate_verify_code('send_verify', $this->get_after_verify_data());
-        $send_verify_page = $this->get_config('actions.login.send_verify_page');
-        $send_verify_url = $send_verify_page.'?code='.$code;
+        $code = $user->generateVerifyCode('send_verify', $this->getAfterVerifyData());
+        $sendVerifyPage = $this->getConfig('actions.login.send_verify_page');
+        $sendVerifyUrl = $sendVerifyPage.'?code='.$code;
 
         // Redirect to verification request screen
         //
-        header('Location: '.$this->get_base_url().$send_verify_url);
+        header('Location: '.$this->getBaseUrl().$sendVerifyUrl);
 
         exit();
     }
 
-    protected function display_header(): void
+    protected function displayHeader(): void
     {
         echo <<<'HTML'
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 HTML;
     }
 
-    protected function display_content(): void
+    protected function displayContent(): void
     {
-        $this->load_template('register_account.tpl', $this->page_content);
+        $this->loadTemplate('register_account.tpl', $this->pageContent);
     }
 }

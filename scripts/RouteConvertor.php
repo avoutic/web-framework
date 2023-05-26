@@ -3,7 +3,7 @@
 class RouteConvertor
 {
     public function __construct(
-        private string $collector_name = 'app',
+        private string $collectorName = 'app',
         private string $prefix = '',
     ) {
     }
@@ -11,7 +11,7 @@ class RouteConvertor
     /**
      * @param array<string> $variables
      */
-    public function register_route(string $route, string $ignore, string $handler, array $variables = []): void
+    public function registerRoute(string $route, string $ignore, string $handler, array $variables = []): void
     {
         // Split the route definition
         list($method, $path) = explode(' ', $route);
@@ -37,7 +37,7 @@ class RouteConvertor
         }
 
         // Create the line to be outputted
-        $output = '$'.$this->collector_name.'->'.strtolower($method)."('".$path."', [".$class."::class, '".$function."']);".PHP_EOL;
+        $output = '$'.$this->collectorName.'->'.strtolower($method)."('".$path."', [".$class."::class, '".$function."']);".PHP_EOL;
 
         // Print out the result
         echo $output;

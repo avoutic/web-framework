@@ -9,17 +9,17 @@ class CamelCaseAutoLoader
     /**
      * @var array<string, string>
      */
-    protected array $wf_exceptions = [
+    protected array $wfExceptions = [
     ];
 
     /**
      * @var array<string, string>
      */
-    protected array $wf_namespaces = [
+    protected array $wfNamespaces = [
     ];
 
     public function __construct(
-        private string $app_dir,
+        private string $appDir,
     ) {
     }
 
@@ -28,19 +28,19 @@ class CamelCaseAutoLoader
         spl_autoload_register([$this, 'autoload'], true, true);
     }
 
-    public function register_exception(string $class, string $file): void
+    public function registerException(string $class, string $file): void
     {
-        $this->wf_exceptions[$class] = $file;
+        $this->wfExceptions[$class] = $file;
     }
 
-    public function register_namespace(string $namespace, string $relative_dir): void
+    public function registerNamespace(string $namespace, string $relativeDir): void
     {
-        $this->wf_namespaces[$namespace] = $relative_dir;
+        $this->wfNamespaces[$namespace] = $relativeDir;
     }
 
-    public function autoload(string $namespaced_class_name): void
+    public function autoload(string $namespacedClassName): void
     {
-        $exploded = explode('\\', $namespaced_class_name);
+        $exploded = explode('\\', $namespacedClassName);
 
         $namespace = '';
         if (count($exploded) > 1)
@@ -48,60 +48,60 @@ class CamelCaseAutoLoader
             $namespace = implode('\\', array_slice($exploded, 0, -1));
         }
 
-        $class_name = end($exploded);
+        $className = end($exploded);
 
         // Skip other namespaces
         //
-        if (!isset($this->wf_namespaces[$namespace]))
+        if (!isset($this->wfNamespaces[$namespace]))
         {
             return;
         }
 
-        $dir = $this->wf_namespaces[$namespace];
+        $dir = $this->wfNamespaces[$namespace];
 
-        $this->try_load($dir, $class_name);
+        $this->tryLoad($dir, $className);
 
-        if (str_ends_with($class_name, 'Factory'))
+        if (str_ends_with($className, 'Factory'))
         {
-            $this->try_load($dir, substr($class_name, 0, -7));
+            $this->tryLoad($dir, substr($className, 0, -7));
         }
     }
 
-    protected function try_load(string $dir, string $class_name): void
+    protected function tryLoad(string $dir, string $className): void
     {
         // Convert Camelcase to lowercase underscores
         //
-        $include_name = '';
+        $includeName = '';
 
-        if (isset($this->wf_exceptions[$class_name]))
+        if (isset($this->wfExceptions[$className]))
         {
-            $include_name = $this->wf_exceptions[$class_name];
+            $includeName = $this->wfExceptions[$className];
         }
         else
         {
-            $include_name = preg_replace('/([a-z])([A-Z])/', '$1_$2', $class_name);
-            if ($include_name === null)
+            $includeName = preg_replace('/([a-z])([A-Z])/', '$1_$2', $className);
+            if ($includeName === null)
             {
-                exit("Cannot convert '{$class_name}' to CamelCase");
+                exit("Cannot convert '{$className}' to CamelCase");
             }
 
-            $include_name = strtolower($include_name);
+            $includeName = strtolower($includeName);
         }
 
-        $full_path = "{$this->app_dir}{$dir}{$include_name}.inc.php";
-        if (file_exists($full_path))
+        $fullPath = "{$this->appDir}{$dir}{$includeName}.inc.php";
+        if (file_exists($fullPath))
         {
-            include_once $full_path;
+            include_once $fullPath;
 
             return;
         }
     }
 
-    public static function get_loader(string $app_dir): self
+    public static function getLoader(string $appDir): self
     {
         if (self::$loader === null)
         {
-            self::$loader = new self($app_dir);
+            self::$loader = new self($appDir);
             self::$loader->register();
         }
 
@@ -109,6 +109,6 @@ class CamelCaseAutoLoader
     }
 }
 
-global $app_dir;
+global $appDir;
 
-CamelCaseAutoLoader::get_loader($app_dir);
+CamelCaseAutoLoader::getLoader($appDir);

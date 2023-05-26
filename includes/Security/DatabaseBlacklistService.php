@@ -8,9 +8,9 @@ class DatabaseBlacklistService implements BlacklistService
 {
     public function __construct(
         private Database $database,
-        private int $store_period,
+        private int $storePeriod,
         private int $threshold,
-        private int $trigger_period,
+        private int $triggerPeriod,
     ) {
     }
 
@@ -21,7 +21,7 @@ class DatabaseBlacklistService implements BlacklistService
         WHERE timestamp < ?
 SQL;
 
-        $cutoff = time() - $this->store_period;
+        $cutoff = time() - $this->storePeriod;
 
         $result = $this->database->query($query, [$cutoff]);
         if ($result === false)
@@ -30,29 +30,29 @@ SQL;
         }
     }
 
-    public function add_entry(string $ip, ?int $user_id, string $reason, int $severity = 1): void
+    public function addEntry(string $ip, ?int $userId, string $reason, int $severity = 1): void
     {
-        $full_reason = $reason;
+        $fullReason = $reason;
 
         $entry = BlacklistEntry::create([
             'ip' => $ip,
-            'user_id' => $user_id,
+            'user_id' => $userId,
             'severity' => $severity,
-            'reason' => $full_reason,
+            'reason' => $fullReason,
             'timestamp' => time(),
         ]);
     }
 
-    public function is_blacklisted(string $ip, ?int $user_id): bool
+    public function isBlacklisted(string $ip, ?int $userId): bool
     {
-        $cutoff = time() - $this->trigger_period;
+        $cutoff = time() - $this->triggerPeriod;
         $params = [$cutoff, $ip];
-        $user_fmt = '';
+        $userFmt = '';
 
-        if ($user_id != null)
+        if ($userId != null)
         {
-            $params[] = $user_id;
-            $user_fmt = 'OR user_id = ?';
+            $params[] = $userId;
+            $userFmt = 'OR user_id = ?';
         }
 
         $query = <<<SQL
@@ -61,7 +61,7 @@ SQL;
         WHERE timestamp > ? AND
               (
                  ip = ?
-                {$user_fmt}
+                {$userFmt}
               )
 SQL;
 

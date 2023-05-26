@@ -4,55 +4,55 @@ namespace WebFramework\Core;
 
 class UploadHandler
 {
-    protected string $var_name;
-    protected string $tmp_filename = '';
-    protected string $orig_filename = '';
-    protected string $mime_type = '';
+    protected string $varName;
+    protected string $tmpFilename = '';
+    protected string $origFilename = '';
+    protected string $mimeType = '';
 
-    public function __construct(string $var_name = 'file')
+    public function __construct(string $varName = 'file')
     {
-        $this->var_name = $var_name;
+        $this->varName = $varName;
     }
 
     /**
-     * @param array<string>|true $whitelist_mime_types
+     * @param array<string>|true $whitelistMimeTypes
      */
-    public function check_upload(int $max_size, true|array $whitelist_mime_types = true): string|true
+    public function checkUpload(int $maxSize, true|array $whitelistMimeTypes = true): string|true
     {
-        $var_name = $this->var_name;
+        $varName = $this->varName;
 
-        if (!isset($_FILES[$var_name])
-            || !isset($_FILES[$var_name]['size'])
-            || $_FILES[$var_name]['size'] == 0)
+        if (!isset($_FILES[$varName])
+            || !isset($_FILES[$varName]['size'])
+            || $_FILES[$varName]['size'] == 0)
         {
             return 'no_file_present';
         }
 
-        if (!isset($_FILES[$var_name]['error'])
-            || is_array($_FILES[$var_name]['error'])
-            || $_FILES[$var_name]['error'] != 0)
+        if (!isset($_FILES[$varName]['error'])
+            || is_array($_FILES[$varName]['error'])
+            || $_FILES[$varName]['error'] != 0)
         {
             return 'upload_error';
         }
 
-        if ($_FILES[$var_name]['size'] > $max_size)
+        if ($_FILES[$varName]['size'] > $maxSize)
         {
             return 'file_too_large';
         }
 
-        $this->tmp_filename = $_FILES[$var_name]['tmp_name'];
-        $this->orig_filename = $_FILES[$var_name]['name'];
+        $this->tmpFilename = $_FILES[$varName]['tmp_name'];
+        $this->origFilename = $_FILES[$varName]['name'];
 
         $finfo = new \finfo(FILEINFO_MIME_TYPE);
-        $mime_type = $finfo->file($this->tmp_filename);
-        if (is_string($mime_type))
+        $mimeType = $finfo->file($this->tmpFilename);
+        if (is_string($mimeType))
         {
-            $this->mime_type = $mime_type;
+            $this->mimeType = $mimeType;
         }
 
-        if ($whitelist_mime_types !== true)
+        if ($whitelistMimeTypes !== true)
         {
-            if (!in_array($this->mime_type, $whitelist_mime_types))
+            if (!in_array($this->mimeType, $whitelistMimeTypes))
             {
                 return 'mime_type_not_allowed';
             }
@@ -61,9 +61,9 @@ class UploadHandler
         return true;
     }
 
-    public function get_extension(): false|string
+    public function getExtension(): false|string
     {
-        $ext = array_search($this->mime_type, [
+        $ext = array_search($this->mimeType, [
             'jpg' => 'image/jpeg',
             'png' => 'image/png',
             'pdf' => 'application/pdf',
@@ -77,24 +77,24 @@ class UploadHandler
         return $ext;
     }
 
-    public function get_mime_type(): string
+    public function getMimeType(): string
     {
-        return $this->mime_type;
+        return $this->mimeType;
     }
 
-    public function get_orig_filename(): string
+    public function getOrigFilename(): string
     {
-        return $this->orig_filename;
+        return $this->origFilename;
     }
 
-    public function get_tmp_filename(): string
+    public function getTmpFilename(): string
     {
-        return $this->tmp_filename;
+        return $this->tmpFilename;
     }
 
-    public function move(string $new_location): string|true
+    public function move(string $newLocation): string|true
     {
-        $result = move_uploaded_file($this->tmp_filename, $new_location);
+        $result = move_uploaded_file($this->tmpFilename, $newLocation);
 
         return ($result === true) ? true : 'save_failed';
     }

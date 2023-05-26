@@ -7,8 +7,8 @@ if (!isset($args['template_parameters']['colors']))
     throw new \InvalidArgumentException('No colors defined');
 }
 $colors = $args['template_parameters']['colors'];
-$required_colors = ['focus:ring', 'focus:border'];
-if (array_diff(array_keys($colors), $required_colors) != array_diff($required_colors, array_keys($colors)))
+$requiredColors = ['focus:ring', 'focus:border'];
+if (array_diff(array_keys($colors), $requiredColors) != array_diff($requiredColors, array_keys($colors)))
 {
     throw new \InvalidArgumentException('Missing required colors');
 }
@@ -17,29 +17,29 @@ if (!isset($args['template_parameters']['default_width']))
 {
     throw new \InvalidArgumentException('No default_width defined');
 }
-$default_width = $args['template_parameters']['default_width'];
+$defaultWidth = $args['template_parameters']['default_width'];
 
 $parameters = $args['parameters'];
 
-$model_fmt = (strlen($parameters['model'])) ? "x-model='{$parameters['model']}'" : '';
-$required_fmt = (!$parameters['enable_editor'] && $parameters['required']) ? 'required' : '';
-$rows_fmt = (strlen($parameters['rows'])) ? "rows=\"{$parameters['rows']}\"" : '';
-$show_fmt = (strlen($parameters['show'])) ? "x-cloak x-show=\"{$parameters['show']}\"" : '';
-$width_fmt = (strlen($parameters['width'])) ? $parameters['width'] : $default_width;
+$modelFmt = (strlen($parameters['model'])) ? "x-model='{$parameters['model']}'" : '';
+$requiredFmt = (!$parameters['enable_editor'] && $parameters['required']) ? 'required' : '';
+$rowsFmt = (strlen($parameters['rows'])) ? "rows=\"{$parameters['rows']}\"" : '';
+$showFmt = (strlen($parameters['show'])) ? "x-cloak x-show=\"{$parameters['show']}\"" : '';
+$widthFmt = (strlen($parameters['width'])) ? $parameters['width'] : $defaultWidth;
 
-$value_fmt = '';
-$value_json_fmt = '';
+$valueFmt = '';
+$valueJsonFmt = '';
 if ($parameters['enable_editor'])
 {
-    $value_json_fmt = json_encode($parameters['value']);
+    $valueJsonFmt = json_encode($parameters['value']);
 }
 else
 {
-    $value_fmt = ActionCore::encode($parameters['value']);
+    $valueFmt = ActionCore::encode($parameters['value']);
 }
 
 echo <<<HTML
-<div {$show_fmt} class="{$width_fmt}">
+<div {$showFmt} class="{$widthFmt}">
   <label for="{$parameters['id']}" class="block text-sm font-medium text-gray-700">
     {$parameters['label']}
   </label>
@@ -58,10 +58,10 @@ echo <<<HTML
       x-ref="area"
       id="{$parameters['id']}"
       name="{$parameters['name']}"
-      {$required_fmt}
-      {$rows_fmt}
-      {$model_fmt}
-      class="shadow-sm {$colors['focus:ring']} {$colors['focus:border']} block w-full text-sm border-gray-300 rounded-md">{$value_fmt}</textarea>
+      {$requiredFmt}
+      {$rowsFmt}
+      {$modelFmt}
+      class="shadow-sm {$colors['focus:ring']} {$colors['focus:border']} block w-full text-sm border-gray-300 rounded-md">{$valueFmt}</textarea>
 HTML;
 
 if ($parameters['enable_editor'])
@@ -71,7 +71,7 @@ if ($parameters['enable_editor'])
       const easyMDE_{$parameters['name']} = new EasyMDE({
           element: document.getElementById('{$parameters['id']}'),
           spellChecker: false,
-          initialValue: {$value_json_fmt},
+          initialValue: {$valueJsonFmt},
           hideIcons: [ 'link', 'image', 'side-by-side', 'fullscreen' ],
           autoRefresh: { delay: 300 },
       });

@@ -11,23 +11,23 @@ use WebFramework\Security\AuthenticationService;
 class AuthenticationInfoMiddleware implements MiddlewareInterface
 {
     public function __construct(
-        private AuthenticationService $authentication_service,
+        private AuthenticationService $authenticationService,
     ) {
     }
 
     public function process(Request $request, RequestHandlerInterface $handler): Response
     {
         $user = null;
-        $user_id = null;
+        $userId = null;
 
-        if ($this->authentication_service->is_authenticated())
+        if ($this->authenticationService->isAuthenticated())
         {
-            $user = $this->authentication_service->get_authenticated_user();
-            $user_id = $user->id;
+            $user = $this->authenticationService->getAuthenticatedUser();
+            $userId = $user->id;
         }
 
         $request = $request->withAttribute('user', $user);
-        $request = $request->withAttribute('user_id', $user_id);
+        $request = $request->withAttribute('user_id', $userId);
 
         return $handler->handle($request);
     }

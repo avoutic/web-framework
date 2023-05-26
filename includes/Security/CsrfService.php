@@ -7,42 +7,42 @@ use WebFramework\Core\BrowserSessionService;
 class CsrfService
 {
     public function __construct(
-        private BrowserSessionService $browser_session_service,
+        private BrowserSessionService $browserSessionService,
     ) {
     }
 
-    protected function get_random_bytes(): string
+    protected function getRandomBytes(): string
     {
         return openssl_random_pseudo_bytes(16);
     }
 
-    protected function store_new_token(): void
+    protected function storeNewToken(): void
     {
-        $this->browser_session_service->set('csrf_token', $this->get_random_bytes());
+        $this->browserSessionService->set('csrf_token', $this->getRandomBytes());
     }
 
-    protected function get_stored_token(): string
+    protected function getStoredToken(): string
     {
-        return $this->browser_session_service->get('csrf_token');
+        return $this->browserSessionService->get('csrf_token');
     }
 
-    protected function is_valid_token_stored(): bool
+    protected function isValidTokenStored(): bool
     {
-        $token = $this->browser_session_service->get('csrf_token');
+        $token = $this->browserSessionService->get('csrf_token');
 
         return ($token !== null && strlen($token) == 16);
     }
 
-    public function get_token(): string
+    public function getToken(): string
     {
-        if (!$this->is_valid_token_stored())
+        if (!$this->isValidTokenStored())
         {
-            $this->store_new_token();
+            $this->storeNewToken();
         }
 
-        $token = $this->get_stored_token();
+        $token = $this->getStoredToken();
 
-        $xor = $this->get_random_bytes();
+        $xor = $this->getRandomBytes();
         for ($i = 0; $i < 16; $i++)
         {
             $token[$i] = chr(ord($xor[$i]) ^ ord($token[$i]));
@@ -51,14 +51,14 @@ class CsrfService
         return bin2hex($xor).bin2hex($token);
     }
 
-    public function validate_token(string $token): bool
+    public function validateToken(string $token): bool
     {
-        if (!$this->is_valid_token_stored())
+        if (!$this->isValidTokenStored())
         {
             return false;
         }
 
-        $check = $this->get_stored_token();
+        $check = $this->getStoredToken();
         $value = $token;
         if (strlen($value) != 16 * 4 || strlen($check) != 16)
         {

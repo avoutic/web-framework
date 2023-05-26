@@ -8,18 +8,18 @@ use WebFramework\Security\AuthenticationService;
 class DebugService
 {
     public function __construct(
-        private AuthenticationService $authentication_service,
-        private DatabaseProvider $database_provider,
-        private string $app_dir,
-        private string $server_name,
+        private AuthenticationService $authenticationService,
+        private DatabaseProvider $databaseProvider,
+        private string $appDir,
+        private string $serverName,
     ) {
     }
 
     // Generate Cache hash
     //
-    public function generate_hash(string $server_name, string $request_source, string $file, int $line, string $message): string
+    public function generateHash(string $serverName, string $requestSource, string $file, int $line, string $message): string
     {
-        $key = "{$server_name}:{$request_source}:{$file}:{$line}:{$message}";
+        $key = "{$serverName}:{$requestSource}:{$file}:{$line}:{$message}";
 
         return sha1($key);
     }
@@ -27,16 +27,16 @@ class DebugService
     /**
      * @return array{title: string, low_info_message: string, message: string, hash: string}
      */
-    public function get_throwable_report(\Throwable $e, ?Request $request = null): array
+    public function getThrowableReport(\Throwable $e, ?Request $request = null): array
     {
-        $stack = $this->filter_trace($e->getTrace());
+        $stack = $this->filterTrace($e->getTrace());
 
         $file = $e->getFile();
         $line = $e->getLine();
-        $error_type = $e::class;
+        $errorType = $e::class;
         $message = $e->getMessage();
 
-        return $this->get_report($file, $line, $stack, $request, $error_type, $message);
+        return $this->getReport($file, $line, $stack, $request, $errorType, $message);
     }
 
     /**
@@ -44,26 +44,26 @@ class DebugService
      *
      * @return array{title: string, low_info_message: string, message: string, hash: string}
      */
-    public function get_error_report(array $trace, ?Request $request, string $error_type, string $message): array
+    public function getErrorReport(array $trace, ?Request $request, string $errorType, string $message): array
     {
-        $stack = $this->filter_trace($trace);
-        $stack_top = reset($stack);
+        $stack = $this->filterTrace($trace);
+        $stackTop = reset($stack);
 
-        $file = ($stack_top) ? $stack_top['file'] : 'unknown';
-        $line = ($stack_top) ? $stack_top['line'] : 0;
+        $file = ($stackTop) ? $stackTop['file'] : 'unknown';
+        $line = ($stackTop) ? $stackTop['line'] : 0;
 
-        return $this->get_report($file, $line, $stack, $request, $error_type, $message);
+        return $this->getReport($file, $line, $stack, $request, $errorType, $message);
     }
 
     /**
-     * @param array<mixed> $filtered_stack
+     * @param array<mixed> $filteredStack
      *
      * @return array{title: string, low_info_message: string, message: string, hash: string}
      */
-    private function get_report(string $file, int $line, array $filtered_stack, ?Request $request, string $error_type, string $message): array
+    private function getReport(string $file, int $line, array $filteredStack, ?Request $request, string $errorType, string $message): array
     {
         $info = [
-            'title' => "{$this->server_name} - {$error_type}: {$message}",
+            'title' => "{$this->serverName} - {$errorType}: {$message}",
             'low_info_message' => '',
             'message' => '',
             'hash' => '',
@@ -71,19 +71,19 @@ class DebugService
 
         // Retrieve request
         //
-        $request_source = 'app';
-        if ($this->server_name !== 'app' && $request !== null)
+        $requestSource = 'app';
+        if ($this->serverName !== 'app' && $request !== null)
         {
-            $request_method = $request->getMethod();
+            $requestMethod = $request->getMethod();
 
             $uri = (string) $request->getUri();
 
-            $request_source = $request_method.' '.$uri;
+            $requestSource = $requestMethod.' '.$uri;
         }
 
         // Cache hash
         //
-        $info['hash'] = $this->generate_hash($this->server_name, $request_source, $file, $line, $message);
+        $info['hash'] = $this->generateHash($this->serverName, $requestSource, $file, $line, $message);
 
         // Construct base message
         //
@@ -92,51 +92,51 @@ An error occurred.
 
 TXT;
 
-        $error_type = WFHelpers::get_error_type_string($error_type);
-        $condensed_stack = $this->condense_stack($filtered_stack);
+        $errorType = WFHelpers::getErrorTypeString($errorType);
+        $condensedStack = $this->condenseStack($filteredStack);
 
-        $db_error = $this->get_database_error($this->database_provider->get());
+        $dbError = $this->getDatabaseError($this->databaseProvider->get());
 
-        $input_report = "No request\n";
-        $headers_fmt = "No request\n";
-        $server_fmt = "No request\n";
+        $inputReport = "No request\n";
+        $headersFmt = "No request\n";
+        $serverFmt = "No request\n";
 
         if ($request !== null)
         {
-            $input_report = $this->get_inputs_report($request);
+            $inputReport = $this->getInputsReport($request);
             $headers = $request->getHeaders();
-            $headers = $this->scrub_request_headers($headers);
-            $headers_fmt = print_r($headers, true);
-            $server_fmt = print_r($request->getServerParams(), true);
+            $headers = $this->scrubRequestHeaders($headers);
+            $headersFmt = print_r($headers, true);
+            $serverFmt = print_r($request->getServerParams(), true);
         }
 
-        $auth_data = $this->get_authentication_status();
-        $stack_fmt = (count($filtered_stack)) ? print_r($filtered_stack, true) : "No stack\n";
+        $authData = $this->getAuthenticationStatus();
+        $stackFmt = (count($filteredStack)) ? print_r($filteredStack, true) : "No stack\n";
 
         $info['message'] .= <<<TXT
 File: {$file}
 Line: {$line}
-ErrorType: {$error_type}
+ErrorType: {$errorType}
 Message: {$message}
 
-Server: {$this->server_name}
-Request: {$request_source}
+Server: {$this->serverName}
+Request: {$requestSource}
 
 Condensed backtrace:
-{$condensed_stack}
+{$condensedStack}
 Last Database error:
-{$db_error}
+{$dbError}
 
 Inputs:
-{$input_report}
+{$inputReport}
 Auth:
-{$auth_data}
+{$authData}
 Backtrace:
-{$stack_fmt}
+{$stackFmt}
 Headers:
-{$headers_fmt}
+{$headersFmt}
 Server:
-{$server_fmt}
+{$serverFmt}
 TXT;
 
         return $info;
@@ -147,10 +147,10 @@ TXT;
      *
      * @return array<array<mixed>>
      */
-    public function filter_trace(array $trace, bool $skip_internal = true, bool $scrub_state = true): array
+    public function filterTrace(array $trace, bool $skipInternal = true, bool $scrubState = true): array
     {
         $stack = [];
-        $skipping = $skip_internal;
+        $skipping = $skipInternal;
 
         foreach ($trace as $entry)
         {
@@ -173,9 +173,9 @@ TXT;
             $stack[] = $entry;
         }
 
-        if ($scrub_state)
+        if ($scrubState)
         {
-            WFHelpers::scrub_state($stack);
+            WFHelpers::scrubState($stack);
         }
 
         return $stack;
@@ -184,44 +184,44 @@ TXT;
     /**
      * @param array<array<mixed>> $stack
      */
-    public function condense_stack(array $stack): string
+    public function condenseStack(array $stack): string
     {
-        $stack_condensed = '';
+        $stackCondensed = '';
 
         foreach ($stack as $entry)
         {
             $file = $entry['file'] ?? 'unknown';
             $line = $entry['line'] ?? '-';
-            $stack_condensed .= $file.'('.$line.'): ';
+            $stackCondensed .= $file.'('.$line.'): ';
 
             if (isset($entry['class']))
             {
                 $pattern = '/@anonymous.*/';
                 $replacement = '@anonymous';
                 $class = preg_replace($pattern, $replacement, $entry['class']);
-                $stack_condensed .= $class.$entry['type'];
+                $stackCondensed .= $class.$entry['type'];
             }
 
-            $stack_condensed .= $entry['function']."()\n";
+            $stackCondensed .= $entry['function']."()\n";
         }
 
-        return $stack_condensed;
+        return $stackCondensed;
     }
 
     // Retrieve database status
     //
-    public function get_database_error(?Database $database): string
+    public function getDatabaseError(?Database $database): string
     {
         if ($database === null)
         {
             return 'Not initialized yet';
         }
 
-        $db_error = $database->get_last_error();
+        $dbError = $database->getLastError();
 
-        if (strlen($db_error))
+        if (strlen($dbError))
         {
-            return $db_error;
+            return $dbError;
         }
 
         return 'None';
@@ -229,52 +229,52 @@ TXT;
 
     // Retrieve auth data
     //
-    public function get_authentication_status(): string
+    public function getAuthenticationStatus(): string
     {
-        $auth_data = "Not authenticated\n";
+        $authData = "Not authenticated\n";
 
-        if ($this->authentication_service->is_authenticated())
+        if ($this->authenticationService->isAuthenticated())
         {
-            $user = $this->authentication_service->get_authenticated_user();
-            $auth_array = [
+            $user = $this->authenticationService->getAuthenticatedUser();
+            $authArray = [
                 'user_id' => $user->id,
                 'username' => $user->username,
                 'email' => $user->email,
             ];
 
-            $auth_data = print_r($auth_array, true);
+            $authData = print_r($authArray, true);
         }
 
-        return $auth_data;
+        return $authData;
     }
 
     // Retrieve inputs
     //
-    public function get_inputs_report(Request $request): string
+    public function getInputsReport(Request $request): string
     {
-        $inputs_fmt = '';
+        $inputsFmt = '';
 
         // Get the GET parameters
         //
-        $get_params = $request->getQueryParams();
+        $getParams = $request->getQueryParams();
 
-        if (count($get_params))
+        if (count($getParams))
         {
-            $get_fmt = print_r($get_params, true);
+            $getFmt = print_r($getParams, true);
 
-            $inputs_fmt .= <<<TXT
+            $inputsFmt .= <<<TXT
 GET:
-{$get_fmt}
+{$getFmt}
 
 TXT;
         }
 
         // Check if the Content-Type header indicates JSON data
         //
-        $content_type = $request->getHeaderLine('Content-Type');
-        $is_json_data = str_contains($content_type, 'application/json');
+        $contentType = $request->getHeaderLine('Content-Type');
+        $isJsonData = str_contains($contentType, 'application/json');
 
-        if ($is_json_data)
+        if ($isJsonData)
         {
             // Get the message body as a string
             //
@@ -282,13 +282,13 @@ TXT;
 
             // Parse the JSON content
             //
-            $json_data = json_decode($body, true);
+            $jsonData = json_decode($body, true);
 
-            if ($json_data === null && json_last_error() !== JSON_ERROR_NONE)
+            if ($jsonData === null && json_last_error() !== JSON_ERROR_NONE)
             {
                 // Error parsing
                 //
-                $inputs_fmt .= <<<TXT
+                $inputsFmt .= <<<TXT
 JSON parsing failed:
 {$body}
 
@@ -296,11 +296,11 @@ TXT;
             }
             else
             {
-                $json_fmt = print_r($json_data, true);
+                $jsonFmt = print_r($jsonData, true);
 
-                $inputs_fmt .= <<<TXT
+                $inputsFmt .= <<<TXT
 JSON data:
-{$json_fmt}
+{$jsonFmt}
 
 TXT;
             }
@@ -308,19 +308,19 @@ TXT;
 
         // Check if parsed body data is available
         //
-        $post_params = $request->getParsedBody();
-        if ($post_params !== null)
+        $postParams = $request->getParsedBody();
+        if ($postParams !== null)
         {
-            $post_fmt = print_r($post_params, true);
+            $postFmt = print_r($postParams, true);
 
-            $inputs_fmt .= <<<TXT
+            $inputsFmt .= <<<TXT
 POST:
-{$post_fmt}
+{$postFmt}
 
 TXT;
         }
 
-        return strlen($inputs_fmt) ? $inputs_fmt : "No inputs\n";
+        return strlen($inputsFmt) ? $inputsFmt : "No inputs\n";
     }
 
     /**
@@ -328,7 +328,7 @@ TXT;
      *
      * @return array<array<mixed>>
      */
-    public function scrub_request_headers(array $headers): array
+    public function scrubRequestHeaders(array $headers): array
     {
         foreach ($headers as $name => $values)
         {
@@ -348,9 +348,9 @@ TXT;
      *
      * @return array{commit: null|string, timestamp: string}
      */
-    public function get_build_info(): array
+    public function getBuildInfo(): array
     {
-        if (!file_exists($this->app_dir.'/build_commit') || !file_exists($this->app_dir.'/build_timestamp'))
+        if (!file_exists($this->appDir.'/build_commit') || !file_exists($this->appDir.'/build_timestamp'))
         {
             return [
                 'commit' => null,
@@ -358,7 +358,7 @@ TXT;
             ];
         }
 
-        $commit = file_get_contents($this->app_dir.'/build_commit');
+        $commit = file_get_contents($this->appDir.'/build_commit');
         if ($commit === false)
         {
             throw new \RuntimeException('Failed to retrieve build_commit');
@@ -366,15 +366,15 @@ TXT;
 
         $commit = substr($commit, 0, 8);
 
-        $build_time = file_get_contents($this->app_dir.'/build_timestamp');
-        if ($build_time === false)
+        $buildTime = file_get_contents($this->appDir.'/build_timestamp');
+        if ($buildTime === false)
         {
             throw new \RuntimeException('Failed to retrieve build_timestamp');
         }
 
         return [
             'commit' => $commit,
-            'timestamp' => $build_time,
+            'timestamp' => $buildTime,
         ];
     }
 }

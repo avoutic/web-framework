@@ -15,7 +15,7 @@ class BlacklistException extends \RuntimeException
         parent::__construct($message, $code, $previous);
     }
 
-    public function get_request(): Request
+    public function getRequest(): Request
     {
         return $this->request;
     }

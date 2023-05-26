@@ -8,18 +8,18 @@ interface AuthenticationService
 {
     public function cleanup(): void;
 
-    public function is_authenticated(): bool;
+    public function isAuthenticated(): bool;
 
     public function authenticate(User $user): void;
 
     public function deauthenticate(): void;
 
-    public function invalidate_sessions(int $user_id): void;
+    public function invalidateSessions(int $userId): void;
 
-    public function get_authenticated_user(): User;
+    public function getAuthenticatedUser(): User;
 
     /**
      * @param array<string> $permissions
      */
-    public function user_has_permissions(array $permissions): bool;
+    public function userHasPermissions(array $permissions): bool;
 }

@@ -18,8 +18,8 @@ class Webhook
      */
     public function trigger(array $data): Response
     {
-        $json_encoded_data = json_encode($data);
-        if ($json_encoded_data === false)
+        $jsonEncodedData = json_encode($data);
+        if ($jsonEncodedData === false)
         {
             throw new \RuntimeException('Failed to encode data');
         }
@@ -30,7 +30,7 @@ class Webhook
                 'headers' => [
                     'Content-Type' => 'application/json',
                 ],
-                'body' => $json_encoded_data,
+                'body' => $jsonEncodedData,
             ]);
         }
         catch (\GuzzleHttp\Exception\RequestException $e)

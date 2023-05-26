@@ -6,27 +6,27 @@ use WebFramework\Security\ProtectService;
 
 class Browserless
 {
-    private string $footer_template = '';
-    private string $header_template = '';
-    private string $api_key = '';
+    private string $footerTemplate = '';
+    private string $headerTemplate = '';
+    private string $apiKey = '';
 
     private const PDF_MAGIC = '%PDF-';
 
     public function __construct(
-        private AssertService $assert_service,
-        private ProtectService $protect_service,
-        private string $local_server,
-        private string $pdf_endpoint,
+        private AssertService $assertService,
+        private ProtectService $protectService,
+        private string $localServer,
+        private string $pdfEndpoint,
         private string $token,
     ) {
     }
 
-    private function is_pdf(string $filename): bool
+    private function isPdf(string $filename): bool
     {
         return (file_get_contents($filename, false, null, 0, strlen(self::PDF_MAGIC)) === self::PDF_MAGIC) ? true : false;
     }
 
-    private function is_pdf_string(string $str): bool
+    private function isPdfString(string $str): bool
     {
         return (substr($str, 0, strlen(self::PDF_MAGIC)) === self::PDF_MAGIC) ? true : false;
     }
@@ -34,39 +34,39 @@ class Browserless
     /**
      * @param array<string, mixed> $data
      */
-    public function set_api_key_data(array $data): void
+    public function setApiKeyData(array $data): void
     {
-        $this->api_key = $this->protect_service->pack_array($data);
+        $this->apiKey = $this->protectService->packArray($data);
     }
 
-    public function set_footer_template(string $template): void
+    public function setFooterTemplate(string $template): void
     {
-        $this->footer_template = $template;
+        $this->footerTemplate = $template;
     }
 
-    public function set_header_template(string $template): void
+    public function setHeaderTemplate(string $template): void
     {
-        $this->header_template = $template;
+        $this->headerTemplate = $template;
     }
 
-    public function output_pdf(string $relative_url, string $output_filename): void
+    public function outputPdf(string $relativeUrl, string $outputFilename): void
     {
-        $target_url = "{$this->local_server}{$relative_url}";
+        $targetUrl = "{$this->localServer}{$relativeUrl}";
 
-        $query = parse_url($target_url, PHP_URL_QUERY);
+        $query = parse_url($targetUrl, PHP_URL_QUERY);
         if ($query)
         {
-            $target_url .= "&auth={$this->api_key}";
+            $targetUrl .= "&auth={$this->apiKey}";
         }
         else
         {
-            $target_url .= "?auth={$this->api_key}";
+            $targetUrl .= "?auth={$this->apiKey}";
         }
 
-        $filename = $output_filename;
+        $filename = $outputFilename;
 
-        $result = $this->get_pdf_result($target_url);
-        $this->assert_service->verify($this->is_pdf_string($result), 'Failed to generate NDA: '.$result);
+        $result = $this->getPdfResult($targetUrl);
+        $this->assertService->verify($this->isPdfString($result), 'Failed to generate NDA: '.$result);
 
         header('Cache-Control: public');
         header('Content-type: application/pdf');
@@ -78,33 +78,33 @@ class Browserless
         exit();
     }
 
-    public function output_stream(string $relative_url): mixed
+    public function outputStream(string $relativeUrl): mixed
     {
-        $target_url = "{$this->local_server}{$relative_url}";
+        $targetUrl = "{$this->localServer}{$relativeUrl}";
 
-        $query = parse_url($target_url, PHP_URL_QUERY);
+        $query = parse_url($targetUrl, PHP_URL_QUERY);
         if ($query)
         {
-            $target_url .= "&auth={$this->api_key}";
+            $targetUrl .= "&auth={$this->apiKey}";
         }
         else
         {
-            $target_url .= "?auth={$this->api_key}";
+            $targetUrl .= "?auth={$this->apiKey}";
         }
 
-        $tmp_file = tmpfile();
-        $this->assert_service->verify($tmp_file !== false, 'Failed to get temporary stream');
+        $tmpFile = tmpfile();
+        $this->assertService->verify($tmpFile !== false, 'Failed to get temporary stream');
 
-        $result = $this->get_pdf_result($target_url, $tmp_file);
-        $tmp_path = stream_get_meta_data($tmp_file)['uri'];
-        $this->assert_service->verify($this->is_pdf($tmp_path), 'Failed to generate PDF: '.file_get_contents($tmp_path));
+        $result = $this->getPdfResult($targetUrl, $tmpFile);
+        $tmpPath = stream_get_meta_data($tmpFile)['uri'];
+        $this->assertService->verify($this->isPdf($tmpPath), 'Failed to generate PDF: '.file_get_contents($tmpPath));
 
-        return $tmp_file;
+        return $tmpFile;
     }
 
-    private function get_pdf_result($url, $output_stream = false): mixed
+    private function getPdfResult($url, $outputStream = false): mixed
     {
-        $pdf_endpoint = "{$this->pdf_endpoint}?token={$this->token}";
+        $pdfEndpoint = "{$this->pdfEndpoint}?token={$this->token}";
 
         $data = [
             'url' => "{$url}",
@@ -122,23 +122,23 @@ class Browserless
             ],
         ];
 
-        if (strlen($this->header_template) || strlen($this->footer_template))
+        if (strlen($this->headerTemplate) || strlen($this->footerTemplate))
         {
             $data['options']['displayHeaderFooter'] = true;
 
-            if (strlen($this->header_template))
+            if (strlen($this->headerTemplate))
             {
-                $data['options']['headerTemplate'] = $this->header_template;
+                $data['options']['headerTemplate'] = $this->headerTemplate;
             }
 
-            if (strlen($this->footer_template))
+            if (strlen($this->footerTemplate))
             {
-                $data['options']['footerTemplate'] = $this->footer_template;
+                $data['options']['footerTemplate'] = $this->footerTemplate;
             }
         }
 
         $opts = [
-            CURLOPT_URL => $pdf_endpoint,
+            CURLOPT_URL => $pdfEndpoint,
             CURLOPT_CUSTOMREQUEST => 'POST',
             CURLOPT_POST => 1,
             CURLOPT_POSTFIELDS => json_encode($data),
@@ -148,9 +148,9 @@ class Browserless
             ],
         ];
 
-        if ($output_stream !== false)
+        if ($outputStream !== false)
         {
-            $opts[CURLOPT_FILE] = $output_stream;
+            $opts[CURLOPT_FILE] = $outputStream;
         }
         else
         {
@@ -164,7 +164,7 @@ class Browserless
 
         curl_close($curl);
 
-        if ($output_stream !== false)
+        if ($outputStream !== false)
         {
             return true;
         }

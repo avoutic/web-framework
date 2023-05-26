@@ -10,18 +10,18 @@ class RouteRegistrar
     public function __construct(
         private App $app,
         private Container $container,
-        private string $app_dir,
+        private string $appDir,
     ) {
     }
 
     /**
-     * @param array<string> $route_files
+     * @param array<string> $routeFiles
      */
-    public function register(array $route_files): void
+    public function register(array $routeFiles): void
     {
-        foreach ($route_files as $file)
+        foreach ($routeFiles as $file)
         {
-            if (!file_exists("{$this->app_dir}/routes/{$file}"))
+            if (!file_exists("{$this->appDir}/routes/{$file}"))
             {
                 throw new \InvalidArgumentException("The route file \"routes/{$file}\" does not exist");
             }
@@ -29,7 +29,7 @@ class RouteRegistrar
             $app = $this->app;
             $container = $this->container;
 
-            include_once "{$this->app_dir}/routes/{$file}";
+            include_once "{$this->appDir}/routes/{$file}";
         }
     }
 }

@@ -10,10 +10,10 @@ interface RenderService
     /**
      * @param array<string, mixed> $params
      */
-    public function render(Request $request, Response $response, string $template_file, array $params): Response;
+    public function render(Request $request, Response $response, string $templateFile, array $params): Response;
 
     /**
      * @param array<string, mixed> $params
      */
-    public function render_to_string(Request $request, string $template_file, array $params): string;
+    public function renderToString(Request $request, string $templateFile, array $params): string;
 }

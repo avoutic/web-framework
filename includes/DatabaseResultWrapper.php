@@ -9,7 +9,7 @@ class DatabaseResultWrapper implements \Iterator
 {
     private \mysqli_result|true $result;
     private bool $valid = false;
-    private int $current_row = 0;
+    private int $currentRow = 0;
 
     public mixed $fields = [];
 
@@ -41,7 +41,7 @@ class DatabaseResultWrapper implements \Iterator
         }
 
         $this->result->data_seek(0);
-        $this->current_row = 0;
+        $this->currentRow = 0;
         $this->fields = $this->result->fetch_assoc();
         $this->valid = ($this->fields !== null);
     }
@@ -61,7 +61,7 @@ class DatabaseResultWrapper implements \Iterator
 
     public function key(): int
     {
-        return $this->current_row;
+        return $this->currentRow;
     }
 
     public function next(): void
@@ -73,7 +73,7 @@ class DatabaseResultWrapper implements \Iterator
 
         $this->fields = $this->result->fetch_assoc();
         $this->valid = ($this->fields !== null);
-        $this->current_row++;
+        $this->currentRow++;
     }
 
     public function valid(): bool

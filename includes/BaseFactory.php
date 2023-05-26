@@ -16,14 +16,14 @@ class BaseFactory
      *
      * @return false|T
      */
-    public function get_user(int $user_id, string $type = User::class): User|false
+    public function getUser(int $userId, string $type = User::class): User|false
     {
         if (!class_exists($type))
         {
             throw new \InvalidArgumentException("Class {$type} does not exist");
         }
 
-        return $type::get_object_by_id($user_id);
+        return $type::getObjectById($userId);
     }
 
     /**
@@ -33,14 +33,14 @@ class BaseFactory
      *
      * @return array<T>
      */
-    public function get_users(int $offset = 0, int $results = 10, string $type = User::class): array
+    public function getUsers(int $offset = 0, int $results = 10, string $type = User::class): array
     {
         if (!class_exists($type))
         {
             throw new \InvalidArgumentException("Class {$type} does not exist");
         }
 
-        return $type::get_objects($offset, $results);
+        return $type::getObjects($offset, $results);
     }
 
     /**
@@ -50,14 +50,14 @@ class BaseFactory
      *
      * @return false|T
      */
-    public function get_user_by_username(string $username, string $type = User::class): User|false
+    public function getUserByUsername(string $username, string $type = User::class): User|false
     {
         if (!class_exists($type))
         {
             throw new \InvalidArgumentException("Class {$type} does not exist");
         }
 
-        return $type::get_object(['username' => $username]);
+        return $type::getObject(['username' => $username]);
     }
 
     /**
@@ -67,14 +67,14 @@ class BaseFactory
      *
      * @return false|T
      */
-    public function get_user_by_email(string $email, string $type = User::class): User|false
+    public function getUserByEmail(string $email, string $type = User::class): User|false
     {
         if (!class_exists($type))
         {
             throw new \InvalidArgumentException("Class {$type} does not exist");
         }
 
-        return $type::get_object(['email' => $email]);
+        return $type::getObject(['email' => $email]);
     }
 
     /**
@@ -84,7 +84,7 @@ class BaseFactory
      *
      * @return array<T>
      */
-    public function search_users(string $string, string $type = User::class): array
+    public function searchUsers(string $string, string $type = User::class): array
     {
         if (!class_exists($type))
         {
@@ -113,7 +113,7 @@ SQL;
         $data = [];
         foreach ($result as $row)
         {
-            $user = $this->get_user($row['id'], $type);
+            $user = $this->getUser($row['id'], $type);
 
             if ($user === false)
             {
@@ -133,20 +133,20 @@ SQL;
      *
      * @return T
      */
-    public function create_user(string $username, string $password, string $email, int $terms_accepted, string $type = User::class): User
+    public function createUser(string $username, string $password, string $email, int $termsAccepted, string $type = User::class): User
     {
         if (!class_exists($type))
         {
             throw new \InvalidArgumentException("Class {$type} does not exist");
         }
 
-        $solid_password = User::new_hash_from_password($password);
+        $solidPassword = User::newHashFromPassword($password);
 
         return $type::create([
             'username' => $username,
-            'solid_password' => $solid_password,
+            'solid_password' => $solidPassword,
             'email' => $email,
-            'terms_accepted' => $terms_accepted,
+            'terms_accepted' => $termsAccepted,
             'registered' => time(),
         ]);
     }

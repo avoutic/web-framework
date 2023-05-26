@@ -10,206 +10,206 @@ use WebFramework\Core\User;
 
 class Login extends PageAction
 {
-    protected string $unique_identifier = '';
+    protected string $uniqueIdentifier = '';
 
     public function init(): void
     {
         parent::init();
 
-        $this->unique_identifier = $this->get_config('authenticator.unique_identifier');
+        $this->uniqueIdentifier = $this->getConfig('authenticator.unique_identifier');
     }
 
-    public static function get_filter(): array
+    public static function getFilter(): array
     {
         $container = ContainerWrapper::get();
 
-        $username_format = FORMAT_USERNAME;
+        $usernameFormat = FORMAT_USERNAME;
         if ($container->get('authenticator.unique_identifier') == 'email')
         {
-            $username_format = FORMAT_EMAIL;
+            $usernameFormat = FORMAT_EMAIL;
         }
 
         return [
             'return_page' => FORMAT_RETURN_PAGE,
             'return_query' => FORMAT_RETURN_QUERY,
-            'username' => $username_format,
+            'username' => $usernameFormat,
             'password' => FORMAT_PASSWORD,
             'g-recaptcha-response' => '.*',
         ];
     }
 
-    protected function check_sanity(): void
+    protected function checkSanity(): void
     {
-        $login_config = $this->get_config('actions.login');
-        $bruteforce_protection = $login_config['bruteforce_protection'];
+        $loginConfig = $this->getConfig('actions.login');
+        $bruteforceProtection = $loginConfig['bruteforce_protection'];
 
-        if ($bruteforce_protection)
+        if ($bruteforceProtection)
         {
-            $recaptcha_config = $this->get_config('security.recaptcha');
-            $this->verify(strlen($recaptcha_config['site_key']), 'Missing reCAPTCHA Site Key');
-            $this->verify(strlen($recaptcha_config['secret_key']), 'Missing reCAPTCHA Secret Key');
+            $recaptchaConfig = $this->getConfig('security.recaptcha');
+            $this->verify(strlen($recaptchaConfig['site_key']), 'Missing reCAPTCHA Site Key');
+            $this->verify(strlen($recaptchaConfig['secret_key']), 'Missing reCAPTCHA Secret Key');
         }
     }
 
-    protected function get_title(): string
+    protected function getTitle(): string
     {
         return 'Login';
     }
 
-    protected function get_canonical(): string
+    protected function getCanonical(): string
     {
-        return $this->page_content['login_page'];
+        return $this->pageContent['login_page'];
     }
 
-    protected function get_onload(): string
+    protected function getOnload(): string
     {
         return "$('#inputUsername').focus();";
     }
 
     // Can be overriden for project specific user factories and user classes
     //
-    protected function get_user(string $username): User|false
+    protected function getUser(string $username): User|false
     {
         $factory = $this->container->get(BaseFactory::class);
 
-        return $factory->get_user_by_username($username);
+        return $factory->getUserByUsername($username);
     }
 
-    protected function custom_value_check(User $user): bool
+    protected function customValueCheck(User $user): bool
     {
         return true;
     }
 
-    protected function do_logic(): void
+    protected function doLogic(): void
     {
-        $return_page = $this->get_input_var('return_page');
-        $return_query = $this->get_input_var('return_query');
+        $returnPage = $this->getInputVar('return_page');
+        $returnQuery = $this->getInputVar('return_query');
 
-        $this->page_content['return_query'] = $return_query;
-        $this->page_content['username'] = $this->get_raw_input_var('username');
-        $this->page_content['recaptcha_needed'] = false;
-        $this->page_content['recaptcha_site_key'] = $this->get_config('security.recaptcha.site_key');
+        $this->pageContent['return_query'] = $returnQuery;
+        $this->pageContent['username'] = $this->getRawInputVar('username');
+        $this->pageContent['recaptcha_needed'] = false;
+        $this->pageContent['recaptcha_site_key'] = $this->getConfig('security.recaptcha.site_key');
 
-        if (!strlen($return_page) || substr($return_page, 0, 2) == '//')
+        if (!strlen($returnPage) || substr($returnPage, 0, 2) == '//')
         {
-            $return_page = $this->get_config('actions.login.default_return_page');
+            $returnPage = $this->getConfig('actions.login.default_return_page');
         }
 
-        if (substr($return_page, 0, 1) != '/')
+        if (substr($returnPage, 0, 1) != '/')
         {
-            $return_page = '/'.$return_page;
+            $returnPage = '/'.$returnPage;
         }
 
-        $this->page_content['return_page'] = $return_page;
-        $this->page_content['login_page'] = $this->get_config('actions.login.location');
-        $send_verify_page = $this->get_config('actions.login.send_verify_page');
+        $this->pageContent['return_page'] = $returnPage;
+        $this->pageContent['login_page'] = $this->getConfig('actions.login.location');
+        $sendVerifyPage = $this->getConfig('actions.login.send_verify_page');
 
         // Check if already logged in and redirect immediately
-        if ($this->is_authenticated())
+        if ($this->isAuthenticated())
         {
-            header('Location: '.$this->get_base_url().$return_page.'?'.$return_query.'&'.
-                            $this->get_message_for_url('info', 'Already logged in'));
+            header('Location: '.$this->getBaseUrl().$returnPage.'?'.$returnQuery.'&'.
+                            $this->getMessageForUrl('info', 'Already logged in'));
 
             exit();
         }
 
         // Check if this is a login attempt
         //
-        if (!strlen($this->get_input_var('do')))
+        if (!strlen($this->getInputVar('do')))
         {
             return;
         }
 
         // Check if username and password are present
         //
-        if (!strlen($this->get_input_var('username')))
+        if (!strlen($this->getInputVar('username')))
         {
-            if ($this->unique_identifier == 'email')
+            if ($this->uniqueIdentifier == 'email')
             {
-                $this->add_message('error', 'Please enter a valid email.');
+                $this->addMessage('error', 'Please enter a valid email.');
             }
             else
             {
-                $this->add_message('error', 'Please enter a valid username.');
+                $this->addMessage('error', 'Please enter a valid username.');
             }
 
             return;
         }
-        if (!strlen($this->get_input_var('password')))
+        if (!strlen($this->getInputVar('password')))
         {
-            $this->add_message('error', 'Please enter your password.');
+            $this->addMessage('error', 'Please enter your password.');
 
             return;
         }
 
         // Log in user
         //
-        $user = $this->get_user($this->get_input_var('username'));
+        $user = $this->getUser($this->getInputVar('username'));
 
         if ($user === false)
         {
-            if ($this->unique_identifier == 'email')
+            if ($this->uniqueIdentifier == 'email')
             {
-                $this->add_message('error', 'E-mail and password do not match.', 'Please check if you entered the e-mail and/or password correctly.');
+                $this->addMessage('error', 'E-mail and password do not match.', 'Please check if you entered the e-mail and/or password correctly.');
             }
             else
             {
-                $this->add_message('error', 'Username and password do not match.', 'Please check if you entered the username and/or password correctly.');
+                $this->addMessage('error', 'Username and password do not match.', 'Please check if you entered the username and/or password correctly.');
             }
 
-            $this->add_blacklist_entry('unknown-username');
+            $this->addBlacklistEntry('unknown-username');
 
             return;
         }
 
-        $bruteforce_protection = $this->get_config('actions.login.bruteforce_protection');
-        if ($user->failed_login > 5 && $bruteforce_protection)
+        $bruteforceProtection = $this->getConfig('actions.login.bruteforce_protection');
+        if ($user->failedLogin > 5 && $bruteforceProtection)
         {
-            $recaptcha_response = $this->get_input_var('g-recaptcha-response');
-            $this->page_content['recaptcha_needed'] = true;
+            $recaptchaResponse = $this->getInputVar('g-recaptcha-response');
+            $this->pageContent['recaptcha_needed'] = true;
 
-            if (!strlen($recaptcha_response))
+            if (!strlen($recaptchaResponse))
             {
-                $this->add_message('error', 'CAPTCHA required', 'Due to possible brute force attacks on this username, filling in a CAPTCHA is required for checking the password!');
+                $this->addMessage('error', 'CAPTCHA required', 'Due to possible brute force attacks on this username, filling in a CAPTCHA is required for checking the password!');
 
                 return;
             }
 
             $recaptcha = new Recaptcha(
-                $this->assert_service,
+                $this->assertService,
                 new \GuzzleHttp\Client(),
-                $this->get_config('security.recaptcha.secret_key'),
+                $this->getConfig('security.recaptcha.secret_key'),
             );
-            $result = $recaptcha->verify_response($recaptcha_response);
+            $result = $recaptcha->verifyResponse($recaptchaResponse);
 
             if ($result != true)
             {
-                $this->add_message('error', 'The CAPTCHA code entered was incorrect.');
+                $this->addMessage('error', 'The CAPTCHA code entered was incorrect.');
 
                 return;
             }
         }
 
-        if (!$user->check_password($this->get_input_var('password')))
+        if (!$user->checkPassword($this->getInputVar('password')))
         {
-            $this->add_message('error', 'Username and password do not match.', 'Please check if you entered the username and/or password correctly.');
-            $this->add_blacklist_entry('wrong-password');
+            $this->addMessage('error', 'Username and password do not match.', 'Please check if you entered the username and/or password correctly.');
+            $this->addBlacklistEntry('wrong-password');
 
             return;
         }
 
-        if ($this->custom_value_check($user) !== true)
+        if ($this->customValueCheck($user) !== true)
         {
             return;
         }
 
         // Check if verified
         //
-        if (!$user->is_verified())
+        if (!$user->isVerified())
         {
-            $code = $user->generate_verify_code('send_verify');
+            $code = $user->generateVerifyCode('send_verify');
 
-            $this->add_message('error', 'Account not yet verified.', 'Account is not yet verified. Please check your mailbox for the verification e-mail and go to the presented link. If you have not received such a mail, you can <a href="'.$this->get_base_url().$send_verify_page.'?code='.$code.'">request a new one</a>.');
+            $this->addMessage('error', 'Account not yet verified.', 'Account is not yet verified. Please check your mailbox for the verification e-mail and go to the presented link. If you have not received such a mail, you can <a href="'.$this->getBaseUrl().$sendVerifyPage.'?code='.$code.'">request a new one</a>.');
 
             return;
         }
@@ -218,20 +218,20 @@ class Login extends PageAction
         //
         $this->authenticate($user);
 
-        header('Location: '.$this->get_base_url().$return_page.'?'.$return_query.'&'.$this->get_message_for_url('success', 'Login successful.'));
+        header('Location: '.$this->getBaseUrl().$returnPage.'?'.$returnQuery.'&'.$this->getMessageForUrl('success', 'Login successful.'));
 
         exit();
     }
 
-    protected function display_header(): void
+    protected function displayHeader(): void
     {
         echo <<<'HTML'
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 HTML;
     }
 
-    protected function display_content(): void
+    protected function displayContent(): void
     {
-        $this->load_template('login.tpl', $this->page_content);
+        $this->loadTemplate('login.tpl', $this->pageContent);
     }
 }

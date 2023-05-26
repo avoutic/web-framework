@@ -10,10 +10,10 @@ class Image
     private int $width;
     private int $height;
     private int $type;
-    public bool $is_image = false;
+    public bool $isImage = false;
 
     public function __construct(
-        private AssertService $assert_service,
+        private AssertService $assertService,
         private string $location,
     ) {
     }
@@ -27,13 +27,13 @@ class Image
             return;
         }
 
-        $this->is_image = true;
+        $this->isImage = true;
         $this->width = $size[0];
         $this->height = $size[1];
         $this->type = $size[2];
     }
 
-    private function create_from(string $location): \GdImage|false
+    private function createFrom(string $location): \GdImage|false
     {
         if ($this->type == IMAGETYPE_GIF)
         {
@@ -53,7 +53,7 @@ class Image
         throw new \InvalidArgumentException('Unknown image type');
     }
 
-    private function image_output(\GdImage $image, string $location): bool
+    private function imageOutput(\GdImage $image, string $location): bool
     {
         if ($this->type == IMAGETYPE_GIF)
         {
@@ -73,12 +73,12 @@ class Image
         throw new \InvalidArgumentException('Unknown image type');
     }
 
-    public function get_width(): int
+    public function getWidth(): int
     {
         return $this->width;
     }
 
-    public function get_height(): int
+    public function getHeight(): int
     {
         return $this->height;
     }
@@ -86,12 +86,12 @@ class Image
     /**
      * @return array{0: int, 1: int}
      */
-    public function get_size(): array
+    public function getSize(): array
     {
         return [$this->width, $this->height];
     }
 
-    public function get_type(): int
+    public function getType(): int
     {
         return $this->type;
     }
@@ -101,23 +101,23 @@ class Image
      *
      * @param array{0: int, 1: int} $size
      */
-    public function resize(string $new_location, array $size = [100, 100]): bool
+    public function resize(string $newLocation, array $size = [100, 100]): bool
     {
-        if (file_exists($new_location))
+        if (file_exists($newLocation))
         {
-            $this->assert_service->verify(is_writable($new_location), 'Not writable');
+            $this->assertService->verify(is_writable($newLocation), 'Not writable');
         }
         else
         {
-            $this->assert_service->verify(is_writable(dirname($new_location)), 'Not writable');
+            $this->assertService->verify(is_writable(dirname($newLocation)), 'Not writable');
         }
 
-        $image = $this->create_from($this->location);
-        $this->resize_image($image, $size);
+        $image = $this->createFrom($this->location);
+        $this->resizeImage($image, $size);
 
         // Save
         //
-        if (!$this->image_output($image, $new_location))
+        if (!$this->imageOutput($image, $newLocation))
         {
             return false;
         }
@@ -135,9 +135,9 @@ class Image
      *
      * @return bool
      */
-    private function resize_image(\GdImage &$image, array $size = [100, 100])
+    private function resizeImage(\GdImage &$image, array $size = [100, 100])
     {
-        $this->assert_service->verify(count($size) == 2 && $size[0] > 0 && $size[1] > 0, 'Size not correctly structured', \InvalidArgumentException::class);
+        $this->assertService->verify(count($size) == 2 && $size[0] > 0 && $size[1] > 0, 'Size not correctly structured', \InvalidArgumentException::class);
 
         $width = imagesx($image);
         $height = imagesy($image);
@@ -164,23 +164,23 @@ class Image
         }
 
         // Create new GD image
-        $image_p = imagecreatetruecolor($size[0], $size[1]);
+        $imageP = imagecreatetruecolor($size[0], $size[1]);
 
-        if ($image_p === false)
+        if ($imageP === false)
         {
             return false;
         }
 
         // Support alpha blending in GIF and PNG
-        imagealphablending($image_p, false);
-        imagesavealpha($image_p, true);
-        $transparent = imagecolorallocatealpha($image_p, 255, 255, 255, 127);
-        imagefilledrectangle($image_p, 0, 0, $width, $height, $transparent);
+        imagealphablending($imageP, false);
+        imagesavealpha($imageP, true);
+        $transparent = imagecolorallocatealpha($imageP, 255, 255, 255, 127);
+        imagefilledrectangle($imageP, 0, 0, $width, $height, $transparent);
 
         // Copy resized image, destroy original
-        imagecopyresampled($image_p, $image, 0, 0, 0, 0, $size[0], $size[1], $width, $height);
+        imagecopyresampled($imageP, $image, 0, 0, 0, 0, $size[0], $size[1], $width, $height);
         imagedestroy($image);
-        $image = $image_p;
+        $image = $imageP;
 
         return true;
     }
@@ -188,27 +188,27 @@ class Image
     /**
      * Rotate an image file.
      *
-     * @param string $new_location    An absolute path where the resized image will be saved
+     * @param string $newLocation     An absolute path where the resized image will be saved
      * @param int    $degrees         How many degrees to rotate
      * @param int    $backgroundColor RGB-color
      */
-    public function rotate(string $new_location, int $degrees, int $backgroundColor = 16777215): bool
+    public function rotate(string $newLocation, int $degrees, int $backgroundColor = 16777215): bool
     {
-        $this->assert_service->verify(is_writable($new_location), 'Not writable');
-        $this->assert_service->verify(abs($degrees) <= 360, 'Invalid rotation', \InvalidArgumentException::class);
+        $this->assertService->verify(is_writable($newLocation), 'Not writable');
+        $this->assertService->verify(abs($degrees) <= 360, 'Invalid rotation', \InvalidArgumentException::class);
 
         // Create new GD image
-        $image = $this->create_from($this->location);
+        $image = $this->createFrom($this->location);
 
         if ($image === false)
         {
             return false;
         }
 
-        $this->rotate_image($image, $degrees, $backgroundColor);
+        $this->rotateImage($image, $degrees, $backgroundColor);
 
         // Save
-        if (!$this->image_output($image, $new_location))
+        if (!$this->imageOutput($image, $newLocation))
         {
             return false;
         }
@@ -225,9 +225,9 @@ class Image
      * @param int      $degrees         How many degrees to rotate
      * @param int      $backgroundColor Backgroundcolor as a raw int
      */
-    private function rotate_image(\GdImage &$image, int $degrees, int $backgroundColor = 16777215): bool
+    private function rotateImage(\GdImage &$image, int $degrees, int $backgroundColor = 16777215): bool
     {
-        $this->assert_service->verify(abs($degrees) <= 360, 'Invalid rotation', \InvalidArgumentException::class);
+        $this->assertService->verify(abs($degrees) <= 360, 'Invalid rotation', \InvalidArgumentException::class);
 
         imageantialias($image, true);
         $rotate = imagerotate($image, $degrees, $backgroundColor);
@@ -240,25 +240,25 @@ class Image
     /**
      * Crop an image file.
      *
-     * @param string                $new_location Absolute filepath to the new location
-     * @param array{0: int, 1: int} $size         The new size
-     * @param array{0: int, 1: int} $offset       Offset
+     * @param string                $newLocation Absolute filepath to the new location
+     * @param array{0: int, 1: int} $size        The new size
+     * @param array{0: int, 1: int} $offset      Offset
      */
-    public function crop(string $new_location, array $size, array $offset = [0, 0]): bool
+    public function crop(string $newLocation, array $size, array $offset = [0, 0]): bool
     {
-        $this->assert_service->verify(is_writable($new_location), 'Not writable');
+        $this->assertService->verify(is_writable($newLocation), 'Not writable');
 
         // Create new GD image
-        $image = $this->create_from($this->location);
+        $image = $this->createFrom($this->location);
         if ($image === false)
         {
             return false;
         }
 
-        $this->crop_image($image, $size, $offset);
+        $this->cropImage($image, $size, $offset);
 
         // Save
-        if (!$this->image_output($image, $new_location))
+        if (!$this->imageOutput($image, $newLocation))
         {
             return false;
         }
@@ -275,7 +275,7 @@ class Image
      * @param array{0: int, 1: int} $size   The new size
      * @param array{0: int, 1: int} $offset Offset
      */
-    public static function crop_image(\GdImage &$image, array $size, array $offset = [0, 0]): bool
+    public static function cropImage(\GdImage &$image, array $size, array $offset = [0, 0]): bool
     {
         if (count($size) != 2 || $size[0] <= 0 || $size[1] <= 0)
         {
@@ -304,18 +304,18 @@ class Image
      * Convert a GIF/JPEG/PNG image to the specified format.
      * The converted imagefile will be saved in the same directory, with a different extension.
      *
-     * @param string $new_file Absolute local path to new file
+     * @param string $newFile Absolute local path to new file
      */
-    public function convert(string $new_file): bool
+    public function convert(string $newFile): bool
     {
-        $ext = strtolower(substr(strrchr($new_file, '.'), 1));
+        $ext = strtolower(substr(strrchr($newFile, '.'), 1));
         if (!in_array($ext, ['png', 'gif', 'jpeg']))
         {
             return false;
         }
 
         // Create new GD image
-        $image = $this->create_from($this->location);
+        $image = $this->createFrom($this->location);
         if ($image === false)
         {
             return false;
@@ -326,17 +326,17 @@ class Image
         switch ($ext)
         {
             case 'png':
-                $result = imagepng($image, $new_file);
+                $result = imagepng($image, $newFile);
 
                 break;
 
             case 'gif':
-                $result = imagegif($image, $new_file);
+                $result = imagegif($image, $newFile);
 
                 break;
 
             case 'jpeg':
-                $result = imagejpeg($image, $new_file);
+                $result = imagejpeg($image, $newFile);
 
                 break;
         }

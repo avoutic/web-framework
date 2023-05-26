@@ -5,7 +5,7 @@ namespace WebFramework\Core;
 class InputHelpers
 {
     /** @var array<string, mixed> */
-    public static array $default_parameters = [
+    public static array $defaultParameters = [
         'extra_label' => '',
         'id' => '',
         'label' => '',
@@ -21,27 +21,27 @@ class InputHelpers
     /**
      * @param array<mixed> $args
      */
-    public static function load_template(string $name, array $args = []): void
+    public static function loadTemplate(string $name, array $args = []): void
     {
         $container = ContainerWrapper::get();
 
-        $app_dir = $container->get('app_dir');
+        $appDir = $container->get('app_dir');
 
-        if (!file_exists("{$app_dir}/templates/{$name}.inc.php"))
+        if (!file_exists("{$appDir}/templates/{$name}.inc.php"))
         {
             throw new \InvalidArgumentException('Requested template not present');
         }
 
-        include "{$app_dir}/templates/{$name}.inc.php";
+        include "{$appDir}/templates/{$name}.inc.php";
     }
 
     /**
-     * @param array<mixed> $template_parameters
+     * @param array<mixed> $templateParameters
      * @param array<mixed> $parameters
      */
-    public static function print_input_field(string $template, array $template_parameters, array $parameters): void
+    public static function printInputField(string $template, array $templateParameters, array $parameters): void
     {
-        $type_parameters = [
+        $typeParameters = [
             'max_length' => '',
             'on_keyup' => '',
             'placeholder' => '',
@@ -50,246 +50,246 @@ class InputHelpers
             'type' => 'text',
         ];
 
-        $parameters = array_merge(static::$default_parameters, $type_parameters, $parameters);
+        $parameters = array_merge(static::$defaultParameters, $typeParameters, $parameters);
 
         if (!strlen($parameters['id']))
         {
             $parameters['id'] = "input_{$parameters['name']}";
         }
 
-        static::load_template(
+        static::loadTemplate(
             $template,
             [
-                'template_parameters' => $template_parameters,
+                'template_parameters' => $templateParameters,
                 'parameters' => $parameters, ]
         );
     }
 
     /**
-     * @param array<mixed> $template_parameters
+     * @param array<mixed> $templateParameters
      * @param array<mixed> $parameters
      */
-    public static function print_input_area(string $template, array $template_parameters, array $parameters): void
+    public static function printInputArea(string $template, array $templateParameters, array $parameters): void
     {
-        $type_parameters = [
+        $typeParameters = [
             'enable_editor' => false,
             'on_keyup' => '',
             'rows' => '',
         ];
 
-        $parameters = array_merge(static::$default_parameters, $type_parameters, $parameters);
+        $parameters = array_merge(static::$defaultParameters, $typeParameters, $parameters);
 
         if (!strlen($parameters['id']))
         {
             $parameters['id'] = "input_{$parameters['name']}";
         }
 
-        static::load_template(
+        static::loadTemplate(
             $template,
             [
-                'template_parameters' => $template_parameters,
+                'template_parameters' => $templateParameters,
                 'parameters' => $parameters, ]
         );
     }
 
     /**
-     * @param array<mixed> $template_parameters
+     * @param array<mixed> $templateParameters
      * @param array<mixed> $parameters
      */
-    public static function print_input_checkbox(string $template, array $template_parameters, array $parameters): void
+    public static function printInputCheckbox(string $template, array $templateParameters, array $parameters): void
     {
-        $type_parameters = [
+        $typeParameters = [
             'checked' => false,
             'value' => '1',
         ];
 
-        $parameters = array_merge(static::$default_parameters, $type_parameters, $parameters);
+        $parameters = array_merge(static::$defaultParameters, $typeParameters, $parameters);
 
         if (!strlen($parameters['id']))
         {
             $parameters['id'] = "input_{$parameters['name']}";
         }
 
-        static::load_template(
+        static::loadTemplate(
             $template,
             [
-                'template_parameters' => $template_parameters,
+                'template_parameters' => $templateParameters,
                 'parameters' => $parameters, ]
         );
     }
 
     /**
-     * @param array<mixed> $template_parameters
+     * @param array<mixed> $templateParameters
      * @param array<mixed> $parameters
      */
-    public static function print_input_toggle(string $template, array $template_parameters, array $parameters): void
+    public static function printInputToggle(string $template, array $templateParameters, array $parameters): void
     {
-        $type_parameters = [
+        $typeParameters = [
             'checked' => false,
         ];
 
-        $parameters = array_merge(static::$default_parameters, $type_parameters, $parameters);
+        $parameters = array_merge(static::$defaultParameters, $typeParameters, $parameters);
 
         if (!strlen($parameters['id']))
         {
             $parameters['id'] = "input_{$parameters['name']}";
         }
 
-        static::load_template(
+        static::loadTemplate(
             $template,
             [
-                'template_parameters' => $template_parameters,
+                'template_parameters' => $templateParameters,
                 'parameters' => $parameters, ]
         );
     }
 
     /**
-     * @param array<mixed> $template_parameters
+     * @param array<mixed> $templateParameters
      * @param array<mixed> $parameters
      */
-    public static function print_input_selection(string $template, array $template_parameters, array $parameters): void
+    public static function printInputSelection(string $template, array $templateParameters, array $parameters): void
     {
-        $type_parameters = [
+        $typeParameters = [
             'options' => [],
         ];
 
-        $parameters = array_merge(static::$default_parameters, $type_parameters, $parameters);
+        $parameters = array_merge(static::$defaultParameters, $typeParameters, $parameters);
 
         if (!strlen($parameters['id']))
         {
             $parameters['id'] = "input_{$parameters['name']}";
         }
 
-        static::load_template(
+        static::loadTemplate(
             $template,
             [
-                'template_parameters' => $template_parameters,
+                'template_parameters' => $templateParameters,
                 'parameters' => $parameters, ]
         );
     }
 
     /**
-     * @param array<mixed> $template_parameters
+     * @param array<mixed> $templateParameters
      * @param array<mixed> $parameters
      */
-    public static function print_input_upload(string $template, array $template_parameters, array $parameters): void
+    public static function printInputUpload(string $template, array $templateParameters, array $parameters): void
     {
-        $type_parameters = [
+        $typeParameters = [
             'file_types' => 'PNG, JPG, PDF',
             'max_size' => '10 Mb',
         ];
 
-        $parameters = array_merge(static::$default_parameters, $type_parameters, $parameters);
+        $parameters = array_merge(static::$defaultParameters, $typeParameters, $parameters);
 
         if (!strlen($parameters['id']))
         {
             $parameters['id'] = "input_{$parameters['name']}";
         }
 
-        static::load_template(
+        static::loadTemplate(
             $template,
             [
-                'template_parameters' => $template_parameters,
+                'template_parameters' => $templateParameters,
                 'parameters' => $parameters, ]
         );
     }
 
     /**
-     * @param array<mixed> $template_parameters
+     * @param array<mixed> $templateParameters
      * @param array<mixed> $parameters
      */
-    public static function print_input_datepicker(string $template, array $template_parameters, array $parameters): void
+    public static function printInputDatepicker(string $template, array $templateParameters, array $parameters): void
     {
-        $type_parameters = [
+        $typeParameters = [
             'locale' => 'en',
             'placeholder' => '',
         ];
 
-        $parameters = array_merge(static::$default_parameters, $type_parameters, $parameters);
+        $parameters = array_merge(static::$defaultParameters, $typeParameters, $parameters);
 
         if (!strlen($parameters['id']))
         {
             $parameters['id'] = "input_{$parameters['name']}";
         }
 
-        static::load_template(
+        static::loadTemplate(
             $template,
             [
-                'template_parameters' => $template_parameters,
+                'template_parameters' => $templateParameters,
                 'parameters' => $parameters, ]
         );
     }
 
     /**
-     * @param array<mixed> $template_parameters
+     * @param array<mixed> $templateParameters
      * @param array<mixed> $parameters
      */
-    public static function print_input_timepicker(string $template, array $template_parameters, array $parameters): void
+    public static function printInputTimepicker(string $template, array $templateParameters, array $parameters): void
     {
-        $type_parameters = [
+        $typeParameters = [
             'placeholder' => '',
         ];
 
-        $parameters = array_merge(static::$default_parameters, $type_parameters, $parameters);
+        $parameters = array_merge(static::$defaultParameters, $typeParameters, $parameters);
 
         if (!strlen($parameters['id']))
         {
             $parameters['id'] = "input_{$parameters['name']}";
         }
 
-        static::load_template(
+        static::loadTemplate(
             $template,
             [
-                'template_parameters' => $template_parameters,
+                'template_parameters' => $templateParameters,
                 'parameters' => $parameters, ]
         );
     }
 
     /**
-     * @param array<mixed> $template_parameters
+     * @param array<mixed> $templateParameters
      * @param array<mixed> $parameters
      */
-    public static function print_input_signature(string $template, array $template_parameters, array $parameters): void
+    public static function printInputSignature(string $template, array $templateParameters, array $parameters): void
     {
-        $type_parameters = [
+        $typeParameters = [
         ];
 
-        $parameters = array_merge(static::$default_parameters, $type_parameters, $parameters);
+        $parameters = array_merge(static::$defaultParameters, $typeParameters, $parameters);
 
         if (!strlen($parameters['id']))
         {
             $parameters['id'] = "input_{$parameters['name']}";
         }
 
-        static::load_template(
+        static::loadTemplate(
             $template,
             [
-                'template_parameters' => $template_parameters,
+                'template_parameters' => $templateParameters,
                 'parameters' => $parameters, ]
         );
     }
 
     /**
-     * @param array<mixed> $template_parameters
+     * @param array<mixed> $templateParameters
      * @param array<mixed> $parameters
      */
-    public static function print_input_radio_group(string $template, array $template_parameters, array $parameters): void
+    public static function printInputRadioGroup(string $template, array $templateParameters, array $parameters): void
     {
-        $type_parameters = [
+        $typeParameters = [
             'options' => [],
         ];
 
-        $parameters = array_merge(static::$default_parameters, $type_parameters, $parameters);
+        $parameters = array_merge(static::$defaultParameters, $typeParameters, $parameters);
 
         if (!strlen($parameters['id']))
         {
             $parameters['id'] = "input_{$parameters['name']}";
         }
 
-        static::load_template(
+        static::loadTemplate(
             $template,
             [
-                'template_parameters' => $template_parameters,
+                'template_parameters' => $templateParameters,
                 'parameters' => $parameters, ]
         );
     }

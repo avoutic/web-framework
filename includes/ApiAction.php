@@ -2,7 +2,7 @@
 
 namespace WebFramework\Core;
 
-function arrayify_datacore(mixed &$item, string $key): void
+function arrayifyDatacore(mixed &$item, string $key): void
 {
     if (is_object($item) && is_subclass_of($item, 'DataCore'))
     {
@@ -12,18 +12,18 @@ function arrayify_datacore(mixed &$item, string $key): void
 
 abstract class ApiAction extends ActionCore
 {
-    public static function redirect_login_type(): string
+    public static function redirectLoginType(): string
     {
         return '403';
     }
 
-    protected function output_json(bool $success, mixed $output, bool $direct = false): void
+    protected function outputJson(bool $success, mixed $output, bool $direct = false): void
     {
         header('Content-type: application/json');
 
         if (is_array($output))
         {
-            array_walk_recursive($output, '\\WebFramework\\Core\\arrayify_datacore');
+            array_walk_recursive($output, '\\WebFramework\\Core\\arrayifyDatacore');
         }
 
         if ($direct && $success)
@@ -43,11 +43,11 @@ abstract class ApiAction extends ActionCore
         exit();
     }
 
-    protected function output_file(string $filename, string $hash = '', bool $as_download = false): void
+    protected function outputFile(string $filename, string $hash = '', bool $asDownload = false): void
     {
         if (!file_exists($filename))
         {
-            $this->exit_send_404();
+            $this->exitSend404();
         }
 
         // Calculate hash if missing
@@ -80,7 +80,7 @@ abstract class ApiAction extends ActionCore
         header('Content-Type: '.$type);
         header('Content-Transfer-Encoding: Binary');
 
-        if ($as_download)
+        if ($asDownload)
         {
             header('Content-Disposition: attachment; filename="'.basename($filename).'"');
         }
