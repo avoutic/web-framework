@@ -44,15 +44,6 @@ echo <<<'HTML'
 </form>
 <span>
   <a href="/forgot_password">Forgot your password?</a>
-HTML;
-
-if ($this->get_config('registration.allow_registration'))
-{
-    echo <<<'HTML'
   | <a href="/register_account">No account yet?</a>
-HTML;
-}
-
-echo <<<'HTML'
 </span>
 HTML;

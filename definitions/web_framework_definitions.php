@@ -68,14 +68,7 @@ return [
             host_name: DI\get('host_name'),
             http_mode: DI\get('http_mode'),
         ),
-    Core\Cache::class => function (ContainerInterface $c) {
-        if ($c->get('cache_enabled'))
-        {
-            return $c->get(Core\RedisCache::class);
-        }
-
-        return $c->get(Core\NullCache::class);
-    },
+    Core\Cache::class => DI\autowire(Core\NullCache::class),
     Core\ConfigService::class => DI\autowire()
         ->constructor(
             DI\get('config_tree'),

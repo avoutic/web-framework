@@ -16,6 +16,15 @@ Old code can still run on top of the major overhaul with minimal changes.
 * Change prototype to (Request, Response, array) and call $this->handle_permissions_and_inputs() to all ApiAction derived functions
 * Get app_dir, server_name and host_name via constructor or container
 
+Configuration changes:
+* 'debug_mail' has been removed
+* 'registration' has been removed
+* 'site_name' has been removed
+* 'cache_enabled' has been removed. Override container definitions instead
+* 'auth_mode' and 'auth_module' have been removed. Override container definitions instead
+* 'auth_dir' has changed to '/config/auth' instead of /includes/auth'
+* 'actions.app_namespace' has been removed
+
 Over time you should:
 * Move to Dependency Injection for all your classes
 * Move your actions to Slim prototype

@@ -6,13 +6,8 @@ namespace WebFramework\Core;
 //
 return [
     'debug' => false,
-    'debug_mail' => true,
     'preload' => false,
     'timezone' => 'UTC',
-    'registration' => [
-        'allow_registration' => true,
-        'after_verify_page' => '/',
-    ],
     'database_enabled' => false,
     'database_config' => 'main',        // main database tag.
     'databases' => [],                  /* list of extra database tags to load.
@@ -28,12 +23,8 @@ return [
                                          * a mismatch between required and current value
                                          */
     ],
-    'site_name' => 'Unknown',
     'http_mode' => 'https',
     'base_url' => '',                   // Add a base_url to be used in external urls
-    'cache_enabled' => false,
-    'auth_mode' => 'redirect',          // redirect, www-authenticate, custom (requires auth_module)
-    'auth_module' => '',                // class name with full namespace
     /* Associative array with application sanity check class names with
      * full namespace as key and their config array as the value
      */
@@ -45,7 +36,7 @@ return [
         'user_class' => User::class,
     ],
     'security' => [
-        'auth_dir' => '/includes/auth', // Relative directory with auth configuration files
+        'auth_dir' => '/config/auth', // Relative directory with auth configuration files
         'blacklist' => [
             'enabled' => true,
             'trigger_period' => 14400,  // Period to consider for blacklisting (default: 4 hours)
@@ -67,7 +58,6 @@ return [
     ],
     'actions' => [
         'default_frame_file' => 'default_frame.inc.php',
-        'app_namespace' => 'App\\Actions\\',
         'login' => [
             'location' => '/login',
             'send_verify_page' => '/send-verify',
