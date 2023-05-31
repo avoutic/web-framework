@@ -1031,7 +1031,12 @@ SQL;
             return $user->id;
         }
 
-        throw new \RuntimeException('Cannot return requested value');
+        if ($type === 'username')
+        {
+            return $user->username;
+        }
+
+        throw new \RuntimeException('Cannot return requested value: '.$type);
     }
 
     /**
