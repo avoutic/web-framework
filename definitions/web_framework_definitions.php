@@ -32,6 +32,15 @@ return [
     },
     \Latte\Engine::class => DI\create(),
     \Slim\Psr7\Factory\ResponseFactory::class => DI\create(),
+    \Stripe\StripeClient::class => function (ContainerInterface $c) {
+        $secureConfigService = $c->get(Security\ConfigService::class);
+
+        $stripeConfig = $secureConfigService->getAuthConfig('stripe');
+
+        \Stripe\Stripe::setApiKey($stripeConfig['api_key']);
+
+        return new \Stripe\StripeClient($stripeConfig['api_key']);
+    },
 
     'app_dir' => function (ContainerInterface $c) {
         // Determine app dir

@@ -17,7 +17,6 @@ class StripeFactory
         protected AssertService $assertService,
         protected ConfigService $configService,
         protected StripeClient $stripe,
-        protected string $apiKey,
         protected string $endpointSecret,
     ) {
         $this->init();
