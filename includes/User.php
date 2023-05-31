@@ -105,7 +105,7 @@ class User extends DataCore
     {
         if ($this->userMailer === null)
         {
-            $this->userMailer = $this->framework->getUserMailer();
+            $this->userMailer = $this->container->get(UserMailer::class);
         }
 
         return $this->userMailer;

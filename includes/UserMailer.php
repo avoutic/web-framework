@@ -4,18 +4,22 @@ namespace WebFramework\Core;
 
 class UserMailer
 {
+    /**
+     * @param array<string, string> $templateOverrides;
+     */
     public function __construct(
         protected MailService $mailService,
         protected string $senderEmail,
+        protected array $templateOverrides,
     ) {
     }
 
     /**
      * @param array<mixed> $params
      */
-    public function emailVerificationLink(string $to, array $params, ?string $templateId = null): bool|string
+    public function emailVerificationLink(string $to, array $params): bool|string
     {
-        $templateId ??= 'email-verification-link';
+        $templateId = $this->templateOverrides['email-verification-link'] ?? 'email-verification-link';
         $verifyUrl = $params['verify_url'];
         $username = $params['user']->username;
 
@@ -30,9 +34,9 @@ class UserMailer
     /**
      * @param array<mixed> $params
      */
-    public function changeEmailVerificationLink(string $to, array $params, ?string $templateId = null): bool|string
+    public function changeEmailVerificationLink(string $to, array $params): bool|string
     {
-        $templateId ??= 'change-email-verification-link';
+        $templateId = $this->templateOverrides['change-email-verification-link'] ?? 'change-email-verification-link';
         $verifyUrl = $params['verify_url'];
         $username = $params['user']->username;
 
@@ -47,9 +51,9 @@ class UserMailer
     /**
      * @param array<mixed> $params
      */
-    public function passwordReset(string $to, array $params, ?string $templateId = null): bool|string
+    public function passwordReset(string $to, array $params): bool|string
     {
-        $templateId ??= 'password-reset';
+        $templateId = $this->templateOverrides['password-reset'] ?? 'password-reset';
         $resetUrl = $params['reset_url'];
         $username = $params['user']->username;
 
@@ -64,9 +68,9 @@ class UserMailer
     /**
      * @param array<mixed> $params
      */
-    public function newPassword(string $to, array $params, ?string $templateId = null): bool|string
+    public function newPassword(string $to, array $params): bool|string
     {
-        $templateId ??= 'new-password';
+        $templateId = $this->templateOverrides['new-password'] ?? 'new-password';
         $username = $params['user']->username;
 
         $vars = [

@@ -91,4 +91,12 @@ return [
         'default_sender' => '',
         'assert_recipient' => '',
     ],
+    'user_mailer' => [
+        'template_overrides' => [
+            'email-verification-link' => 'email-verification-link',
+            'change-email-verification-link' => 'change-email-verification-link',
+            'password-reset' => 'password-reset',
+            'new-password' => 'new-password',
+        ],
+    ],
 ];

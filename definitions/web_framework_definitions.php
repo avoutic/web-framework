@@ -131,10 +131,16 @@ return [
             storedValues: DI\get('SanityCheckStoredValues'),
             buildInfo: DI\get('build_info'),
         ),
-    Core\UserMailer::class => DI\autowire()
-        ->constructor(
-            defaultSender: DI\get('sender_core.default_sender'),
-        ),
+    Core\UserMailer::class => function (ContainerInterface $c) {
+        $configService = $c->get(Core\ConfigService::class);
+        $templateOverrides = $configService->get('user_mailer.template_overrides');
+
+        return new Core\UserMailer(
+            mailService: $c->get(Core\MailService::class),
+            senderEmail: $c->get('sender_core.default_sender'),
+            templateOverrides: $templateOverrides,
+        );
+    },
     Core\ValidatorService::class => DI\autowire(),
 
     Security\AuthenticationService::class => DI\autowire(Security\NullAuthenticationService::class),
