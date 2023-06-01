@@ -139,7 +139,14 @@ class FactoryCore
             return;
         }
 
-        $this->blacklistService->addEntry($_SERVER['REMOTE_ADDR'], $this->getAuthenticated('user_id'), $reason, $severity);
+        $user_id = null;
+
+        if ($this->isAuthenticated())
+        {
+            $user_id = $this->getAuthenticated('user_id');
+        }
+
+        $this->blacklistService->addEntry($_SERVER['REMOTE_ADDR'], $user_id, $reason, $severity);
     }
 
     // Security related
@@ -152,7 +159,14 @@ class FactoryCore
 
     protected function addBlacklistEntry(string $reason, int $severity = 1): void
     {
-        $this->blacklistService->addEntry($_SERVER['REMOTE_ADDR'], $this->getAuthenticated('user_id'), $reason, $severity);
+        $user_id = null;
+
+        if ($this->isAuthenticated())
+        {
+            $user_id = $this->getAuthenticated('user_id');
+        }
+
+        $this->blacklistService->addEntry($_SERVER['REMOTE_ADDR'], $user_id, $reason, $severity);
     }
 
     protected function encodeAndAuthString(string $value): string
