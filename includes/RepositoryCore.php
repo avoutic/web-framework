@@ -4,11 +4,17 @@ namespace WebFramework\Core;
 
 use Psr\Container\ContainerInterface as Container;
 
+/**
+ * @template T of EntityInterface
+ */
 abstract class RepositoryCore
 {
     /** @var array<string> */
     protected array $baseFields;
+
+    /** @var class-string<T> */
     protected static string $entityClass;
+
     protected bool $isCacheable = false;
     protected string $tableName;
 
@@ -34,7 +40,10 @@ abstract class RepositoryCore
         return lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $input))));
     }
 
-    protected function getId(object $entity): int
+    /**
+     * @param T $entity
+     */
+    protected function getId(EntityInterface $entity): int
     {
         $reflection = new \ReflectionClass($entity);
 
@@ -75,7 +84,10 @@ abstract class RepositoryCore
         return $this->tableName.'['.$id.']';
     }
 
-    protected function updateInCache(object $entity): void
+    /**
+     * @param T $entity
+     */
+    protected function updateInCache(EntityInterface $entity): void
     {
         if ($this->isCacheable)
         {
@@ -92,9 +104,11 @@ abstract class RepositoryCore
     }
 
     /**
+     * @param T $entity
+     *
      * @return array<string>
      */
-    public function getEntityFields(object $entity, bool $includeId = true): array
+    public function getEntityFields(EntityInterface $entity, bool $includeId = true): array
     {
         $providedClass = get_class($entity);
         $staticClass = static::$entityClass;
@@ -166,7 +180,10 @@ SQL;
         return $data;
     }
 
-    public function save(object $entity): void
+    /**
+     * @param T $entity
+     */
+    public function save(EntityInterface $entity): void
     {
         $data = $this->getEntityFields($entity, false);
 
@@ -193,7 +210,10 @@ SQL;
         $this->updateInCache($entity);
     }
 
-    public function delete(object $entity): void
+    /**
+     * @param T $entity
+     */
+    public function delete(EntityInterface $entity): void
     {
         $this->deleteFromCache($this->getId($entity));
 
@@ -213,8 +233,10 @@ SQL;
 
     /**
      * @param array<null|bool|float|int|string> $data
+     *
+     * @return T
      */
-    public function create(array $data): object
+    public function create(array $data): EntityInterface
     {
         $query = '';
         $params = [];
@@ -301,9 +323,9 @@ SQL;
     // Cache checking is done here
     //
     /**
-     * @return ?object
+     * @return ?T
      */
-    public function getObjectById(int $id): ?object
+    public function getObjectById(int $id): ?EntityInterface
     {
         if ($this->isCacheable)
         {
@@ -324,8 +346,10 @@ SQL;
 
     /**
      * @param array<string, mixed> $data
+     *
+     * @return T
      */
-    protected function instantiateEntityFromData(array $data): object
+    protected function instantiateEntityFromData(array $data): EntityInterface
     {
         $entity = new static::$entityClass();
         $reflection = new \ReflectionClass($entity);
@@ -356,9 +380,9 @@ SQL;
     /**
      * @param array<null|bool|float|int|string> $filter
      *
-     * @return ?object
+     * @return ?T
      */
-    public function getObject(array $filter = []): ?object
+    public function getObject(array $filter = []): ?EntityInterface
     {
         $fieldsFmt = implode('`, `', $this->baseFields);
         $params = [];
@@ -410,7 +434,7 @@ SQL;
     /**
      * @param array<null|bool|float|int|string> $filter
      *
-     * @return EntityCollection<object>
+     * @return EntityCollection<T>
      */
     public function getObjects(int $offset = 0, int $results = 10, array $filter = [], string $order = ''): EntityCollection
     {
