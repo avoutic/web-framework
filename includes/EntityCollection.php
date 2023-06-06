@@ -3,14 +3,14 @@
 namespace WebFramework\Core;
 
 /**
- * @template TValue
+ * @template T of EntityInterface
  *
- * @implements \IteratorAggregate<int, TValue>
+ * @implements \IteratorAggregate<int, T>
  */
 class EntityCollection implements \IteratorAggregate, \Countable
 {
     /**
-     * @param array<TValue> $entities;
+     * @param array<T> $entities;
      */
     public function __construct(
         private array $entities,
@@ -38,7 +38,7 @@ class EntityCollection implements \IteratorAggregate, \Countable
     }
 
     /**
-     * @return \ArrayIterator<int, TValue>
+     * @return \ArrayIterator<int, T>
      */
     public function getIterator(): \ArrayIterator
     {
