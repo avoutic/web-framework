@@ -7,7 +7,7 @@ namespace WebFramework\Core;
  *
  * @implements \IteratorAggregate<int, TValue>
  */
-class EntityCollection implements \IteratorAggregate
+class EntityCollection implements \IteratorAggregate, \Countable
 {
     /**
      * @param array<TValue> $entities;
@@ -43,5 +43,10 @@ class EntityCollection implements \IteratorAggregate
     public function getIterator(): \ArrayIterator
     {
         return new \ArrayIterator($this->entities);
+    }
+
+    public function count(): int
+    {
+        return count($this->entities);
     }
 }
