@@ -12,12 +12,21 @@ abstract class EntityCore implements EntityInterface
      */
     public function toArray(): array
     {
+        $reflection = new \ReflectionClass($this);
+
         $data = [];
 
-        foreach (static::$baseFields as $field)
+        $property = $reflection->getProperty('id');
+        $property->setAccessible(true);
+
+        $data['id'] = $property->getValue($this);
+
+        foreach (static::$baseFields as $name)
         {
-            $camelCase = $this->snakeToCamel($field);
-            $data[$field] = $this->{$camelCase};
+            $property = $reflection->getProperty($this->snakeToCamel($name));
+            $property->setAccessible(true);
+
+            $data[$name] = $property->getValue($this);
         }
 
         return $data;
