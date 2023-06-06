@@ -4,6 +4,10 @@ parameters:
 
 services:
     -
+        class: WebFramework\PHPStan\EntityPropertiesExtension
+        tags:
+            - phpstan.properties.readWriteExtension
+    -
         class: WebFramework\PHPStan\VerifyMethodTypeSpecifyingExtension
         tags:
             - phpstan.typeSpecifier.methodTypeSpecifyingExtension
