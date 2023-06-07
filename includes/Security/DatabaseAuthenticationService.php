@@ -3,9 +3,13 @@
 namespace WebFramework\Security;
 
 use WebFramework\Core\BrowserSessionService;
+use WebFramework\Core\ConfigService;
 use WebFramework\Core\Database;
+use WebFramework\Core\Helpers;
 use WebFramework\Core\UserRightService;
+use WebFramework\Entity\Session;
 use WebFramework\Entity\User;
+use WebFramework\Repository\SessionRepository;
 use WebFramework\Repository\UserRepository;
 
 class DatabaseAuthenticationService implements AuthenticationService
@@ -18,6 +22,8 @@ class DatabaseAuthenticationService implements AuthenticationService
     public function __construct(
         private Database $database,
         private BrowserSessionService $browserSessionService,
+        private ConfigService $configService,
+        private SessionRepository $sessionRepository,
         private UserRepository $userRepository,
         private UserRightService $userRightService,
         private int $sessionTimeout,
@@ -43,7 +49,7 @@ SQL;
     {
         $timestamp = date('Y-m-d H:i:s');
 
-        return Session::create([
+        return $this->sessionRepository->create([
             'user_id' => $userId,
             'session_id' => $sessionId,
             'last_active' => $timestamp,
@@ -67,10 +73,10 @@ SQL;
         $sessionId = $this->browserSessionService->get('session_id');
         if ($sessionId !== null)
         {
-            $session = Session::getObjectById($sessionId);
-            if ($session !== false)
+            $session = $this->sessionRepository->getObjectById($sessionId);
+            if ($session !== null)
             {
-                $session->delete();
+                $this->sessionRepository->delete($session);
             }
         }
 
@@ -80,7 +86,7 @@ SQL;
 
         $this->browserSessionService->set('logged_in', true);
         $this->browserSessionService->set('user_id', $user->getId());
-        $this->browserSessionService->set('session_id', $session->id);
+        $this->browserSessionService->set('session_id', $session->getId());
     }
 
     protected function isValid(): bool
@@ -97,18 +103,53 @@ SQL;
             return false;
         }
 
-        $session = Session::getObjectById($sessionId);
-        if ($session === false)
+        $session = $this->sessionRepository->getObjectById($sessionId);
+        if ($session === null)
         {
             return false;
         }
 
-        if (!$session->isValid())
+        if (!$this->isSessionValid($session))
         {
             $this->deauthenticate();
 
             return false;
         }
+
+        return true;
+    }
+
+    public function isSessionValid(Session $session): bool
+    {
+        // Check for session timeout
+        $current = time();
+        $lastActiveTimestamp = Helpers::mysqlDatetimeToTimestamp($session->getLastActive());
+
+        if ($current - $lastActiveTimestamp >
+            $this->configService->get('authenticator.session_timeout'))
+        {
+            return false;
+        }
+
+        $timestamp = date('Y-m-d H:i:s');
+
+        // Update timestamp every 5 minutes
+        //
+        if ($current - $lastActiveTimestamp > 60 * 5)
+        {
+            $session->setLastActive($timestamp);
+        }
+
+        // Restart session every 4 hours
+        //
+        $startTimestamp = Helpers::mysqlDatetimeToTimestamp($session->getStart());
+        if ($current - $startTimestamp > 4 * 60 * 60)
+        {
+            session_regenerate_id(true);
+            $session->setStart($timestamp);
+        }
+
+        $this->sessionRepository->save($session);
 
         return true;
     }
@@ -134,10 +175,10 @@ SQL;
         $sessionId = $this->browserSessionService->get('session_id');
         if ($sessionId !== null)
         {
-            $session = Session::getObjectById($sessionId);
-            if ($session)
+            $session = $this->sessionRepository->getObjectById($sessionId);
+            if ($session !== null)
             {
-                $session->delete();
+                $this->sessionRepository->delete($session);
             }
         }
 
