@@ -2,12 +2,25 @@
 
 namespace WebFramework\Actions;
 
-use WebFramework\Core\BaseFactory;
 use WebFramework\Core\PageAction;
-use WebFramework\Core\User;
+use WebFramework\Core\UserEmailService;
+use WebFramework\Entity\User;
+use WebFramework\Exception\DuplicateEmailException;
+use WebFramework\Repository\UserRepository;
 
 class ChangeEmail extends PageAction
 {
+    protected UserEmailService $userEmailService;
+    protected UserRepository $userRepository;
+
+    public function init(): void
+    {
+        parent::init();
+
+        $this->userEmailService = $this->container->get(UserEmailService::class);
+        $this->userRepository = $this->container->get(UserRepository::class);
+    }
+
     public static function getFilter(): array
     {
         return [
@@ -29,11 +42,9 @@ class ChangeEmail extends PageAction
 
     // Can be overriden for project specific user factories and user classes
     //
-    protected function getUser(string $username): User|false
+    protected function getUser(string $username): ?User
     {
-        $factory = $this->container->get(BaseFactory::class);
-
-        return $factory->getUserByUsername($username);
+        return $this->userRepository->getUserByUsername($username);
     }
 
     protected function doLogic(): void
@@ -60,22 +71,17 @@ class ChangeEmail extends PageAction
         // Change email
         //
         $user = $this->getAuthenticatedUser();
-        $oldEmail = $user->email;
+        $oldEmail = $user->getEmail();
 
         // Send verification mail
         //
-        $result = $user->sendChangeEmailVerify($email);
-
-        if ($result == User::ERR_DUPLICATE_EMAIL)
+        try
+        {
+            $this->userEmailService->sendChangeEmailVerify($user, $email);
+        }
+        catch (DuplicateEmailException $e)
         {
             $this->addMessage('error', 'E-mail address is already in use in another account.', 'The e-mail address is already in use and cannot be re-used in this account. Please choose another address.');
-
-            return;
-        }
-
-        if ($result != User::RESULT_SUCCESS)
-        {
-            $this->addMessage('error', 'Unknown errorcode: \''.$result."'", 'Please inform the administrator.');
 
             return;
         }

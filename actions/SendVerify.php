@@ -2,11 +2,23 @@
 
 namespace WebFramework\Actions;
 
-use WebFramework\Core\BaseFactory;
 use WebFramework\Core\PageAction;
+use WebFramework\Core\UserEmailService;
+use WebFramework\Repository\UserRepository;
 
 class SendVerify extends PageAction
 {
+    protected UserEmailService $userEmailService;
+    protected UserRepository $userRepository;
+
+    public function init(): void
+    {
+        parent::init();
+
+        $this->userEmailService = $this->container->get(UserEmailService::class);
+        $this->userRepository = $this->container->get(UserRepository::class);
+    }
+
     public static function getFilter(): array
     {
         return [
@@ -44,15 +56,13 @@ class SendVerify extends PageAction
             exit();
         }
 
-        $baseFactory = $this->container->get(BaseFactory::class);
-
         // Check user status
         //
-        $user = $baseFactory->getUserByUsername($msg['username']);
+        $user = $this->userRepository->getUserByUsername($msg['username']);
 
-        if ($user !== false && !$user->isVerified())
+        if ($user !== null && !$user->isVerified())
         {
-            $user->sendVerifyMail($msg['params']);
+            $this->userEmailService->sendVerifyMail($user, $msg['params']);
         }
 
         // Redirect to main sceen

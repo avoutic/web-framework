@@ -2,7 +2,7 @@
 
 namespace WebFramework\Security;
 
-use WebFramework\Core\User;
+use WebFramework\Entity\User;
 
 interface AuthenticationService
 {

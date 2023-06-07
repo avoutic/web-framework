@@ -43,8 +43,10 @@
     "autoload": {
         "psr-4": {
             "WebFramework\\Core\\": "includes/",
+            "WebFramework\\Entity\\": "includes/Entity/",
             "WebFramework\\Exception\\": "includes/Exception/",
             "WebFramework\\Middleware\\": "includes/Middleware/",
+            "WebFramework\\Repository\\": "includes/Repository/",
             "WebFramework\\Security\\": "includes/Security/",
             "WebFramework\\Actions\\": "actions/"
         }

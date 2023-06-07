@@ -237,9 +237,9 @@ TXT;
         {
             $user = $this->authenticationService->getAuthenticatedUser();
             $authArray = [
-                'user_id' => $user->id,
-                'username' => $user->username,
-                'email' => $user->email,
+                'user_id' => $user->getId(),
+                'username' => $user->getUsername(),
+                'email' => $user->getEmail(),
             ];
 
             $authData = print_r($authArray, true);

@@ -23,7 +23,7 @@ class AuthenticationInfoMiddleware implements MiddlewareInterface
         if ($this->authenticationService->isAuthenticated())
         {
             $user = $this->authenticationService->getAuthenticatedUser();
-            $userId = $user->id;
+            $userId = $user->getId();
         }
 
         $request = $request->withAttribute('user', $user);

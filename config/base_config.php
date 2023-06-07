@@ -33,7 +33,7 @@ return [
         'unique_identifier' => 'email',
         'auth_required_message' => 'Authentication required. Please login.',
         'session_timeout' => 900,
-        'user_class' => User::class,
+        'user_class' => \WebFramework\Entity\User::class,
     ],
     'security' => [
         'auth_dir' => '/config/auth', // Relative directory with auth configuration files

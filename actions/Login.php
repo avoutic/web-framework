@@ -2,20 +2,28 @@
 
 namespace WebFramework\Actions;
 
-use WebFramework\Core\BaseFactory;
 use WebFramework\Core\ContainerWrapper;
 use WebFramework\Core\PageAction;
 use WebFramework\Core\Recaptcha;
-use WebFramework\Core\User;
+use WebFramework\Core\UserEmailService;
+use WebFramework\Core\UserPasswordService;
+use WebFramework\Entity\User;
+use WebFramework\Repository\UserRepository;
 
 class Login extends PageAction
 {
     protected string $uniqueIdentifier = '';
+    protected UserEmailService $userEmailService;
+    protected UserPasswordService $userPasswordService;
+    protected UserRepository $userRepository;
 
     public function init(): void
     {
         parent::init();
 
+        $this->userEmailService = $this->container->get(UserEmailService::class);
+        $this->userPasswordService = $this->container->get(UserPasswordService::class);
+        $this->userRepository = $this->container->get(UserRepository::class);
         $this->uniqueIdentifier = $this->getConfig('authenticator.unique_identifier');
     }
 
@@ -68,11 +76,9 @@ class Login extends PageAction
 
     // Can be overriden for project specific user factories and user classes
     //
-    protected function getUser(string $username): User|false
+    protected function getUser(string $username): ?User
     {
-        $factory = $this->container->get(BaseFactory::class);
-
-        return $factory->getUserByUsername($username);
+        return $this->userRepository->getUserByUsername($username);
     }
 
     protected function customValueCheck(User $user): bool
@@ -146,7 +152,7 @@ class Login extends PageAction
         //
         $user = $this->getUser($this->getInputVar('username'));
 
-        if ($user === false)
+        if ($user === null)
         {
             if ($this->uniqueIdentifier == 'email')
             {
@@ -163,7 +169,7 @@ class Login extends PageAction
         }
 
         $bruteforceProtection = $this->getConfig('actions.login.bruteforce_protection');
-        if ($user->failedLogin > 5 && $bruteforceProtection)
+        if ($user->getFailedLogin() > 5 && $bruteforceProtection)
         {
             $recaptchaResponse = $this->getInputVar('g-recaptcha-response');
             $this->pageContent['recaptcha_needed'] = true;
@@ -190,7 +196,7 @@ class Login extends PageAction
             }
         }
 
-        if (!$user->checkPassword($this->getInputVar('password')))
+        if (!$this->userPasswordService->checkPassword($user, $this->getInputVar('password')))
         {
             $this->addMessage('error', 'Username and password do not match.', 'Please check if you entered the username and/or password correctly.');
             $this->addBlacklistEntry('wrong-password');
@@ -207,7 +213,7 @@ class Login extends PageAction
         //
         if (!$user->isVerified())
         {
-            $code = $user->generateVerifyCode('send_verify');
+            $code = $this->userEmailService->generateCode($user, 'send_verify');
 
             $this->addMessage('error', 'Account not yet verified.', 'Account is not yet verified. Please check your mailbox for the verification e-mail and go to the presented link. If you have not received such a mail, you can <a href="'.$this->getBaseUrl().$sendVerifyPage.'?code='.$code.'">request a new one</a>.');
 

@@ -9,6 +9,7 @@ use Slim\Exception\HttpForbiddenException;
 use Slim\Exception\HttpNotFoundException;
 use Slim\Exception\HttpUnauthorizedException;
 use Slim\Psr7\Factory\ServerRequestFactory;
+use WebFramework\Entity\User;
 use WebFramework\Security\AuthenticationService;
 use WebFramework\Security\BlacklistService;
 use WebFramework\Security\ConfigService as SecureConfigService;
@@ -426,12 +427,12 @@ abstract class ActionCore
 
         if ($type === 'user_id')
         {
-            return $user->id;
+            return $user->getId();
         }
 
         if ($type === 'username')
         {
-            return $user->username;
+            return $user->getUsername();
         }
 
         throw new \RuntimeException('Cannot return requested value: '.$type);

@@ -2,12 +2,28 @@
 
 namespace WebFramework\Actions;
 
-use WebFramework\Core\BaseFactory;
 use WebFramework\Core\PageAction;
-use WebFramework\Core\User;
+use WebFramework\Core\UserEmailService;
+use WebFramework\Entity\User;
+use WebFramework\Exception\DuplicateEmailException;
+use WebFramework\Repository\UserRepository;
+use WebFramework\Security\SecurityIteratorService;
 
 class ChangeEmailVerify extends PageAction
 {
+    protected SecurityIteratorService $securityIteratorService;
+    protected UserEmailService $userEmailService;
+    protected UserRepository $userRepository;
+
+    public function init(): void
+    {
+        parent::init();
+
+        $this->securityIteratorService = $this->container->get(SecurityIteratorService::class);
+        $this->userEmailService = $this->container->get(UserEmailService::class);
+        $this->userRepository = $this->container->get(UserRepository::class);
+    }
+
     public static function getFilter(): array
     {
         return [
@@ -29,11 +45,9 @@ class ChangeEmailVerify extends PageAction
 
     // Can be overriden for project specific user factories and user classes
     //
-    protected function getUser(string $username): User|false
+    protected function getUser(string $username): ?User
     {
-        $factory = $this->container->get(BaseFactory::class);
-
-        return $factory->getUserByUsername($username);
+        return $this->userRepository->getUserByUsername($username);
     }
 
     protected function doLogic(): void
@@ -68,7 +82,7 @@ class ChangeEmailVerify extends PageAction
         // Only allow for current user
         //
         $user = $this->getAuthenticatedUser();
-        if ($userId != $user->id)
+        if ($userId != $user->getId())
         {
             $this->deauthenticate();
             $loginPage = $this->getBaseUrl().$this->getConfig('actions.login.location');
@@ -79,29 +93,31 @@ class ChangeEmailVerify extends PageAction
 
         // Change email
         //
-        $oldEmail = $user->email;
+        $oldEmail = $user->getEmail();
+        $securityIterator = $this->securityIteratorService->getFor($user);
 
         if (!isset($msg['params']) || !isset($msg['params']['iterator'])
-            || $user->getSecurityIterator() != $msg['params']['iterator'])
+            || $securityIterator != $msg['params']['iterator'])
         {
             header("Location: {$changePage}?".$this->getMessageForUrl('error', 'E-mail verification link expired'));
 
             exit();
         }
 
-        $result = $user->changeEmail($email);
-
-        if ($result == User::ERR_DUPLICATE_EMAIL)
+        try
+        {
+            $this->userEmailService->changeEmail($user, $email);
+        }
+        catch (DuplicateEmailException $e)
         {
             header("Location: {$changePage}?".$this->getMessageForUrl('error', 'E-mail address is already in use in another account.', 'The e-mail address is already in use and cannot be re-used in this account. Please choose another address.'));
 
             exit();
         }
-        $this->verify($result == User::RESULT_SUCCESS, 'Unknown change email error');
 
         // Invalidate old sessions
         //
-        $this->invalidateSessions($user->id);
+        $this->invalidateSessions($user->getId());
         $this->authenticate($user);
 
         // Redirect to verification request screen

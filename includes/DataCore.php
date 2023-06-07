@@ -3,6 +3,7 @@
 namespace WebFramework\Core;
 
 use Psr\Container\ContainerInterface as Container;
+use WebFramework\Entity\User;
 use WebFramework\Security\AuthenticationService;
 use WebFramework\Security\BlacklistService;
 use WebFramework\Security\ConfigService as SecureConfigService;
@@ -1042,12 +1043,12 @@ SQL;
 
         if ($type === 'user_id')
         {
-            return $user->id;
+            return $user->getId();
         }
 
         if ($type === 'username')
         {
-            return $user->username;
+            return $user->getUsername();
         }
 
         throw new \RuntimeException('Cannot return requested value: '.$type);

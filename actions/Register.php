@@ -2,13 +2,28 @@
 
 namespace WebFramework\Actions;
 
-use WebFramework\Core\BaseFactory;
 use WebFramework\Core\PageAction;
 use WebFramework\Core\Recaptcha;
-use WebFramework\Core\User;
+use WebFramework\Core\UserEmailService;
+use WebFramework\Core\UserService;
+use WebFramework\Entity\User;
+use WebFramework\Repository\UserRepository;
 
 class Register extends PageAction
 {
+    protected UserEmailService $userEmailService;
+    protected UserRepository $userRepository;
+    protected UserService $userService;
+
+    public function init(): void
+    {
+        parent::init();
+
+        $this->userEmailService = $this->container->get(UserEmailService::class);
+        $this->userRepository = $this->container->get(UserRepository::class);
+        $this->userService = $this->container->get(UserService::class);
+    }
+
     /**
      * @return array<string, string>
      */
@@ -78,11 +93,7 @@ class Register extends PageAction
     //
     protected function createUser(string $username, string $password, string $email): User
     {
-        $factory = $this->container->get(BaseFactory::class);
-        $user = $factory->createUser($username, $password, $email, time());
-        $this->verify($user !== false, 'Failed to create user');
-
-        return $user;
+        return $this->userService->createUser($username, $password, $email, time());
     }
 
     protected function doLogic(): void
@@ -264,7 +275,7 @@ class Register extends PageAction
      */
     protected function postCreateActions(User $user): void
     {
-        $code = $user->generateVerifyCode('send_verify', $this->getAfterVerifyData());
+        $code = $this->userEmailService->generateCode($user, 'send_verify', $this->getAfterVerifyData());
         $sendVerifyPage = $this->getConfig('actions.login.send_verify_page');
         $sendVerifyUrl = $sendVerifyPage.'?code='.$code;
 

@@ -2,12 +2,26 @@
 
 namespace WebFramework\Actions;
 
-use WebFramework\Core\BaseFactory;
 use WebFramework\Core\PageAction;
-use WebFramework\Core\User;
+use WebFramework\Core\UserPasswordService;
+use WebFramework\Entity\User;
+use WebFramework\Exception\InvalidPasswordException;
+use WebFramework\Exception\WeakPasswordException;
+use WebFramework\Repository\UserRepository;
 
 class ChangePassword extends PageAction
 {
+    protected UserPasswordService $userPasswordService;
+    protected UserRepository $userRepository;
+
+    public function init(): void
+    {
+        parent::init();
+
+        $this->userPasswordService = $this->container->get(UserPasswordService::class);
+        $this->userRepository = $this->container->get(UserRepository::class);
+    }
+
     public static function getFilter(): array
     {
         return [
@@ -31,11 +45,9 @@ class ChangePassword extends PageAction
 
     // Can be overriden for project specific user factories and user classes
     //
-    protected function getUser(string $username): User|false
+    protected function getUser(string $username): ?User
     {
-        $factory = $this->container->get(BaseFactory::class);
-
-        return $factory->getUserByUsername($username);
+        return $this->userRepository->getUserByUsername($username);
     }
 
     protected function customFinalizeChange(): void
@@ -87,25 +99,19 @@ class ChangePassword extends PageAction
 
         $user = $this->getAuthenticatedUser();
 
-        $result = $user->changePassword($origPassword, $password);
-
-        if ($result == User::ERR_ORIG_PASSWORD_MISMATCH)
+        try
+        {
+            $this->userPasswordService->changePassword($user, $origPassword, $password);
+        }
+        catch (InvalidPasswordException $e)
         {
             $this->addMessage('error', 'Original password is incorrect.', 'Please re-enter your password.');
 
             return;
         }
-
-        if ($result == User::ERR_NEW_PASSWORD_TOO_WEAK)
+        catch (WeakPasswordException $e)
         {
             $this->addMessage('error', 'New password is too weak.', 'Use at least 8 characters.');
-
-            return;
-        }
-
-        if ($result != User::RESULT_SUCCESS)
-        {
-            $this->addMessage('error', 'Unknown errorcode: \''.$result."'", 'Please inform the administrator.');
 
             return;
         }
@@ -114,7 +120,7 @@ class ChangePassword extends PageAction
 
         // Invalidate old sessions
         //
-        $this->invalidateSessions($user->id);
+        $this->invalidateSessions($user->getId());
         $this->authenticate($user);
 
         // Redirect to main sceen

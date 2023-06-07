@@ -8,7 +8,7 @@ use Slim\Psr7\Factory\StreamFactory;
 use WebFramework\Core\Database;
 use WebFramework\Core\DatabaseProvider;
 use WebFramework\Core\DebugService;
-use WebFramework\Core\User;
+use WebFramework\Entity\User;
 use WebFramework\Security\NullAuthenticationService;
 
 /**
@@ -122,7 +122,7 @@ final class DebugServiceTest extends \Codeception\Test\Unit
                     NullAuthenticationService::class,
                     [
                         'isAuthenticated' => true,
-                        'getAuthenticatedUser' => $this->makeEmpty(
+                        'getAuthenticatedUser' => $this->make(
                             User::class,
                             $userData,
                         ),
@@ -612,7 +612,7 @@ TXT;
                     NullAuthenticationService::class,
                     [
                         'isAuthenticated' => true,
-                        'getAuthenticatedUser' => $this->makeEmpty(
+                        'getAuthenticatedUser' => $this->make(
                             User::class,
                             $userData,
                         ),

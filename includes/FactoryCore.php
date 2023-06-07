@@ -3,6 +3,7 @@
 namespace WebFramework\Core;
 
 use Psr\Container\ContainerInterface as Container;
+use WebFramework\Entity\User;
 use WebFramework\Security\AuthenticationService;
 use WebFramework\Security\BlacklistService;
 use WebFramework\Security\ConfigService as SecureConfigService;
@@ -232,7 +233,7 @@ class FactoryCore
 
         if ($type === 'user_id')
         {
-            return $user->id;
+            return $user->getId();
         }
 
         throw new \RuntimeException('Cannot return requested value');

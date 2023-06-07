@@ -2,12 +2,27 @@
 
 namespace WebFramework\Actions;
 
-use WebFramework\Core\BaseFactory;
 use WebFramework\Core\PageAction;
-use WebFramework\Core\User;
+use WebFramework\Core\UserPasswordService;
+use WebFramework\Entity\User;
+use WebFramework\Repository\UserRepository;
+use WebFramework\Security\SecurityIteratorService;
 
 class ResetPassword extends PageAction
 {
+    protected SecurityIteratorService $securityIteratorService;
+    protected UserRepository $userRepository;
+    protected UserPasswordService $userPasswordService;
+
+    public function init(): void
+    {
+        parent::init();
+
+        $this->securityIteratorService = $this->container->get(SecurityIteratorService::class);
+        $this->userPasswordService = $this->container->get(UserPasswordService::class);
+        $this->userRepository = $this->container->get(UserRepository::class);
+    }
+
     public static function getFilter(): array
     {
         return [
@@ -22,11 +37,9 @@ class ResetPassword extends PageAction
 
     // Can be overriden for project specific user factories and user classes
     //
-    protected function getUser(string $username): User|false
+    protected function getUser(string $username): ?User
     {
-        $factory = $this->container->get(BaseFactory::class);
-
-        return $factory->getUserByUsername($username);
+        return $this->userRepository->getUserByUsername($username);
     }
 
     protected function doLogic(): void
@@ -57,24 +70,26 @@ class ResetPassword extends PageAction
 
         $user = $this->getUser($msg['username']);
 
-        if ($user === false)
+        if ($user === null)
         {
             return;
         }
 
+        $securityIterator = $this->securityIteratorService->getFor($user);
+
         if (!isset($msg['params']) || !isset($msg['params']['iterator'])
-            || $user->getSecurityIterator() != $msg['params']['iterator'])
+            || $securityIterator != $msg['params']['iterator'])
         {
             header("Location: {$forgotPasswordPage}?".$this->getMessageForUrl('error', 'Password reset link expired'));
 
             exit();
         }
 
-        $user->sendNewPassword();
+        $this->userPasswordService->sendNewPassword($user);
 
         // Invalidate old sessions
         //
-        $this->invalidateSessions($user->id);
+        $this->invalidateSessions($user->getId());
 
         // Redirect to main sceen
         //

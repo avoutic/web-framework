@@ -2,10 +2,11 @@
 
 namespace WebFramework\Security;
 
-use WebFramework\Core\BaseFactory;
 use WebFramework\Core\BrowserSessionService;
 use WebFramework\Core\Database;
-use WebFramework\Core\User;
+use WebFramework\Core\UserRightService;
+use WebFramework\Entity\User;
+use WebFramework\Repository\UserRepository;
 
 class DatabaseAuthenticationService implements AuthenticationService
 {
@@ -17,7 +18,8 @@ class DatabaseAuthenticationService implements AuthenticationService
     public function __construct(
         private Database $database,
         private BrowserSessionService $browserSessionService,
-        private BaseFactory $userFactory,
+        private UserRepository $userRepository,
+        private UserRightService $userRightService,
         private int $sessionTimeout,
         private string $userClass,
     ) {
@@ -74,10 +76,10 @@ SQL;
 
         $this->browserSessionService->regenerate();
 
-        $session = $this->registerSession($user->id, $this->browserSessionService->getSessionId());
+        $session = $this->registerSession($user->getId(), $this->browserSessionService->getSessionId());
 
         $this->browserSessionService->set('logged_in', true);
-        $this->browserSessionService->set('user_id', $user->id);
+        $this->browserSessionService->set('user_id', $user->getId());
         $this->browserSessionService->set('session_id', $session->id);
     }
 
@@ -158,14 +160,14 @@ SQL;
             throw new \RuntimeException('Browser Session invalid');
         }
 
-        if ($this->user !== null && $this->user->id == $userId
+        if ($this->user !== null && $this->user->getId() == $userId
             && $this->user instanceof $this->userClass)
         {
             return $this->user;
         }
 
-        $user = $this->userFactory->getUser($userId, $this->userClass);
-        if ($user === false)
+        $user = $this->userRepository->getObjectById($userId);
+        if ($user === null)
         {
             throw new \RuntimeException('User not present');
         }
@@ -201,7 +203,7 @@ SQL;
 
             try
             {
-                if (!$user->hasRight($permission))
+                if (!$this->userRightService->hasRight($user, $permission))
                 {
                     return false;
                 }

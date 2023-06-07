@@ -2,12 +2,21 @@
 
 namespace WebFramework\Actions;
 
-use WebFramework\Core\BaseFactory;
 use WebFramework\Core\PageAction;
-use WebFramework\Core\User;
+use WebFramework\Entity\User;
+use WebFramework\Repository\UserRepository;
 
 class Verify extends PageAction
 {
+    protected UserRepository $userRepository;
+
+    public function init(): void
+    {
+        parent::init();
+
+        $this->userRepository = $this->container->get(UserRepository::class);
+    }
+
     public static function getFilter(): array
     {
         return [
@@ -54,13 +63,11 @@ class Verify extends PageAction
             exit();
         }
 
-        $baseFactory = $this->container->get(BaseFactory::class);
-
         // Check user status
         //
-        $user = $baseFactory->getUserByUsername($msg['username']);
+        $user = $this->userRepository->getUserByUsername($msg['username']);
 
-        if ($user === false)
+        if ($user === null)
         {
             return;
         }
@@ -68,6 +75,8 @@ class Verify extends PageAction
         if (!$user->isVerified())
         {
             $user->setVerified();
+            $this->userRepository->save($user);
+
             $this->customAfterVerifyActions($user, $msg['params']);
         }
 

@@ -2,12 +2,24 @@
 
 namespace WebFramework\Actions;
 
-use WebFramework\Core\BaseFactory;
 use WebFramework\Core\ContainerWrapper;
 use WebFramework\Core\PageAction;
+use WebFramework\Core\UserPasswordService;
+use WebFramework\Repository\UserRepository;
 
 class ForgotPassword extends PageAction
 {
+    protected UserPasswordService $userPasswordService;
+    protected UserRepository $userRepository;
+
+    public function init(): void
+    {
+        parent::init();
+
+        $this->userPasswordService = $this->container->get(UserPasswordService::class);
+        $this->userRepository = $this->container->get(UserRepository::class);
+    }
+
     public static function getFilter(): array
     {
         $container = ContainerWrapper::get();
@@ -47,15 +59,13 @@ class ForgotPassword extends PageAction
             return;
         }
 
-        $baseFactory = $this->container->get(BaseFactory::class);
-
         // Retrieve user
         //
-        $user = $baseFactory->getUserByUsername($username);
+        $user = $this->userRepository->getUserByUsername($username);
 
-        if ($user !== false)
+        if ($user !== null)
         {
-            $user->sendPasswordResetMail();
+            $this->userPasswordService->sendPasswordResetMail($user);
         }
 
         // Redirect to main sceen
