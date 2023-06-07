@@ -52,6 +52,7 @@ SQL;
         return $this->sessionRepository->create([
             'user_id' => $userId,
             'session_id' => $sessionId,
+            'start' => $timestamp,
             'last_active' => $timestamp,
         ]);
     }
