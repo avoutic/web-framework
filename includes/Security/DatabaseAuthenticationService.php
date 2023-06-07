@@ -15,6 +15,7 @@ use WebFramework\Repository\UserRepository;
 class DatabaseAuthenticationService implements AuthenticationService
 {
     private ?User $user = null;
+    private bool $sessionValid = false;
 
     /**
      * @param class-string<User> $userClass
@@ -59,6 +60,8 @@ SQL;
 
     public function invalidateSessions(int $userId): void
     {
+        $this->sessionValid = false;
+
         $result = $this->database->query('DELETE FROM sessions WHERE user_id = ?', [$userId]);
 
         if ($result === false)
@@ -92,6 +95,11 @@ SQL;
 
     protected function isValid(): bool
     {
+        if ($this->sessionValid)
+        {
+            return true;
+        }
+
         $userId = $this->browserSessionService->get('user_id');
         if ($userId === null)
         {
@@ -116,6 +124,8 @@ SQL;
 
             return false;
         }
+
+        $this->sessionValid = true;
 
         return true;
     }
@@ -173,6 +183,8 @@ SQL;
 
     public function deauthenticate(): void
     {
+        $this->sessionValid = false;
+
         $sessionId = $this->browserSessionService->get('session_id');
         if ($sessionId !== null)
         {
