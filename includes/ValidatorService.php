@@ -6,11 +6,6 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 
 class ValidatorService
 {
-    public function __construct(
-        private AssertService $assertService,
-    ) {
-    }
-
     /**
      * @param array<string, string> $filters
      */
@@ -19,7 +14,9 @@ class ValidatorService
         $rawInputs = $request->getAttribute('raw_inputs', []);
         $inputs = $request->getAttribute('inputs', []);
 
-        $results = $this->getFilterResults($request, $filters);
+        $params = $this->extractParams($request);
+
+        $results = $this->getFilterResults($params, $filters);
 
         $rawInputs = array_merge($rawInputs, $results['raw']);
         $inputs = array_merge($inputs, $results['filtered']);
@@ -30,26 +27,26 @@ class ValidatorService
     }
 
     /**
-     * @param array<string, string> $filters
+     * @param array{query: array<string, mixed>, post: array<string, mixed>, json: array<string, mixed>} $params
+     * @param array<string, string>                                                                      $filters
      *
      * @return array{raw:array<string, mixed>, filtered:array<string, mixed>}
      */
-    public function getFilterResults(Request $request, array $filters): array
+    public function getFilterResults(array $params, array $filters): array
     {
         $raw = [];
         $filtered = [];
 
-        $queryParams = $request->getQueryParams();
-
-        $parsedBody = $request->getParsedBody();
-        $postParams = (is_array($parsedBody)) ? $parsedBody : [];
-
-        $json = $request->getAttribute('json_data', []);
-        $jsonParams = (is_array($json)) ? $json : [];
+        $queryParams = $params['query'];
+        $postParams = $params['post'];
+        $jsonParams = $params['json'];
 
         foreach ($filters as $name => $regex)
         {
-            $this->assertService->verify(strlen($regex), 'No regex provided');
+            if (!strlen($regex))
+            {
+                throw new \InvalidArgumentException('Zero-length regex provided');
+            }
 
             if (substr($name, -2) == '[]')
             {
@@ -123,8 +120,30 @@ class ValidatorService
      */
     public function getFilteredParams(Request $request, array $filters): array
     {
-        $results = $this->getFilterResults($request, $filters);
+        $params = $this->extractParams($request);
+
+        $results = $this->getFilterResults($params, $filters);
 
         return $results['filtered'];
+    }
+
+    /**
+     * @return array{query: array<string, mixed>, post: array<string, mixed>, json: array<string, mixed>}
+     */
+    private function extractParams(Request $request): array
+    {
+        $queryParams = $request->getQueryParams();
+
+        $parsedBody = $request->getParsedBody();
+        $postParams = (is_array($parsedBody)) ? $parsedBody : [];
+
+        $json = $request->getAttribute('json_data', []);
+        $jsonParams = (is_array($json)) ? $json : [];
+
+        return [
+            'query' => $queryParams,
+            'post' => $postParams,
+            'json' => $jsonParams,
+        ];
     }
 }
