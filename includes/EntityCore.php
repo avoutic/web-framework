@@ -7,6 +7,9 @@ abstract class EntityCore implements EntityInterface
     /** @var array<string> */
     public static array $baseFields = [];
 
+    /** @var array<string> */
+    public static array $privateFields = [];
+
     /**
      * @return array<string, mixed>
      */
@@ -23,6 +26,13 @@ abstract class EntityCore implements EntityInterface
 
         foreach (static::$baseFields as $name)
         {
+            // Skip private fields
+            //
+            if (in_array($name, static::$privateFields))
+            {
+                continue;
+            }
+
             $property = $reflection->getProperty($this->snakeToCamel($name));
             $property->setAccessible(true);
 
