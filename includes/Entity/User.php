@@ -7,7 +7,7 @@ use WebFramework\Core\EntityCore;
 class User extends EntityCore
 {
     public static string $tableName = 'users';
-    public static array $baseFields = ['username', 'email', 'terms_accepted', 'verified', 'last_login', 'failed_login'];
+    public static array $baseFields = ['username', 'email', 'solid_password', 'terms_accepted', 'verified', 'last_login', 'failed_login'];
     public static array $privateFields = ['solid_password'];
 
     private int $id;
