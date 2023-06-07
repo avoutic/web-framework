@@ -217,8 +217,8 @@ SQL;
     {
         $this->deleteFromCache($this->getId($entity));
 
-        $query = <<<'SQL'
-        DELETE FROM {is->tableName}
+        $query = <<<SQL
+        DELETE FROM {$this->tableName}
         WHERE id = ?
 SQL;
 
