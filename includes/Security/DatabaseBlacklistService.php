@@ -3,11 +3,13 @@
 namespace WebFramework\Security;
 
 use WebFramework\Core\Database;
+use WebFramework\Repository\BlacklistEntryRepository;
 
 class DatabaseBlacklistService implements BlacklistService
 {
     public function __construct(
         private Database $database,
+        private BlacklistEntryRepository $blacklistEntryRepository,
         private int $storePeriod,
         private int $threshold,
         private int $triggerPeriod,
@@ -34,7 +36,7 @@ SQL;
     {
         $fullReason = $reason;
 
-        $entry = BlacklistEntry::create([
+        $entry = $this->blacklistEntryRepository->create([
             'ip' => $ip,
             'user_id' => $userId,
             'severity' => $severity,

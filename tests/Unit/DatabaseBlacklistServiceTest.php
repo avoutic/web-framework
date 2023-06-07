@@ -4,6 +4,7 @@ namespace Tests\Unit;
 
 use WebFramework\Core\Database;
 use WebFramework\Core\DatabaseResultWrapper;
+use WebFramework\Repository\BlacklistEntryRepository;
 use WebFramework\Security\DatabaseBlacklistService;
 
 /**
@@ -30,6 +31,10 @@ final class DatabaseBlacklistServiceTest extends \Codeception\Test\Unit
                             ]
                         ),
                     ],
+                ),
+                $this->make(
+                    BlacklistEntryRepository::class,
+                    [],
                 ),
                 'storePeriod' => 1000,
                 'triggerPeriod' => 100,
@@ -58,6 +63,10 @@ final class DatabaseBlacklistServiceTest extends \Codeception\Test\Unit
                             ]
                         ),
                     ],
+                ),
+                $this->make(
+                    BlacklistEntryRepository::class,
+                    [],
                 ),
                 'storePeriod' => 1000,
                 'triggerPeriod' => 100,
