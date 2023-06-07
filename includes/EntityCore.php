@@ -10,6 +10,9 @@ abstract class EntityCore implements EntityInterface
     /** @var array<string> */
     public static array $privateFields = [];
 
+    /** @var array<string, mixed> */
+    public array $originalValues = [];
+
     /**
      * @return array<string, mixed>
      */
@@ -42,10 +45,26 @@ abstract class EntityCore implements EntityInterface
         return $data;
     }
 
-    //
     // Convert snake_case to camelCase
+    //
     private function snakeToCamel(string $input): string
     {
         return lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $input))));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getOriginalValues(): array
+    {
+        return $this->originalValues;
+    }
+
+    /**
+     * @param array<string, mixed> $values
+     */
+    public function setOriginalValues(array $values): void
+    {
+        $this->originalValues = $values;
     }
 }

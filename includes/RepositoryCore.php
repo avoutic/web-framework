@@ -182,13 +182,31 @@ SQL;
 
     /**
      * @param T $entity
+     *
+     * @return array<string, mixed>
+     */
+    public function getChangedFields(EntityInterface $entity): array
+    {
+        $currentData = $this->getEntityFields($entity, false);
+        $originalData = $entity->getOriginalValues();
+
+        return array_diff_assoc($currentData, $originalData);
+    }
+
+    /**
+     * @param T $entity
      */
     public function save(EntityInterface $entity): void
     {
-        $data = $this->getEntityFields($entity, false);
+        $data = $this->getChangedFields($entity);
 
-        // TODO compare to original values
-        //
+        if (count($data) === 0)
+        {
+            // Nothing to update
+            //
+            return;
+        }
+
         $setArray = $this->getSetFmt($data);
         $params = $setArray['params'];
 
@@ -371,6 +389,8 @@ SQL;
         {
             $this->updateInCache($entity);
         }
+
+        $entity->setOriginalValues($data);
 
         return $entity;
     }
