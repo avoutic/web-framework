@@ -9,8 +9,8 @@ use WebFramework\Repository\UserRightRepository;
 class UserRightService
 {
     public function __construct(
-        private UserRightRepository $userRightRepository,
         private RightRepository $rightRepository,
+        private UserRightRepository $userRightRepository,
     ) {
     }
 
