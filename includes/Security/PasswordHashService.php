@@ -42,7 +42,7 @@ class PasswordHashService
         return bin2hex(substr($output, 0, $keyLength));
     }
 
-    private function getRandomBytes(int $length): string
+    protected function getRandomBytes(int $length): string
     {
         return openssl_random_pseudo_bytes($length);
     }
