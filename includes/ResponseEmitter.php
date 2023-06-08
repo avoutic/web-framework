@@ -129,7 +129,7 @@ class ResponseEmitter
         return $errorHandler($request, $response);
     }
 
-    public function redirect(string $url, int $redirectType): Response
+    public function redirect(string $url, int $redirectType = 302): Response
     {
         $response = $this->responseFactory->createResponse($redirectType);
 
