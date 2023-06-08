@@ -46,6 +46,10 @@ class CsrfValidationMiddleware implements MiddlewareInterface
                 $this->blacklistService->addEntry($ip, $userId, 'missing-csrf');
                 $this->messageService->add('error', 'CSRF token missing, possible attack', '');
             }
+            else
+            {
+                $request = $request->withAttribute('passed_csrf', true);
+            }
         }
 
         $request = $request->withAttribute('inputs', $inputs);
