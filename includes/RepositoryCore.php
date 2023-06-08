@@ -293,6 +293,13 @@ SQL;
 
         foreach ($this->baseFields as $name)
         {
+            // Use default value is missing
+            //
+            if (!isset($data[$name]))
+            {
+                continue;
+            }
+
             $property = $reflection->getProperty($this->snakeToCamel($name));
             $property->setAccessible(true);
             $property->setValue($entity, $data[$name]);
