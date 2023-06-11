@@ -11,7 +11,7 @@ class BlacklistEntry extends EntityCore
 
     private int $id;
     private string $ip;
-    private ?int $user_id;
+    private ?int $userId;
     private int $severity;
     private string $reason;
     private int $timestamp;
