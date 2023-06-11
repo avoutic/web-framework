@@ -5,10 +5,12 @@ namespace WebFramework\Core;
 /**
  * @template T of EntityInterface
  *
- * @implements \IteratorAggregate<int, T>
+ * @implements \Iterator<int, T>
  */
-class EntityCollection implements \IteratorAggregate, \Countable
+class EntityCollection implements \Iterator, \Countable
 {
+    private int $index = 0;
+
     /**
      * @param array<T> $entities;
      */
@@ -37,16 +39,36 @@ class EntityCollection implements \IteratorAggregate, \Countable
         }, $this->entities);
     }
 
-    /**
-     * @return \ArrayIterator<int, T>
-     */
-    public function getIterator(): \ArrayIterator
-    {
-        return new \ArrayIterator($this->entities);
-    }
-
     public function count(): int
     {
         return count($this->entities);
+    }
+
+    /**
+     * @return T
+     */
+    public function current(): mixed
+    {
+        return $this->entities[$this->index];
+    }
+
+    public function key(): int
+    {
+        return $this->index;
+    }
+
+    public function next(): void
+    {
+        $this->index++;
+    }
+
+    public function rewind(): void
+    {
+        $this->index = 0;
+    }
+
+    public function valid(): bool
+    {
+        return isset($this->entities[$this->index]);
     }
 }
