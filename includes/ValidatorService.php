@@ -128,6 +128,18 @@ class ValidatorService
     }
 
     /**
+     * @param array<string, string> $filters
+     *
+     * @return array{raw:array<string, mixed>, filtered:array<string, mixed>}
+     */
+    public function getParams(Request $request, array $filters): array
+    {
+        $params = $this->extractParams($request);
+
+        return $results = $this->getFilterResults($params, $filters);
+    }
+
+    /**
      * @return array{query: array<string, mixed>, post: array<string, mixed>, json: array<string, mixed>}
      */
     private function extractParams(Request $request): array
