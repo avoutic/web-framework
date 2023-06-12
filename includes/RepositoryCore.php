@@ -142,9 +142,9 @@ abstract class RepositoryCore
     }
 
     /**
-     * @return array<string>
+     * @return ?array<string>
      */
-    protected function getFieldsFromDb(int $id): array
+    protected function getFieldsFromDb(int $id): ?array
     {
         $fieldsFmt = implode('`, `', $this->baseFields);
 
@@ -160,6 +160,11 @@ SQL;
         if ($result === false)
         {
             throw new \RuntimeException("Failed to retrieve base fields for {$this->tableName}");
+        }
+
+        if ($result->RecordCount() === 0)
+        {
+            return null;
         }
 
         if ($result->RecordCount() !== 1)
@@ -365,6 +370,10 @@ SQL;
         }
 
         $data = $this->getFieldsFromDb($id);
+        if ($data === null)
+        {
+            return null;
+        }
 
         return $this->instantiateEntityFromData($data);
     }
