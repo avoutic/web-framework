@@ -22,7 +22,7 @@ class MessageService
         return $this->messages;
     }
 
-    public function add(string $type, string $message, string $extraMessage): void
+    public function add(string $type, string $message, string $extraMessage = ''): void
     {
         $this->messages[] = [
             'mtype' => $type,
