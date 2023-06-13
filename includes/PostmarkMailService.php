@@ -33,13 +33,20 @@ class PostmarkMailService implements MailService
             throw new \RuntimeException('No source e-mail specified');
         }
 
-        $result = $this->getClient()->sendEmail(
-            $from,
-            $to,
-            $subject,
-            null,
-            $message
-        );
+        try
+        {
+            $result = $this->getClient()->sendEmail(
+                $from,
+                $to,
+                $subject,
+                null,
+                $message
+            );
+        }
+        catch (\GuzzleHttp\Exception\ConnectException $e)
+        {
+            throw new \RuntimeException('Postmark Connection failure', previous: $e);
+        }
 
         return true;
     }

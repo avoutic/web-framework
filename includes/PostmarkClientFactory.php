@@ -17,7 +17,7 @@ class PostmarkClientFactory
     {
         if ($this->client === null)
         {
-            $this->client = new PostmarkClient($this->apiKey);
+            $this->client = new PostmarkClient($this->apiKey, timeout: 5);
         }
 
         return $this->client;

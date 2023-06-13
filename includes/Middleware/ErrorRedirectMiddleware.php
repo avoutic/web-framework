@@ -51,7 +51,15 @@ class ErrorRedirectMiddleware implements MiddlewareInterface
 
             $request = $request->withAttribute('error_report', $errorReport);
 
-            $this->reportFunction->report($e->getMessage(), 'unhandled_exception', $errorReport);
+            try
+            {
+                $this->reportFunction->report($e->getMessage(), 'unhandled_exception', $errorReport);
+            }
+            catch (\Throwable $e)
+            {
+                // Cannot send error. No sense in reporting that as well.
+                //
+            }
 
             return $this->responseEmitter->error($request, 'Error');
         }
