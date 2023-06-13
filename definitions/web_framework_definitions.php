@@ -134,6 +134,10 @@ return [
             $c->get('security.recaptcha.secret_key'),
         );
     }),
+    Core\RecaptchaFactory::class => DI\autowire()
+        ->constructor(
+            secretKey: DI\get('security.recaptcha.secret_key'),
+        ),
     Core\ReportFunction::class => DI\autowire(Core\NullReportFunction::class),
     Core\SanityCheckRunner::class => DI\autowire()
         ->constructor(
