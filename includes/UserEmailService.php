@@ -84,7 +84,7 @@ class UserEmailService
             '?code='.$code;
 
         $this->userMailer->changeEmailVerificationLink(
-            $user->getEmail(),
+            $email,
             [
                 'user' => $user->toArray(),
                 'verify_url' => $verifyUrl,
