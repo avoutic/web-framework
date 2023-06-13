@@ -21,7 +21,7 @@ class UserMailer
     {
         $templateId = $this->templateOverrides['email-verification-link'] ?? 'email-verification-link';
         $verifyUrl = $params['verify_url'];
-        $username = $params['user']->username;
+        $username = $params['user']['username'];
 
         $vars = [
             'action_url' => $verifyUrl,
@@ -38,7 +38,7 @@ class UserMailer
     {
         $templateId = $this->templateOverrides['change-email-verification-link'] ?? 'change-email-verification-link';
         $verifyUrl = $params['verify_url'];
-        $username = $params['user']->username;
+        $username = $params['user']['username'];
 
         $vars = [
             'action_url' => $verifyUrl,
@@ -55,7 +55,7 @@ class UserMailer
     {
         $templateId = $this->templateOverrides['password-reset'] ?? 'password-reset';
         $resetUrl = $params['reset_url'];
-        $username = $params['user']->username;
+        $username = $params['user']['username'];
 
         $vars = [
             'action_url' => $resetUrl,
@@ -71,7 +71,7 @@ class UserMailer
     public function newPassword(string $to, array $params): bool|string
     {
         $templateId = $this->templateOverrides['new-password'] ?? 'new-password';
-        $username = $params['user']->username;
+        $username = $params['user']['username'];
 
         $vars = [
             'password' => $params['password'],
