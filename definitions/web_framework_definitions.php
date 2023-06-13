@@ -119,6 +119,10 @@ return [
             templateDir: DI\string('{app_dir}/templates'),
             tmpDir: '/tmp/latte',
         ),
+    Core\MailReportFunction::class => DI\autowire(Core\MailReportFunction::class)
+        ->constructor(
+            assertRecipient: DI\get('sender_core.assert_recipient'),
+        ),
     Core\MailService::class => DI\autowire(Core\NullMailService::class),
     Core\PostmarkClientFactory::class => DI\factory(function (ContainerInterface $c) {
         $secureConfigService = $c->get(Security\ConfigService::class);
@@ -127,6 +131,11 @@ return [
 
         return new Core\PostmarkClientFactory($apiKey);
     }),
+    Core\PostmarkMailService::class => DI\autowire(Core\PostmarkMailService::class)
+        ->constructor(
+            defaultSender: DI\get('sender_core.default_sender'),
+            serverName: DI\get('server_name'),
+        ),
     Core\Recaptcha::class => DI\Factory(function (ContainerInterface $c) {
         return new Core\Recaptcha(
             $c->get(Core\AssertService::class),
@@ -158,6 +167,17 @@ return [
 
     Security\AuthenticationService::class => DI\autowire(Security\NullAuthenticationService::class),
     Security\BlacklistService::class => DI\autowire(Security\NullBlacklistService::class),
+    Security\DatabaseAuthenticationService::class => DI\autowire(Security\DatabaseAuthenticationService::class)
+        ->constructor(
+            sessionTimeout: DI\get('authenticator.session_timeout'),
+            userClass: DI\get('authenticator.user_class'),
+        ),
+    Security\DatabaseBlacklistService::class => DI\autowire(Security\DatabaseBlacklistService::class)
+        ->constructor(
+            storePeriod: DI\get('security.blacklist.store_period'),
+            threshold: DI\get('security.blacklist.threshold'),
+            triggerPeriod: DI\get('security.blacklist.trigger_period'),
+        ),
     Security\ProtectService::class => DI\autowire()
         ->constructor(
             [
