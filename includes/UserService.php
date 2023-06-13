@@ -9,6 +9,7 @@ use WebFramework\Security\PasswordHashService;
 class UserService
 {
     public function __construct(
+        private ConfigService $configService,
         private PasswordHashService $passwordHashService,
         private UserRepository $userRepository,
     ) {
@@ -25,5 +26,19 @@ class UserService
             'terms_accepted' => $termsAccepted,
             'registered' => time(),
         ]);
+    }
+
+    public function isUsernameAvailable(string $username): bool
+    {
+        $uniqueIdentifier = $this->configService->get('authenticator.unique_identifier');
+
+        // Check if identifier already exists
+        //
+        if ($uniqueIdentifier == 'email')
+        {
+            return $this->userRepository->countObjects(['email' => $username]) === 0;
+        }
+
+        return $this->userRepository->countObjects(['username' => $username]) === 0;
     }
 }
