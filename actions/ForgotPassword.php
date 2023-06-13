@@ -2,66 +2,63 @@
 
 namespace WebFramework\Actions;
 
-use WebFramework\Core\ContainerWrapper;
-use WebFramework\Core\PageAction;
+use Psr\Container\ContainerInterface as Container;
+use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
+use WebFramework\Core\ConfigService;
+use WebFramework\Core\MessageService;
+use WebFramework\Core\RenderService;
+use WebFramework\Core\ResponseEmitter;
 use WebFramework\Core\UserPasswordService;
+use WebFramework\Core\ValidatorService;
 use WebFramework\Repository\UserRepository;
 
-class ForgotPassword extends PageAction
+class ForgotPassword
 {
-    protected UserPasswordService $userPasswordService;
-    protected UserRepository $userRepository;
-
-    public function init(): void
-    {
-        parent::init();
-
-        $this->userPasswordService = $this->container->get(UserPasswordService::class);
-        $this->userRepository = $this->container->get(UserRepository::class);
+    public function __construct(
+        protected Container $container,
+        protected ConfigService $configService,
+        protected MessageService $messageService,
+        protected RenderService $renderer,
+        protected ResponseEmitter $responseEmitter,
+        protected UserPasswordService $userPasswordService,
+        protected UserRepository $userRepository,
+        protected ValidatorService $validatorService,
+    ) {
     }
 
-    public static function getFilter(): array
+    /**
+     * @param array<string, string> $routeArgs
+     */
+    public function __invoke(Request $request, Response $response, array $routeArgs): Response
     {
-        $container = ContainerWrapper::get();
+        $uniqueIdentifier = $this->configService->get('authenticator.unique_identifier');
 
-        $usernameFormat = FORMAT_USERNAME;
-        if ($container->get('authenticator.unique_identifier') == 'email')
-        {
-            $usernameFormat = FORMAT_EMAIL;
-        }
+        $filtered = $this->validatorService->getFilteredParams($request, [
+            'username' => ($uniqueIdentifier === 'email') ? FORMAT_EMAIL : FORMAT_USERNAME,
+        ]);
 
-        return [
-            'username' => $usernameFormat,
+        $params = [
+            'core' => [
+                'title' => 'Forgot password',
+            ],
         ];
-    }
 
-    protected function getTitle(): string
-    {
-        return 'Forgot password';
-    }
-
-    protected function doLogic(): void
-    {
-        // Check if this is a true attempt
-        //
-        if (!strlen($this->getInputVar('do')))
+        if (!$request->getAttribute('passed_csrf'))
         {
-            return;
+            return $this->renderer->render($request, $response, 'forgot_password.latte', $params);
         }
 
-        // Check if user present
-        //
-        $username = $this->getInputVar('username');
-        if (!strlen($username))
+        if (!strlen($filtered['username']))
         {
-            $this->addMessage('error', 'Please enter a username.', '');
+            $this->messageService->add('error', 'Please enter a username');
 
-            return;
+            return $this->renderer->render($request, $response, 'forgot_password.latte', $params);
         }
 
         // Retrieve user
         //
-        $user = $this->userRepository->getUserByUsername($username);
+        $user = $this->userRepository->getUserByUsername($filtered['username']);
 
         if ($user !== null)
         {
@@ -70,14 +67,10 @@ class ForgotPassword extends PageAction
 
         // Redirect to main sceen
         //
-        $loginPage = $this->getBaseUrl().$this->getConfig('actions.login.location');
-        header("Location: {$loginPage}?".$this->getMessageForUrl('success', 'Reset link mailed to registered email account.'));
+        $baseUrl = $this->configService->get('base_url');
+        $loginPage = $this->configService->get('actions.login.location');
+        $message = $this->messageService->getForUrl('success', 'Reset link mailed to registered email account.');
 
-        exit();
-    }
-
-    protected function displayContent(): void
-    {
-        $this->loadTemplate('forgot_password.tpl', $this->pageContent);
+        return $this->responseEmitter->redirect("{$baseUrl}{$loginPage}?{$message}");
     }
 }

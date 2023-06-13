@@ -101,6 +101,11 @@ parameters:
 			path: includes/MysqliDatabase.php
 
 		-
+			message: "#^Method WebFramework\\\\Core\\\\UserCodeService\\:\\:verify\\(\\) should return array\\{user_id\\: int, action\\: string, params\\: array, timestamp\\: int\\} but returns array\\.$#"
+			count: 1
+			path: includes/UserCodeService.php
+
+		-
 			message: "#^Function convert\\(\\) should return string but returns string\\|null\\.$#"
 			count: 1
 			path: scripts/CaseConvertor.php

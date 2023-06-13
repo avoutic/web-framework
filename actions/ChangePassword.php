@@ -2,137 +2,130 @@
 
 namespace WebFramework\Actions;
 
-use WebFramework\Core\PageAction;
+use Psr\Container\ContainerInterface as Container;
+use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
+use Slim\Exception\HttpUnauthorizedException;
+use WebFramework\Core\ConfigService;
+use WebFramework\Core\MessageService;
+use WebFramework\Core\RenderService;
+use WebFramework\Core\ResponseEmitter;
 use WebFramework\Core\UserPasswordService;
-use WebFramework\Entity\User;
+use WebFramework\Core\ValidatorService;
 use WebFramework\Exception\InvalidPasswordException;
 use WebFramework\Exception\WeakPasswordException;
-use WebFramework\Repository\UserRepository;
+use WebFramework\Security\AuthenticationService;
 
-class ChangePassword extends PageAction
+class ChangePassword
 {
-    protected UserPasswordService $userPasswordService;
-    protected UserRepository $userRepository;
-
-    public function init(): void
-    {
-        parent::init();
-
-        $this->userPasswordService = $this->container->get(UserPasswordService::class);
-        $this->userRepository = $this->container->get(UserRepository::class);
-    }
-
-    public static function getFilter(): array
-    {
-        return [
-            'orig_password' => FORMAT_PASSWORD,
-            'password' => FORMAT_PASSWORD,
-            'password2' => FORMAT_PASSWORD,
-        ];
-    }
-
-    public static function getPermissions(): array
-    {
-        return [
-            'logged_in',
-        ];
-    }
-
-    protected function getTitle(): string
-    {
-        return 'Change password';
-    }
-
-    // Can be overriden for project specific user factories and user classes
-    //
-    protected function getUser(string $username): ?User
-    {
-        return $this->userRepository->getUserByUsername($username);
+    public function __construct(
+        protected Container $container,
+        protected AuthenticationService $authenticationService,
+        protected ConfigService $configService,
+        protected MessageService $messageService,
+        protected RenderService $renderer,
+        protected ResponseEmitter $responseEmitter,
+        protected UserPasswordService $userPasswordService,
+        protected ValidatorService $validatorService,
+    ) {
     }
 
     protected function customFinalizeChange(): void
     {
     }
 
-    protected function doLogic(): void
+    /**
+     * @param array<string, string> $routeArgs
+     */
+    public function __invoke(Request $request, Response $response, array $routeArgs): Response
     {
-        // Check if this is a true attempt
-        //
-        if (!strlen($this->getInputVar('do')))
+        $user = $request->getAttribute('user');
+        if ($user === null)
         {
-            return;
+            throw new HttpUnauthorizedException($request);
         }
 
-        $origPassword = $this->getInputVar('orig_password');
-        $password = $this->getInputVar('password');
-        $password2 = $this->getInputVar('password2');
+        $params = [
+            'core' => [
+                'title' => 'Change password',
+            ],
+        ];
+
+        // Check if this is a true attempt
+        //
+        if (!$request->getAttribute('passed_csrf'))
+        {
+            return $this->renderer->render($request, $response, 'change_password.latte', $params);
+        }
+
+        $filtered = $this->validatorService->getFilteredParams($request, [
+            'orig_password' => FORMAT_PASSWORD,
+            'password' => FORMAT_PASSWORD,
+            'password2' => FORMAT_PASSWORD,
+        ]);
+
+        $errors = false;
 
         // Check if passwords are present
         //
-        if (!strlen($origPassword))
+        if (!strlen($filtered['orig_password']))
         {
-            $this->addMessage('error', 'Please enter your current password.');
-
-            return;
+            $errors = true;
+            $this->messageService->add('error', 'Please enter your current password.');
         }
 
-        if (!strlen($password))
+        if (!strlen($filtered['password']))
         {
-            $this->addMessage('error', 'Please enter a password.', 'Passwords can contain any printable character.');
-
-            return;
+            $errors = true;
+            $this->messageService->add('error', 'Please enter a password.', 'Passwords can contain any printable character.');
         }
 
-        if (!strlen($password2))
+        if (!strlen($filtered['password2']))
         {
-            $this->addMessage('error', 'Please enter the password verification.', 'Password verification should match your password.');
-
-            return;
+            $errors = true;
+            $this->messageService->add('error', 'Please enter the password verification.', 'Password verification should match your password.');
         }
 
-        if ($password != $password2)
+        if ($filtered['password'] != $filtered['password2'])
         {
-            $this->addMessage('error', 'Passwords don\'t match.', 'Password and password verification should be the same.');
-
-            return;
+            $errors = true;
+            $this->messageService->add('error', 'Passwords don\'t match.', 'Password and password verification should be the same.');
         }
-
-        $user = $this->getAuthenticatedUser();
 
         try
         {
-            $this->userPasswordService->changePassword($user, $origPassword, $password);
+            $this->userPasswordService->changePassword($user, $filtered['orig_password'], $filtered['password']);
         }
         catch (InvalidPasswordException $e)
         {
-            $this->addMessage('error', 'Original password is incorrect.', 'Please re-enter your password.');
-
-            return;
+            $errors = true;
+            $this->messageService->add('error', 'Original password is incorrect.', 'Please re-enter your password.');
         }
         catch (WeakPasswordException $e)
         {
-            $this->addMessage('error', 'New password is too weak.', 'Use at least 8 characters.');
+            $errors = true;
+            $this->messageService->add('error', 'New password is too weak.', 'Use at least 8 characters.');
+        }
 
-            return;
+        if ($errors)
+        {
+            return $this->renderer->render($request, $response, 'change_password.latte', $params);
         }
 
         $this->customFinalizeChange();
 
         // Invalidate old sessions
         //
-        $this->invalidateSessions($user->getId());
-        $this->authenticate($user);
+        $this->authenticationService->invalidateSessions($user->getId());
+        $this->authenticationService->authenticate($user);
 
         // Redirect to main sceen
         //
-        $returnPage = $this->getBaseUrl().$this->getConfig('actions.change_password.return_page');
-        header("Location: {$returnPage}?".$this->getMessageForUrl('success', 'Password changed successfully.'));
+        $baseUrl = $this->configService->get('base_url');
+        $returnPage = $this->configService->get('actions.change_password.return_page');
 
-        exit();
-    }
+        $message = $this->messageService->getForUrl('success', 'Password changed successfully');
 
-    protected function displayContent(): void
-    {
-        $this->loadTemplate('change_password.tpl', $this->pageContent);
+        return $this->responseEmitter->redirect("{$baseUrl}{$returnPage}?{$message}");
     }
 }

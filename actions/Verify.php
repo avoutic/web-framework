@@ -2,31 +2,29 @@
 
 namespace WebFramework\Actions;
 
-use WebFramework\Core\PageAction;
+use Psr\Container\ContainerInterface as Container;
+use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
+use WebFramework\Core\ConfigService;
+use WebFramework\Core\MessageService;
+use WebFramework\Core\ResponseEmitter;
+use WebFramework\Core\UserCodeService;
+use WebFramework\Core\ValidatorService;
 use WebFramework\Entity\User;
+use WebFramework\Exception\CodeVerificationException;
 use WebFramework\Repository\UserRepository;
 
-class Verify extends PageAction
+class Verify
 {
-    protected UserRepository $userRepository;
-
-    public function init(): void
-    {
-        parent::init();
-
-        $this->userRepository = $this->container->get(UserRepository::class);
-    }
-
-    public static function getFilter(): array
-    {
-        return [
-            'code' => '.*',
-        ];
-    }
-
-    protected function getTitle(): string
-    {
-        return 'Mail address verification';
+    public function __construct(
+        protected Container $container,
+        protected ConfigService $configService,
+        protected MessageService $messageService,
+        protected ResponseEmitter $responseEmitter,
+        protected UserCodeService $userCodeService,
+        protected UserRepository $userRepository,
+        protected ValidatorService $validatorService,
+    ) {
     }
 
     /**
@@ -36,40 +34,39 @@ class Verify extends PageAction
     {
     }
 
-    protected function doLogic(): void
+    /**
+     * @param array<string, string> $routeArgs
+     */
+    public function __invoke(Request $request, Response $response, array $routeArgs): Response
     {
-        $loginPage = $this->getBaseUrl().$this->getConfig('actions.login.location');
+        $filtered = $this->validatorService->getFilteredParams($request, [
+            'code' => '.*',
+        ]);
 
-        // Check if code is present
-        //
-        $code = $this->getInputVar('code');
-        $this->blacklistVerify(strlen($code), 'missing-code');
+        $baseUrl = $this->configService->get('base_url');
+        $loginPage = $this->configService->get('actions.login.location');
 
-        $msg = $this->decodeAndVerifyArray($code);
-        if (!$msg)
+        try
         {
-            header("Location: {$loginPage}?".$this->getMessageForUrl('error', 'Verification mail expired', 'Please <a href="'.$loginPage.'">request a new one</a> after logging in.'));
-
-            exit();
+            ['user_id' => $codeUserId, 'params' => $verifyParams] = $this->userCodeService->verify(
+                $filtered['code'],
+                validity: 24 * 60 * 60,
+                action: 'verify',
+            );
         }
-
-        $this->blacklistVerify($msg['action'] == 'verify', 'wrong-action', 2);
-
-        if ($msg['timestamp'] + 86400 < time())
+        catch (CodeVerificationException $e)
         {
-            // Expired
-            header("Location: {$loginPage}?".$this->getMessageForUrl('error', 'Verification mail expired', 'Please <a href="'.$loginPage.'">request a new one</a> after logging in.'));
+            $message = $this->messageService->getForUrl('error', 'Verification mail expired', 'Please login again to request a new one.');
 
-            exit();
+            return $this->responseEmitter->redirect("{$baseUrl}{$loginPage}?{$message}");
         }
 
         // Check user status
         //
-        $user = $this->userRepository->getUserByUsername($msg['username']);
-
+        $user = $this->userRepository->getObjectById($codeUserId);
         if ($user === null)
         {
-            return;
+            throw new \RuntimeException('User not found');
         }
 
         if (!$user->isVerified())
@@ -77,14 +74,14 @@ class Verify extends PageAction
             $user->setVerified();
             $this->userRepository->save($user);
 
-            $this->customAfterVerifyActions($user, $msg['params']);
+            $this->customAfterVerifyActions($user, $verifyParams);
         }
 
         // Redirect to main sceen
         //
-        $afterVerifyPage = $this->getConfig('actions.login.after_verify_page');
-        header("Location: {$loginPage}?".$this->getMessageForUrl('success', 'Verification succeeded', 'Verification succeeded. You can now use your account.').'&return_page='.urlencode($afterVerifyPage));
+        $afterVerifyPage = $this->configService->get('actions.login.after_verify_page');
+        $message = $this->messageService->getForUrl('success', 'Verification succeeded', 'Verification succeeded. You can now use your account.').'&return_page='.urlencode($afterVerifyPage);
 
-        exit();
+        return $this->responseEmitter->redirect("{$baseUrl}{$loginPage}?{$message}");
     }
 }

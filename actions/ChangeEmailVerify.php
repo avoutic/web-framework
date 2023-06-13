@@ -2,106 +2,115 @@
 
 namespace WebFramework\Actions;
 
-use WebFramework\Core\PageAction;
+use Psr\Container\ContainerInterface as Container;
+use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
+use Slim\Exception\HttpUnauthorizedException;
+use WebFramework\Core\ConfigService;
+use WebFramework\Core\MessageService;
+use WebFramework\Core\ResponseEmitter;
+use WebFramework\Core\UserCodeService;
 use WebFramework\Core\UserEmailService;
+use WebFramework\Core\ValidatorService;
 use WebFramework\Entity\User;
+use WebFramework\Exception\CodeVerificationException;
 use WebFramework\Exception\DuplicateEmailException;
 use WebFramework\Repository\UserRepository;
+use WebFramework\Security\AuthenticationService;
 use WebFramework\Security\SecurityIteratorService;
 
-class ChangeEmailVerify extends PageAction
+class ChangeEmailVerify
 {
-    protected SecurityIteratorService $securityIteratorService;
-    protected UserEmailService $userEmailService;
-    protected UserRepository $userRepository;
-
-    public function init(): void
-    {
-        parent::init();
-
-        $this->securityIteratorService = $this->container->get(SecurityIteratorService::class);
-        $this->userEmailService = $this->container->get(UserEmailService::class);
-        $this->userRepository = $this->container->get(UserRepository::class);
+    public function __construct(
+        protected Container $container,
+        protected AuthenticationService $authenticationService,
+        protected ConfigService $configService,
+        protected MessageService $messageService,
+        protected ResponseEmitter $responseEmitter,
+        protected SecurityIteratorService $securityIteratorService,
+        protected UserCodeService $userCodeService,
+        protected UserEmailService $userEmailService,
+        protected UserRepository $userRepository,
+        protected ValidatorService $validatorService,
+    ) {
     }
 
-    public static function getFilter(): array
+    /**
+     * @param array<string, string> $routeArgs
+     */
+    public function __invoke(Request $request, Response $response, array $routeArgs): Response
     {
-        return [
+        $user = $request->getAttribute('user');
+        if ($user === null)
+        {
+            throw new HttpUnauthorizedException($request);
+        }
+
+        $filtered = $this->validatorService->getFilteredParams($request, [
             'code' => '.*',
-        ];
-    }
+        ]);
 
-    public static function getPermissions(): array
-    {
-        return [
-            'logged_in',
-        ];
-    }
+        $baseUrl = $this->configService->get('base_url');
+        $changePage = $this->configService->get('actions.change_email.location');
+        $returnPage = $this->configService->get('actions.change_email.return_page');
 
-    protected function getTitle(): string
-    {
-        return 'Change email address verification';
-    }
+        try
+        {
+            ['user_id' => $codeUserId, 'params' => $verifyParams] = $this->userCodeService->verify(
+                $filtered['code'],
+                validity: 10 * 60,
+                action: 'change_email',
+            );
+        }
+        catch (CodeVerificationException $e)
+        {
+            $message = $this->messageService->getForUrl('error', 'E-mail verification link expired');
 
-    // Can be overriden for project specific user factories and user classes
-    //
-    protected function getUser(string $username): ?User
-    {
-        return $this->userRepository->getUserByUsername($username);
-    }
+            return $this->responseEmitter->redirect("{$baseUrl}{$changePage}?{$message}");
+        }
 
-    protected function doLogic(): void
-    {
-        $changePage = $this->getBaseUrl().$this->getConfig('actions.change_email.location');
-
-        // Check if code is present
+        // Check user status
         //
-        $code = $this->getInputVar('code');
-        $this->blacklistVerify(strlen($code), 'code-missing');
-
-        $msg = $this->decodeAndVerifyArray($code);
-        if (!$msg)
+        $codeUser = $this->userRepository->getObjectById($codeUserId);
+        if ($codeUser === null)
         {
-            exit();
+            $message = $this->messageService->getForUrl('error', 'E-mail verification link expired');
+
+            return $this->responseEmitter->redirect("{$baseUrl}{$changePage}?{$message}");
         }
 
-        $this->blacklistVerify($msg['action'] == 'change_email', 'wrong-action', 2);
-
-        if ($msg['timestamp'] + 600 < time())
-        {
-            // Expired
-            header("Location: {$changePage}?".$this->getMessageForUrl('error', 'E-mail verification link expired'));
-
-            exit();
-        }
-
-        $userId = $msg['id'];
-        $email = $msg['params']['email'];
-        $this->pageContent['email'] = $email;
+        $email = $verifyParams['email'];
 
         // Only allow for current user
         //
-        $user = $this->getAuthenticatedUser();
-        if ($userId != $user->getId())
+        if ($codeUser->getId() !== $user->getId())
         {
-            $this->deauthenticate();
-            $loginPage = $this->getBaseUrl().$this->getConfig('actions.login.location');
-            header("Location: {$loginPage}?".$this->getMessageForUrl('error', 'Other account', 'The link you used is meant for a different account. The current account has been logged off. Please try the link again.'));
+            $this->authenticationService->deauthenticate();
 
-            exit();
+            $loginPage = $this->configService->get('actions.login.location');
+            $message = $this->messageService->getForUrl('error', 'Other account', 'The link you used is meant for a different account. The current account has been logged off. Please try the link again.');
+
+            return $this->responseEmitter->redirect("{$baseUrl}{$loginPage}?{$message}");
+        }
+
+        // Already changed
+        //
+        if ($user->getEmail() === $email)
+        {
+            $message = $this->messageService->getForUrl('success', 'E-mail address changed successfully');
+
+            return $this->responseEmitter->redirect("{$baseUrl}{$returnPage}?{$message}");
         }
 
         // Change email
         //
-        $oldEmail = $user->getEmail();
         $securityIterator = $this->securityIteratorService->getFor($user);
 
-        if (!isset($msg['params']) || !isset($msg['params']['iterator'])
-            || $securityIterator != $msg['params']['iterator'])
+        if (!isset($verifyParams['iterator']) || $securityIterator != $verifyParams['iterator'])
         {
-            header("Location: {$changePage}?".$this->getMessageForUrl('error', 'E-mail verification link expired'));
+            $message = $this->messageService->getForUrl('error', 'E-mail verification link expired');
 
-            exit();
+            return $this->responseEmitter->redirect("{$baseUrl}{$changePage}?{$message}");
         }
 
         try
@@ -110,21 +119,20 @@ class ChangeEmailVerify extends PageAction
         }
         catch (DuplicateEmailException $e)
         {
-            header("Location: {$changePage}?".$this->getMessageForUrl('error', 'E-mail address is already in use in another account.', 'The e-mail address is already in use and cannot be re-used in this account. Please choose another address.'));
+            $message = $this->messageService->getForUrl('error', 'E-mail address is already in use in another account.', 'The e-mail address is already in use and cannot be re-used in this account. Please choose another address.');
 
-            exit();
+            return $this->responseEmitter->redirect("{$baseUrl}{$changePage}?{$message}");
         }
 
         // Invalidate old sessions
         //
-        $this->invalidateSessions($user->getId());
-        $this->authenticate($user);
+        $this->authenticationService->invalidateSessions($user->getId());
+        $this->authenticationService->authenticate($user);
 
         // Redirect to verification request screen
         //
-        $returnPage = $this->getBaseUrl().$this->getConfig('actions.change_email.return_page');
-        header("Location: {$returnPage}?".$this->getMessageForUrl('success', 'E-mail address changed successfully'));
+        $message = $this->messageService->getForUrl('success', 'E-mail address changed successfully');
 
-        exit();
+        return $this->responseEmitter->redirect("{$baseUrl}{$returnPage}?{$message}");
     }
 }

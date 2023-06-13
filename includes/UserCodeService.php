@@ -29,7 +29,7 @@ class UserCodeService
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array{user_id: int, action: string, params: array<mixed>, timestamp: int}
      */
     public function verify(string $packedCode, string $action, int $validity): array
     {

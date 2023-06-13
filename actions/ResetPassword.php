@@ -2,99 +2,92 @@
 
 namespace WebFramework\Actions;
 
-use WebFramework\Core\PageAction;
+use Psr\Container\ContainerInterface as Container;
+use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
+use WebFramework\Core\ConfigService;
+use WebFramework\Core\MessageService;
+use WebFramework\Core\ResponseEmitter;
+use WebFramework\Core\UserCodeService;
 use WebFramework\Core\UserPasswordService;
+use WebFramework\Core\ValidatorService;
 use WebFramework\Entity\User;
+use WebFramework\Exception\CodeVerificationException;
 use WebFramework\Repository\UserRepository;
+use WebFramework\Security\AuthenticationService;
 use WebFramework\Security\SecurityIteratorService;
 
-class ResetPassword extends PageAction
+class ResetPassword
 {
-    protected SecurityIteratorService $securityIteratorService;
-    protected UserRepository $userRepository;
-    protected UserPasswordService $userPasswordService;
-
-    public function init(): void
-    {
-        parent::init();
-
-        $this->securityIteratorService = $this->container->get(SecurityIteratorService::class);
-        $this->userPasswordService = $this->container->get(UserPasswordService::class);
-        $this->userRepository = $this->container->get(UserRepository::class);
+    public function __construct(
+        protected Container $container,
+        protected AuthenticationService $authenticationService,
+        protected ConfigService $configService,
+        protected MessageService $messageService,
+        protected ResponseEmitter $responseEmitter,
+        protected SecurityIteratorService $securityIteratorService,
+        protected UserCodeService $userCodeService,
+        protected UserPasswordService $userPasswordService,
+        protected UserRepository $userRepository,
+        protected ValidatorService $validatorService,
+    ) {
     }
 
-    public static function getFilter(): array
+    /**
+     * @param array<string, string> $routeArgs
+     */
+    public function __invoke(Request $request, Response $response, array $routeArgs): Response
     {
-        return [
+        $filtered = $this->validatorService->getFilteredParams($request, [
             'code' => '.*',
-        ];
-    }
+        ]);
 
-    protected function getTitle(): string
-    {
-        return 'Reset password';
-    }
+        $baseUrl = $this->configService->get('base_url');
+        $forgotPasswordPage = $this->configService->get('actions.forgot_password.location');
 
-    // Can be overriden for project specific user factories and user classes
-    //
-    protected function getUser(string $username): ?User
-    {
-        return $this->userRepository->getUserByUsername($username);
-    }
+        try
+        {
+            ['user_id' => $codeUserId, 'params' => $verifyParams] = $this->userCodeService->verify(
+                $filtered['code'],
+                validity: 10 * 60,
+                action: 'reset_password',
+            );
+        }
+        catch (CodeVerificationException $e)
+        {
+            $message = $this->messageService->getForUrl('error', 'Password reset link expired', 'Please request a new one.');
 
-    protected function doLogic(): void
-    {
-        $forgotPasswordPage = $this->getBaseUrl().$this->getConfig('actions.forgot_password.location');
-        $loginPage = $this->getBaseUrl().$this->getConfig('actions.login.location');
+            return $this->responseEmitter->redirect("{$baseUrl}{$forgotPasswordPage}?{$message}");
+        }
 
-        // Check if code is present
+        // Check user status
         //
-        $code = $this->getInputVar('code');
-        $this->blacklistVerify(strlen($code), 'missing-code');
-
-        $msg = $this->decodeAndVerifyArray($code);
-        if (!$msg)
-        {
-            return;
-        }
-
-        $this->blacklistVerify($msg['action'] == 'reset_password', 'wrong-action', 2);
-
-        if ($msg['timestamp'] + 600 < time())
-        {
-            // Expired
-            header("Location: {$forgotPasswordPage}?".$this->getMessageForUrl('error', 'Password reset link expired'));
-
-            exit();
-        }
-
-        $user = $this->getUser($msg['username']);
-
+        $user = $this->userRepository->getObjectById($codeUserId);
         if ($user === null)
         {
-            return;
+            throw new \RuntimeException('User not found');
         }
 
         $securityIterator = $this->securityIteratorService->getFor($user);
 
-        if (!isset($msg['params']) || !isset($msg['params']['iterator'])
-            || $securityIterator != $msg['params']['iterator'])
+        if (!isset($verifyParams['iterator']) || $securityIterator != $verifyParams['iterator'])
         {
-            header("Location: {$forgotPasswordPage}?".$this->getMessageForUrl('error', 'Password reset link expired'));
+            $message = $this->messageService->getForUrl('error', 'Password reset link expired', 'Please request a new one.');
 
-            exit();
+            return $this->responseEmitter->redirect("{$baseUrl}{$forgotPasswordPage}?{$message}");
         }
 
         $this->userPasswordService->sendNewPassword($user);
 
         // Invalidate old sessions
         //
-        $this->invalidateSessions($user->getId());
+        $this->authenticationService->invalidateSessions($user->getId());
 
         // Redirect to main sceen
         //
-        header("Location: {$loginPage}?".$this->getMessageForUrl('success', 'Password reset', 'You will receive a mail with your new password'));
+        $loginPage = $this->configService->get('actions.login.location');
+        $message = $this->messageService->getForUrl('success', 'Password reset', 'You will receive a mail with your new password');
 
-        exit();
+        return $this->responseEmitter->redirect("{$baseUrl}{$loginPage}?{$message}");
     }
 }

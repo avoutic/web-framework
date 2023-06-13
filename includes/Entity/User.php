@@ -15,9 +15,9 @@ class User extends EntityCore
     private string $email;
     private string $solidPassword;
     private int $termsAccepted;
-    private bool $verified;
-    private int $lastLogin;
-    private int $failedLogin;
+    private bool $verified = false;
+    private int $lastLogin = 0;
+    private int $failedLogin = 0;
 
     public function getId(): int
     {

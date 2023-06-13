@@ -6,7 +6,6 @@ use Psr\Container\ContainerInterface as Container;
 use WebFramework\Entity\User;
 use WebFramework\Exception\DuplicateEmailException;
 use WebFramework\Repository\UserRepository;
-use WebFramework\Security\ProtectService;
 use WebFramework\Security\SecurityIteratorService;
 
 class UserEmailService
@@ -14,25 +13,11 @@ class UserEmailService
     public function __construct(
         private Container $container,
         private ConfigService $configService,
-        private ProtectService $protectService,
         private SecurityIteratorService $securityIteratorService,
+        private UserCodeService $userCodeService,
         private UserMailer $userMailer,
         private UserRepository $userRepository,
     ) {
-    }
-
-    /**
-     * @param array<mixed> $params
-     */
-    public function generateCode(User $user, string $action = '', array $params = []): string
-    {
-        $msg = ['id' => $user->getId(),
-            'username' => $user->getUsername(),
-            'action' => $action,
-            'params' => $params,
-            'timestamp' => time(), ];
-
-        return $this->protectService->packArray($msg);
     }
 
     public function changeEmail(User $user, string $email, bool $requireUnique = true): void
@@ -73,7 +58,7 @@ class UserEmailService
 
         $securityIterator = $this->securityIteratorService->incrementFor($user);
 
-        $code = $this->generateCode($user, 'change_email', ['email' => $email, 'iterator' => $securityIterator]);
+        $code = $this->userCodeService->generate($user, 'change_email', ['email' => $email, 'iterator' => $securityIterator]);
 
         $verifyUrl =
             $this->configService->get('http_mode').
@@ -97,7 +82,7 @@ class UserEmailService
      */
     public function sendVerifyMail(User $user, array $afterVerifyData = []): void
     {
-        $code = $this->generateCode($user, 'verify', $afterVerifyData);
+        $code = $this->userCodeService->generate($user, 'verify', $afterVerifyData);
         $verifyUrl =
             $this->configService->get('http_mode').
             '://'.

@@ -2,83 +2,40 @@
 
 namespace WebFramework\Actions;
 
-use WebFramework\Core\ContainerWrapper;
-use WebFramework\Core\PageAction;
-use WebFramework\Core\Recaptcha;
+use Psr\Container\ContainerInterface as Container;
+use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
+use WebFramework\Core\ConfigService;
+use WebFramework\Core\MessageService;
+use WebFramework\Core\RecaptchaFactory;
+use WebFramework\Core\RenderService;
+use WebFramework\Core\ResponseEmitter;
+use WebFramework\Core\UserCodeService;
 use WebFramework\Core\UserEmailService;
 use WebFramework\Core\UserPasswordService;
+use WebFramework\Core\ValidatorService;
 use WebFramework\Entity\User;
 use WebFramework\Repository\UserRepository;
+use WebFramework\Security\AuthenticationService;
+use WebFramework\Security\BlacklistService;
 
-class Login extends PageAction
+class Login
 {
-    protected string $uniqueIdentifier = '';
-    protected UserEmailService $userEmailService;
-    protected UserPasswordService $userPasswordService;
-    protected UserRepository $userRepository;
-
-    public function init(): void
-    {
-        parent::init();
-
-        $this->userEmailService = $this->container->get(UserEmailService::class);
-        $this->userPasswordService = $this->container->get(UserPasswordService::class);
-        $this->userRepository = $this->container->get(UserRepository::class);
-        $this->uniqueIdentifier = $this->getConfig('authenticator.unique_identifier');
-    }
-
-    public static function getFilter(): array
-    {
-        $container = ContainerWrapper::get();
-
-        $usernameFormat = FORMAT_USERNAME;
-        if ($container->get('authenticator.unique_identifier') == 'email')
-        {
-            $usernameFormat = FORMAT_EMAIL;
-        }
-
-        return [
-            'return_page' => FORMAT_RETURN_PAGE,
-            'return_query' => FORMAT_RETURN_QUERY,
-            'username' => $usernameFormat,
-            'password' => FORMAT_PASSWORD,
-            'g-recaptcha-response' => '.*',
-        ];
-    }
-
-    protected function checkSanity(): void
-    {
-        $loginConfig = $this->getConfig('actions.login');
-        $bruteforceProtection = $loginConfig['bruteforce_protection'];
-
-        if ($bruteforceProtection)
-        {
-            $recaptchaConfig = $this->getConfig('security.recaptcha');
-            $this->verify(strlen($recaptchaConfig['site_key']), 'Missing reCAPTCHA Site Key');
-            $this->verify(strlen($recaptchaConfig['secret_key']), 'Missing reCAPTCHA Secret Key');
-        }
-    }
-
-    protected function getTitle(): string
-    {
-        return 'Login';
-    }
-
-    protected function getCanonical(): string
-    {
-        return $this->pageContent['login_page'];
-    }
-
-    protected function getOnload(): string
-    {
-        return "$('#inputUsername').focus();";
-    }
-
-    // Can be overriden for project specific user factories and user classes
-    //
-    protected function getUser(string $username): ?User
-    {
-        return $this->userRepository->getUserByUsername($username);
+    public function __construct(
+        protected Container $container,
+        protected AuthenticationService $authenticationService,
+        protected BlacklistService $blacklistService,
+        protected ConfigService $configService,
+        protected MessageService $messageService,
+        protected RecaptchaFactory $recaptchaFactory,
+        protected RenderService $renderer,
+        protected ResponseEmitter $responseEmitter,
+        protected UserCodeService $userCodeService,
+        protected UserEmailService $userEmailService,
+        protected UserPasswordService $userPasswordService,
+        protected UserRepository $userRepository,
+        protected ValidatorService $validatorService,
+    ) {
     }
 
     protected function customValueCheck(User $user): bool
@@ -86,19 +43,39 @@ class Login extends PageAction
         return true;
     }
 
-    protected function doLogic(): void
+    /**
+     * @param array<string, string> $routeArgs
+     */
+    public function __invoke(Request $request, Response $response, array $routeArgs): Response
     {
-        $returnPage = $this->getInputVar('return_page');
-        $returnQuery = $this->getInputVar('return_query');
+        $uniqueIdentifier = $this->configService->get('authenticator.unique_identifier');
+        $bruteforceProtection = $this->configService->get('actions.login.bruteforce_protection');
 
-        $this->pageContent['return_query'] = $returnQuery;
-        $this->pageContent['username'] = $this->getRawInputVar('username');
-        $this->pageContent['recaptcha_needed'] = false;
-        $this->pageContent['recaptcha_site_key'] = $this->getConfig('security.recaptcha.site_key');
+        $recaptchaSiteKey = '';
+        $recaptchaSecretKey = '';
+
+        if ($bruteforceProtection)
+        {
+            $recaptchaSiteKey = $this->configService->get('security.recaptcha.site_key');
+            $recaptchaSecretKey = $this->configService->get('security.recaptcha.secret_key');
+        }
+
+        $baseUrl = $this->configService->get('base_url');
+
+        ['raw' => $raw, 'filtered' => $filtered] = $this->validatorService->getParams($request, [
+            'return_page' => FORMAT_RETURN_PAGE,
+            'return_query' => FORMAT_RETURN_QUERY,
+            'username' => ($uniqueIdentifier === 'email') ? FORMAT_EMAIL : FORMAT_USERNAME,
+            'password' => FORMAT_PASSWORD,
+            'g-recaptcha-response' => '.*',
+        ]);
+
+        $returnPage = $filtered['return_page'];
+        $returnQuery = $filtered['return_query'];
 
         if (!strlen($returnPage) || substr($returnPage, 0, 2) == '//')
         {
-            $returnPage = $this->getConfig('actions.login.default_return_page');
+            $returnPage = $this->configService->get('actions.login.default_return_page');
         }
 
         if (substr($returnPage, 0, 1) != '/')
@@ -106,138 +83,134 @@ class Login extends PageAction
             $returnPage = '/'.$returnPage;
         }
 
-        $this->pageContent['return_page'] = $returnPage;
-        $this->pageContent['login_page'] = $this->getConfig('actions.login.location');
-        $sendVerifyPage = $this->getConfig('actions.login.send_verify_page');
+        $params = [
+            'core' => [
+                'title' => 'Login',
+            ],
+            'return_page' => $returnPage,
+            'return_query' => $filtered['return_query'],
+            'username' => $raw['username'],
+            'recaptcha_needed' => false,
+            'recaptcha_site_key' => $recaptchaSiteKey,
+        ];
 
         // Check if already logged in and redirect immediately
-        if ($this->isAuthenticated())
+        //
+        if ($this->authenticationService->isAuthenticated())
         {
-            header('Location: '.$this->getBaseUrl().$returnPage.'?'.$returnQuery.'&'.
-                            $this->getMessageForUrl('info', 'Already logged in'));
+            $message = $this->messageService->getForUrl('info', 'Already logged in');
 
-            exit();
+            return $this->responseEmitter->redirect("{$baseUrl}{$returnPage}?{$returnQuery}&{$message}");
         }
 
         // Check if this is a login attempt
         //
-        if (!strlen($this->getInputVar('do')))
+        if (!$request->getAttribute('passed_csrf'))
         {
-            return;
+            return $this->renderer->render($request, $response, 'login.latte', $params);
         }
+
+        $errors = false;
 
         // Check if username and password are present
         //
-        if (!strlen($this->getInputVar('username')))
+        if (!strlen($filtered['username']))
         {
-            if ($this->uniqueIdentifier == 'email')
+            $errors = true;
+
+            if ($uniqueIdentifier == 'email')
             {
-                $this->addMessage('error', 'Please enter a valid email.');
+                $this->messageService->add('error', 'Please enter a valid email.');
             }
             else
             {
-                $this->addMessage('error', 'Please enter a valid username.');
+                $this->messageService->add('error', 'Please enter a valid username.');
             }
-
-            return;
         }
-        if (!strlen($this->getInputVar('password')))
-        {
-            $this->addMessage('error', 'Please enter your password.');
 
-            return;
+        if (!strlen($filtered['password']))
+        {
+            $errors = true;
+            $this->messageService->add('error', 'Please enter your password.');
+        }
+
+        if ($errors)
+        {
+            return $this->renderer->render($request, $response, 'login.latte', $params);
         }
 
         // Log in user
         //
-        $user = $this->getUser($this->getInputVar('username'));
-
+        $user = $this->userRepository->getUserByUsername($filtered['username']);
         if ($user === null)
         {
-            if ($this->uniqueIdentifier == 'email')
+            if ($uniqueIdentifier == 'email')
             {
-                $this->addMessage('error', 'E-mail and password do not match.', 'Please check if you entered the e-mail and/or password correctly.');
+                $this->messageService->add('error', 'E-mail and password do not match.', 'Please check if you entered the e-mail and/or password correctly.');
             }
             else
             {
-                $this->addMessage('error', 'Username and password do not match.', 'Please check if you entered the username and/or password correctly.');
+                $this->messageService->add('error', 'Username and password do not match.', 'Please check if you entered the username and/or password correctly.');
             }
 
-            $this->addBlacklistEntry('unknown-username');
+            $this->blacklistService->addEntry($request->getAttribute('ip'), null, 'unknown-username');
 
-            return;
+            return $this->renderer->render($request, $response, 'login.latte', $params);
         }
 
-        $bruteforceProtection = $this->getConfig('actions.login.bruteforce_protection');
         if ($user->getFailedLogin() > 5 && $bruteforceProtection)
         {
-            $recaptchaResponse = $this->getInputVar('g-recaptcha-response');
-            $this->pageContent['recaptcha_needed'] = true;
+            $recaptchaResponse = $filtered['g-recaptcha-response'];
+            $params['recaptcha_needed'] = true;
 
             if (!strlen($recaptchaResponse))
             {
-                $this->addMessage('error', 'CAPTCHA required', 'Due to possible brute force attacks on this username, filling in a CAPTCHA is required for checking the password!');
+                $this->messageService->add('error', 'CAPTCHA required', 'Due to possible brute force attacks on this username, filling in a CAPTCHA is required for checking the password!');
 
-                return;
+                return $this->renderer->render($request, $response, 'login.latte', $params);
             }
 
-            $recaptcha = new Recaptcha(
-                $this->assertService,
-                new \GuzzleHttp\Client(),
-                $this->getConfig('security.recaptcha.secret_key'),
-            );
+            $recaptcha = $this->recaptchaFactory->getRecaptcha();
             $result = $recaptcha->verifyResponse($recaptchaResponse);
 
             if ($result != true)
             {
-                $this->addMessage('error', 'The CAPTCHA code entered was incorrect.');
+                $this->messageService->add('error', 'The CAPTCHA code entered was incorrect.');
 
-                return;
+                return $this->renderer->render($request, $response, 'login.latte', $params);
             }
         }
 
-        if (!$this->userPasswordService->checkPassword($user, $this->getInputVar('password')))
+        if (!$this->userPasswordService->checkPassword($user, $filtered['password']))
         {
-            $this->addMessage('error', 'Username and password do not match.', 'Please check if you entered the username and/or password correctly.');
-            $this->addBlacklistEntry('wrong-password');
+            $this->messageService->add('error', 'Username and password do not match.', 'Please check if you entered the username and/or password correctly.');
+            $this->blacklistService->addEntry($request->getAttribute('ip'), null, 'wrong-password');
 
-            return;
+            return $this->renderer->render($request, $response, 'login.latte', $params);
         }
 
         if ($this->customValueCheck($user) !== true)
         {
-            return;
+            return $this->renderer->render($request, $response, 'login.latte', $params);
         }
 
         // Check if verified
         //
         if (!$user->isVerified())
         {
-            $code = $this->userEmailService->generateCode($user, 'send_verify');
+            $code = $this->userCodeService->generate($user, 'send_verify');
 
-            $this->addMessage('error', 'Account not yet verified.', 'Account is not yet verified. Please check your mailbox for the verification e-mail and go to the presented link. If you have not received such a mail, you can <a href="'.$this->getBaseUrl().$sendVerifyPage.'?code='.$code.'">request a new one</a>.');
+            $sendVerifyPage = $this->configService->get('actions.login.send_verify_page');
+            $message = $this->messageService->getForUrl('error', 'Account not yet verified.', 'Account is not yet verified. Please check your mailbox for the verification e-mail and go to the presented link.');
 
-            return;
+            return $this->responseEmitter->redirect("{$baseUrl}{$sendVerifyPage}?code={$code}&{$message}");
         }
 
         // Log in user
         //
-        $this->authenticate($user);
+        $this->authenticationService->authenticate($user);
+        $message = $this->messageService->getForUrl('success', 'Login successful.');
 
-        header('Location: '.$this->getBaseUrl().$returnPage.'?'.$returnQuery.'&'.$this->getMessageForUrl('success', 'Login successful.'));
-
-        exit();
-    }
-
-    protected function displayHeader(): void
-    {
-        echo <<<'HTML'
-  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-HTML;
-    }
-
-    protected function displayContent(): void
-    {
-        $this->loadTemplate('login.tpl', $this->pageContent);
+        return $this->responseEmitter->redirect("{$baseUrl}{$returnPage}?{$returnQuery}}&{$message}");
     }
 }

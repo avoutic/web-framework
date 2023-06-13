@@ -2,79 +2,72 @@
 
 namespace WebFramework\Actions;
 
-use WebFramework\Core\PageAction;
+use Psr\Container\ContainerInterface as Container;
+use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
+use WebFramework\Core\ConfigService;
+use WebFramework\Core\MessageService;
+use WebFramework\Core\ResponseEmitter;
+use WebFramework\Core\UserCodeService;
 use WebFramework\Core\UserEmailService;
+use WebFramework\Core\ValidatorService;
+use WebFramework\Exception\CodeVerificationException;
 use WebFramework\Repository\UserRepository;
 
-class SendVerify extends PageAction
+class SendVerify
 {
-    protected UserEmailService $userEmailService;
-    protected UserRepository $userRepository;
-
-    public function init(): void
-    {
-        parent::init();
-
-        $this->userEmailService = $this->container->get(UserEmailService::class);
-        $this->userRepository = $this->container->get(UserRepository::class);
+    public function __construct(
+        protected Container $container,
+        protected ConfigService $configService,
+        protected MessageService $messageService,
+        protected ResponseEmitter $responseEmitter,
+        protected UserCodeService $userCodeService,
+        protected UserEmailService $userEmailService,
+        protected UserRepository $userRepository,
+        protected ValidatorService $validatorService,
+    ) {
     }
 
-    public static function getFilter(): array
+    /**
+     * @param array<string, string> $routeArgs
+     */
+    public function __invoke(Request $request, Response $response, array $routeArgs): Response
     {
-        return [
+        $filtered = $this->validatorService->getFilteredParams($request, [
             'code' => '.*',
-        ];
-    }
+        ]);
 
-    protected function getTitle(): string
-    {
-        return 'Request verification mail.';
-    }
+        $baseUrl = $this->configService->get('base_url');
 
-    protected function doLogic(): void
-    {
-        // Check if code is present
-        //
-        $code = $this->getInputVar('code');
-        $this->blacklistVerify(strlen($code), 'missing-code');
-
-        $msg = $this->decodeAndVerifyArray($code);
-        if (!$msg)
+        try
         {
-            exit();
+            ['user_id' => $codeUserId, 'params' => $verifyParams] = $this->userCodeService->verify(
+                $filtered['code'],
+                validity: 24 * 60 * 60,
+                action: 'send_verify',
+            );
         }
-
-        $this->blacklistVerify($msg['action'] == 'send_verify', 'wrong-action', 2);
-
-        if ($msg['timestamp'] + 86400 < time())
+        catch (CodeVerificationException $e)
         {
-            $loginPage = $this->getBaseUrl().$this->getConfig('actions.login.location');
+            $loginPage = $this->configService->get('actions.login.location');
+            $message = $this->messageService->getForUrl('error', 'Verification link expired', 'Please login again to request a new one.');
 
-            // Expired
-            header("Location: {$loginPage}?".$this->getMessageForUrl('error', 'Send verification link expired', 'Please login again to request a new one.'));
-
-            exit();
+            return $this->responseEmitter->redirect("{$baseUrl}{$loginPage}?{$message}");
         }
 
         // Check user status
         //
-        $user = $this->userRepository->getUserByUsername($msg['username']);
-
+        $user = $this->userRepository->getObjectById($codeUserId);
         if ($user !== null && !$user->isVerified())
         {
-            $this->userEmailService->sendVerifyMail($user, $msg['params']);
+            $this->userEmailService->sendVerifyMail($user, $verifyParams);
         }
 
         // Redirect to main sceen
         //
-        $afterVerifyPage = $this->getBaseUrl().$this->getConfig('actions.send_verify.after_verify_page');
+        $afterVerifyPage = $this->configService->get('actions.send_verify.after_verify_page');
+        $message = $this->messageService->getForUrl('success', 'Verification mail sent', 'Verification mail is sent (if not already verified). Please check your mailbox and follow the instructions.');
 
-        header("Location: {$afterVerifyPage}?".$this->getMessageForUrl('success', 'Verification mail sent', 'Verification mail is sent (if not already verified). Please check your mailbox and follow the instructions.'));
-
-        exit();
-    }
-
-    protected function displayContent(): void
-    {
+        return $this->responseEmitter->redirect("{$baseUrl}{$afterVerifyPage}?{$message}");
     }
 }

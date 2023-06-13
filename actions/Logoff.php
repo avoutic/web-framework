@@ -2,30 +2,37 @@
 
 namespace WebFramework\Actions;
 
-use WebFramework\Core\PageAction;
+use Psr\Container\ContainerInterface as Container;
+use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
+use WebFramework\Core\ConfigService;
+use WebFramework\Core\ResponseEmitter;
+use WebFramework\Core\ValidatorService;
+use WebFramework\Security\AuthenticationService;
 
-class Logoff extends PageAction
+class Logoff
 {
+    public function __construct(
+        protected Container $container,
+        protected AuthenticationService $authenticationService,
+        protected ConfigService $configService,
+        protected ResponseEmitter $responseEmitter,
+        protected ValidatorService $validatorService,
+    ) {
+    }
+
     /**
-     * @return array<string, string>
+     * @param array<string, string> $routeArgs
      */
-    public static function getFilter(): array
+    public function __invoke(Request $request, Response $response, array $routeArgs): Response
     {
-        return [
+        $filtered = $this->validatorService->getFilteredParams($request, [
             'return_page' => FORMAT_RETURN_PAGE,
-        ];
-    }
+        ]);
 
-    protected function getTitle(): string
-    {
-        return 'Logoff';
-    }
+        $this->authenticationService->deauthenticate();
 
-    protected function doLogic(): void
-    {
-        $this->deauthenticate();
-
-        $returnPage = $this->getInputVar('return_page');
+        $returnPage = $filtered['return_page'];
 
         if (!strlen($returnPage) || substr($returnPage, 0, 2) == '//')
         {
@@ -37,17 +44,8 @@ class Logoff extends PageAction
             $returnPage = '/'.$returnPage;
         }
 
-        header('Location: '.$this->getBaseUrl().$returnPage);
+        $baseUrl = $this->configService->get('base_url');
 
-        exit();
-    }
-
-    protected function displayContent(): void
-    {
-        echo <<<'HTML'
-<div>
-  Logging off.
-</div>
-HTML;
+        return $this->responseEmitter->redirect("{$baseUrl}{$returnPage}");
     }
 }

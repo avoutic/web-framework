@@ -2,100 +2,94 @@
 
 namespace WebFramework\Actions;
 
-use WebFramework\Core\PageAction;
+use Psr\Container\ContainerInterface as Container;
+use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
+use Slim\Exception\HttpUnauthorizedException;
+use WebFramework\Core\ConfigService;
+use WebFramework\Core\MessageService;
+use WebFramework\Core\RenderService;
+use WebFramework\Core\ResponseEmitter;
 use WebFramework\Core\UserEmailService;
-use WebFramework\Entity\User;
+use WebFramework\Core\ValidatorService;
 use WebFramework\Exception\DuplicateEmailException;
-use WebFramework\Repository\UserRepository;
 
-class ChangeEmail extends PageAction
+class ChangeEmail
 {
-    protected UserEmailService $userEmailService;
-    protected UserRepository $userRepository;
-
-    public function init(): void
-    {
-        parent::init();
-
-        $this->userEmailService = $this->container->get(UserEmailService::class);
-        $this->userRepository = $this->container->get(UserRepository::class);
+    public function __construct(
+        protected Container $container,
+        protected ConfigService $configService,
+        protected MessageService $messageService,
+        protected RenderService $renderer,
+        protected ResponseEmitter $responseEmitter,
+        protected UserEmailService $userEmailService,
+        protected ValidatorService $validatorService,
+    ) {
     }
 
-    public static function getFilter(): array
+    /**
+     * @param array<string, string> $routeArgs
+     */
+    public function __invoke(Request $request, Response $response, array $routeArgs): Response
     {
-        return [
+        $user = $request->getAttribute('user');
+        if ($user === null)
+        {
+            throw new HttpUnauthorizedException($request);
+        }
+
+        ['raw' => $raw, 'filtered' => $filtered] = $this->validatorService->getParams($request, [
             'email' => FORMAT_EMAIL,
+        ]);
+
+        $params = [
+            'core' => [
+                'title' => 'Change email address',
+            ],
+            'email' => $raw['email'],
         ];
-    }
-
-    public static function getPermissions(): array
-    {
-        return [
-            'logged_in',
-        ];
-    }
-
-    protected function getTitle(): string
-    {
-        return 'Change email address';
-    }
-
-    // Can be overriden for project specific user factories and user classes
-    //
-    protected function getUser(string $username): ?User
-    {
-        return $this->userRepository->getUserByUsername($username);
-    }
-
-    protected function doLogic(): void
-    {
-        $email = $this->getInputVar('email');
-        $this->pageContent['email'] = $this->getRawInputVar('email');
 
         // Check if this is a true attempt
         //
-        if (!strlen($this->getInputVar('do')))
+        if (!$request->getAttribute('passed_csrf'))
         {
-            return;
+            return $this->renderer->render($request, $response, 'change_email.latte', $params);
         }
+
+        $errors = false;
 
         // Check if email address is present
         //
-        if (!strlen($email))
+        if (!strlen($filtered['email']))
         {
-            $this->addMessage('error', 'Please enter a correct e-mail address.', 'E-mail addresses can contain letters, digits, hyphens, underscores, dots and at\'s.');
-
-            return;
+            $errors = true;
+            $this->messageService->add('error', 'Please enter a correct e-mail address.', 'E-mail addresses can contain letters, digits, hyphens, underscores, dots and at\'s.');
         }
-
-        // Change email
-        //
-        $user = $this->getAuthenticatedUser();
-        $oldEmail = $user->getEmail();
 
         // Send verification mail
         //
         try
         {
-            $this->userEmailService->sendChangeEmailVerify($user, $email);
+            $this->userEmailService->sendChangeEmailVerify($user, $filtered['email']);
         }
         catch (DuplicateEmailException $e)
         {
-            $this->addMessage('error', 'E-mail address is already in use in another account.', 'The e-mail address is already in use and cannot be re-used in this account. Please choose another address.');
+            $errors = true;
+            $this->messageService->add('error', 'E-mail address is already in use in another account.', 'The e-mail address is already in use and cannot be re-used in this account. Please choose another address.');
+        }
 
-            return;
+        if ($errors)
+        {
+            return $this->renderer->render($request, $response, 'change_email.latte', $params);
         }
 
         // Redirect to verification request screen
         //
-        $returnPage = $this->getBaseUrl().$this->getConfig('actions.change_email.return_page');
-        header("Location: {$returnPage}?".$this->getMessageForUrl('success', 'Verification mail has been sent.', 'A verification mail has been sent. Please wait for the e-mail in your inbox and follow the instructions.'));
+        $baseUrl = $this->configService->get('base_url');
+        $returnPage = $this->configService->get('actions.change_email.return_page');
 
-        exit();
-    }
+        $message = $this->messageService->getForUrl('success', 'Verification mail has been sent.', 'A verification mail has been sent. Please wait for the e-mail in your inbox and follow the instructions.');
 
-    protected function displayContent(): void
-    {
-        $this->loadTemplate('change_email.tpl', $this->pageContent);
+        return $this->responseEmitter->redirect("{$baseUrl}{$returnPage}?{$message}");
     }
 }

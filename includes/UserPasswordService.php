@@ -8,7 +8,6 @@ use WebFramework\Exception\InvalidPasswordException;
 use WebFramework\Exception\WeakPasswordException;
 use WebFramework\Repository\UserRepository;
 use WebFramework\Security\PasswordHashService;
-use WebFramework\Security\ProtectService;
 use WebFramework\Security\SecurityIteratorService;
 
 class UserPasswordService
@@ -17,9 +16,9 @@ class UserPasswordService
         private Container $container,
         private ConfigService $configService,
         private PasswordHashService $passwordHashService,
+        private UserCodeService $userCodeService,
         private UserMailer $userMailer,
         private UserRepository $userRepository,
-        private ProtectService $protectService,
         private SecurityIteratorService $securityIteratorService,
     ) {
     }
@@ -89,27 +88,11 @@ class UserPasswordService
         $this->securityIteratorService->incrementFor($user);
     }
 
-    /**
-     * @param array<mixed> $params
-     */
-    private function generateCode(User $user, string $action = '', array $params = []): string
-    {
-        $msg = [
-            'id' => $user->getId(),
-            'username' => $user->getUsername(),
-            'action' => $action,
-            'params' => $params,
-            'timestamp' => time(),
-        ];
-
-        return $this->protectService->packArray($msg);
-    }
-
     public function sendPasswordResetMail(User $user): bool|string
     {
         $securityIterator = $this->securityIteratorService->incrementFor($user);
 
-        $code = $this->generateCode($user, 'reset_password', ['iterator' => $securityIterator]);
+        $code = $this->userCodeService->generate($user, 'reset_password', ['iterator' => $securityIterator]);
         $resetUrl =
             $this->configService->get('http_mode').
             '://'.
