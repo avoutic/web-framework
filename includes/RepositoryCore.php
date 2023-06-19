@@ -314,7 +314,7 @@ SQL;
     }
 
     /**
-     * @param array<string, null|bool|float|int|string> $filter
+     * @param array<null|bool|float|int|string|array{string, bool|float|int|string}> $filter
      */
     public function countObjects(array $filter = []): int
     {
@@ -414,7 +414,7 @@ SQL;
     // Helper retrieval functions
     //
     /**
-     * @param array<null|bool|float|int|string> $filter
+     * @param array<null|bool|float|int|string|array{string, bool|float|int|string}> $filter
      *
      * @return ?T
      */
@@ -468,7 +468,7 @@ SQL;
     }
 
     /**
-     * @param array<null|bool|float|int|string> $filter
+     * @param array<null|bool|float|int|string|array{string, bool|float|int|string}> $filter
      *
      * @return EntityCollection<T>
      */
@@ -575,7 +575,7 @@ SQL;
     }
 
     /**
-     * @param array<null|bool|float|int|string> $filter
+     * @param array<null|bool|float|int|string|array{string, bool|float|int|string}> $filter
      *
      * @return array{query: string, params: array<bool|float|int|string>}
      */
@@ -585,7 +585,7 @@ SQL;
         $params = [];
         $first = true;
 
-        foreach ($filter as $key => $value)
+        foreach ($filter as $key => $definition)
         {
             if (!$first)
             {
@@ -594,6 +594,22 @@ SQL;
             else
             {
                 $first = false;
+            }
+
+            if (is_array($definition))
+            {
+                if (count($definition) !== 2)
+                {
+                    throw new \RuntimeException('Invalid filter definition');
+                }
+
+                $operator = $definition[0];
+                $value = $definition[1];
+            }
+            else
+            {
+                $operator = '=';
+                $value = $definition;
             }
 
             // Mysqli does not accept empty for false, so force to zero
@@ -609,7 +625,7 @@ SQL;
             }
             else
             {
-                $filterFmt .= "`{$key}` = ?";
+                $filterFmt .= "`{$key}` {$operator} ?";
                 $params[] = $value;
             }
         }
