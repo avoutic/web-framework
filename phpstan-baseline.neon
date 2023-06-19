@@ -36,11 +36,6 @@ parameters:
 			path: includes/DataCore.php
 
 		-
-			message: "#^Offset 'target_version' on array\\{target_version\\: int, actions\\: array\\<array\\>\\} in isset\\(\\) always exists and is not nullable\\.$#"
-			count: 1
-			path: includes/DatabaseManager.php
-
-		-
 			message: "#^Parameter \\#1 \\$hour of function mktime expects int, int\\|false given\\.$#"
 			count: 2
 			path: includes/Helpers.php
@@ -74,16 +69,6 @@ parameters:
 			message: "#^Parameter \\#6 \\$year of function mktime expects int\\|null, int\\|false given\\.$#"
 			count: 2
 			path: includes/Helpers.php
-
-		-
-			message: "#^Left side of && is always true\\.$#"
-			count: 1
-			path: includes/Image.php
-
-		-
-			message: "#^Left side of \\|\\| is always false\\.$#"
-			count: 2
-			path: includes/Image.php
 
 		-
 			message: "#^Parameter \\#1 \\$string of function substr expects string, string\\|false given\\.$#"
