@@ -71,7 +71,7 @@ class Login
         ]);
 
         $returnPage = $filtered['return_page'];
-        $returnQuery = $filtered['return_query'];
+        $returnQuery = $filtered['return_query'].(strlen($filtered['return_query']) ? '&' : '');
 
         if (!strlen($returnPage) || substr($returnPage, 0, 2) == '//')
         {
@@ -100,7 +100,7 @@ class Login
         {
             $message = $this->messageService->getForUrl('info', 'Already logged in');
 
-            return $this->responseEmitter->redirect("{$baseUrl}{$returnPage}?{$returnQuery}&{$message}");
+            return $this->responseEmitter->redirect("{$baseUrl}{$returnPage}?{$returnQuery}{$message}");
         }
 
         // Check if this is a login attempt
@@ -211,6 +211,6 @@ class Login
         $this->authenticationService->authenticate($user);
         $message = $this->messageService->getForUrl('success', 'Login successful.');
 
-        return $this->responseEmitter->redirect("{$baseUrl}{$returnPage}?{$returnQuery}}&{$message}");
+        return $this->responseEmitter->redirect("{$baseUrl}{$returnPage}?{$returnQuery}{$message}");
     }
 }
