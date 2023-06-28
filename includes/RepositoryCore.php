@@ -289,28 +289,16 @@ SQL;
             throw new \RuntimeException("Failed to create object ({$class})");
         }
 
-        $entity = new $class();
-        $reflection = new \ReflectionClass($entity);
-
-        $property = $reflection->getProperty('id');
-        $property->setAccessible(true);
-        $property->setValue($entity, $result);
-
-        foreach ($this->baseFields as $name)
+        // Cannot use the given data to instantiate because it missed database defaults or
+        // fields updated or filled by triggers. So instantiate from scratch.
+        //
+        $obj = $this->getObjectById($result);
+        if ($obj === null)
         {
-            // Use default value is missing
-            //
-            if (!isset($data[$name]))
-            {
-                continue;
-            }
-
-            $property = $reflection->getProperty($this->snakeToCamel($name));
-            $property->setAccessible(true);
-            $property->setValue($entity, $data[$name]);
+            throw new \RuntimeException("Failed to retrieve newly created object ({$class})");
         }
 
-        return $entity;
+        return $obj;
     }
 
     /**
