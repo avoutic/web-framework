@@ -60,7 +60,7 @@ try
         exit();
     }
 
-    $schemeFile = "{$appDir}/vendor/avoutic/web-framework/bootstrap/scheme_v1.inc.php";
+    $schemeFile = "{$appDir}/vendor/avoutic/web-framework/bootstrap/InitialScheme.php";
 
     if (!file_exists($schemeFile))
     {
