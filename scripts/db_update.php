@@ -69,13 +69,18 @@ try
 
     while ($nextVersion <= $requiredVersion)
     {
-        $versionFile = "{$appDir}/db_scheme/{$nextVersion}.inc.php";
+        $versionFile = "{$appDir}/db_scheme/{$nextVersion}.php";
 
         if (!file_exists($versionFile))
         {
-            echo " - No changeset for {$nextVersion} available".PHP_EOL;
+            $versionFile = "{$appDir}/db_scheme/{$nextVersion}.inc.php";
 
-            exit();
+            if (!file_exists($versionFile))
+            {
+                echo " - No changeset for {$nextVersion} available".PHP_EOL;
+
+                exit();
+            }
         }
 
         $changeSet = require $versionFile;
