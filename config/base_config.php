@@ -7,7 +7,7 @@ namespace WebFramework\Core;
 return [
     'debug' => false,
     'preload' => false,                 /* true to load preload.inc.php, or name of file to
-                                         * load from 'src/' */
+                                         * load relative to appDir */
     'timezone' => 'UTC',
     'database_enabled' => false,
     'database_config' => 'main',        // main database tag.

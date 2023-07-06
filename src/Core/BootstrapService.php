@@ -70,7 +70,18 @@ class BootstrapService
 
         if ($preload === true)
         {
-            $filename = 'preload.inc.php';
+            if (file_exists("{$this->appDir}/src/preload.inc.php"))
+            {
+                $filename = 'src/preload.inc.php';
+            }
+            elseif (file_exists("{$this->appDir}/includes/preload.inc.php"))
+            {
+                $filename = 'includes/preload.inc.php';
+            }
+            else
+            {
+                throw new \InvalidArgumentException("'preload.inc.php' does not exist in either src/ or includes/");
+            }
         }
         elseif (is_string($preload) && strlen($preload))
         {
@@ -79,12 +90,12 @@ class BootstrapService
 
         if ($filename)
         {
-            if (!file_exists("{$this->appDir}/src/{$filename}"))
+            if (!file_exists("{$this->appDir}/{$filename}"))
             {
-                throw new \InvalidArgumentException('The file "src/{$filename}" does not exist');
+                throw new \InvalidArgumentException("The file '{$filename}' does not exist");
             }
 
-            require_once "{$this->appDir}/src/{$filename}";
+            require_once "{$this->appDir}/{$filename}";
         }
     }
 
@@ -92,7 +103,7 @@ class BootstrapService
     {
         // Load global and site specific defines
         //
-        require_once __DIR__.'/Defines.php';
+        require_once __DIR__.'/../Defines.php';
     }
 
     protected function initializeCoreSanityChecks(): void
