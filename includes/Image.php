@@ -13,7 +13,6 @@ class Image
     public bool $isImage = false;
 
     public function __construct(
-        private AssertService $assertService,
         private string $location,
     ) {
     }
@@ -105,11 +104,17 @@ class Image
     {
         if (file_exists($newLocation))
         {
-            $this->assertService->verify(is_writable($newLocation), 'Not writable');
+            if (!is_writable($newLocation))
+            {
+                throw new \RuntimeException('Not writable');
+            }
         }
         else
         {
-            $this->assertService->verify(is_writable(dirname($newLocation)), 'Not writable');
+            if (!is_writable(dirname($newLocation)))
+            {
+                throw new \RuntimeException('Not writable');
+            }
         }
 
         $image = $this->createFrom($this->location);
@@ -137,7 +142,10 @@ class Image
      */
     private function resizeImage(\GdImage &$image, array $size = [100, 100])
     {
-        $this->assertService->verify(count($size) == 2 && $size[0] > 0 && $size[1] > 0, 'Size not correctly structured', \InvalidArgumentException::class);
+        if (count($size) !== 2 || $size[0] <= 0 || $size[1] <= 0)
+        {
+            throw new \InvalidArgumentException('Size not correctly structured');
+        }
 
         $width = imagesx($image);
         $height = imagesy($image);
@@ -194,8 +202,15 @@ class Image
      */
     public function rotate(string $newLocation, int $degrees, int $backgroundColor = 16777215): bool
     {
-        $this->assertService->verify(is_writable($newLocation), 'Not writable');
-        $this->assertService->verify(abs($degrees) <= 360, 'Invalid rotation', \InvalidArgumentException::class);
+        if (!is_writable($newLocation))
+        {
+            throw new \RuntimeException('Not writable');
+        }
+
+        if (abs($degrees) > 360)
+        {
+            throw new \InvalidArgumentException('Invalid rotation');
+        }
 
         // Create new GD image
         $image = $this->createFrom($this->location);
@@ -227,7 +242,10 @@ class Image
      */
     private function rotateImage(\GdImage &$image, int $degrees, int $backgroundColor = 16777215): bool
     {
-        $this->assertService->verify(abs($degrees) <= 360, 'Invalid rotation', \InvalidArgumentException::class);
+        if (abs($degrees) > 360)
+        {
+            throw new \InvalidArgumentException('Invalid rotation');
+        }
 
         imageantialias($image, true);
         $rotate = imagerotate($image, $degrees, $backgroundColor);
@@ -246,7 +264,10 @@ class Image
      */
     public function crop(string $newLocation, array $size, array $offset = [0, 0]): bool
     {
-        $this->assertService->verify(is_writable($newLocation), 'Not writable');
+        if (!is_writable($newLocation))
+        {
+            throw new \RuntimeException('Not writable');
+        }
 
         // Create new GD image
         $image = $this->createFrom($this->location);
