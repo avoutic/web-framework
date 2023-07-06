@@ -11,20 +11,20 @@ use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\MethodTypeSpecifyingExtension;
 
-class VerifyMethodTypeSpecifyingExtension implements MethodTypeSpecifyingExtension, TypeSpecifierAwareExtension
+class DataCoreVerifyMethodTypeSpecifyingExtension implements MethodTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
     private $typeSpecifier;
 
     public function getClass(): string
     {
-        return "WebFramework\Core\ActionCore";
+        return "WebFramework\Core\DataCore";
     }
 
     public function isMethodSupported(MethodReflection $methodReflection, MethodCall $node, TypeSpecifierContext $context): bool
     {
         $methodName = $methodReflection->getName();
 
-        return ($methodName === 'verify' || $methodName === 'blacklist_404') && isset($node->getArgs()[0]);
+        return ($methodName === 'verify' || $methodName === 'blacklist404') && isset($node->getArgs()[0]);
     }
 
     public function specifyTypes(MethodReflection $methodReflection, MethodCall $node, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes
