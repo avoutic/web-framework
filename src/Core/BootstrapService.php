@@ -92,7 +92,7 @@ class BootstrapService
     {
         // Load global and site specific defines
         //
-        require_once __DIR__.'/defines.inc.php';
+        require_once __DIR__.'/Defines.php';
     }
 
     protected function initializeCoreSanityChecks(): void
