@@ -6,7 +6,8 @@ namespace WebFramework\Core;
 //
 return [
     'debug' => false,
-    'preload' => false,
+    'preload' => false,                 /* true to load preload.inc.php, or name of file to
+                                         * load from 'src/' */
     'timezone' => 'UTC',
     'database_enabled' => false,
     'database_config' => 'main',        // main database tag.

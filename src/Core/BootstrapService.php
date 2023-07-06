@@ -64,14 +64,27 @@ class BootstrapService
     {
         // Check for special loads before anything else
         //
-        if ($this->configService->get('preload') === true)
+        $preload = $this->configService->get('preload');
+
+        $filename = null;
+
+        if ($preload === true)
         {
-            if (!file_exists("{$this->appDir}/src/preload.inc.php"))
+            $filename = 'preload.inc.php';
+        }
+        elseif (is_string($preload) && strlen($preload))
+        {
+            $filename = $preload;
+        }
+
+        if ($filename)
+        {
+            if (!file_exists("{$this->appDir}/src/{$filename}"))
             {
-                throw new \InvalidArgumentException('The file "src/preload.inc.php" does not exist');
+                throw new \InvalidArgumentException('The file "src/{$filename}" does not exist');
             }
 
-            require_once "{$this->appDir}/src/preload.inc.php";
+            require_once "{$this->appDir}/src/{$filename}";
         }
     }
 
