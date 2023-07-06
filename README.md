@@ -1,14 +1,13 @@
-WebFramework is a secure by default web-framework for PHP.
+WebFramework is add-on framework on top of Slim Framework, to provide a cohesive set of services around Database, Caching, Authentication and Middlewares.
 
 WebFramework is not based on Model-View-Controller (MVC) but on Model-Action-Responder (MAR) instead. A big difference with other frameworks is therefore where which logic is located.
 
 In general WebFramework apps have the following directories in their root:
 
-* **actions**: A file for each PageAction endpoint and each set of API functions that belong together grouped in an ApiAction.
-* **frames**: The overarching frame files with the background template for pages.
+* **actions**: A file for each endpoint and each set of API functions that belong together.
 * **htdocs**: The location for the core *index.php* and external static files like images, CSS and javascript files.
-* **includes**: The core app/business logic and model files.
-* **templates**: The templates used by the PageActions.
+* **src**: The core app/business logic and model files.
+* **templates**: The templates used by the actions
 
 ## Installation
 

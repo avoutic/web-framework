@@ -9,7 +9,7 @@ parameters:
     paths:
         - config
         - definitions
-        - includes
+        - src
         - actions
         - scripts
         - htdocs

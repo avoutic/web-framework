@@ -8,87 +8,87 @@ parameters:
 		-
 			message: "#^Method WebFramework\\\\Core\\\\ActionCore\\:\\:getInputVar\\(\\) should return string but returns array\\<string\\>\\|string\\.$#"
 			count: 1
-			path: includes/ActionCore.php
+			path: src/Core/ActionCore.php
 
 		-
 			message: "#^Method WebFramework\\\\Core\\\\ActionCore\\:\\:getRawInputArray\\(\\) should return array\\<string\\> but returns array\\<string\\>\\|string\\.$#"
 			count: 1
-			path: includes/ActionCore.php
+			path: src/Core/ActionCore.php
 
 		-
 			message: "#^Method WebFramework\\\\Core\\\\ActionCore\\:\\:getRawInputVar\\(\\) should return string but returns array\\<string\\>\\|string\\.$#"
 			count: 1
-			path: includes/ActionCore.php
+			path: src/Core/ActionCore.php
 
 		-
 			message: "#^Method WebFramework\\\\Core\\\\Browserless\\:\\:getPdfResult\\(\\) has parameter \\$outputStream with no type specified\\.$#"
 			count: 1
-			path: includes/Browserless.php
+			path: src/Core/Browserless.php
 
 		-
 			message: "#^Method WebFramework\\\\Core\\\\Browserless\\:\\:getPdfResult\\(\\) has parameter \\$url with no type specified\\.$#"
 			count: 1
-			path: includes/Browserless.php
+			path: src/Core/Browserless.php
 
 		-
 			message: "#^Parameter \\#1 \\$string of function strtolower expects string, string\\|null given\\.$#"
 			count: 1
-			path: includes/DataCore.php
+			path: src/Core/DataCore.php
 
 		-
 			message: "#^Parameter \\#1 \\$hour of function mktime expects int, int\\|false given\\.$#"
 			count: 2
-			path: includes/Helpers.php
+			path: src/Core/Helpers.php
 
 		-
 			message: "#^Parameter \\#1 \\$string of function trim expects string, string\\|null given\\.$#"
 			count: 1
-			path: includes/Helpers.php
+			path: src/Core/Helpers.php
 
 		-
 			message: "#^Parameter \\#2 \\$minute of function mktime expects int\\|null, int\\|false given\\.$#"
 			count: 2
-			path: includes/Helpers.php
+			path: src/Core/Helpers.php
 
 		-
 			message: "#^Parameter \\#3 \\$second of function mktime expects int\\|null, int\\|false given\\.$#"
 			count: 2
-			path: includes/Helpers.php
+			path: src/Core/Helpers.php
 
 		-
 			message: "#^Parameter \\#4 \\$month of function mktime expects int\\|null, int\\|false given\\.$#"
 			count: 2
-			path: includes/Helpers.php
+			path: src/Core/Helpers.php
 
 		-
 			message: "#^Parameter \\#5 \\$day of function mktime expects int\\|null, int\\|false given\\.$#"
 			count: 2
-			path: includes/Helpers.php
+			path: src/Core/Helpers.php
 
 		-
 			message: "#^Parameter \\#6 \\$year of function mktime expects int\\|null, int\\|false given\\.$#"
 			count: 2
-			path: includes/Helpers.php
+			path: src/Core/Helpers.php
 
 		-
 			message: "#^Parameter \\#1 \\$string of function substr expects string, string\\|false given\\.$#"
 			count: 1
-			path: includes/Image.php
+			path: src/Core/Image.php
 
 		-
 			message: "#^Parameter \\#6 \\$color of function imagefilledrectangle expects int, int\\|false given\\.$#"
 			count: 1
-			path: includes/Image.php
+			path: src/Core/Image.php
 
 		-
 			message: "#^Call to an undefined method mysqli\\:\\:execute_query\\(\\)\\.$#"
 			count: 1
-			path: includes/MysqliDatabase.php
+			path: src/Core/MysqliDatabase.php
 
 		-
 			message: "#^Method WebFramework\\\\Core\\\\UserCodeService\\:\\:verify\\(\\) should return array\\{user_id\\: int, action\\: string, params\\: array, timestamp\\: int\\} but returns array\\.$#"
 			count: 1
-			path: includes/UserCodeService.php
+			path: src/Core/UserCodeService.php
 
 		-
 			message: "#^Function convert\\(\\) should return string but returns string\\|null\\.$#"

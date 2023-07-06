@@ -66,12 +66,12 @@ class BootstrapService
         //
         if ($this->configService->get('preload') === true)
         {
-            if (!file_exists("{$this->appDir}/includes/preload.inc.php"))
+            if (!file_exists("{$this->appDir}/src/preload.inc.php"))
             {
-                throw new \InvalidArgumentException('The file "includes/preload.inc.php" does not exist');
+                throw new \InvalidArgumentException('The file "src/preload.inc.php" does not exist');
             }
 
-            require_once "{$this->appDir}/includes/preload.inc.php";
+            require_once "{$this->appDir}/src/preload.inc.php";
         }
     }
 

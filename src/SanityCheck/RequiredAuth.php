@@ -23,7 +23,7 @@ class RequiredAuth extends Base
 
         foreach ($this->requiredAuths as $filename)
         {
-            $path = "{$this->appDir}/includes/auth/{$filename}";
+            $path = "{$this->appDir}/config/auth/{$filename}";
 
             $exists = file_exists($path);
 
