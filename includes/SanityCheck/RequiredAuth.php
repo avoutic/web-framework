@@ -1,6 +1,6 @@
 <?php
 
-namespace WebFramework\Core\SanityCheck;
+namespace WebFramework\SanityCheck;
 
 class RequiredAuth extends Base
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace WebFramework\Core;
+namespace WebFramework\SanityCheck;
 
 interface SanityCheckInterface
 {

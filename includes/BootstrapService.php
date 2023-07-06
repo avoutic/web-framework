@@ -3,6 +3,8 @@
 namespace WebFramework\Core;
 
 use Psr\Container\ContainerInterface as Container;
+use WebFramework\SanityCheck\DatabaseCompatibility;
+use WebFramework\SanityCheck\RequiredCoreConfig;
 
 class BootstrapService
 {
@@ -82,8 +84,8 @@ class BootstrapService
 
     protected function initializeCoreSanityChecks(): void
     {
-        $this->sanityCheckRunner->add(SanityCheck\RequiredCoreConfig::class, []);
-        $this->sanityCheckRunner->add(SanityCheck\DatabaseCompatibility::class, []);
+        $this->sanityCheckRunner->add(RequiredCoreConfig::class, []);
+        $this->sanityCheckRunner->add(DatabaseCompatibility::class, []);
     }
 
     protected function initializeAppSanityChecks(): void

@@ -1,8 +1,6 @@
 <?php
 
-namespace WebFramework\Core\SanityCheck;
-
-use WebFramework\Core\SanityCheckInterface;
+namespace WebFramework\SanityCheck;
 
 abstract class Base implements SanityCheckInterface
 {

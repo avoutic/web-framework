@@ -1,6 +1,6 @@
 <?php
 
-namespace WebFramework\Core\SanityCheck;
+namespace WebFramework\SanityCheck;
 
 use WebFramework\Core\ConfigService;
 use WebFramework\Core\Database;
