@@ -7,17 +7,18 @@ use WebFramework\Core\EntityCore;
 class User extends EntityCore
 {
     public static string $tableName = 'users';
-    public static array $baseFields = ['username', 'email', 'solid_password', 'terms_accepted', 'verified', 'last_login', 'failed_login'];
+    public static array $baseFields = ['username', 'email', 'solid_password', 'terms_accepted', 'registered', 'verified', 'last_login', 'failed_login'];
     public static array $privateFields = ['solid_password'];
 
-    private int $id;
-    private string $username;
-    private string $email;
-    private string $solidPassword;
-    private int $termsAccepted;
-    private bool $verified = false;
-    private int $lastLogin = 0;
-    private int $failedLogin = 0;
+    protected int $id;
+    protected string $username;
+    protected string $email;
+    protected string $solidPassword;
+    protected int $termsAccepted;
+    protected bool $verified = false;
+    protected int $registered;
+    protected int $lastLogin = 0;
+    protected int $failedLogin = 0;
 
     public function getId(): int
     {
@@ -44,9 +45,19 @@ class User extends EntityCore
         $this->email = $email;
     }
 
+    public function getRegistered(): int
+    {
+        return $this->registered;
+    }
+
     public function getTermsAccepted(): int
     {
         return $this->termsAccepted;
+    }
+
+    public function setTermsAccepted(int $time): void
+    {
+        $this->termsAccepted = $time;
     }
 
     public function isVerified(): bool
