@@ -27,6 +27,11 @@ class ChangeEmail
     ) {
     }
 
+    protected function getTemplateName(): string
+    {
+        return 'change_email.latte';
+    }
+
     /**
      * @param array<string, string> $routeArgs
      */
@@ -53,7 +58,7 @@ class ChangeEmail
         //
         if (!$request->getAttribute('passed_csrf'))
         {
-            return $this->renderer->render($request, $response, 'change_email.latte', $params);
+            return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
         }
 
         $errors = false;
@@ -80,7 +85,7 @@ class ChangeEmail
 
         if ($errors)
         {
-            return $this->renderer->render($request, $response, 'change_email.latte', $params);
+            return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
         }
 
         // Redirect to verification request screen

@@ -43,6 +43,11 @@ class Login
         return true;
     }
 
+    protected function getTemplateName(): string
+    {
+        return 'login.latte';
+    }
+
     /**
      * @param array<string, string> $routeArgs
      */
@@ -107,7 +112,7 @@ class Login
         //
         if (!$request->getAttribute('passed_csrf'))
         {
-            return $this->renderer->render($request, $response, 'login.latte', $params);
+            return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
         }
 
         $errors = false;
@@ -136,7 +141,7 @@ class Login
 
         if ($errors)
         {
-            return $this->renderer->render($request, $response, 'login.latte', $params);
+            return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
         }
 
         // Log in user
@@ -155,7 +160,7 @@ class Login
 
             $this->blacklistService->addEntry($request->getAttribute('ip'), null, 'unknown-username');
 
-            return $this->renderer->render($request, $response, 'login.latte', $params);
+            return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
         }
 
         if ($user->getFailedLogin() > 5 && $bruteforceProtection)
@@ -167,7 +172,7 @@ class Login
             {
                 $this->messageService->add('error', 'CAPTCHA required', 'Due to possible brute force attacks on this username, filling in a CAPTCHA is required for checking the password!');
 
-                return $this->renderer->render($request, $response, 'login.latte', $params);
+                return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
             }
 
             $recaptcha = $this->recaptchaFactory->getRecaptcha();
@@ -177,7 +182,7 @@ class Login
             {
                 $this->messageService->add('error', 'The CAPTCHA code entered was incorrect.');
 
-                return $this->renderer->render($request, $response, 'login.latte', $params);
+                return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
             }
         }
 
@@ -186,12 +191,12 @@ class Login
             $this->messageService->add('error', 'Username and password do not match.', 'Please check if you entered the username and/or password correctly.');
             $this->blacklistService->addEntry($request->getAttribute('ip'), null, 'wrong-password');
 
-            return $this->renderer->render($request, $response, 'login.latte', $params);
+            return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
         }
 
         if ($this->customValueCheck($user) !== true)
         {
-            return $this->renderer->render($request, $response, 'login.latte', $params);
+            return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
         }
 
         // Check if verified

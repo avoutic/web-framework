@@ -57,6 +57,11 @@ class Register
     {
     }
 
+    protected function getTemplateName(): string
+    {
+        return 'register_account.latte';
+    }
+
     /**
      * @param array<string, string> $routeArgs
      */
@@ -113,7 +118,7 @@ class Register
         //
         if (!$request->getAttribute('passed_csrf'))
         {
-            return $this->renderer->render($request, $response, 'register_account.latte', $params);
+            return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
         }
 
         $errors = false;
@@ -189,7 +194,7 @@ class Register
 
         if ($errors)
         {
-            return $this->renderer->render($request, $response, 'register_account.latte', $params);
+            return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
         }
 
         // Check if identifier already exists
@@ -205,7 +210,7 @@ class Register
                 $this->messageService->add('error', 'Username already exists.', 'This username has already been taken. Please enter another username.');
             }
 
-            return $this->renderer->render($request, $response, 'register_account.latte', $params);
+            return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
         }
 
         // Add account

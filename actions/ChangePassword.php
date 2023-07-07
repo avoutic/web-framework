@@ -34,6 +34,11 @@ class ChangePassword
     {
     }
 
+    protected function getTemplateName(): string
+    {
+        return 'change_password.latte';
+    }
+
     /**
      * @param array<string, string> $routeArgs
      */
@@ -55,7 +60,7 @@ class ChangePassword
         //
         if (!$request->getAttribute('passed_csrf'))
         {
-            return $this->renderer->render($request, $response, 'change_password.latte', $params);
+            return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
         }
 
         $filtered = $this->validatorService->getFilteredParams($request, [
@@ -109,7 +114,7 @@ class ChangePassword
 
         if ($errors)
         {
-            return $this->renderer->render($request, $response, 'change_password.latte', $params);
+            return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
         }
 
         $this->customFinalizeChange();
