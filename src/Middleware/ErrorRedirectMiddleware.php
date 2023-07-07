@@ -13,6 +13,7 @@ use WebFramework\Core\DebugService;
 use WebFramework\Core\ReportFunction;
 use WebFramework\Core\ResponseEmitter;
 use WebFramework\Exception\BlacklistException;
+use WebFramework\Exception\RedirectException;
 
 class ErrorRedirectMiddleware implements MiddlewareInterface
 {
@@ -28,6 +29,10 @@ class ErrorRedirectMiddleware implements MiddlewareInterface
         try
         {
             return $next->handle($request);
+        }
+        catch (RedirectException $e)
+        {
+            return $this->responseEmitter->redirect($e->getUrl());
         }
         catch (HttpForbiddenException $e)
         {
