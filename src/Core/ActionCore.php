@@ -41,6 +41,7 @@ abstract class ActionCore
         protected MessageService $messageService,
         protected ProtectService $protectService,
         protected SecureConfigService $secureConfigService,
+        protected UserRightService $userRightService,
         protected ValidatorService $validatorService,
     ) {
         $this->init();
@@ -57,7 +58,7 @@ abstract class ActionCore
     {
         $actionPermissions = static::getPermissions();
 
-        $hasPermissions = $this->authenticationService->userHasPermissions($actionPermissions);
+        $hasPermissions = $this->userHasPermissions($actionPermissions);
 
         if (!$hasPermissions)
         {
@@ -443,7 +444,32 @@ abstract class ActionCore
      */
     protected function userHasPermissions(array $permissions): bool
     {
-        return $this->authenticationService->userHasPermissions($permissions);
+        if (count($permissions) == 0)
+        {
+            return true;
+        }
+
+        if (!$this->isAuthenticated())
+        {
+            return false;
+        }
+
+        $user = $this->getAuthenticatedUser();
+
+        foreach ($permissions as $permission)
+        {
+            if ($permission == 'logged_in')
+            {
+                continue;
+            }
+
+            if (!$this->userRightService->hasRight($user, $permission))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     // Build info

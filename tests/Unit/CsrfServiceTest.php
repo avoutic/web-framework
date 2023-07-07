@@ -2,7 +2,7 @@
 
 namespace Tests\Unit;
 
-use WebFramework\Core\BrowserSessionService;
+use Odan\Session\MemorySession;
 use WebFramework\Security\CsrfService;
 
 /**
@@ -17,7 +17,7 @@ final class CsrfServiceTest extends \Codeception\Test\Unit
         $instance = $this->construct(
             CsrfService::class,
             [
-                new BrowserSessionService(),
+                new MemorySession(),
             ],
             [
                 'getRandomBytes' => '1234567890123456',

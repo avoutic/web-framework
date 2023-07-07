@@ -31,6 +31,21 @@ return [
         return new \Cache\Adapter\Redis\RedisCachePool($redisClient);
     },
     \Latte\Engine::class => DI\create(),
+    \Odan\Session\SessionManagerInterface::class => function (ContainerInterface $container) {
+        return $container->get(\Odan\Session\SessionInterface::class);
+    },
+    \Odan\Session\SessionInterface::class => function (ContainerInterface $container) {
+        $options = [
+            'name' => $container->get('app_name'),
+            'lifetime' => $container->get('authenticator.session_timeout'),
+            'path' => '/',
+            'domain' => $container->get('host_name'),
+            'secure' => $container->get('http_mode') === 'https',
+            'httponly' => true,
+        ];
+
+        return new \Odan\Session\PhpSession($options);
+    },
     \Slim\Psr7\Factory\ResponseFactory::class => DI\create(),
     \Stripe\StripeClient::class => function (ContainerInterface $c) {
         $secureConfigService = $c->get(Security\ConfigService::class);
@@ -49,6 +64,7 @@ return [
 
         return dirname($reflection->getFileName() ?: '', 3);
     },
+    'app_name' => 'app',
     'build_info' => function (ContainerInterface $c) {
         $debugService = $c->get(Core\DebugService::class);
 
@@ -70,12 +86,6 @@ return [
     Core\BootstrapService::class => DI\autowire()
         ->constructor(
             appDir: DI\get('app_dir'),
-        ),
-    Core\BrowserSessionService::class => DI\autowire()
-        ->method(
-            'start',
-            hostName: DI\get('host_name'),
-            httpMode: DI\get('http_mode'),
         ),
     Core\Cache::class => DI\autowire(Core\NullCache::class),
     Core\ConfigService::class => DI\autowire()
@@ -170,7 +180,6 @@ return [
     Security\DatabaseAuthenticationService::class => DI\autowire(Security\DatabaseAuthenticationService::class)
         ->constructor(
             sessionTimeout: DI\get('authenticator.session_timeout'),
-            userClass: DI\get('authenticator.user_class'),
         ),
     Security\DatabaseBlacklistService::class => DI\autowire(Security\DatabaseBlacklistService::class)
         ->constructor(

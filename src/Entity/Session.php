@@ -20,6 +20,16 @@ class Session extends EntityCore
         return $this->id;
     }
 
+    public function getSessionId(): string
+    {
+        return $this->sessionId;
+    }
+
+    public function setSessionId(string $sessionId): void
+    {
+        $this->sessionId = $sessionId;
+    }
+
     public function getStart(): string
     {
         return $this->start;

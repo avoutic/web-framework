@@ -2,11 +2,10 @@
 
 namespace WebFramework\Security;
 
-use WebFramework\Core\BrowserSessionService;
-use WebFramework\Core\ConfigService;
+use Odan\Session\SessionInterface;
+use Odan\Session\SessionManagerInterface;
 use WebFramework\Core\Database;
 use WebFramework\Core\Helpers;
-use WebFramework\Core\UserRightService;
 use WebFramework\Entity\Session;
 use WebFramework\Entity\User;
 use WebFramework\Repository\SessionRepository;
@@ -14,21 +13,15 @@ use WebFramework\Repository\UserRepository;
 
 class DatabaseAuthenticationService implements AuthenticationService
 {
-    private ?User $user = null;
-    private bool $sessionValid = false;
+    private bool $sessionChecked = false;
 
-    /**
-     * @param class-string<User> $userClass
-     */
     public function __construct(
         private Database $database,
-        private BrowserSessionService $browserSessionService,
-        private ConfigService $configService,
+        private SessionInterface $browserSession,
+        private SessionManagerInterface $browserSessionManager,
         private SessionRepository $sessionRepository,
         private UserRepository $userRepository,
-        private UserRightService $userRightService,
         private int $sessionTimeout,
-        private string $userClass,
     ) {
     }
 
@@ -46,7 +39,7 @@ SQL;
         $this->database->query($query, $params);
     }
 
-    protected function registerSession(int $userId, string|false $sessionId): Session
+    protected function registerSession(int $userId, string $sessionId): Session
     {
         $timestamp = date('Y-m-d H:i:s');
 
@@ -60,7 +53,7 @@ SQL;
 
     public function invalidateSessions(int $userId): void
     {
-        $this->sessionValid = false;
+        $this->sessionChecked = false;
 
         $result = $this->database->query('DELETE FROM sessions WHERE user_id = ?', [$userId]);
 
@@ -72,120 +65,133 @@ SQL;
 
     public function authenticate(User $user): void
     {
-        // Destroy running session
-        //
-        $sessionId = $this->browserSessionService->get('session_id');
-        if ($sessionId !== null)
-        {
-            $session = $this->sessionRepository->getObjectById($sessionId);
-            if ($session !== null)
-            {
-                $this->sessionRepository->delete($session);
-            }
-        }
+        $this->deauthenticate();
 
-        $this->browserSessionService->regenerate();
+        $session = $this->registerSession($user->getId(), $this->browserSessionManager->getId());
 
-        $session = $this->registerSession($user->getId(), $this->browserSessionService->getSessionId());
+        $this->browserSession->set('logged_in', true);
+        $this->browserSession->set('user_id', $user->getId());
+        $this->browserSession->set('db_session_id', $session->getId());
 
-        $this->browserSessionService->set('logged_in', true);
-        $this->browserSessionService->set('user_id', $user->getId());
-        $this->browserSessionService->set('session_id', $session->getId());
+        $this->sessionChecked = true;
     }
 
-    protected function isValid(): bool
+    public function validateSession(): void
     {
-        if ($this->sessionValid)
+        if ($this->sessionChecked)
         {
-            return true;
+            return;
         }
 
-        $userId = $this->browserSessionService->get('user_id');
-        if ($userId === null)
+        // Check browser session
+        //
+        if (!$this->browserSession->has('logged_in')
+            || !$this->browserSession->has('user_id')
+            || !$this->browserSession->has('db_session_id'))
         {
-            return false;
+            $this->browserSession->set('logged_in', false);
+            $this->browserSession->set('user_id', null);
+            $this->browserSession->set('db_session_id', null);
+
+            $this->sessionChecked = true;
+
+            return;
         }
 
-        $sessionId = $this->browserSessionService->get('session_id');
-        if ($sessionId === null)
+        if ($this->browserSession->get('logged_in') !== true)
         {
-            return false;
+            $this->sessionChecked = true;
+
+            return;
         }
 
+        // Retrieve and check database session
+        //
+        $sessionId = $this->browserSession->get('db_session_id');
         $session = $this->sessionRepository->getObjectById($sessionId);
         if ($session === null)
         {
-            return false;
+            // If logged in but no database session, clear browser session
+            //
+            $this->browserSession->set('logged_in', false);
+            $this->browserSession->set('user_id', null);
+            $this->browserSession->set('db_session_id', null);
+
+            $this->sessionChecked = true;
+
+            return;
         }
 
-        if (!$this->isSessionValid($session))
+        if (!$this->isDatabaseSessionValid($session))
         {
-            $this->deauthenticate();
+            // If logged in but database session no longer valid, clear browser session
+            //
+            $this->browserSession->set('logged_in', false);
+            $this->browserSession->set('user_id', null);
+            $this->browserSession->set('db_session_id', null);
 
-            return false;
+            $this->sessionRepository->delete($session);
+
+            $this->sessionChecked = true;
+
+            return;
         }
 
-        $this->sessionValid = true;
-
-        return true;
+        $this->sessionChecked = true;
+        $this->extendDatabaseSession($session);
     }
 
-    public function isSessionValid(Session $session): bool
+    public function isDatabaseSessionValid(Session $session): bool
     {
         // Check for session timeout
+        //
         $current = time();
         $lastActiveTimestamp = Helpers::mysqlDatetimeToTimestamp($session->getLastActive());
 
-        if ($current - $lastActiveTimestamp >
-            $this->configService->get('authenticator.session_timeout'))
+        return ($current - $lastActiveTimestamp <= $this->sessionTimeout);
+    }
+
+    public function extendDatabaseSession(Session $session): void
+    {
+        $current = time();
+        $lastActiveTimestamp = Helpers::mysqlDatetimeToTimestamp($session->getLastActive());
+
+        // Update timestamp only once every 5 minutes
+        //
+        if ($current - $lastActiveTimestamp < 60 * 5)
         {
-            return false;
+            return;
         }
 
         $timestamp = date('Y-m-d H:i:s');
-
-        // Update timestamp every 5 minutes
-        //
-        if ($current - $lastActiveTimestamp > 60 * 5)
-        {
-            $session->setLastActive($timestamp);
-        }
+        $session->setLastActive($timestamp);
 
         // Restart session every 4 hours
         //
         $startTimestamp = Helpers::mysqlDatetimeToTimestamp($session->getStart());
         if ($current - $startTimestamp > 4 * 60 * 60)
         {
-            session_regenerate_id(true);
+            $this->browserSessionManager->regenerateId();
+
+            $session->setSessionId($this->browserSessionManager->getId());
             $session->setStart($timestamp);
         }
 
         $this->sessionRepository->save($session);
-
-        return true;
     }
 
     public function isAuthenticated(): bool
     {
-        $loggedIn = $this->browserSessionService->get('logged_in');
-        if ($loggedIn !== true)
-        {
-            return false;
-        }
+        $this->validateSession();
 
-        if (!$this->isValid())
-        {
-            return false;
-        }
+        $loggedIn = $this->browserSession->get('logged_in');
 
-        return true;
+        return ($loggedIn === true);
     }
 
     public function deauthenticate(): void
     {
-        $this->sessionValid = false;
-
-        $sessionId = $this->browserSessionService->get('session_id');
+        $sessionId = $this->browserSession->get('db_session_id');
         if ($sessionId !== null)
         {
             $session = $this->sessionRepository->getObjectById($sessionId);
@@ -195,10 +201,12 @@ SQL;
             }
         }
 
-        $this->browserSessionService->delete('logged_in');
-        $this->browserSessionService->delete('session_id');
+        $this->browserSessionManager->regenerateId();
 
-        $this->browserSessionService->destroy();
+        $this->browserSession->clear();
+        $this->browserSession->set('logged_in', false);
+        $this->browserSession->set('user_id', null);
+        $this->browserSession->set('db_session_id', null);
     }
 
     public function getAuthenticatedUser(): User
@@ -208,71 +216,13 @@ SQL;
             throw new \RuntimeException('Not authenticated');
         }
 
-        $userId = $this->browserSessionService->get('user_id');
-        if (!is_int($userId))
-        {
-            throw new \RuntimeException('Browser Session invalid');
-        }
-
-        if ($this->user !== null && $this->user->getId() == $userId
-            && $this->user instanceof $this->userClass)
-        {
-            return $this->user;
-        }
-
+        $userId = $this->browserSession->get('user_id');
         $user = $this->userRepository->getObjectById($userId);
         if ($user === null)
         {
             throw new \RuntimeException('User not present');
         }
 
-        $this->user = $user;
-
         return $user;
-    }
-
-    /**
-     * @param array<string> $permissions
-     */
-    public function userHasPermissions(array $permissions): bool
-    {
-        if (count($permissions) == 0)
-        {
-            return true;
-        }
-
-        if (!$this->isAuthenticated())
-        {
-            return false;
-        }
-
-        $user = $this->getAuthenticatedUser();
-
-        foreach ($permissions as $permission)
-        {
-            if ($permission == 'logged_in')
-            {
-                continue;
-            }
-
-            try
-            {
-                if (!$this->userRightService->hasRight($user, $permission))
-                {
-                    return false;
-                }
-            }
-            catch (\Throwable $e)
-            {
-                // In case the user object changed (in name / namespace) an exception for
-                // deserialization will be thrown. Deauthenticate instead.
-                //
-                $this->deauthenticate();
-
-                return false;
-            }
-        }
-
-        return true;
     }
 }

@@ -1,5 +1,19 @@
 # v6 release
 
+## v6.8
+
+Breaking changes:
+
+* AuthenticationService->userHasPermissions() has been removed, use UserRightService instead
+* BrowserSessionService has been removed, moved to use odan/session package
+
+New features:
+
+* RedirectException to break out of code flow and trigger a redirect
+* Ability to set template in Login, Register, ChangePassword and ChangeEmail
+
+## v6 major overhaul
+
 Major internal changes to move to move to Slim Framework v4 as core handler.
 WebFramework adds supporting code to quickly prototype and make applications.
 

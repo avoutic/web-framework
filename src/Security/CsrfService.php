@@ -2,12 +2,12 @@
 
 namespace WebFramework\Security;
 
-use WebFramework\Core\BrowserSessionService;
+use Odan\Session\SessionInterface;
 
 class CsrfService
 {
     public function __construct(
-        private BrowserSessionService $browserSessionService,
+        private SessionInterface $browserSession,
     ) {
     }
 
@@ -18,17 +18,17 @@ class CsrfService
 
     protected function storeNewToken(): void
     {
-        $this->browserSessionService->set('csrf_token', $this->getRandomBytes());
+        $this->browserSession->set('csrf_token', $this->getRandomBytes());
     }
 
     protected function getStoredToken(): string
     {
-        return $this->browserSessionService->get('csrf_token');
+        return $this->browserSession->get('csrf_token');
     }
 
     protected function isValidTokenStored(): bool
     {
-        $token = $this->browserSessionService->get('csrf_token');
+        $token = $this->browserSession->get('csrf_token');
 
         return ($token !== null && strlen($token) == 16);
     }

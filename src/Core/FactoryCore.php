@@ -22,6 +22,7 @@ class FactoryCore
     protected MessageService $messageService;
     protected ProtectService $protectService;
     protected SecureConfigService $secureConfigService;
+    protected UserRightService $userRightService;
 
     public function __construct()
     {
@@ -37,6 +38,7 @@ class FactoryCore
         $this->messageService = $container->get(MessageService::class);
         $this->protectService = $container->get(ProtectService::class);
         $this->secureConfigService = $container->get(SecureConfigService::class);
+        $this->userRightService = $container->get(UserRightService::class);
 
         $this->init();
     }
@@ -244,7 +246,32 @@ class FactoryCore
      */
     protected function userHasPermissions(array $permissions): bool
     {
-        return $this->authenticationService->userHasPermissions($permissions);
+        if (count($permissions) == 0)
+        {
+            return true;
+        }
+
+        if (!$this->isAuthenticated())
+        {
+            return false;
+        }
+
+        $user = $this->getAuthenticatedUser();
+
+        foreach ($permissions as $permission)
+        {
+            if ($permission == 'logged_in')
+            {
+                continue;
+            }
+
+            if (!$this->userRightService->hasRight($user, $permission))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     // Build info

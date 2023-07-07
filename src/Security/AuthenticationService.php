@@ -17,9 +17,4 @@ interface AuthenticationService
     public function invalidateSessions(int $userId): void;
 
     public function getAuthenticatedUser(): User;
-
-    /**
-     * @param array<string> $permissions
-     */
-    public function userHasPermissions(array $permissions): bool;
 }

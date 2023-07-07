@@ -32,17 +32,4 @@ class NullAuthenticationService implements AuthenticationService
     {
         throw new \RuntimeException('Cannot authenticate in null mode');
     }
-
-    /**
-     * @param array<string> $permissions
-     */
-    public function userHasPermissions(array $permissions): bool
-    {
-        if (count($permissions) === 0)
-        {
-            return true;
-        }
-
-        return false;
-    }
 }
