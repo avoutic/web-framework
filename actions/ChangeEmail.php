@@ -11,6 +11,7 @@ use WebFramework\Core\RenderService;
 use WebFramework\Core\ResponseEmitter;
 use WebFramework\Core\UserEmailService;
 use WebFramework\Core\ValidatorService;
+use WebFramework\Entity\User;
 use WebFramework\Exception\DuplicateEmailException;
 use WebFramework\Security\AuthenticationService;
 
@@ -68,6 +69,9 @@ class ChangeEmail
             'email' => $raw['email'],
         ];
 
+        $customParams = $this->customParams($request);
+        $params = array_merge_recursive($params, $customParams);
+
         // Check if this is a true attempt
         //
         if (!$request->getAttribute('passed_csrf'))
@@ -105,7 +109,7 @@ class ChangeEmail
         // Redirect to verification request screen
         //
         $baseUrl = $this->configService->get('base_url');
-        $returnPage = $this->configService->get('actions.change_email.return_page');
+        $returnPage = $this->getReturnPage();
 
         $message = $this->messageService->getForUrl('success', 'Verification mail has been sent.', 'A verification mail has been sent. Please wait for the e-mail in your inbox and follow the instructions.');
 

@@ -11,6 +11,7 @@ use WebFramework\Core\RenderService;
 use WebFramework\Core\ResponseEmitter;
 use WebFramework\Core\UserPasswordService;
 use WebFramework\Core\ValidatorService;
+use WebFramework\Entity\User;
 use WebFramework\Exception\InvalidPasswordException;
 use WebFramework\Exception\WeakPasswordException;
 use WebFramework\Security\AuthenticationService;
@@ -29,13 +30,26 @@ class ChangePassword
     ) {
     }
 
-    protected function customFinalizeChange(): void
+    /**
+     * @return array<string, mixed>
+     */
+    protected function customParams(Request $request): array
+    {
+        return [];
+    }
+
+    protected function customFinalizeChange(Request $request, User $user): void
     {
     }
 
     protected function getTemplateName(): string
     {
         return 'change_password.latte';
+    }
+
+    protected function getReturnPage(): string
+    {
+        return $this->configService->get('actions.change_password.return_page');
     }
 
     /**
@@ -50,6 +64,9 @@ class ChangePassword
                 'title' => 'Change password',
             ],
         ];
+
+        $customParams = $this->customParams($request);
+        $params = array_merge_recursive($params, $customParams);
 
         // Check if this is a true attempt
         //
@@ -112,7 +129,7 @@ class ChangePassword
             return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
         }
 
-        $this->customFinalizeChange();
+        $this->customFinalizeChange($request, $user);
 
         // Invalidate old sessions
         //
@@ -122,7 +139,7 @@ class ChangePassword
         // Redirect to main sceen
         //
         $baseUrl = $this->configService->get('base_url');
-        $returnPage = $this->configService->get('actions.change_password.return_page');
+        $returnPage = $this->getReturnPage();
 
         $message = $this->messageService->getForUrl('success', 'Password changed successfully');
 
