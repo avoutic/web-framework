@@ -5,7 +5,6 @@ namespace WebFramework\Actions;
 use Psr\Container\ContainerInterface as Container;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
-use Slim\Exception\HttpUnauthorizedException;
 use WebFramework\Core\ConfigService;
 use WebFramework\Core\MessageService;
 use WebFramework\Core\ResponseEmitter;
@@ -40,11 +39,7 @@ class ChangeEmailVerify
      */
     public function __invoke(Request $request, Response $response, array $routeArgs): Response
     {
-        $user = $request->getAttribute('user');
-        if ($user === null)
-        {
-            throw new HttpUnauthorizedException($request);
-        }
+        $user = $this->authenticationService->getAuthenticatedUser();
 
         $filtered = $this->validatorService->getFilteredParams($request, [
             'code' => '.*',

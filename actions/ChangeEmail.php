@@ -5,7 +5,6 @@ namespace WebFramework\Actions;
 use Psr\Container\ContainerInterface as Container;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
-use Slim\Exception\HttpUnauthorizedException;
 use WebFramework\Core\ConfigService;
 use WebFramework\Core\MessageService;
 use WebFramework\Core\RenderService;
@@ -13,11 +12,13 @@ use WebFramework\Core\ResponseEmitter;
 use WebFramework\Core\UserEmailService;
 use WebFramework\Core\ValidatorService;
 use WebFramework\Exception\DuplicateEmailException;
+use WebFramework\Security\AuthenticationService;
 
 class ChangeEmail
 {
     public function __construct(
         protected Container $container,
+        protected AuthenticationService $authenticationService,
         protected ConfigService $configService,
         protected MessageService $messageService,
         protected RenderService $renderer,
@@ -27,9 +28,26 @@ class ChangeEmail
     ) {
     }
 
+    /**
+     * @return array<string, mixed>
+     */
+    protected function customParams(Request $request): array
+    {
+        return [];
+    }
+
+    protected function customFinalizeChange(Request $request, User $user): void
+    {
+    }
+
     protected function getTemplateName(): string
     {
         return 'change_email.latte';
+    }
+
+    protected function getReturnPage(): string
+    {
+        return $this->configService->get('actions.change_email.return_page');
     }
 
     /**
@@ -37,11 +55,7 @@ class ChangeEmail
      */
     public function __invoke(Request $request, Response $response, array $routeArgs): Response
     {
-        $user = $request->getAttribute('user');
-        if ($user === null)
-        {
-            throw new HttpUnauthorizedException($request);
-        }
+        $user = $this->authenticationService->getAuthenticatedUser();
 
         ['raw' => $raw, 'filtered' => $filtered] = $this->validatorService->getParams($request, [
             'email' => FORMAT_EMAIL,
