@@ -32,11 +32,9 @@ class EntityCollection implements \Iterator, \Countable
     /**
      * @return array<mixed>
      */
-    public function call(string $functionName): array
+    public function call(callable $callback): array
     {
-        return array_map(function ($entity) use ($functionName) {
-            return $entity->{$functionName}();
-        }, $this->entities);
+        return array_map($callback, $this->entities);
     }
 
     public function count(): int
