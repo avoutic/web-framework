@@ -1,0 +1,67 @@
+{parameters
+    ?array $override_colors,
+    string $default_width,
+    ?string $extra_label,
+    ?string $id,
+    ?string $label,
+    string $locale = 'en',
+    ?string $name,
+    ?string $placeholder,
+    ?string $show,
+    string $value = '',
+    ?string $width,
+}
+
+{var $id = isset($id) ?: 'input_' . $name}
+{var $colors = [
+    'focus:border' => 'focus:border-indigo-500',
+    'focus:ring' => 'focus:ring-indigo-500',
+]}
+{ifset $override_colors}
+    {foreach $override_colors as $key => $tag}
+        {var $colors[$key] = $tag}
+    {/foreach}
+{/ifset}
+
+<div
+  {ifset $show} x-cloak x-show="{$show}" {/ifset}
+  x-data="timePicker()" x-init="initTime('{$value}')"
+  class="{$width ?: $default_width}">
+  <label for="{$id}" class="block text-sm font-medium text-gray-700">
+    {$label}
+  </label>
+  <p n:ifset="$extra_label" class="text-sm text-gray-500">{$extra_label}</p>
+
+  <input type="hidden"
+         name="{$name}"
+         x-model="timeValue" />
+  <div class="mt-1 flex -space-x-px">
+    <div class="w-16 flex min-w-0">
+      <input x-ref="timeHour"
+             x-on:focus="$refs.timeHour.select()"
+             x-on:change="update()"
+             @keydown.enter.prevent="update(true)"
+             x-model="timeHour"
+             type="number"
+             min="0" max="23"
+             name="{$name}_hour"
+             placeholder="{$placeholder}"
+             class="{$colors['focus:ring']} {$colors['focus:border']} relative block w-full px-3 py-2 rounded-none rounded-l-md bg-transparent focus:z-10 sm:text-sm border border-gray-300" />
+    </div>
+    <div class="flex block px-2 shadow-sm border border-gray-300 items-center">
+      <span>:</span>
+    </div>
+    <div class="w-16 flex min-w-0">
+      <input x-ref="timeMinutes"
+             x-on:focus="$refs.timeMinutes.select()"
+             x-on:change="update()"
+             @keydown.enter.prevent="update(true)"
+             x-model="timeMinutes"
+             type="number"
+             min="0" max="59"
+             name="{$name}_minutes"
+             placeholder="{$placeholder}"
+             class="{$colors['focus:ring']} {$colors['focus:border']} relative block w-full px-3 py-2 rounded-none rounded-r-md bg-transparent focus:z-10 sm:text-sm border border-gray-300" />
+    </div>
+  </div>
+</div>
