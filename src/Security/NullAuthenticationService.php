@@ -28,6 +28,11 @@ class NullAuthenticationService implements AuthenticationService
     {
     }
 
+    public function getAuthenticatedUserId(): int
+    {
+        throw new \RuntimeException('Cannot authenticate in null mode');
+    }
+
     public function getAuthenticatedUser(): User
     {
         throw new \RuntimeException('Cannot authenticate in null mode');

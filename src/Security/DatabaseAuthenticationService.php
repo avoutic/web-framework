@@ -209,14 +209,19 @@ SQL;
         $this->browserSession->set('db_session_id', null);
     }
 
-    public function getAuthenticatedUser(): User
+    public function getAuthenticatedUserId(): int
     {
         if (!$this->isAuthenticated())
         {
             throw new \RuntimeException('Not authenticated');
         }
 
-        $userId = $this->browserSession->get('user_id');
+        return $this->browserSession->get('user_id');
+    }
+
+    public function getAuthenticatedUser(): User
+    {
+        $userId = $this->getAuthenticatedUserId();
         $user = $this->userRepository->getObjectById($userId);
         if ($user === null)
         {

@@ -16,5 +16,7 @@ interface AuthenticationService
 
     public function invalidateSessions(int $userId): void;
 
+    public function getAuthenticatedUserId(): int;
+
     public function getAuthenticatedUser(): User;
 }

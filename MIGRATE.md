@@ -3,6 +3,7 @@
 ## v6.10
 
 * Add getRights() to UserRightsService
+* AuthenticationService now has getAuthenticatedUserId()
 
 ## v6.9
 
