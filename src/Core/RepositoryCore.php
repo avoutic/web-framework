@@ -113,7 +113,7 @@ abstract class RepositoryCore
         $providedClass = get_class($entity);
         $staticClass = static::$entityClass;
 
-        if ($providedClass !== $staticClass)
+        if (!($entity instanceof $staticClass))
         {
             throw new \InvalidArgumentException("Provided {$providedClass} is not an {$staticClass}");
         }
