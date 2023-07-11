@@ -1,5 +1,9 @@
 # v6 release
 
+## v6.10
+
+* Add getRights() to UserRightsService
+
 ## v6.9
 
 New features:

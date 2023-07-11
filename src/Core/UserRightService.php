@@ -9,6 +9,7 @@ use WebFramework\Repository\UserRightRepository;
 class UserRightService
 {
     public function __construct(
+        private Database $database,
         private RightRepository $rightRepository,
         private UserRightRepository $userRightRepository,
     ) {
@@ -76,5 +77,37 @@ class UserRightService
         ]);
 
         return ($userRight !== null);
+    }
+
+    /**
+     * @return array<string>
+     */
+    public function getRights(User $user): array
+    {
+        $query = <<<'SQL'
+        SELECT short_name
+        FROM rights AS r,
+             user_rights AS ur
+        WHERE ur.user_id = ? AND
+              ur.right_id = r.id
+        ORDER BY r.short_name
+SQL;
+
+        $params = [$user->getId()];
+
+        $result = $this->database->query($query, $params);
+        if ($result === false)
+        {
+            throw new \RuntimeException('Failed to retrieve rights');
+        }
+
+        $data = [];
+
+        foreach ($result as $row)
+        {
+            $data[] = $row['short_name'];
+        }
+
+        return $data;
     }
 }
