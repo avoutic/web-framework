@@ -4,6 +4,7 @@
 
 * Add getRights() to UserRightsService
 * AuthenticationService now has getAuthenticatedUserId()
+* ValidationException to indicate validation of input variables has failed
 
 ## v6.9
 
