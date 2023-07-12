@@ -66,7 +66,7 @@ class ChangePassword
         ];
 
         $customParams = $this->customParams($request);
-        $params = array_merge_recursive($params, $customParams);
+        $params = array_replace_recursive($params, $customParams);
 
         // Check if this is a true attempt
         //

@@ -112,7 +112,7 @@ class Register
         ];
 
         $customParams = $this->customPreparePageContent($request);
-        $params = array_merge_recursive($params, $customParams);
+        $params = array_replace_recursive($params, $customParams);
 
         // Check if this is a true attempt
         //
