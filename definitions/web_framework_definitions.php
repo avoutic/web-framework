@@ -175,6 +175,11 @@ return [
     },
     Core\ValidatorService::class => DI\autowire(),
 
+    SanityCheck\RequiredAuth::class => DI\autowire(SanityCheck\RequiredAuth::class)
+        ->constructor(
+            appDir: DI\get('app_dir'),
+        ),
+
     Security\AuthenticationService::class => DI\autowire(Security\NullAuthenticationService::class),
     Security\BlacklistService::class => DI\autowire(Security\NullBlacklistService::class),
     Security\DatabaseAuthenticationService::class => DI\autowire(Security\DatabaseAuthenticationService::class)

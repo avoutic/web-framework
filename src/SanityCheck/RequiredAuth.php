@@ -4,12 +4,8 @@ namespace WebFramework\SanityCheck;
 
 class RequiredAuth extends Base
 {
-    /**
-     * @param array<string> $requiredAuths
-     */
     public function __construct(
         private string $appDir,
-        private array $requiredAuths,
     ) {
     }
 
@@ -21,7 +17,7 @@ class RequiredAuth extends Base
 
         $error = false;
 
-        foreach ($this->requiredAuths as $filename)
+        foreach ($this->config as $filename)
         {
             $path = "{$this->appDir}/config/auth/{$filename}";
 
