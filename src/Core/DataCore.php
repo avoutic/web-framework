@@ -40,6 +40,7 @@ abstract class DataCore
         private bool $fillComplex = true,
     ) {
         $this->fillDependencies();
+        $this->init();
         $this->fillFields($this->fillComplex);
     }
 
@@ -58,6 +59,10 @@ abstract class DataCore
         $this->protectService = $container->get(ProtectService::class);
         $this->secureConfigService = $container->get(SecureConfigService::class);
         $this->userRightService = $container->get(UserRightService::class);
+    }
+
+    protected function init(): void
+    {
     }
 
     // Convert camelCase to snake_case
