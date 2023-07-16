@@ -129,7 +129,7 @@ return [
             templateDir: DI\string('{app_dir}/templates'),
             tmpDir: '/tmp/latte',
         ),
-    Core\MailReportFunction::class => DI\autowire(Core\MailReportFunction::class)
+    Core\MailReportFunction::class => DI\autowire()
         ->constructor(
             assertRecipient: DI\get('sender_core.assert_recipient'),
         ),
@@ -141,7 +141,7 @@ return [
 
         return new Core\PostmarkClientFactory($apiKey);
     }),
-    Core\PostmarkMailService::class => DI\autowire(Core\PostmarkMailService::class)
+    Core\PostmarkMailService::class => DI\autowire()
         ->constructor(
             defaultSender: DI\get('sender_core.default_sender'),
             serverName: DI\get('server_name'),
@@ -175,7 +175,7 @@ return [
     },
     Core\ValidatorService::class => DI\autowire(),
 
-    SanityCheck\RequiredAuth::class => DI\autowire(SanityCheck\RequiredAuth::class)
+    SanityCheck\RequiredAuth::class => DI\autowire()
         ->constructor(
             appDir: DI\get('app_dir'),
         ),
@@ -186,7 +186,7 @@ return [
         ->constructor(
             sessionTimeout: DI\get('authenticator.session_timeout'),
         ),
-    Security\DatabaseBlacklistService::class => DI\autowire(Security\DatabaseBlacklistService::class)
+    Security\DatabaseBlacklistService::class => DI\autowire()
         ->constructor(
             storePeriod: DI\get('security.blacklist.store_period'),
             threshold: DI\get('security.blacklist.threshold'),
