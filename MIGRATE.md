@@ -11,6 +11,7 @@
 * Add InputValidationService
 * Add TranslationService
 * MessageService automatically translates recognized tags
+* Add UrlBuilder with support for messages
 
 # v6 release
 
