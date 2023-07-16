@@ -203,6 +203,17 @@ SQL;
      */
     public function save(EntityInterface $entity): void
     {
+        $reflection = new \ReflectionClass($entity);
+
+        if ($entity->isNewObject())
+        {
+            $values = $entity->toRawArray();
+            $obj = $this->create($values);
+            $entity->setObjectId($this->getId($obj));
+
+            return;
+        }
+
         $data = $this->getChangedFields($entity);
 
         if (count($data) === 0)
@@ -376,9 +387,7 @@ SQL;
         $entity = new static::$entityClass();
         $reflection = new \ReflectionClass($entity);
 
-        $property = $reflection->getProperty('id');
-        $property->setAccessible(true);
-        $property->setValue($entity, $data['id']);
+        $entity->setObjectId($data['id']);
 
         foreach ($this->baseFields as $name)
         {

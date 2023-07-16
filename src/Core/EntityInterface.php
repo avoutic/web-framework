@@ -4,10 +4,19 @@ namespace WebFramework\Core;
 
 interface EntityInterface
 {
+    public function isNewObject(): bool;
+
+    public function setObjectId(int $id): void;
+
     /**
      * @return array<string, mixed>
      */
     public function toArray(): array;
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function toRawArray(): array;
 
     /**
      * @return array<string, mixed>
