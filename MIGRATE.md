@@ -1,3 +1,8 @@
+# v7 release
+
+## v7.0
+* SanityCheckInterface renamed to SanityCheckModule
+
 # v6 release
 
 ## v6.10
