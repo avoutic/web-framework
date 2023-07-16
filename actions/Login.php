@@ -45,7 +45,7 @@ class Login
 
     protected function getTemplateName(): string
     {
-        return 'login.latte';
+        return 'Login.latte';
     }
 
     /**

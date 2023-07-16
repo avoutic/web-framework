@@ -82,6 +82,6 @@ class Tester
             trigger_error('Triggered PHP error', E_ERROR);
         }
 
-        return $this->renderer->render($request, $response, 'tester.latte', $params);
+        return $this->renderer->render($request, $response, 'Tester.latte', $params);
     }
 }

@@ -43,7 +43,7 @@ class ChangeEmail
 
     protected function getTemplateName(): string
     {
-        return 'change_email.latte';
+        return 'ChangeEmail.latte';
     }
 
     protected function getReturnPage(): string

@@ -59,7 +59,7 @@ class Register
 
     protected function getTemplateName(): string
     {
-        return 'register_account.latte';
+        return 'Register.latte';
     }
 
     /**

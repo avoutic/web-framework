@@ -1,0 +1,33 @@
+<form method="post" action="/login">
+  <fieldset>
+    <input type="hidden" name="do" value="yes"/>
+    <input type="hidden" name="token" value="{$csrf_token}"/>
+    <input type="hidden" id="password" name="password" value=""/>
+    <input type="hidden" name="return_page" value="{$return_page}"/>
+    <input type="hidden" name="return_query" value="{$return_query}"/>
+    <legend>Login form</legend>
+    <p>
+      <label for="username">Username</label>
+      <input type="text" id="username" name="username" value="{$username}" autocomplete="off"/>
+    </p>
+    <p>
+      <label for="password_helper">Password</label>
+      <input type="password" id="password_helper" name="password_helper"/>
+    </p>
+
+{if $recaptcha_needed}
+    <div>
+      <div class="g-recaptcha" data-sitekey="{$recaptcha_site_key}"></div>
+    </div>
+{/if}
+
+    <div>
+      <label>&nbsp;</label>
+      <input type="submit" value="Submit" />
+    </div>
+  </fieldset>
+</form>
+<span>
+  <a href="/forgot_password">Forgot your password?</a>
+  | <a href="/register_account">No account yet?</a>
+</span>

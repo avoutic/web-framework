@@ -27,6 +27,11 @@ class ForgotPassword
     ) {
     }
 
+    protected function getTemplateName(): string
+    {
+        return 'ForgotPassword.latte';
+    }
+
     /**
      * @param array<string, string> $routeArgs
      */
@@ -46,14 +51,14 @@ class ForgotPassword
 
         if (!$request->getAttribute('passed_csrf'))
         {
-            return $this->renderer->render($request, $response, 'forgot_password.latte', $params);
+            return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
         }
 
         if (!strlen($filtered['username']))
         {
             $this->messageService->add('error', 'Please enter a username');
 
-            return $this->renderer->render($request, $response, 'forgot_password.latte', $params);
+            return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
         }
 
         // Retrieve user

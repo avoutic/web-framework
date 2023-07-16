@@ -1,8 +1,3 @@
-<?php
-
-$csrf_token = $this->get_csrf_token();
-
-echo <<<HTML
 <form method="post" action="/register_account">
   <fieldset>
     <input type="hidden" name="do" value="yes"/>
@@ -12,7 +7,7 @@ echo <<<HTML
     <legend>Login Details</legend>
     <p>
       <label for="username">Username</label>
-      <input type="text" id="username" name="username" value="{$args['username']}"/>
+      <input type="text" id="username" name="username" value="{$username}"/>
     </p>
     <p>
       <label for="password">Password</label>
@@ -27,11 +22,11 @@ echo <<<HTML
     <legend>User Details</legend>
     <p>
       <label for="name">Name</label>
-      <input type="text" id="name" name="name" value="{$args['name']}"/>
+      <input type="text" id="name" name="name" value="{$name}"/>
     </p>
     <p>
       <label for="email">E-mail</label>
-      <input type="text" id="email" name="email" value="{$args['email']}"/>
+      <input type="text" id="email" name="email" value="{$email}"/>
     </p>
   </fieldset>
   <div>
@@ -39,4 +34,3 @@ echo <<<HTML
     <input type="submit" value="Submit" />
   </div>
 </form>
-HTML;

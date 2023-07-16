@@ -44,7 +44,7 @@ class ChangePassword
 
     protected function getTemplateName(): string
     {
-        return 'change_password.latte';
+        return 'ChangePassword.latte';
     }
 
     protected function getReturnPage(): string
