@@ -205,4 +205,20 @@ return [
             DI\get('app_dir'),
             DI\get('security.auth_dir'),
         ),
+
+    Translation\TranslationLoader::class => DI\get(Translation\FileTranslationLoader::class),
+    Translation\FileTranslationLoader::class => function (ContainerInterface $c) {
+        $configService = $c->get(Core\ConfigService::class);
+        $directories = $configService->get('translations.directories');
+
+        return new Translation\FileTranslationLoader(
+            cache: $c->get(Core\Cache::class),
+            appDir: $c->get('app_dir'),
+            directories: $directories,
+        );
+    },
+    Translation\TranslationService::class => DI\autowire()
+        ->constructor(
+            language: DI\get('translations.default_language'),
+        ),
 ];

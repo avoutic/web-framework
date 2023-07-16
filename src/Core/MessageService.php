@@ -22,12 +22,41 @@ class MessageService
         return $this->messages;
     }
 
-    public function add(string $type, string $message, string $extraMessage = ''): void
+    /**
+     * @param array<mixed> $params
+     */
+    public function add(string $type, string $message, string $extraMessage = '', array $params = []): void
     {
+        // Check if it is a translation key
+        //
+        if (!str_contains($message, ' '))
+        {
+            $parts = explode('.', $message);
+
+            if (count($parts) !== 2)
+            {
+                throw new \InvalidArgumentException('Invalid message format. Expected "category.tag".');
+            }
+
+            $message = __($parts[0], $parts[1], $params);
+        }
+
+        if (strlen($extraMessage) && !str_contains($extraMessage, ' '))
+        {
+            $parts = explode('.', $extraMessage);
+
+            if (count($parts) !== 2)
+            {
+                throw new \InvalidArgumentException('Invalid message format. Expected "category.tag".');
+            }
+
+            $extraMessage = __($parts[0], $parts[1], $params);
+        }
+
         $this->messages[] = [
             'mtype' => $type,
-            'message' => $message,
-            'extra_message' => $extraMessage,
+            'message' => ucfirst($message),
+            'extra_message' => ucfirst($extraMessage),
         ];
     }
 
@@ -52,5 +81,32 @@ class MessageService
         $msg = ['mtype' => $mtype, 'message' => $message, 'extra_message' => $extraMessage];
 
         return 'msg='.$this->protectService->packArray($msg);
+    }
+
+    /**
+     * @param array<mixed> $errors
+     */
+    public function addErrors(array $errors): void
+    {
+        foreach ($errors as $key => $value)
+        {
+            if (is_string($key))
+            {
+                $this->addErrors($value);
+
+                continue;
+            }
+
+            $message = $value['message'];
+            $extraMessage = $value['extra_message'] ?? '';
+            $params = $value['params'] ?? [];
+
+            $this->add(
+                'error',
+                $message,
+                $extraMessage,
+                $params,
+            );
+        }
     }
 }

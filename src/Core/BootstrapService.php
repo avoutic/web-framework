@@ -25,6 +25,7 @@ class BootstrapService
         $this->initializeContainerWrapper();
         $this->initializePreload();
         $this->initializeDefines();
+        $this->initializeTranslations();
 
         if ($this->runSanityChecks)
         {
@@ -104,6 +105,13 @@ class BootstrapService
         // Load global and site specific defines
         //
         require_once __DIR__.'/../Defines.php';
+    }
+
+    protected function initializeTranslations(): void
+    {
+        // Load translation helpers
+        //
+        require_once __DIR__.'/../Translations.php';
     }
 
     protected function initializeCoreSanityChecks(): void

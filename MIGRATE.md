@@ -1,9 +1,16 @@
 # v7 release
 
 ## v7.0
-* SanityCheckInterface renamed to SanityCheckModule
+
+### Breaking changes
+* BREAK: SanityCheckInterface renamed to SanityCheckModule
+* BREAK: requirePresence for translations now defaults to false
+
+### New Features
 * Saving new Entity objects with RepositoryCore now supported
 * Add InputValidationService
+* Add TranslationService
+* MessageService automatically translates recognized tags
 
 # v6 release
 
