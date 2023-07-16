@@ -2,7 +2,7 @@
 
 namespace WebFramework\SanityCheck;
 
-abstract class Base implements SanityCheckInterface
+abstract class Base implements SanityCheckModule
 {
     protected bool $allowFixing = false;
     protected bool $verbose = false;

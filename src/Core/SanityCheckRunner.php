@@ -3,6 +3,7 @@
 namespace WebFramework\Core;
 
 use Psr\Container\ContainerInterface as Container;
+use WebFramework\SanityCheck\SanityCheckModule;
 
 class SanityCheckRunner
 {
@@ -51,6 +52,11 @@ class SanityCheckRunner
         foreach ($this->modules as $info)
         {
             $module = $this->container->get($info['class']);
+            if (!($module instanceof SanityCheckModule))
+            {
+                throw new \RuntimeException("Class '{$info['class']}' in not a SanityCheckModule");
+            }
+
             $module->setConfig($info['config']);
 
             if ($this->fixing)

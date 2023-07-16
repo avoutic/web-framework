@@ -2,7 +2,7 @@
 
 namespace WebFramework\SanityCheck;
 
-interface SanityCheckInterface
+interface SanityCheckModule
 {
     /**
      * @param array<mixed> $config
