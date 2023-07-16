@@ -577,9 +577,6 @@ No request
 Auth:
 Not authenticated
 
-Backtrace:
-No stack
-
 Headers:
 No request
 
@@ -702,33 +699,6 @@ Array
     [user_id] => 1
     [username] => TestUser
     [email] => TestEmail
-)
-
-Backtrace:
-Array
-(
-    [0] => Array
-        (
-            [file] => Object2.php
-            [line] => 3
-            [class] => Object2
-            [type] => ->
-            [function] => function2
-            [args] => verify_args
-            [extra] => extra1
-        )
-
-    [1] => Array
-        (
-            [file] => Object1.php
-            [line] => 4
-            [class] => Object1
-            [type] => ->
-            [function] => function1
-            [args] => verify_args
-            [extra] => extra1
-        )
-
 )
 
 Headers:

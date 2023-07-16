@@ -111,7 +111,6 @@ TXT;
         }
 
         $authData = $this->getAuthenticationStatus();
-        $stackFmt = (count($filteredStack)) ? print_r($filteredStack, true) : "No stack\n";
 
         $info['message'] .= <<<TXT
 File: {$file}
@@ -131,8 +130,6 @@ Inputs:
 {$inputReport}
 Auth:
 {$authData}
-Backtrace:
-{$stackFmt}
 Headers:
 {$headersFmt}
 Server:
