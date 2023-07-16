@@ -3,6 +3,7 @@
 ## v7.0
 * SanityCheckInterface renamed to SanityCheckModule
 * Saving new Entity objects with RepositoryCore now supported
+* Add InputValidationService
 
 # v6 release
 
