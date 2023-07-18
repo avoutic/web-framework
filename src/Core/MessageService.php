@@ -76,11 +76,11 @@ class MessageService
         );
     }
 
-    public function getForUrl(string $mtype, string $message, string $extraMessage = ''): string
+    public function getForUrl(string $mtype, string $message, string $extraMessage = '', bool $includeKey = true): string
     {
         $msg = ['mtype' => $mtype, 'message' => $message, 'extra_message' => $extraMessage];
 
-        return 'msg='.$this->protectService->packArray($msg);
+        return ($includeKey ? 'msg=' : '').$this->protectService->packArray($msg);
     }
 
     /**

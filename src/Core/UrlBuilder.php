@@ -32,10 +32,11 @@ class UrlBuilder
 
         if ($messageType)
         {
-            $queryParameters[] = $this->messageService->getForUrl(
+            $queryParameters['msg'] = $this->messageService->getForUrl(
                 $messageType,
                 $message ?? '',
                 $extraMessage ?? '',
+                false,
             );
         }
 

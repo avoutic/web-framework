@@ -12,6 +12,7 @@
 * Add TranslationService
 * MessageService automatically translates recognized tags
 * Add UrlBuilder with support for messages
+* Support redirect url building directly from ResponseEmitter
 * Migrated example templates to latte
 
 # v6 release

@@ -163,6 +163,10 @@ return [
             storedValues: DI\get('SanityCheckStoredValues'),
             buildInfo: DI\get('build_info'),
         ),
+    Core\UrlBuilder::class => DI\autowire()
+        ->constructor(
+            baseUrl: DI\Get('base_url'),
+        ),
     Core\UserMailer::class => function (ContainerInterface $c) {
         $configService = $c->get(Core\ConfigService::class);
         $templateOverrides = $configService->get('user_mailer.template_overrides');

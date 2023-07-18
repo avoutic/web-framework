@@ -12,8 +12,8 @@ class ResponseEmitter
     public function __construct(
         private Container $container,
         private ConfigService $configService,
-        private MessageService $messageService,
         private ResponseFactory $responseFactory,
+        private UrlBuilder $urlBuilder,
     ) {
     }
 
@@ -136,6 +136,27 @@ class ResponseEmitter
         return $response->withHeader('Location', $url);
     }
 
+    /**
+     * @param array<string, int|string> $values
+     */
+    public function buildRedirect(string $template, array $values = [], ?string $messageType = null, ?string $message = null, ?string $extraMessage = null): Response
+    {
+        $url = $this->urlBuilder->buildUrl($template, $values, $messageType, $message, $extraMessage);
+
+        return $this->redirect($url);
+    }
+
+    /**
+     * @param array<string, int|string>                           $values
+     * @param array<int|string, array<int|string, string>|string> $queryParameters
+     */
+    public function buildQueryRedirect(string $template, array $values = [], array $queryParameters = [], ?string $messageType = null, ?string $message = null, ?string $extraMessage = null): Response
+    {
+        $url = $this->urlBuilder->buildQueryUrl($template, $values, $queryParameters, $messageType, $message, $extraMessage);
+
+        return $this->redirect($url);
+    }
+
     public function unauthorized(Request $request): Response
     {
         $response = $this->responseFactory->createResponse(401, 'Unauthorized');
@@ -145,17 +166,15 @@ class ResponseEmitter
             return $response->withHeader('Content-type', 'application/json');
         }
 
-        $message = $this->messageService->getForUrl(
+        return $this->buildQueryRedirect(
+            $this->configService->get('actions.login.location'),
+            [],
+            [
+                'return_page' => $request->getUri()->getPath(),
+                'return_query' => $request->getUri()->getQuery(),
+            ],
             'info',
-            $this->configService->get('authenticator.auth_required_message'),
-        );
-
-        return $this->redirect(
-            $this->configService->get('base_url').$this->configService->get('actions.login.location').
-            '?return_page='.urlencode($request->getUri()->getPath()).
-            '&return_query='.urlencode($request->getUri()->getQuery()).
-            '&'.$message,
-            302
+            'authenticator.auth_required_message',
         );
     }
 }
