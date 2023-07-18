@@ -3,21 +3,27 @@
 namespace WebFramework\Actions;
 
 use Psr\Container\ContainerInterface as Container;
-use Psr\Http\Message\ResponseInterface as Response;
-use Psr\Http\Message\ServerRequestInterface as Request;
+use Psr\Http\Message\ResponseInterface;
+use Slim\Http\Response;
+use Slim\Http\ServerRequest as Request;
 use WebFramework\Core\ConfigService;
 use WebFramework\Core\MessageService;
 use WebFramework\Core\RenderService;
 use WebFramework\Core\ResponseEmitter;
 use WebFramework\Core\UserPasswordService;
 use WebFramework\Core\ValidatorService;
+use WebFramework\Exception\ValidationException;
 use WebFramework\Repository\UserRepository;
+use WebFramework\Validation\EmailValidator;
+use WebFramework\Validation\InputValidationService;
+use WebFramework\Validation\UsernameValidator;
 
 class ForgotPassword
 {
     public function __construct(
         protected Container $container,
         protected ConfigService $configService,
+        protected InputValidationService $inputValidationService,
         protected MessageService $messageService,
         protected RenderService $renderer,
         protected ResponseEmitter $responseEmitter,
@@ -35,28 +41,36 @@ class ForgotPassword
     /**
      * @param array<string, string> $routeArgs
      */
-    public function __invoke(Request $request, Response $response, array $routeArgs): Response
+    public function __invoke(Request $request, Response $response, array $routeArgs): ResponseInterface
     {
-        $uniqueIdentifier = $this->configService->get('authenticator.unique_identifier');
-
-        $filtered = $this->validatorService->getFilteredParams($request, [
-            'username' => ($uniqueIdentifier === 'email') ? FORMAT_EMAIL : FORMAT_USERNAME,
-        ]);
-
         $params = [
             'core' => [
                 'title' => 'Forgot password',
             ],
         ];
 
-        if (!$request->getAttribute('passed_csrf'))
+        $csrfPassed = $request->getAttribute('passed_csrf', false);
+
+        if (!$csrfPassed)
         {
             return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
         }
 
-        if (!strlen($filtered['username']))
+        $uniqueIdentifier = $this->configService->get('authenticator.unique_identifier');
+        $validator = ($uniqueIdentifier === 'email') ? new EmailValidator('username') : new UsernameValidator();
+
+        try
         {
-            $this->messageService->add('error', 'Please enter a username');
+            // Validate input
+            //
+            $filtered = $this->inputValidationService->validate(
+                ['username' => $validator],
+                $request->getParams(),
+            );
+        }
+        catch (ValidationException $e)
+        {
+            $this->messageService->addErrors($e->getErrors());
 
             return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
         }
@@ -72,10 +86,11 @@ class ForgotPassword
 
         // Redirect to main sceen
         //
-        $baseUrl = $this->configService->get('base_url');
-        $loginPage = $this->configService->get('actions.login.location');
-        $message = $this->messageService->getForUrl('success', 'Reset link mailed to registered email account.');
-
-        return $this->responseEmitter->redirect("{$baseUrl}{$loginPage}?{$message}");
+        return $this->responseEmitter->buildRedirect(
+            $this->configService->get('actions.login.location'),
+            [],
+            'success',
+            'forgot_password.reset_link_mailed',
+        );
     }
 }
