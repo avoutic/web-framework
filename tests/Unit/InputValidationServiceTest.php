@@ -49,13 +49,71 @@ final class InputValidationServiceTest extends \Codeception\Test\Unit
         $inputs = [
         ];
 
-        $results = [
+        verify(function () use ($instance, $validators, $inputs) {
+            $instance->validate($validators, $inputs);
+        })
+            ->callableThrows(\InvalidArgumentException::class, 'Required field not present in inputs: username');
+    }
+
+    public function testArrayRequiredNotPresent()
+    {
+        $instance = $this->make(
+            InputValidationService::class,
+        );
+
+        $validators = [
+            'username[]' => new UsernameValidator(),
+        ];
+
+        $inputs = [
         ];
 
         verify(function () use ($instance, $validators, $inputs) {
             $instance->validate($validators, $inputs);
         })
             ->callableThrows(\InvalidArgumentException::class, 'Required field not present in inputs: username');
+    }
+
+    public function testArrayNotArrayInput()
+    {
+        $instance = $this->make(
+            InputValidationService::class,
+        );
+
+        $validators = [
+            'username[]' => new UsernameValidator(),
+        ];
+
+        $inputs = [
+            'username' => 'abc',
+        ];
+
+        verify(function () use ($instance, $validators, $inputs) {
+            $instance->validate($validators, $inputs);
+        })
+            ->callableThrows(\InvalidArgumentException::class, 'Array field not array in inputs: username');
+    }
+
+    public function testStringArrayInput()
+    {
+        $instance = $this->make(
+            InputValidationService::class,
+        );
+
+        $validators = [
+            'username' => new UsernameValidator(),
+        ];
+
+        $inputs = [
+            'username' => [
+                'abc',
+            ],
+        ];
+
+        verify(function () use ($instance, $validators, $inputs) {
+            $instance->validate($validators, $inputs);
+        })
+            ->callableThrows(\InvalidArgumentException::class, 'String field is array in inputs: username');
     }
 
     public function testRequiredEmpty()
@@ -70,9 +128,6 @@ final class InputValidationServiceTest extends \Codeception\Test\Unit
 
         $inputs = [
             'username' => '',
-        ];
-
-        $results = [
         ];
 
         verify(function () use ($instance, $validators, $inputs) {
@@ -96,6 +151,27 @@ final class InputValidationServiceTest extends \Codeception\Test\Unit
 
         $results = [
             'username' => '',
+        ];
+
+        verify($instance->validate($validators, $inputs))
+            ->equals($results);
+    }
+
+    public function testNotRequiredArrayNotPresent()
+    {
+        $instance = $this->make(
+            InputValidationService::class,
+        );
+
+        $validators = [
+            'username[]' => new UsernameValidator(required: false),
+        ];
+
+        $inputs = [
+        ];
+
+        $results = [
+            'username' => [],
         ];
 
         verify($instance->validate($validators, $inputs))
@@ -146,6 +222,34 @@ final class InputValidationServiceTest extends \Codeception\Test\Unit
             ->equals($results);
     }
 
+    public function testArrayValidLength()
+    {
+        $instance = $this->make(
+            InputValidationService::class,
+        );
+
+        $validators = [
+            'username[]' => new UsernameValidator(maxLength: 5),
+        ];
+
+        $inputs = [
+            'username' => [
+                'ABCDE',
+                'FGHIJ',
+            ],
+        ];
+
+        $results = [
+            'username' => [
+                'ABCDE',
+                'FGHIJ',
+            ],
+        ];
+
+        verify($instance->validate($validators, $inputs))
+            ->equals($results);
+    }
+
     public function testInvalidLength()
     {
         $instance = $this->make(
@@ -160,7 +264,27 @@ final class InputValidationServiceTest extends \Codeception\Test\Unit
             'username' => 'ABCDEF',
         ];
 
-        $results = [
+        verify(function () use ($instance, $validators, $inputs) {
+            $instance->validate($validators, $inputs);
+        })
+            ->callableThrows(ValidationException::class);
+    }
+
+    public function testArrayInvalidLength()
+    {
+        $instance = $this->make(
+            InputValidationService::class,
+        );
+
+        $validators = [
+            'username[]' => new UsernameValidator(maxLength: 5),
+        ];
+
+        $inputs = [
+            'username' => [
+                'ABCDE',
+                'FGHIJK',
+            ],
         ];
 
         verify(function () use ($instance, $validators, $inputs) {
@@ -205,7 +329,55 @@ final class InputValidationServiceTest extends \Codeception\Test\Unit
             'username' => 'abcdeF',
         ];
 
+        verify(function () use ($instance, $validators, $inputs) {
+            $instance->validate($validators, $inputs);
+        })
+            ->callableThrows(ValidationException::class);
+    }
+
+    public function testArrayValidFilter()
+    {
+        $instance = $this->make(
+            InputValidationService::class,
+        );
+
+        $validators = [
+            'username[]' => new CustomValidator('custom', filter: '[a-z]+'),
+        ];
+
+        $inputs = [
+            'username' => [
+                'abcdef',
+                'bcdefg',
+            ],
+        ];
+
         $results = [
+            'username' => [
+                'abcdef',
+                'bcdefg',
+            ],
+        ];
+
+        verify($instance->validate($validators, $inputs))
+            ->equals($results);
+    }
+
+    public function testArrayInvalidFilter()
+    {
+        $instance = $this->make(
+            InputValidationService::class,
+        );
+
+        $validators = [
+            'username[]' => new CustomValidator('custom', filter: '[a-z]+'),
+        ];
+
+        $inputs = [
+            'username' => [
+                'abcdef',
+                'bcdefG',
+            ],
         ];
 
         verify(function () use ($instance, $validators, $inputs) {
