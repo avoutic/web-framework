@@ -3,14 +3,14 @@
 namespace WebFramework\Actions;
 
 use Psr\Container\ContainerInterface as Container;
-use Psr\Http\Message\ResponseInterface as Response;
-use Psr\Http\Message\ServerRequestInterface as Request;
+use Psr\Http\Message\ResponseInterface;
+use Slim\Http\Response;
+use Slim\Http\ServerRequest as Request;
 use WebFramework\Core\ConfigService;
 use WebFramework\Core\MessageService;
 use WebFramework\Core\ResponseEmitter;
 use WebFramework\Core\UserCodeService;
 use WebFramework\Core\UserEmailService;
-use WebFramework\Core\ValidatorService;
 use WebFramework\Entity\User;
 use WebFramework\Exception\CodeVerificationException;
 use WebFramework\Exception\DuplicateEmailException;
@@ -30,38 +30,35 @@ class ChangeEmailVerify
         protected UserCodeService $userCodeService,
         protected UserEmailService $userEmailService,
         protected UserRepository $userRepository,
-        protected ValidatorService $validatorService,
     ) {
     }
 
     /**
      * @param array<string, string> $routeArgs
      */
-    public function __invoke(Request $request, Response $response, array $routeArgs): Response
+    public function __invoke(Request $request, Response $response, array $routeArgs): ResponseInterface
     {
         $user = $this->authenticationService->getAuthenticatedUser();
 
-        $filtered = $this->validatorService->getFilteredParams($request, [
-            'code' => '.*',
-        ]);
-
-        $baseUrl = $this->configService->get('base_url');
         $changePage = $this->configService->get('actions.change_email.location');
         $returnPage = $this->configService->get('actions.change_email.return_page');
 
         try
         {
             ['user_id' => $codeUserId, 'params' => $verifyParams] = $this->userCodeService->verify(
-                $filtered['code'],
+                $request->getParam('code', ''),
                 validity: 10 * 60,
                 action: 'change_email',
             );
         }
         catch (CodeVerificationException $e)
         {
-            $message = $this->messageService->getForUrl('error', 'E-mail verification link expired');
-
-            return $this->responseEmitter->redirect("{$baseUrl}{$changePage}?{$message}");
+            return $this->responseEmitter->buildRedirect(
+                $changePage,
+                [],
+                'error',
+                'change_email.link_expired',
+            );
         }
 
         // Check user status
@@ -69,9 +66,12 @@ class ChangeEmailVerify
         $codeUser = $this->userRepository->getObjectById($codeUserId);
         if ($codeUser === null)
         {
-            $message = $this->messageService->getForUrl('error', 'E-mail verification link expired');
-
-            return $this->responseEmitter->redirect("{$baseUrl}{$changePage}?{$message}");
+            return $this->responseEmitter->buildRedirect(
+                $changePage,
+                [],
+                'error',
+                'change_email.link_expired',
+            );
         }
 
         $email = $verifyParams['email'];
@@ -82,19 +82,25 @@ class ChangeEmailVerify
         {
             $this->authenticationService->deauthenticate();
 
-            $loginPage = $this->configService->get('actions.login.location');
-            $message = $this->messageService->getForUrl('error', 'Other account', 'The link you used is meant for a different account. The current account has been logged off. Please try the link again.');
-
-            return $this->responseEmitter->redirect("{$baseUrl}{$loginPage}?{$message}");
+            return $this->responseEmitter->buildRedirect(
+                $this->configService->get('actions.login.location'),
+                [],
+                'error',
+                'change_email.other_account',
+                'change_email.other_account_extra',
+            );
         }
 
         // Already changed
         //
         if ($user->getEmail() === $email)
         {
-            $message = $this->messageService->getForUrl('success', 'E-mail address changed successfully');
-
-            return $this->responseEmitter->redirect("{$baseUrl}{$returnPage}?{$message}");
+            return $this->responseEmitter->buildRedirect(
+                $returnPage,
+                [],
+                'success',
+                'change_email.success',
+            );
         }
 
         // Change email
@@ -103,9 +109,12 @@ class ChangeEmailVerify
 
         if (!isset($verifyParams['iterator']) || $securityIterator != $verifyParams['iterator'])
         {
-            $message = $this->messageService->getForUrl('error', 'E-mail verification link expired');
-
-            return $this->responseEmitter->redirect("{$baseUrl}{$changePage}?{$message}");
+            return $this->responseEmitter->buildRedirect(
+                $changePage,
+                [],
+                'error',
+                'change_email.link_expired',
+            );
         }
 
         try
@@ -114,9 +123,13 @@ class ChangeEmailVerify
         }
         catch (DuplicateEmailException $e)
         {
-            $message = $this->messageService->getForUrl('error', 'E-mail address is already in use in another account.', 'The e-mail address is already in use and cannot be re-used in this account. Please choose another address.');
-
-            return $this->responseEmitter->redirect("{$baseUrl}{$changePage}?{$message}");
+            return $this->responseEmitter->buildRedirect(
+                $changePage,
+                [],
+                'error',
+                'change_email.duplicate',
+                'change_email.duplicate_extra',
+            );
         }
 
         // Invalidate old sessions
@@ -126,8 +139,12 @@ class ChangeEmailVerify
 
         // Redirect to verification request screen
         //
-        $message = $this->messageService->getForUrl('success', 'E-mail address changed successfully');
-
-        return $this->responseEmitter->redirect("{$baseUrl}{$returnPage}?{$message}");
+        return $this->responseEmitter->buildRedirect(
+            $returnPage,
+            [],
+            'success',
+            'change_email.success',
+            'change_email.success_extra',
+        );
     }
 }

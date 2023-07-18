@@ -3,8 +3,9 @@
 namespace WebFramework\Actions;
 
 use Psr\Container\ContainerInterface as Container;
-use Psr\Http\Message\ResponseInterface as Response;
-use Psr\Http\Message\ServerRequestInterface as Request;
+use Psr\Http\Message\ResponseInterface;
+use Slim\Http\Response;
+use Slim\Http\ServerRequest as Request;
 use WebFramework\Core\ConfigService;
 use WebFramework\Core\MessageService;
 use WebFramework\Core\RecaptchaFactory;
@@ -65,10 +66,8 @@ class Register
     /**
      * @param array<string, string> $routeArgs
      */
-    public function __invoke(Request $request, Response $response, array $routeArgs): Response
+    public function __invoke(Request $request, Response $response, array $routeArgs): ResponseInterface
     {
-        $baseUrl = $this->configService->get('base_url');
-
         // Check if already logged in
         //
         if ($this->authenticationService->isAuthenticated())
@@ -76,9 +75,13 @@ class Register
             // Redirect to default page
             //
             $returnPage = $this->configService->get('actions.login.default_return_page');
-            $message = $this->messageService->getForUrl('info', 'Already logged in');
 
-            return $this->responseEmitter->redirect("{$baseUrl}{$returnPage}?{$message}");
+            return $this->responseEmitter->buildRedirect(
+                $returnPage,
+                [],
+                'info',
+                'login.already_authenticated',
+            );
         }
 
         $uniqueIdentifier = $this->configService->get('authenticator.unique_identifier');
@@ -93,7 +96,6 @@ class Register
                 'password2' => FORMAT_PASSWORD,
                 'email' => FORMAT_EMAIL,
                 'accept_terms' => '0|1',
-                'g-recaptcha-response' => '.*',
             ]
         );
 
@@ -123,49 +125,23 @@ class Register
 
         $errors = false;
 
-        // Check if required values are present
-        //
-        if ($uniqueIdentifier == 'username' && !strlen($filtered['username']))
-        {
-            $errors = true;
-            $this->messageService->add('error', 'Please enter a correct username', 'Usernames can contain letters, digits and underscores.');
-        }
-
-        if (!strlen($filtered['password']))
-        {
-            $errors = true;
-            $this->messageService->add('error', 'Please enter a password', 'Passwords can contain any printable character.');
-        }
-
-        if (!strlen($filtered['password2']))
-        {
-            $errors = true;
-            $this->messageService->add('error', 'Please enter the password verification', 'Password verification should match password.');
-        }
-
         if (strlen($filtered['password']) && strlen($filtered['password2'])
             && $filtered['password'] !== $filtered['password2'])
         {
             $errors = true;
-            $this->messageService->add('error', 'Passwords don\'t match', 'Password and password verification should be the same.');
+            $this->messageService->add('error', 'register.password_mismatch', 'register.password_mismatch_extra');
         }
 
         if (strlen($filtered['password']) < 8)
         {
             $errors = true;
-            $this->messageService->add('error', 'Password is too weak', 'Use at least 8 characters.');
-        }
-
-        if (!strlen($filtered['email']))
-        {
-            $errors = true;
-            $this->messageService->add('error', 'Please enter a correct e-mail address', 'E-mail addresses can contain letters, digits, hyphens, underscores, dots and at\'s.');
+            $this->messageService->add('error', 'register.weak_password', 'register.weak_password_extra');
         }
 
         if ($filtered['accept_terms'] != 1)
         {
             $errors = true;
-            $this->messageService->add('error', 'Please accept our Terms', 'To register for our site you need to accept our Privacy Policy and our Terms of Service.');
+            $this->messageService->add('error', 'register.accept_terms', 'register.accept_terms_extra');
         }
 
         if ($this->customValueCheck($request) !== true)
@@ -173,12 +149,12 @@ class Register
             $errors = true;
         }
 
-        $recaptchaResponse = $filtered['g-recaptcha-response'];
+        $recaptchaResponse = $request->getParam('g-recaptcha-response', '');
 
         if (!strlen($recaptchaResponse))
         {
             $errors = true;
-            $this->messageService->add('error', 'CAPTCHA required', 'To prevent bots registering account en masse, filling in a CAPTCHA is required!');
+            $this->messageService->add('error', 'register.captcha_required', 'register.captcha_required_extra');
         }
         else
         {
@@ -187,7 +163,7 @@ class Register
 
             if ($result != true)
             {
-                $this->messageService->add('error', 'The CAPTCHA code entered was incorrect.');
+                $this->messageService->add('error', 'register.captcha_incorrect');
                 $errors = true;
             }
         }
@@ -203,11 +179,11 @@ class Register
         {
             if ($uniqueIdentifier == 'email')
             {
-                $this->messageService->add('error', 'E-mail already registered.', 'An account has already been registered with this e-mail address. Forgot your password?');
+                $this->messageService->add('error', 'register.email_exists', 'register.email_exists_extra');
             }
             else
             {
-                $this->messageService->add('error', 'Username already exists.', 'This username has already been taken. Please enter another username.');
+                $this->messageService->add('error', 'register.username_exists', 'register.username_exists_extra');
             }
 
             return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
@@ -222,17 +198,19 @@ class Register
         return $this->postCreateActions($request, $user);
     }
 
-    protected function postCreateActions(Request $request, User $user): Response
+    protected function postCreateActions(Request $request, User $user): ResponseInterface
     {
         $verifyParams = $this->getAfterVerifyData($request);
         $this->userEmailService->sendVerifyMail($user, $verifyParams);
 
         // Redirect to verification request screen
         //
-        $baseUrl = $this->configService->get('base_url');
-        $afterVerifyPage = $this->configService->get('actions.send_verify.after_verify_page');
-        $message = $this->messageService->getForUrl('success', 'Verification mail sent', 'Verification mail is sent (if not already verified). Please check your mailbox and follow the instructions.');
-
-        return $this->responseEmitter->redirect("{$baseUrl}{$afterVerifyPage}?{$message}");
+        return $this->responseEmitter->buildRedirect(
+            $this->configService->get('actions.send_verify.after_verify_page'),
+            [],
+            'success',
+            'register.verification_sent',
+            'register.verification_sent_extra',
+        );
     }
 }

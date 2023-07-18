@@ -2,14 +2,14 @@
 
 namespace WebFramework\Actions;
 
-use Psr\Http\Message\ResponseInterface as Response;
-use Psr\Http\Message\ServerRequestInterface as Request;
+use Psr\Http\Message\ResponseInterface;
 use Slim\Exception\HttpForbiddenException;
 use Slim\Exception\HttpNotFoundException;
 use Slim\Exception\HttpUnauthorizedException;
+use Slim\Http\Response;
+use Slim\Http\ServerRequest as Request;
 use WebFramework\Core\AssertService;
 use WebFramework\Core\LatteRenderService;
-use WebFramework\Core\ValidatorService;
 use WebFramework\Exception\BlacklistException;
 
 class Tester
@@ -17,67 +17,61 @@ class Tester
     public function __construct(
         protected AssertService $assertService,
         protected LatteRenderService $renderer,
-        protected ValidatorService $validatorService,
     ) {
     }
 
     /**
      * @param array<string, string> $routeArgs
      */
-    public function __invoke(Request $request, Response $response, $routeArgs): Response
+    public function __invoke(Request $request, Response $response, $routeArgs): ResponseInterface
     {
-        $inputs = $this->validatorService->getFilteredParams(
-            $request,
-            [
-                'action' => '\w+',
-            ]
-        );
+        $action = $request->getParam('action');
 
         $params = [
             'title' => 'Tester',
         ];
 
-        if ($inputs['action'] === '404')
+        if ($action === '404')
         {
             throw new HttpNotFoundException($request);
         }
 
-        if ($inputs['action'] === '403')
+        if ($action === '403')
         {
             throw new HttpForbiddenException($request);
         }
 
-        if ($inputs['action'] === '401')
+        if ($action === '401')
         {
             throw new HttpUnauthorizedException($request);
         }
 
-        if ($inputs['action'] === 'blacklist')
+        if ($action === 'blacklist')
         {
             throw new BlacklistException($request);
         }
 
-        if ($inputs['action'] === 'exception')
+        if ($action === 'exception')
         {
             throw new \RuntimeException('Triggered error');
         }
 
-        if ($inputs['action'] === 'report_error')
+        if ($action === 'report_error')
         {
             $this->assertService->reportError('Reported error');
         }
 
-        if ($inputs['action'] === 'warning')
+        if ($action === 'warning')
         {
             trigger_error('Triggered warning', E_USER_WARNING);
         }
 
-        if ($inputs['action'] === 'error')
+        if ($action === 'error')
         {
             trigger_error('Triggered error', E_USER_ERROR);
         }
 
-        if ($inputs['action'] === 'php_error')
+        if ($action === 'php_error')
         {
             trigger_error('Triggered PHP error', E_ERROR);
         }

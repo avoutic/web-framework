@@ -3,17 +3,20 @@
 namespace WebFramework\Actions;
 
 use Psr\Container\ContainerInterface as Container;
-use Psr\Http\Message\ResponseInterface as Response;
-use Psr\Http\Message\ServerRequestInterface as Request;
+use Psr\Http\Message\ResponseInterface;
+use Slim\Http\Response;
+use Slim\Http\ServerRequest as Request;
 use WebFramework\Core\ConfigService;
 use WebFramework\Core\MessageService;
 use WebFramework\Core\RenderService;
 use WebFramework\Core\ResponseEmitter;
 use WebFramework\Core\UserEmailService;
-use WebFramework\Core\ValidatorService;
 use WebFramework\Entity\User;
 use WebFramework\Exception\DuplicateEmailException;
+use WebFramework\Exception\ValidationException;
 use WebFramework\Security\AuthenticationService;
+use WebFramework\Validation\EmailValidator;
+use WebFramework\Validation\InputValidationService;
 
 class ChangeEmail
 {
@@ -21,11 +24,11 @@ class ChangeEmail
         protected Container $container,
         protected AuthenticationService $authenticationService,
         protected ConfigService $configService,
+        protected InputValidationService $inputValidationService,
         protected MessageService $messageService,
         protected RenderService $renderer,
         protected ResponseEmitter $responseEmitter,
         protected UserEmailService $userEmailService,
-        protected ValidatorService $validatorService,
     ) {
     }
 
@@ -54,19 +57,15 @@ class ChangeEmail
     /**
      * @param array<string, string> $routeArgs
      */
-    public function __invoke(Request $request, Response $response, array $routeArgs): Response
+    public function __invoke(Request $request, Response $response, array $routeArgs): ResponseInterface
     {
         $user = $this->authenticationService->getAuthenticatedUser();
-
-        ['raw' => $raw, 'filtered' => $filtered] = $this->validatorService->getParams($request, [
-            'email' => FORMAT_EMAIL,
-        ]);
 
         $params = [
             'core' => [
                 'title' => 'Change email address',
             ],
-            'email' => $raw['email'],
+            'email' => $request->getParam('email', ''),
         ];
 
         $customParams = $this->customParams($request);
@@ -79,14 +78,22 @@ class ChangeEmail
             return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
         }
 
-        $errors = false;
-
-        // Check if email address is present
-        //
-        if (!strlen($filtered['email']))
+        try
         {
-            $errors = true;
-            $this->messageService->add('error', 'Please enter a correct e-mail address.', 'E-mail addresses can contain letters, digits, hyphens, underscores, dots and at\'s.');
+            // Validate input
+            //
+            $filtered = $this->inputValidationService->validate(
+                [
+                    'email' => new EmailValidator(),
+                ],
+                $request->getParams(),
+            );
+        }
+        catch (ValidationException $e)
+        {
+            $this->messageService->addErrors($e->getErrors());
+
+            return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
         }
 
         // Send verification mail
@@ -97,22 +104,19 @@ class ChangeEmail
         }
         catch (DuplicateEmailException $e)
         {
-            $errors = true;
-            $this->messageService->add('error', 'E-mail address is already in use in another account.', 'The e-mail address is already in use and cannot be re-used in this account. Please choose another address.');
-        }
+            $this->messageService->add('error', 'change_email.duplicate', 'change_email.duplicate_extra');
 
-        if ($errors)
-        {
             return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
         }
 
         // Redirect to verification request screen
         //
-        $baseUrl = $this->configService->get('base_url');
-        $returnPage = $this->getReturnPage();
-
-        $message = $this->messageService->getForUrl('success', 'Verification mail has been sent.', 'A verification mail has been sent. Please wait for the e-mail in your inbox and follow the instructions.');
-
-        return $this->responseEmitter->redirect("{$baseUrl}{$returnPage}?{$message}");
+        return $this->responseEmitter->buildRedirect(
+            $this->getReturnPage(),
+            [],
+            'success',
+            'change_email.verification_sent',
+            'change_email.verification_sent_extra',
+        );
     }
 }

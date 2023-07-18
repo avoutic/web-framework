@@ -3,18 +3,21 @@
 namespace WebFramework\Actions;
 
 use Psr\Container\ContainerInterface as Container;
-use Psr\Http\Message\ResponseInterface as Response;
-use Psr\Http\Message\ServerRequestInterface as Request;
+use Psr\Http\Message\ResponseInterface;
+use Slim\Http\Response;
+use Slim\Http\ServerRequest as Request;
 use WebFramework\Core\ConfigService;
 use WebFramework\Core\MessageService;
 use WebFramework\Core\RenderService;
 use WebFramework\Core\ResponseEmitter;
 use WebFramework\Core\UserPasswordService;
-use WebFramework\Core\ValidatorService;
 use WebFramework\Entity\User;
 use WebFramework\Exception\InvalidPasswordException;
+use WebFramework\Exception\ValidationException;
 use WebFramework\Exception\WeakPasswordException;
 use WebFramework\Security\AuthenticationService;
+use WebFramework\Validation\InputValidationService;
+use WebFramework\Validation\PasswordValidator;
 
 class ChangePassword
 {
@@ -22,11 +25,11 @@ class ChangePassword
         protected Container $container,
         protected AuthenticationService $authenticationService,
         protected ConfigService $configService,
+        protected InputValidationService $inputValidationService,
         protected MessageService $messageService,
         protected RenderService $renderer,
         protected ResponseEmitter $responseEmitter,
         protected UserPasswordService $userPasswordService,
-        protected ValidatorService $validatorService,
     ) {
     }
 
@@ -55,7 +58,7 @@ class ChangePassword
     /**
      * @param array<string, string> $routeArgs
      */
-    public function __invoke(Request $request, Response $response, array $routeArgs): Response
+    public function __invoke(Request $request, Response $response, array $routeArgs): ResponseInterface
     {
         $user = $this->authenticationService->getAuthenticatedUser();
 
@@ -68,45 +71,45 @@ class ChangePassword
         $customParams = $this->customParams($request);
         $params = array_replace_recursive($params, $customParams);
 
-        // Check if this is a true attempt
-        //
-        if (!$request->getAttribute('passed_csrf'))
+        $csrfPassed = $request->getAttribute('passed_csrf', false);
+
+        if (!$csrfPassed)
         {
             return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
         }
 
-        $filtered = $this->validatorService->getFilteredParams($request, [
-            'orig_password' => FORMAT_PASSWORD,
-            'password' => FORMAT_PASSWORD,
-            'password2' => FORMAT_PASSWORD,
-        ]);
+        try
+        {
+            // Validate input
+            //
+            $filtered = $this->inputValidationService->validate(
+                [
+                    'orig_password' => new PasswordValidator('current password'),
+                    'password' => new PasswordValidator('New password'),
+                    'password2' => new PasswordValidator('Password verification'),
+                ],
+                $request->getParams(),
+            );
+        }
+        catch (ValidationException $e)
+        {
+            $this->messageService->addErrors($e->getErrors());
+
+            return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
+        }
 
         $errors = false;
 
-        // Check if passwords are present
-        //
-        if (!strlen($filtered['orig_password']))
+        if (strlen($filtered['password']) && strlen($filtered['password2'])
+            && $filtered['password'] !== $filtered['password2'])
         {
             $errors = true;
-            $this->messageService->add('error', 'Please enter your current password.');
+            $this->messageService->add('error', 'register.password_mismatch', 'register.password_mismatch_extra');
         }
 
-        if (!strlen($filtered['password']))
+        if ($errors)
         {
-            $errors = true;
-            $this->messageService->add('error', 'Please enter a password.', 'Passwords can contain any printable character.');
-        }
-
-        if (!strlen($filtered['password2']))
-        {
-            $errors = true;
-            $this->messageService->add('error', 'Please enter the password verification.', 'Password verification should match your password.');
-        }
-
-        if ($filtered['password'] != $filtered['password2'])
-        {
-            $errors = true;
-            $this->messageService->add('error', 'Passwords don\'t match.', 'Password and password verification should be the same.');
+            return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
         }
 
         try
@@ -116,12 +119,12 @@ class ChangePassword
         catch (InvalidPasswordException $e)
         {
             $errors = true;
-            $this->messageService->add('error', 'Original password is incorrect.', 'Please re-enter your password.');
+            $this->messageService->add('error', 'change_password.invalid', 'change_password.invalid_extra');
         }
         catch (WeakPasswordException $e)
         {
             $errors = true;
-            $this->messageService->add('error', 'New password is too weak.', 'Use at least 8 characters.');
+            $this->messageService->add('error', 'change_password.weak', 'change_password.weak_extra');
         }
 
         if ($errors)
@@ -138,11 +141,12 @@ class ChangePassword
 
         // Redirect to main sceen
         //
-        $baseUrl = $this->configService->get('base_url');
-        $returnPage = $this->getReturnPage();
-
-        $message = $this->messageService->getForUrl('success', 'Password changed successfully');
-
-        return $this->responseEmitter->redirect("{$baseUrl}{$returnPage}?{$message}");
+        return $this->responseEmitter->buildRedirect(
+            $this->getReturnPage(),
+            [],
+            'success',
+            'change_password.success',
+            'change_password.success_extra',
+        );
     }
 }

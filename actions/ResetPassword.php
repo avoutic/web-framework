@@ -3,8 +3,9 @@
 namespace WebFramework\Actions;
 
 use Psr\Container\ContainerInterface as Container;
-use Psr\Http\Message\ResponseInterface as Response;
-use Psr\Http\Message\ServerRequestInterface as Request;
+use Psr\Http\Message\ResponseInterface;
+use Slim\Http\Response;
+use Slim\Http\ServerRequest as Request;
 use WebFramework\Core\ConfigService;
 use WebFramework\Core\MessageService;
 use WebFramework\Core\ResponseEmitter;
@@ -36,28 +37,27 @@ class ResetPassword
     /**
      * @param array<string, string> $routeArgs
      */
-    public function __invoke(Request $request, Response $response, array $routeArgs): Response
+    public function __invoke(Request $request, Response $response, array $routeArgs): ResponseInterface
     {
-        $filtered = $this->validatorService->getFilteredParams($request, [
-            'code' => '.*',
-        ]);
-
-        $baseUrl = $this->configService->get('base_url');
         $forgotPasswordPage = $this->configService->get('actions.forgot_password.location');
 
         try
         {
             ['user_id' => $codeUserId, 'params' => $verifyParams] = $this->userCodeService->verify(
-                $filtered['code'],
+                $request->getParam('code', ''),
                 validity: 10 * 60,
                 action: 'reset_password',
             );
         }
         catch (CodeVerificationException $e)
         {
-            $message = $this->messageService->getForUrl('error', 'Password reset link expired', 'Please request a new one.');
-
-            return $this->responseEmitter->redirect("{$baseUrl}{$forgotPasswordPage}?{$message}");
+            return $this->responseEmitter->buildRedirect(
+                $forgotPasswordPage,
+                [],
+                'error',
+                'reset_password.link_expired',
+                'reset_password.link_expired_extra',
+            );
         }
 
         // Check user status
@@ -72,9 +72,13 @@ class ResetPassword
 
         if (!isset($verifyParams['iterator']) || $securityIterator != $verifyParams['iterator'])
         {
-            $message = $this->messageService->getForUrl('error', 'Password reset link expired', 'Please request a new one.');
-
-            return $this->responseEmitter->redirect("{$baseUrl}{$forgotPasswordPage}?{$message}");
+            return $this->responseEmitter->buildRedirect(
+                $forgotPasswordPage,
+                [],
+                'error',
+                'reset_password.link_expired',
+                'reset_password.link_expired_extra',
+            );
         }
 
         $this->userPasswordService->sendNewPassword($user);
@@ -86,8 +90,13 @@ class ResetPassword
         // Redirect to main sceen
         //
         $loginPage = $this->configService->get('actions.login.location');
-        $message = $this->messageService->getForUrl('success', 'Password reset', 'You will receive a mail with your new password');
 
-        return $this->responseEmitter->redirect("{$baseUrl}{$loginPage}?{$message}");
+        return $this->responseEmitter->buildRedirect(
+            $loginPage,
+            [],
+            'success',
+            'reset_password.success',
+            'reset_password.success_extra',
+        );
     }
 }

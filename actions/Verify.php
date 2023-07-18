@@ -3,8 +3,9 @@
 namespace WebFramework\Actions;
 
 use Psr\Container\ContainerInterface as Container;
-use Psr\Http\Message\ResponseInterface as Response;
-use Psr\Http\Message\ServerRequestInterface as Request;
+use Psr\Http\Message\ResponseInterface;
+use Slim\Http\Response;
+use Slim\Http\ServerRequest as Request;
 use WebFramework\Core\ConfigService;
 use WebFramework\Core\MessageService;
 use WebFramework\Core\ResponseEmitter;
@@ -37,28 +38,27 @@ class Verify
     /**
      * @param array<string, string> $routeArgs
      */
-    public function __invoke(Request $request, Response $response, array $routeArgs): Response
+    public function __invoke(Request $request, Response $response, array $routeArgs): ResponseInterface
     {
-        $filtered = $this->validatorService->getFilteredParams($request, [
-            'code' => '.*',
-        ]);
-
-        $baseUrl = $this->configService->get('base_url');
         $loginPage = $this->configService->get('actions.login.location');
 
         try
         {
             ['user_id' => $codeUserId, 'params' => $verifyParams] = $this->userCodeService->verify(
-                $filtered['code'],
+                $request->getParam('code', ''),
                 validity: 24 * 60 * 60,
                 action: 'verify',
             );
         }
         catch (CodeVerificationException $e)
         {
-            $message = $this->messageService->getForUrl('error', 'Verification mail expired', 'Please login again to request a new one.');
-
-            return $this->responseEmitter->redirect("{$baseUrl}{$loginPage}?{$message}");
+            return $this->responseEmitter->buildRedirect(
+                $loginPage,
+                [],
+                'error',
+                'verify.link_expired',
+                'verify.link_expired_extra',
+            );
         }
 
         // Check user status
@@ -80,8 +80,14 @@ class Verify
         // Redirect to main sceen
         //
         $afterVerifyPage = $this->configService->get('actions.login.after_verify_page');
-        $message = $this->messageService->getForUrl('success', 'Verification succeeded', 'Verification succeeded. You can now use your account.').'&return_page='.urlencode($afterVerifyPage);
 
-        return $this->responseEmitter->redirect("{$baseUrl}{$loginPage}?{$message}");
+        return $this->responseEmitter->buildQueryRedirect(
+            $loginPage,
+            [],
+            ['return_page' => $afterVerifyPage],
+            'success',
+            'verify.success',
+            'verify.success_extra',
+        );
     }
 }

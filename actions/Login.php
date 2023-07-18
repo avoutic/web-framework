@@ -3,8 +3,9 @@
 namespace WebFramework\Actions;
 
 use Psr\Container\ContainerInterface as Container;
-use Psr\Http\Message\ResponseInterface as Response;
-use Psr\Http\Message\ServerRequestInterface as Request;
+use Psr\Http\Message\ResponseInterface;
+use Slim\Http\Response;
+use Slim\Http\ServerRequest as Request;
 use WebFramework\Core\ConfigService;
 use WebFramework\Core\MessageService;
 use WebFramework\Core\RecaptchaFactory;
@@ -13,11 +14,15 @@ use WebFramework\Core\ResponseEmitter;
 use WebFramework\Core\UserCodeService;
 use WebFramework\Core\UserEmailService;
 use WebFramework\Core\UserPasswordService;
-use WebFramework\Core\ValidatorService;
 use WebFramework\Entity\User;
+use WebFramework\Exception\ValidationException;
 use WebFramework\Repository\UserRepository;
 use WebFramework\Security\AuthenticationService;
 use WebFramework\Security\BlacklistService;
+use WebFramework\Validation\EmailValidator;
+use WebFramework\Validation\InputValidationService;
+use WebFramework\Validation\PasswordValidator;
+use WebFramework\Validation\UsernameValidator;
 
 class Login
 {
@@ -26,6 +31,7 @@ class Login
         protected AuthenticationService $authenticationService,
         protected BlacklistService $blacklistService,
         protected ConfigService $configService,
+        protected InputValidationService $inputValidationService,
         protected MessageService $messageService,
         protected RecaptchaFactory $recaptchaFactory,
         protected RenderService $renderer,
@@ -34,7 +40,6 @@ class Login
         protected UserEmailService $userEmailService,
         protected UserPasswordService $userPasswordService,
         protected UserRepository $userRepository,
-        protected ValidatorService $validatorService,
     ) {
     }
 
@@ -51,7 +56,7 @@ class Login
     /**
      * @param array<string, string> $routeArgs
      */
-    public function __invoke(Request $request, Response $response, array $routeArgs): Response
+    public function __invoke(Request $request, Response $response, array $routeArgs): ResponseInterface
     {
         $uniqueIdentifier = $this->configService->get('authenticator.unique_identifier');
         $bruteforceProtection = $this->configService->get('actions.login.bruteforce_protection');
@@ -65,20 +70,10 @@ class Login
             $recaptchaSecretKey = $this->configService->get('security.recaptcha.secret_key');
         }
 
-        $baseUrl = $this->configService->get('base_url');
+        $returnPage = $request->getParam('return_page', '');
 
-        ['raw' => $raw, 'filtered' => $filtered] = $this->validatorService->getParams($request, [
-            'return_page' => FORMAT_RETURN_PAGE,
-            'return_query' => FORMAT_RETURN_QUERY,
-            'username' => ($uniqueIdentifier === 'email') ? FORMAT_EMAIL : FORMAT_USERNAME,
-            'password' => FORMAT_PASSWORD,
-            'g-recaptcha-response' => '.*',
-        ]);
-
-        $returnPage = $filtered['return_page'];
-        $returnQuery = $filtered['return_query'].(strlen($filtered['return_query']) ? '&' : '');
-
-        if (!strlen($returnPage) || substr($returnPage, 0, 2) == '//')
+        if (!strlen($returnPage) || substr($returnPage, 0, 2) == '//'
+            || !preg_match('/^'.FORMAT_RETURN_PAGE.'$/', $returnPage))
         {
             $returnPage = $this->configService->get('actions.login.default_return_page');
         }
@@ -88,25 +83,32 @@ class Login
             $returnPage = '/'.$returnPage;
         }
 
-        $params = [
-            'core' => [
-                'title' => 'Login',
-            ],
-            'return_page' => $returnPage,
-            'return_query' => $filtered['return_query'],
-            'username' => $raw['username'],
-            'recaptcha_needed' => false,
-            'recaptcha_site_key' => $recaptchaSiteKey,
-        ];
+        $returnQuery = [];
+        $returnQueryStr = $request->getParam('return_query', '');
+        parse_str($returnQueryStr, $returnQuery);
 
         // Check if already logged in and redirect immediately
         //
         if ($this->authenticationService->isAuthenticated())
         {
-            $message = $this->messageService->getForUrl('info', 'Already logged in');
-
-            return $this->responseEmitter->redirect("{$baseUrl}{$returnPage}?{$returnQuery}{$message}");
+            return $this->responseEmitter->buildQueryRedirect(
+                $returnPage,
+                [],
+                $returnQuery,
+                'info',
+                'login.already_authenticated',
+            );
         }
+        $params = [
+            'core' => [
+                'title' => 'Login',
+            ],
+            'return_page' => $returnPage,
+            'return_query' => $returnQuery,
+            'username' => $request->getParam('username', ''),
+            'recaptcha_needed' => false,
+            'recaptcha_site_key' => $recaptchaSiteKey,
+        ];
 
         // Check if this is a login attempt
         //
@@ -115,32 +117,22 @@ class Login
             return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
         }
 
-        $errors = false;
-
-        // Check if username and password are present
-        //
-        if (!strlen($filtered['username']))
+        try
         {
-            $errors = true;
-
-            if ($uniqueIdentifier == 'email')
-            {
-                $this->messageService->add('error', 'Please enter a valid email.');
-            }
-            else
-            {
-                $this->messageService->add('error', 'Please enter a valid username.');
-            }
+            // Validate input
+            //
+            $filtered = $this->inputValidationService->validate(
+                [
+                    'username' => ($uniqueIdentifier === 'email') ? new EmailValidator() : new UsernameValidator(),
+                    'password' => new PasswordValidator(),
+                ],
+                $request->getParams(),
+            );
         }
-
-        if (!strlen($filtered['password']))
+        catch (ValidationException $e)
         {
-            $errors = true;
-            $this->messageService->add('error', 'Please enter your password.');
-        }
+            $this->messageService->addErrors($e->getErrors());
 
-        if ($errors)
-        {
             return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
         }
 
@@ -149,14 +141,7 @@ class Login
         $user = $this->userRepository->getUserByUsername($filtered['username']);
         if ($user === null)
         {
-            if ($uniqueIdentifier == 'email')
-            {
-                $this->messageService->add('error', 'E-mail and password do not match.', 'Please check if you entered the e-mail and/or password correctly.');
-            }
-            else
-            {
-                $this->messageService->add('error', 'Username and password do not match.', 'Please check if you entered the username and/or password correctly.');
-            }
+            $this->messageService->add('error', 'login.username_mismatch', 'login.username_mismatch_extra');
 
             $this->blacklistService->addEntry($request->getAttribute('ip'), null, 'unknown-username');
 
@@ -165,12 +150,12 @@ class Login
 
         if ($user->getFailedLogin() > 5 && $bruteforceProtection)
         {
-            $recaptchaResponse = $filtered['g-recaptcha-response'];
+            $recaptchaResponse = $request->getParam('g-recaptcha-response', '');
             $params['recaptcha_needed'] = true;
 
             if (!strlen($recaptchaResponse))
             {
-                $this->messageService->add('error', 'CAPTCHA required', 'Due to possible brute force attacks on this username, filling in a CAPTCHA is required for checking the password!');
+                $this->messageService->add('error', 'login.captcha_required', 'login.captcha_required_extra');
 
                 return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
             }
@@ -180,7 +165,7 @@ class Login
 
             if ($result != true)
             {
-                $this->messageService->add('error', 'The CAPTCHA code entered was incorrect.');
+                $this->messageService->add('error', 'login.captcha_incorrect');
 
                 return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
             }
@@ -188,7 +173,8 @@ class Login
 
         if (!$this->userPasswordService->checkPassword($user, $filtered['password']))
         {
-            $this->messageService->add('error', 'Username and password do not match.', 'Please check if you entered the username and/or password correctly.');
+            $this->messageService->add('error', 'login.username_mismatch', 'login.username_mismatch_extra');
+
             $this->blacklistService->addEntry($request->getAttribute('ip'), null, 'wrong-password');
 
             return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
@@ -205,17 +191,26 @@ class Login
         {
             $code = $this->userCodeService->generate($user, 'send_verify');
 
-            $sendVerifyPage = $this->configService->get('actions.login.send_verify_page');
-            $message = $this->messageService->getForUrl('error', 'Account not yet verified.', 'Account is not yet verified. Please check your mailbox for the verification e-mail and go to the presented link.');
-
-            return $this->responseEmitter->redirect("{$baseUrl}{$sendVerifyPage}?code={$code}&{$message}");
+            return $this->responseEmitter->buildQueryRedirect(
+                $this->configService->get('actions.login.send_verify_page'),
+                [],
+                ['code' => $code],
+                'error',
+                'login.unverified',
+                'login.unverified_extra',
+            );
         }
 
         // Log in user
         //
         $this->authenticationService->authenticate($user);
-        $message = $this->messageService->getForUrl('success', 'Login successful.');
 
-        return $this->responseEmitter->redirect("{$baseUrl}{$returnPage}?{$returnQuery}{$message}");
+        return $this->responseEmitter->buildQueryRedirect(
+            $returnPage,
+            [],
+            $returnQuery,
+            'success',
+            'login.success',
+        );
     }
 }
