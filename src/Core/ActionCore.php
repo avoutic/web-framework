@@ -15,6 +15,7 @@ use WebFramework\Security\BlacklistService;
 use WebFramework\Security\ConfigService as SecureConfigService;
 use WebFramework\Security\CsrfService;
 use WebFramework\Security\ProtectService;
+use WebFramework\Security\UserRightService;
 
 abstract class ActionCore
 {

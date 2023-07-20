@@ -1,19 +1,19 @@
 <?php
 
-namespace WebFramework\Core;
+namespace WebFramework\Security;
 
 use Psr\Container\ContainerInterface as Container;
+use WebFramework\Core\ConfigService;
+use WebFramework\Core\UserMailer;
 use WebFramework\Entity\User;
-use WebFramework\Exception\InvalidPasswordException;
-use WebFramework\Exception\WeakPasswordException;
+use WebFramework\Exception\CodeVerificationException;
 use WebFramework\Repository\UserRepository;
-use WebFramework\Security\PasswordHashService;
-use WebFramework\Security\SecurityIteratorService;
 
-class UserPasswordService
+class ResetPasswordService
 {
     public function __construct(
         private Container $container,
+        private AuthenticationService $authenticationService,
         private ConfigService $configService,
         private PasswordHashService $passwordHashService,
         private UserCodeService $userCodeService,
@@ -21,59 +21,6 @@ class UserPasswordService
         private UserRepository $userRepository,
         private SecurityIteratorService $securityIteratorService,
     ) {
-    }
-
-    public function checkPassword(User $user, string $password): bool
-    {
-        $storedHash = $user->getSolidPassword();
-
-        $correct = $this->passwordHashService->checkPassword($storedHash, $password);
-        if (!$correct)
-        {
-            $user->incrementFailedLogin();
-            $this->userRepository->save($user);
-
-            return false;
-        }
-
-        // Check if password should be migrated
-        //
-        $migratePassword = $this->passwordHashService->shouldMigrate($storedHash);
-
-        if ($migratePassword)
-        {
-            $newHash = $this->passwordHashService->generateHash($password);
-            $user->setSolidPassword($newHash);
-        }
-
-        $user->setLastLogin(time());
-        $this->userRepository->save($user);
-
-        return true;
-    }
-
-    public function changePassword(User $user, string $oldPassword, string $newPassword): void
-    {
-        if (strlen($newPassword) < 8)
-        {
-            throw new WeakPasswordException('The new password is not strong enough');
-        }
-
-        // Check if original password is correct
-        //
-        if ($this->passwordHashService->checkPassword($user->getSolidPassword(), $oldPassword) !== true)
-        {
-            throw new InvalidPasswordException('The old password does not match the current password');
-        }
-
-        // Change password
-        //
-        $newHash = $this->passwordHashService->generateHash($newPassword);
-
-        $user->setSolidPassword($newHash);
-        $this->userRepository->save($user);
-
-        $this->securityIteratorService->incrementFor($user);
     }
 
     public function updatePassword(User $user, string $newPassword): void
@@ -108,6 +55,36 @@ class UserPasswordService
                 'reset_url' => $resetUrl,
             ]
         );
+    }
+
+    public function handlePasswordReset(string $code): void
+    {
+        ['user_id' => $codeUserId, 'params' => $verifyParams] = $this->userCodeService->verify(
+            $code,
+            validity: 10 * 60,
+            action: 'reset_password',
+        );
+
+        // Check user status
+        //
+        $user = $this->userRepository->getObjectById($codeUserId);
+        if ($user === null)
+        {
+            throw new CodeVerificationException();
+        }
+
+        $securityIterator = $this->securityIteratorService->getFor($user);
+
+        if (!isset($verifyParams['iterator']) || $securityIterator != $verifyParams['iterator'])
+        {
+            throw new CodeVerificationException();
+        }
+
+        $this->sendNewPassword($user);
+
+        // Invalidate old sessions
+        //
+        $this->authenticationService->invalidateSessions($user->getId());
     }
 
     public function sendNewPassword(User $user): bool|string

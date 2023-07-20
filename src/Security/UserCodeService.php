@@ -1,10 +1,9 @@
 <?php
 
-namespace WebFramework\Core;
+namespace WebFramework\Security;
 
 use WebFramework\Entity\User;
 use WebFramework\Exception\CodeVerificationException;
-use WebFramework\Security\ProtectService;
 
 class UserCodeService
 {

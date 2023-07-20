@@ -1,7 +1,8 @@
 <?php
 
-namespace WebFramework\Core;
+namespace WebFramework\Security;
 
+use WebFramework\Core\Database;
 use WebFramework\Entity\User;
 use WebFramework\Repository\RightRepository;
 use WebFramework\Repository\UserRightRepository;

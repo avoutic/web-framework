@@ -4,8 +4,6 @@ namespace WebFramework\Security;
 
 use Slim\Http\ServerRequest as Request;
 use WebFramework\Core\ConfigService;
-use WebFramework\Core\MessageService;
-use WebFramework\Core\UserPasswordService;
 use WebFramework\Entity\User;
 use WebFramework\Exception\CaptchaRequiredException;
 use WebFramework\Exception\InvalidPasswordException;
@@ -18,34 +16,23 @@ class LoginService
         protected AuthenticationService $authenticationService,
         protected BlacklistService $blacklistService,
         protected ConfigService $configService,
-        protected MessageService $messageService,
         protected UserPasswordService $userPasswordService,
         protected UserRepository $userRepository,
     ) {
     }
 
-    public function validate(Request $request, string $username, string $password, bool $validCaptcha, bool $publishErrors = true): User
+    public function validate(Request $request, string $username, string $password, bool $validCaptcha): User
     {
         $user = $this->userRepository->getUserByUsername($username);
         if ($user === null)
         {
             $this->blacklistService->addEntry($request->getAttribute('ip'), null, 'unknown-username');
 
-            if ($publishErrors)
-            {
-                $this->messageService->add('error', 'login.username_mismatch');
-            }
-
             throw new InvalidPasswordException();
         }
 
         if (!$validCaptcha && $this->captchaRequired($user))
         {
-            if ($publishErrors)
-            {
-                $this->messageService->add('error', 'login.captcha_required');
-            }
-
             throw new CaptchaRequiredException();
         }
 
@@ -53,21 +40,11 @@ class LoginService
         {
             $this->blacklistService->addEntry($request->getAttribute('ip'), null, 'wrong-password');
 
-            if ($publishErrors)
-            {
-                $this->messageService->add('error', 'login.username_mismatch');
-            }
-
             throw new InvalidPasswordException();
         }
 
         if (!$user->isVerified())
         {
-            if ($publishErrors)
-            {
-                $this->messageService->add('error', 'login.unverified');
-            }
-
             throw new UserVerificationRequiredException($user);
         }
 

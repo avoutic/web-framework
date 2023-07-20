@@ -5,6 +5,7 @@
 ### Breaking changes
 * BREAK: SanityCheckInterface renamed to SanityCheckModule
 * BREAK: requirePresence for translations now defaults to false
+* BREAK: Account related service are broken up and now in Security namespace
 
 ### New Features
 * Saving new Entity objects with RepositoryCore now supported
