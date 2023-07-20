@@ -166,6 +166,8 @@ return [
     Core\UrlBuilder::class => DI\autowire()
         ->constructor(
             baseUrl: DI\Get('base_url'),
+            httpMode: DI\Get('http_mode'),
+            serverName: DI\Get('server_name'),
         ),
     Core\UserMailer::class => function (ContainerInterface $c) {
         $configService = $c->get(Core\ConfigService::class);

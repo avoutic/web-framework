@@ -2,8 +2,8 @@
 
 namespace WebFramework\Security;
 
-use Psr\Container\ContainerInterface as Container;
 use WebFramework\Core\ConfigService;
+use WebFramework\Core\UrlBuilder;
 use WebFramework\Core\UserMailer;
 use WebFramework\Entity\User;
 use WebFramework\Exception\CodeVerificationException;
@@ -14,10 +14,10 @@ use WebFramework\Repository\UserRepository;
 class ChangeEmailService
 {
     public function __construct(
-        private Container $container,
         private AuthenticationService $authenticationService,
         private ConfigService $configService,
         private SecurityIteratorService $securityIteratorService,
+        private UrlBuilder $urlBuilder,
         private UserCodeService $userCodeService,
         private UserMailer $userMailer,
         private UserRepository $userRepository,
@@ -65,12 +65,12 @@ class ChangeEmailService
         $code = $this->userCodeService->generate($user, 'change_email', ['email' => $email, 'iterator' => $securityIterator]);
 
         $verifyUrl =
-            $this->configService->get('http_mode').
-            '://'.
-            $this->container->get('server_name').
-            $this->configService->get('base_url').
-            $this->configService->get('actions.change_email.verify_page').
-            '?code='.$code;
+            $this->urlBuilder->getServerUrl().
+            $this->urlBuilder->buildQueryUrl(
+                $this->configService->get('actions.change_email.verify_page'),
+                [],
+                ['code' => $code],
+            );
 
         $this->userMailer->changeEmailVerificationLink(
             $email,

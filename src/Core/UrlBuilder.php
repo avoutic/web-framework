@@ -7,6 +7,8 @@ class UrlBuilder
     public function __construct(
         private MessageService $messageService,
         private string $baseUrl,
+        private string $httpMode,
+        private string $serverName,
     ) {
     }
 
@@ -14,7 +16,7 @@ class UrlBuilder
      * @param array<string, int|string>                           $values
      * @param array<int|string, array<int|string, string>|string> $queryParameters
      */
-    public function buildQueryUrl(string $template, array $values = [], array $queryParameters = [], ?string $messageType = null, ?string $message = null, ?string $extraMessage = null): string
+    public function buildQueryUrl(string $template, array $values = [], array $queryParameters = [], ?string $messageType = null, ?string $message = null, ?string $extraMessage = null, bool $absolute = false): string
     {
         preg_match_all('/\{(\w+)\}/', $template, $matches);
 
@@ -45,14 +47,24 @@ class UrlBuilder
             $url .= '?'.http_build_query($queryParameters);
         }
 
+        if ($absolute)
+        {
+            return $this->getServerUrl().$this->baseUrl.$url;
+        }
+
         return $this->baseUrl.$url;
     }
 
     /**
      * @param array<string, int|string> $values
      */
-    public function buildUrl(string $template, array $values, ?string $messageType = null, ?string $message = null, ?string $extraMessage = null): string
+    public function buildUrl(string $template, array $values = [], ?string $messageType = null, ?string $message = null, ?string $extraMessage = null, bool $absolute = false): string
     {
-        return $this->buildQueryUrl($template, $values, [], $messageType, $message, $extraMessage);
+        return $this->buildQueryUrl($template, $values, [], $messageType, $message, $extraMessage, $absolute);
+    }
+
+    public function getServerUrl(): string
+    {
+        return "{$this->httpMode}://{$this->serverName}";
     }
 }

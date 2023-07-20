@@ -2,8 +2,8 @@
 
 namespace WebFramework\Security;
 
-use Psr\Container\ContainerInterface as Container;
 use WebFramework\Core\ConfigService;
+use WebFramework\Core\UrlBuilder;
 use WebFramework\Core\UserMailer;
 use WebFramework\Entity\User;
 use WebFramework\Exception\CodeVerificationException;
@@ -12,10 +12,10 @@ use WebFramework\Repository\UserRepository;
 class ResetPasswordService
 {
     public function __construct(
-        private Container $container,
         private AuthenticationService $authenticationService,
         private ConfigService $configService,
         private PasswordHashService $passwordHashService,
+        private UrlBuilder $urlBuilder,
         private UserCodeService $userCodeService,
         private UserMailer $userMailer,
         private UserRepository $userRepository,
@@ -40,13 +40,14 @@ class ResetPasswordService
         $securityIterator = $this->securityIteratorService->incrementFor($user);
 
         $code = $this->userCodeService->generate($user, 'reset_password', ['iterator' => $securityIterator]);
+
         $resetUrl =
-            $this->configService->get('http_mode').
-            '://'.
-            $this->container->get('server_name').
-            $this->configService->get('base_url').
-            $this->configService->get('actions.forgot_password.reset_password_page').
-            '?code='.$code;
+            $this->urlBuilder->getServerUrl().
+            $this->urlBuilder->buildQueryUrl(
+                $this->configService->get('actions.forgot_password.reset_password_page'),
+                [],
+                ['code' => $code],
+            );
 
         return $this->userMailer->passwordReset(
             $user->getEmail(),

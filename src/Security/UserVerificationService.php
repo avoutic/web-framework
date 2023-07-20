@@ -4,6 +4,7 @@ namespace WebFramework\Security;
 
 use Psr\Container\ContainerInterface as Container;
 use WebFramework\Core\ConfigService;
+use WebFramework\Core\UrlBuilder;
 use WebFramework\Core\UserMailer;
 use WebFramework\Entity\User;
 use WebFramework\Exception\CodeVerificationException;
@@ -14,6 +15,7 @@ class UserVerificationService
     public function __construct(
         protected Container $container,
         protected ConfigService $configService,
+        protected UrlBuilder $urlBuilder,
         protected UserCodeService $userCodeService,
         protected UserMailer $userMailer,
         protected UserRepository $userRepository,
@@ -50,12 +52,12 @@ class UserVerificationService
         $code = $this->userCodeService->generate($user, 'verify', $afterVerifyData);
 
         $verifyUrl =
-            $this->configService->get('http_mode').
-            '://'.
-            $this->container->get('server_name').
-            $this->configService->get('base_url').
-            $this->configService->get('actions.login.verify_page').
-            '?code='.$code;
+            $this->urlBuilder->getServerUrl().
+            $this->urlBuilder->buildQueryUrl(
+                $this->configService->get('actions.login.verify_page'),
+                [],
+                ['code' => $code],
+            );
 
         $this->userMailer->emailVerificationLink(
             $user->getEmail(),
