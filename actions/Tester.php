@@ -27,10 +27,6 @@ class Tester
     {
         $action = $request->getParam('action');
 
-        $params = [
-            'title' => 'Tester',
-        ];
-
         if ($action === '404')
         {
             throw new HttpNotFoundException($request);
@@ -76,6 +72,6 @@ class Tester
             trigger_error('Triggered PHP error', E_ERROR);
         }
 
-        return $this->renderer->render($request, $response, 'Tester.latte', $params);
+        return $this->renderer->render($request, $response, 'Tester.latte', []);
     }
 }

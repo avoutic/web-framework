@@ -62,14 +62,7 @@ class ChangePassword
     {
         $user = $this->authenticationService->getAuthenticatedUser();
 
-        $params = [
-            'core' => [
-                'title' => 'Change password',
-            ],
-        ];
-
-        $customParams = $this->customParams($request);
-        $params = array_replace_recursive($params, $customParams);
+        $params = $this->customParams($request);
 
         $csrfPassed = $request->getAttribute('passed_csrf', false);
 

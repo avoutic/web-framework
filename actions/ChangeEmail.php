@@ -62,9 +62,6 @@ class ChangeEmail
         $user = $this->authenticationService->getAuthenticatedUser();
 
         $params = [
-            'core' => [
-                'title' => 'Change email address',
-            ],
             'email' => $request->getParam('email', ''),
         ];
 

@@ -100,9 +100,6 @@ class Login
             );
         }
         $params = [
-            'core' => [
-                'title' => 'Login',
-            ],
             'return_page' => $returnPage,
             'return_query' => $returnQuery,
             'username' => $request->getParam('username', ''),

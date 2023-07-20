@@ -43,17 +43,11 @@ class ForgotPassword
      */
     public function __invoke(Request $request, Response $response, array $routeArgs): ResponseInterface
     {
-        $params = [
-            'core' => [
-                'title' => 'Forgot password',
-            ],
-        ];
-
         $csrfPassed = $request->getAttribute('passed_csrf', false);
 
         if (!$csrfPassed)
         {
-            return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
+            return $this->renderer->render($request, $response, $this->getTemplateName(), []);
         }
 
         $uniqueIdentifier = $this->configService->get('authenticator.unique_identifier');
@@ -72,7 +66,7 @@ class ForgotPassword
         {
             $this->messageService->addErrors($e->getErrors());
 
-            return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
+            return $this->renderer->render($request, $response, $this->getTemplateName(), []);
         }
 
         // Retrieve user
