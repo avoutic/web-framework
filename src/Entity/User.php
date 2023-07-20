@@ -11,12 +11,12 @@ class User extends EntityCore
     public static array $privateFields = ['solid_password'];
 
     protected int $id;
-    protected string $username;
-    protected string $email;
-    protected string $solidPassword;
-    protected int $termsAccepted;
+    protected string $username = '';
+    protected string $email = '';
+    protected string $solidPassword = '';
+    protected int $termsAccepted = 0;
     protected bool $verified = false;
-    protected int $registered;
+    protected int $registered = 0;
     protected int $lastLogin = 0;
     protected int $failedLogin = 0;
 
