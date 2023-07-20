@@ -10,12 +10,12 @@ use WebFramework\Core\ConfigService;
 use WebFramework\Core\MessageService;
 use WebFramework\Core\RenderService;
 use WebFramework\Core\ResponseEmitter;
-use WebFramework\Core\UserPasswordService;
-use WebFramework\Entity\User;
 use WebFramework\Exception\InvalidPasswordException;
+use WebFramework\Exception\PasswordMismatchException;
 use WebFramework\Exception\ValidationException;
 use WebFramework\Exception\WeakPasswordException;
 use WebFramework\Security\AuthenticationService;
+use WebFramework\Security\ChangePasswordService;
 use WebFramework\Validation\InputValidationService;
 use WebFramework\Validation\PasswordValidator;
 
@@ -24,12 +24,12 @@ class ChangePassword
     public function __construct(
         protected Container $container,
         protected AuthenticationService $authenticationService,
+        protected ChangePasswordService $changePasswordService,
         protected ConfigService $configService,
         protected InputValidationService $inputValidationService,
         protected MessageService $messageService,
         protected RenderService $renderer,
         protected ResponseEmitter $responseEmitter,
-        protected UserPasswordService $userPasswordService,
     ) {
     }
 
@@ -39,10 +39,6 @@ class ChangePassword
     protected function customParams(Request $request): array
     {
         return [];
-    }
-
-    protected function customFinalizeChange(Request $request, User $user): void
-    {
     }
 
     protected function getTemplateName(): string
@@ -61,9 +57,7 @@ class ChangePassword
     public function __invoke(Request $request, Response $response, array $routeArgs): ResponseInterface
     {
         $user = $this->authenticationService->getAuthenticatedUser();
-
         $params = $this->customParams($request);
-
         $csrfPassed = $request->getAttribute('passed_csrf', false);
 
         if (!$csrfPassed)
@@ -78,10 +72,25 @@ class ChangePassword
             $filtered = $this->inputValidationService->validate(
                 [
                     'orig_password' => new PasswordValidator('current password'),
-                    'password' => new PasswordValidator('New password'),
-                    'password2' => new PasswordValidator('Password verification'),
+                    'password' => new PasswordValidator('new password'),
+                    'password2' => new PasswordValidator('password verification'),
                 ],
                 $request->getParams(),
+            );
+
+            $this->changePasswordService->validate($user, $filtered['orig_password'], $filtered['password'], $filtered['password2']);
+
+            // Change Password
+            //
+            $this->changePasswordService->changePassword($user, $filtered['orig_password'], $filtered['password']);
+
+            // Redirect to main sceen
+            //
+            return $this->responseEmitter->buildRedirect(
+                $this->getReturnPage(),
+                [],
+                'success',
+                'change_password.success',
             );
         }
         catch (ValidationException $e)
@@ -90,55 +99,19 @@ class ChangePassword
 
             return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
         }
-
-        $errors = false;
-
-        if (strlen($filtered['password']) && strlen($filtered['password2'])
-            && $filtered['password'] !== $filtered['password2'])
+        catch (PasswordMismatchException $e)
         {
-            $errors = true;
             $this->messageService->add('error', 'register.password_mismatch');
-        }
-
-        if ($errors)
-        {
-            return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
-        }
-
-        try
-        {
-            $this->userPasswordService->changePassword($user, $filtered['orig_password'], $filtered['password']);
         }
         catch (InvalidPasswordException $e)
         {
-            $errors = true;
             $this->messageService->add('error', 'change_password.invalid');
         }
         catch (WeakPasswordException $e)
         {
-            $errors = true;
             $this->messageService->add('error', 'change_password.weak');
         }
 
-        if ($errors)
-        {
-            return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
-        }
-
-        $this->customFinalizeChange($request, $user);
-
-        // Invalidate old sessions
-        //
-        $this->authenticationService->invalidateSessions($user->getId());
-        $this->authenticationService->authenticate($user);
-
-        // Redirect to main sceen
-        //
-        return $this->responseEmitter->buildRedirect(
-            $this->getReturnPage(),
-            [],
-            'success',
-            'change_password.success',
-        );
+        return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
     }
 }

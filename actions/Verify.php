@@ -2,37 +2,21 @@
 
 namespace WebFramework\Actions;
 
-use Psr\Container\ContainerInterface as Container;
 use Psr\Http\Message\ResponseInterface;
 use Slim\Http\Response;
 use Slim\Http\ServerRequest as Request;
 use WebFramework\Core\ConfigService;
-use WebFramework\Core\MessageService;
 use WebFramework\Core\ResponseEmitter;
-use WebFramework\Core\UserCodeService;
-use WebFramework\Core\ValidatorService;
-use WebFramework\Entity\User;
 use WebFramework\Exception\CodeVerificationException;
-use WebFramework\Repository\UserRepository;
+use WebFramework\Security\UserVerificationService;
 
 class Verify
 {
     public function __construct(
-        protected Container $container,
         protected ConfigService $configService,
-        protected MessageService $messageService,
         protected ResponseEmitter $responseEmitter,
-        protected UserCodeService $userCodeService,
-        protected UserRepository $userRepository,
-        protected ValidatorService $validatorService,
+        protected UserVerificationService $userVerificationService,
     ) {
-    }
-
-    /**
-     * @param array<mixed> $data
-     */
-    protected function customAfterVerifyActions(User $user, array $data): void
-    {
     }
 
     /**
@@ -44,10 +28,16 @@ class Verify
 
         try
         {
-            ['user_id' => $codeUserId, 'params' => $verifyParams] = $this->userCodeService->verify(
-                $request->getParam('code', ''),
-                validity: 24 * 60 * 60,
-                action: 'verify',
+            $this->userVerificationService->handleVerify($request->getParam('code', ''));
+
+            $afterVerifyPage = $this->configService->get('actions.login.after_verify_page');
+
+            return $this->responseEmitter->buildQueryRedirect(
+                $loginPage,
+                [],
+                ['return_page' => $afterVerifyPage],
+                'success',
+                'verify.success',
             );
         }
         catch (CodeVerificationException $e)
@@ -59,33 +49,5 @@ class Verify
                 'verify.link_expired',
             );
         }
-
-        // Check user status
-        //
-        $user = $this->userRepository->getObjectById($codeUserId);
-        if ($user === null)
-        {
-            throw new \RuntimeException('User not found');
-        }
-
-        if (!$user->isVerified())
-        {
-            $user->setVerified();
-            $this->userRepository->save($user);
-
-            $this->customAfterVerifyActions($user, $verifyParams);
-        }
-
-        // Redirect to main sceen
-        //
-        $afterVerifyPage = $this->configService->get('actions.login.after_verify_page');
-
-        return $this->responseEmitter->buildQueryRedirect(
-            $loginPage,
-            [],
-            ['return_page' => $afterVerifyPage],
-            'success',
-            'verify.success',
-        );
     }
 }

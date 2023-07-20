@@ -6,30 +6,36 @@ use Psr\Container\ContainerInterface as Container;
 use Psr\Http\Message\ResponseInterface;
 use Slim\Http\Response;
 use Slim\Http\ServerRequest as Request;
+use WebFramework\Core\CaptchaService;
 use WebFramework\Core\ConfigService;
 use WebFramework\Core\MessageService;
-use WebFramework\Core\RecaptchaFactory;
 use WebFramework\Core\RenderService;
 use WebFramework\Core\ResponseEmitter;
-use WebFramework\Core\UserEmailService;
-use WebFramework\Core\UserService;
-use WebFramework\Core\ValidatorService;
 use WebFramework\Entity\User;
+use WebFramework\Exception\InvalidCaptchaException;
+use WebFramework\Exception\PasswordMismatchException;
+use WebFramework\Exception\UsernameUnavailableException;
+use WebFramework\Exception\WeakPasswordException;
 use WebFramework\Security\AuthenticationService;
+use WebFramework\Security\RegisterService;
+use WebFramework\Validation\CustomBoolValidator;
+use WebFramework\Validation\EmailValidator;
+use WebFramework\Validation\InputValidationService;
+use WebFramework\Validation\PasswordValidator;
+use WebFramework\Validation\UsernameValidator;
 
 class Register
 {
     public function __construct(
         protected Container $container,
         protected AuthenticationService $authenticationService,
+        protected CaptchaService $captchaService,
         protected ConfigService $configService,
+        protected InputValidationService $inputValidationService,
         protected MessageService $messageService,
-        protected RecaptchaFactory $recaptchaFactory,
+        protected RegisterService $registerService,
         protected RenderService $renderer,
         protected ResponseEmitter $responseEmitter,
-        protected UserEmailService $userEmailService,
-        protected UserService $userService,
-        protected ValidatorService $validatorService,
     ) {
     }
 
@@ -86,31 +92,14 @@ class Register
 
         $uniqueIdentifier = $this->configService->get('authenticator.unique_identifier');
         $recaptchaSiteKey = $this->configService->get('security.recaptcha.site_key');
-        $recaptchaSecretKey = $this->configService->get('security.recaptcha.secret_key');
-
-        ['raw' => $raw, 'filtered' => $filtered] = $this->validatorService->getParams(
-            $request,
-            [
-                'username' => FORMAT_USERNAME,
-                'password' => FORMAT_PASSWORD,
-                'password2' => FORMAT_PASSWORD,
-                'email' => FORMAT_EMAIL,
-                'accept_terms' => '0|1',
-            ]
-        );
-
-        $username = ($uniqueIdentifier == 'email') ? $filtered['email'] : $filtered['username'];
 
         $params = [
-            'core' => [
-                'title' => 'Register new account',
-            ],
-            'username' => $raw['username'],
-            'password' => $filtered['password'],
-            'password2' => $filtered['password2'],
-            'email' => $raw['email'],
-            'accept_terms' => $filtered['accept_terms'],
             'recaptcha_site_key' => $recaptchaSiteKey,
+            'username' => $request->getParam('username', ''),
+            'password' => $request->getParam('password', ''),
+            'password2' => $request->getParam('password2', ''),
+            'email' => $request->getParam('email', ''),
+            'accept_terms' => $request->getParam('accept_terms', false),
         ];
 
         $customParams = $this->customPreparePageContent($request);
@@ -123,93 +112,59 @@ class Register
             return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
         }
 
-        $errors = false;
-
-        if (strlen($filtered['password']) && strlen($filtered['password2'])
-            && $filtered['password'] !== $filtered['password2'])
+        try
         {
-            $errors = true;
+            // Validate input
+            //
+            $filtered = $this->inputValidationService->validate(
+                [
+                    'username' => new UsernameValidator(),
+                    'email' => new EmailValidator(),
+                    'password' => new PasswordValidator(),
+                    'password2' => new PasswordValidator('password verification'),
+                    'accept_terms' => new CustomBoolValidator('term acceptance', required: true),
+                ],
+                $request->getParams(),
+            );
+
+            $validCaptcha = $this->captchaService->hasValidCaptcha($request);
+
+            $username = ($uniqueIdentifier == 'email') ? $filtered['email'] : $filtered['username'];
+            $this->registerService->validate($username, $filtered['email'], $filtered['password'], $filtered['password2'], $validCaptcha);
+
+            if ($this->customValueCheck($request))
+            {
+                $afterVerifyParams = $this->getAfterVerifyData($request);
+
+                $user = $this->registerService->register($username, $filtered['email'], $filtered['password'], $afterVerifyParams);
+
+                return $this->responseEmitter->buildRedirect(
+                    $this->configService->get('actions.send_verify.after_verify_page'),
+                    [],
+                    'success',
+                    'register.verification_sent',
+                );
+            }
+        }
+        catch (PasswordMismatchException $e)
+        {
             $this->messageService->add('error', 'register.password_mismatch');
         }
-
-        if (strlen($filtered['password']) < 8)
+        catch (WeakPasswordException $e)
         {
-            $errors = true;
             $this->messageService->add('error', 'register.weak_password');
         }
-
-        if ($filtered['accept_terms'] != 1)
+        catch (InvalidCaptchaException $e)
         {
-            $errors = true;
-            $this->messageService->add('error', 'register.accept_terms');
+            $this->messageService->add('error', 'register.captcha_incorrect');
+        }
+        catch (UsernameUnavailableException $e)
+        {
+            $message = ($uniqueIdentifier == 'email') ? 'register.mail_exists' : 'register_username_exists';
+
+            $this->messageService->add('error', $message);
         }
 
-        if ($this->customValueCheck($request) !== true)
-        {
-            $errors = true;
-        }
-
-        $recaptchaResponse = $request->getParam('g-recaptcha-response', '');
-
-        if (!strlen($recaptchaResponse))
-        {
-            $errors = true;
-            $this->messageService->add('error', 'register.captcha_required');
-        }
-        else
-        {
-            $recaptcha = $this->recaptchaFactory->getRecaptcha();
-            $result = $recaptcha->verifyResponse($recaptchaResponse);
-
-            if ($result != true)
-            {
-                $this->messageService->add('error', 'register.captcha_incorrect');
-                $errors = true;
-            }
-        }
-
-        if ($errors)
-        {
-            return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
-        }
-
-        // Check if identifier already exists
-        //
-        if (!$this->userService->isUsernameAvailable($username))
-        {
-            if ($uniqueIdentifier == 'email')
-            {
-                $this->messageService->add('error', 'register.email_exists');
-            }
-            else
-            {
-                $this->messageService->add('error', 'register.username_exists');
-            }
-
-            return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
-        }
-
-        // Add account
-        //
-        $user = $this->userService->createUser($username, $filtered['password'], $filtered['email'], time());
-
-        $this->customFinalizeCreate($request, $user);
-
-        return $this->postCreateActions($request, $user);
-    }
-
-    protected function postCreateActions(Request $request, User $user): ResponseInterface
-    {
-        $verifyParams = $this->getAfterVerifyData($request);
-        $this->userEmailService->sendVerifyMail($user, $verifyParams);
-
-        // Redirect to verification request screen
-        //
-        return $this->responseEmitter->buildRedirect(
-            $this->configService->get('actions.send_verify.after_verify_page'),
-            [],
-            'success',
-            'register.verification_sent',
-        );
+        return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
     }
 }

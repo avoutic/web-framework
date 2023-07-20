@@ -3,12 +3,12 @@
 namespace Tests\Unit;
 
 use Codeception\Stub\Expected;
-use WebFramework\Core\UserRightService;
 use WebFramework\Entity\Right;
 use WebFramework\Entity\User;
 use WebFramework\Entity\UserRight;
 use WebFramework\Repository\RightRepository;
 use WebFramework\Repository\UserRightRepository;
+use WebFramework\Security\UserRightService;
 
 /**
  * @internal

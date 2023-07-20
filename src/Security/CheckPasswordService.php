@@ -5,7 +5,7 @@ namespace WebFramework\Security;
 use WebFramework\Entity\User;
 use WebFramework\Repository\UserRepository;
 
-class UserPasswordService
+class CheckPasswordService
 {
     public function __construct(
         private PasswordHashService $passwordHashService,

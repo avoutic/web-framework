@@ -6,6 +6,26 @@ parameters:
 			path: definitions/web_framework_definitions.php
 
 		-
+			message: "#^Function convert\\(\\) should return string but returns string\\|null\\.$#"
+			count: 1
+			path: scripts/CaseConvertor.php
+
+		-
+			message: "#^Parameter \\#1 \\$str of function convert expects string, string\\|false given\\.$#"
+			count: 1
+			path: scripts/CaseConvertor.php
+
+		-
+			message: "#^Parameter \\#3 \\$subject of function preg_replace_callback expects array\\|string, string\\|null given\\.$#"
+			count: 1
+			path: scripts/CaseConvertor.php
+
+		-
+			message: "#^Parameter \\#3 \\$subject of function preg_replace expects array\\|string, string\\|null given\\.$#"
+			count: 1
+			path: scripts/RouteConvertor.php
+
+		-
 			message: "#^Method WebFramework\\\\Core\\\\ActionCore\\:\\:getInputVar\\(\\) should return string but returns array\\<string\\>\\|string\\.$#"
 			count: 1
 			path: src/Core/ActionCore.php
@@ -86,26 +106,6 @@ parameters:
 			path: src/Core/MysqliDatabase.php
 
 		-
-			message: "#^Method WebFramework\\\\Core\\\\UserCodeService\\:\\:verify\\(\\) should return array\\{user_id\\: int, action\\: string, params\\: array, timestamp\\: int\\} but returns array\\.$#"
+			message: "#^Method WebFramework\\\\Security\\\\UserCodeService\\:\\:verify\\(\\) should return array\\{user_id\\: int, action\\: string, params\\: array, timestamp\\: int\\} but returns array\\.$#"
 			count: 1
-			path: src/Core/UserCodeService.php
-
-		-
-			message: "#^Function convert\\(\\) should return string but returns string\\|null\\.$#"
-			count: 1
-			path: scripts/CaseConvertor.php
-
-		-
-			message: "#^Parameter \\#1 \\$str of function convert expects string, string\\|false given\\.$#"
-			count: 1
-			path: scripts/CaseConvertor.php
-
-		-
-			message: "#^Parameter \\#3 \\$subject of function preg_replace_callback expects array\\|string, string\\|null given\\.$#"
-			count: 1
-			path: scripts/CaseConvertor.php
-
-		-
-			message: "#^Parameter \\#3 \\$subject of function preg_replace expects array\\|string, string\\|null given\\.$#"
-			count: 1
-			path: scripts/RouteConvertor.php
+			path: src/Security/UserCodeService.php

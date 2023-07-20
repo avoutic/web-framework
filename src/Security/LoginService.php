@@ -16,7 +16,7 @@ class LoginService
         protected AuthenticationService $authenticationService,
         protected BlacklistService $blacklistService,
         protected ConfigService $configService,
-        protected UserPasswordService $userPasswordService,
+        protected CheckPasswordService $checkPasswordService,
         protected UserRepository $userRepository,
     ) {
     }
@@ -36,7 +36,7 @@ class LoginService
             throw new CaptchaRequiredException();
         }
 
-        if (!$this->userPasswordService->checkPassword($user, $password))
+        if (!$this->checkPasswordService->checkPassword($user, $password))
         {
             $this->blacklistService->addEntry($request->getAttribute('ip'), null, 'wrong-password');
 
@@ -53,7 +53,7 @@ class LoginService
 
     public function authenticate(User $user, string $password): void
     {
-        if (!$this->userPasswordService->checkPassword($user, $password))
+        if (!$this->checkPasswordService->checkPassword($user, $password))
         {
             throw new InvalidPasswordException();
         }

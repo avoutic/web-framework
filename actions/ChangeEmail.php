@@ -10,11 +10,10 @@ use WebFramework\Core\ConfigService;
 use WebFramework\Core\MessageService;
 use WebFramework\Core\RenderService;
 use WebFramework\Core\ResponseEmitter;
-use WebFramework\Core\UserEmailService;
-use WebFramework\Entity\User;
 use WebFramework\Exception\DuplicateEmailException;
 use WebFramework\Exception\ValidationException;
 use WebFramework\Security\AuthenticationService;
+use WebFramework\Security\ChangeEmailService;
 use WebFramework\Validation\EmailValidator;
 use WebFramework\Validation\InputValidationService;
 
@@ -28,7 +27,7 @@ class ChangeEmail
         protected MessageService $messageService,
         protected RenderService $renderer,
         protected ResponseEmitter $responseEmitter,
-        protected UserEmailService $userEmailService,
+        protected ChangeEmailService $changeEmailService,
     ) {
     }
 
@@ -38,10 +37,6 @@ class ChangeEmail
     protected function customParams(Request $request): array
     {
         return [];
-    }
-
-    protected function customFinalizeChange(Request $request, User $user): void
-    {
     }
 
     protected function getTemplateName(): string
@@ -85,34 +80,29 @@ class ChangeEmail
                 ],
                 $request->getParams(),
             );
+
+            // Send verification mail
+            //
+            $this->changeEmailService->sendChangeEmailVerify($user, $filtered['email']);
+
+            // Redirect to verification request screen
+            //
+            return $this->responseEmitter->buildRedirect(
+                $this->getReturnPage(),
+                [],
+                'success',
+                'change_email.verification_sent',
+            );
         }
         catch (ValidationException $e)
         {
             $this->messageService->addErrors($e->getErrors());
-
-            return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
-        }
-
-        // Send verification mail
-        //
-        try
-        {
-            $this->userEmailService->sendChangeEmailVerify($user, $filtered['email']);
         }
         catch (DuplicateEmailException $e)
         {
             $this->messageService->add('error', 'change_email.duplicate');
-
-            return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
         }
 
-        // Redirect to verification request screen
-        //
-        return $this->responseEmitter->buildRedirect(
-            $this->getReturnPage(),
-            [],
-            'success',
-            'change_email.verification_sent',
-        );
+        return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
     }
 }

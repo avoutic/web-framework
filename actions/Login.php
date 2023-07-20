@@ -11,7 +11,6 @@ use WebFramework\Core\ConfigService;
 use WebFramework\Core\MessageService;
 use WebFramework\Core\RenderService;
 use WebFramework\Core\ResponseEmitter;
-use WebFramework\Core\UserCodeService;
 use WebFramework\Entity\User;
 use WebFramework\Exception\CaptchaRequiredException;
 use WebFramework\Exception\InvalidCaptchaException;
@@ -20,6 +19,7 @@ use WebFramework\Exception\UserVerificationRequiredException;
 use WebFramework\Exception\ValidationException;
 use WebFramework\Security\AuthenticationService;
 use WebFramework\Security\LoginService;
+use WebFramework\Security\UserVerificationService;
 use WebFramework\Validation\EmailValidator;
 use WebFramework\Validation\InputValidationService;
 use WebFramework\Validation\PasswordValidator;
@@ -37,7 +37,7 @@ class Login
         protected MessageService $messageService,
         protected RenderService $renderer,
         protected ResponseEmitter $responseEmitter,
-        protected UserCodeService $userCodeService,
+        protected UserVerificationService $userVerificationService,
     ) {
     }
 
@@ -106,28 +106,31 @@ class Login
         }
         catch (CaptchaRequiredException $e)
         {
+            $this->messageService->add('error', 'login.captcha_required');
+
             $params['recaptcha_needed'] = true;
             $params['recaptcha_site_key'] = $this->configService->get('security.recaptcha.site_key');
         }
         catch (InvalidCaptchaException $e)
         {
+            $this->messageService->add('error', 'login.captcha_incorrect');
+
             $params['recaptcha_needed'] = true;
             $params['recaptcha_site_key'] = $this->configService->get('security.recaptcha.site_key');
-            $this->messageService->add('error', 'login.captcha_incorrect');
         }
         catch (InvalidPasswordException $e)
         {
+            $this->messageService->add('error', 'login.username_mismatch');
         }
         catch (UserVerificationRequiredException $e)
         {
-            $code = $this->userCodeService->generate($e->getUser(), 'send_verify');
+            $this->userVerificationService->sendVerifyMail($e->getUser());
 
-            return $this->responseEmitter->buildQueryRedirect(
-                $this->configService->get('actions.login.send_verify_page'),
+            return $this->responseEmitter->buildRedirect(
+                $this->configService->get('actions.send_verify.after_verify_page'),
                 [],
-                ['code' => $code],
-                'error',
-                'login.unverified',
+                'success',
+                'verify.mail_sent',
             );
         }
         catch (ValidationException $e)
