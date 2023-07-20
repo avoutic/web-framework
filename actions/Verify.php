@@ -57,7 +57,6 @@ class Verify
                 [],
                 'error',
                 'verify.link_expired',
-                'verify.link_expired_extra',
             );
         }
 
@@ -87,7 +86,6 @@ class Verify
             ['return_page' => $afterVerifyPage],
             'success',
             'verify.success',
-            'verify.success_extra',
         );
     }
 }

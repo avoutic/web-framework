@@ -44,4 +44,11 @@ class TranslationService
 
         return implode('|', $keys);
     }
+
+    public function tagExists(string $category, string $tag): bool
+    {
+        $translation = $this->loader->loadTranslation($this->language, $category, $tag);
+
+        return ($translation !== "{$category}.{$tag}");
+    }
 }

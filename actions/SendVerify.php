@@ -51,7 +51,6 @@ class SendVerify
                 [],
                 'error',
                 'verify.link_expired',
-                'verify.link_expired_extra',
             );
         }
 
@@ -72,7 +71,6 @@ class SendVerify
             [],
             'success',
             'verify.mail_sent',
-            'verify.mail_sent_extra',
         );
     }
 }

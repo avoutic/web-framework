@@ -92,7 +92,7 @@ class FileTranslationLoader implements TranslationLoader
                 return $this->loadTranslation($fallbackLanguage, $category, $tag, false, null);
             }
 
-            return $tag;
+            return "{$category}.{$tag}";
         }
 
         return $translations[$category][$tag];

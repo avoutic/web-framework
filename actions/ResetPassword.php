@@ -56,7 +56,6 @@ class ResetPassword
                 [],
                 'error',
                 'reset_password.link_expired',
-                'reset_password.link_expired_extra',
             );
         }
 
@@ -77,7 +76,6 @@ class ResetPassword
                 [],
                 'error',
                 'reset_password.link_expired',
-                'reset_password.link_expired_extra',
             );
         }
 
@@ -96,7 +94,6 @@ class ResetPassword
             [],
             'success',
             'reset_password.success',
-            'reset_password.success_extra',
         );
     }
 }

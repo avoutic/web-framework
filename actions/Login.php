@@ -128,7 +128,6 @@ class Login
                 ['code' => $code],
                 'error',
                 'login.unverified',
-                'login.unverified_extra',
             );
         }
         catch (ValidationException $e)

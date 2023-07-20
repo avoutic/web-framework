@@ -97,7 +97,7 @@ class ChangePassword
             && $filtered['password'] !== $filtered['password2'])
         {
             $errors = true;
-            $this->messageService->add('error', 'register.password_mismatch', 'register.password_mismatch_extra');
+            $this->messageService->add('error', 'register.password_mismatch');
         }
 
         if ($errors)
@@ -112,12 +112,12 @@ class ChangePassword
         catch (InvalidPasswordException $e)
         {
             $errors = true;
-            $this->messageService->add('error', 'change_password.invalid', 'change_password.invalid_extra');
+            $this->messageService->add('error', 'change_password.invalid');
         }
         catch (WeakPasswordException $e)
         {
             $errors = true;
-            $this->messageService->add('error', 'change_password.weak', 'change_password.weak_extra');
+            $this->messageService->add('error', 'change_password.weak');
         }
 
         if ($errors)
@@ -139,7 +139,6 @@ class ChangePassword
             [],
             'success',
             'change_password.success',
-            'change_password.success_extra',
         );
     }
 }

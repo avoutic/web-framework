@@ -33,7 +33,7 @@ class LoginService
 
             if ($publishErrors)
             {
-                $this->messageService->add('error', 'login.username_mismatch', 'login.username_mismatch_extra');
+                $this->messageService->add('error', 'login.username_mismatch');
             }
 
             throw new InvalidPasswordException();
@@ -43,7 +43,7 @@ class LoginService
         {
             if ($publishErrors)
             {
-                $this->messageService->add('error', 'login.captcha_required', 'login.captcha_required_extra');
+                $this->messageService->add('error', 'login.captcha_required');
             }
 
             throw new CaptchaRequiredException();
@@ -55,7 +55,7 @@ class LoginService
 
             if ($publishErrors)
             {
-                $this->messageService->add('error', 'login.username_mismatch', 'login.username_mismatch_extra');
+                $this->messageService->add('error', 'login.username_mismatch');
             }
 
             throw new InvalidPasswordException();
@@ -65,7 +65,7 @@ class LoginService
         {
             if ($publishErrors)
             {
-                $this->messageService->add('error', 'login.unverified', 'login.unverified_extra');
+                $this->messageService->add('error', 'login.unverified');
             }
 
             throw new UserVerificationRequiredException($user);

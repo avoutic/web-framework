@@ -3,6 +3,7 @@
 namespace WebFramework\Core;
 
 use WebFramework\Security\ProtectService;
+use WebFramework\Translation\TranslationService;
 
 class MessageService
 {
@@ -11,6 +12,7 @@ class MessageService
 
     public function __construct(
         private ProtectService $protectService,
+        private TranslationService $translationService,
     ) {
     }
 
@@ -36,6 +38,11 @@ class MessageService
             if (count($parts) !== 2)
             {
                 throw new \InvalidArgumentException('Invalid message format. Expected "category.tag".');
+            }
+
+            if (!strlen($extraMessage) && $this->translationService->tagExists($parts[0], "{$parts[1]}_extra"))
+            {
+                $extraMessage = "{$parts[0]}.{$parts[1]}_extra";
             }
 
             $message = __($parts[0], $parts[1], $params);

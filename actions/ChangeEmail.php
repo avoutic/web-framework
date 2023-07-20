@@ -101,7 +101,7 @@ class ChangeEmail
         }
         catch (DuplicateEmailException $e)
         {
-            $this->messageService->add('error', 'change_email.duplicate', 'change_email.duplicate_extra');
+            $this->messageService->add('error', 'change_email.duplicate');
 
             return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
         }
@@ -113,7 +113,6 @@ class ChangeEmail
             [],
             'success',
             'change_email.verification_sent',
-            'change_email.verification_sent_extra',
         );
     }
 }

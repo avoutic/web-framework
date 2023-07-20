@@ -87,7 +87,6 @@ class ChangeEmailVerify
                 [],
                 'error',
                 'change_email.other_account',
-                'change_email.other_account_extra',
             );
         }
 
@@ -128,7 +127,6 @@ class ChangeEmailVerify
                 [],
                 'error',
                 'change_email.duplicate',
-                'change_email.duplicate_extra',
             );
         }
 
@@ -144,7 +142,6 @@ class ChangeEmailVerify
             [],
             'success',
             'change_email.success',
-            'change_email.success_extra',
         );
     }
 }

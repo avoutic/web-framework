@@ -129,19 +129,19 @@ class Register
             && $filtered['password'] !== $filtered['password2'])
         {
             $errors = true;
-            $this->messageService->add('error', 'register.password_mismatch', 'register.password_mismatch_extra');
+            $this->messageService->add('error', 'register.password_mismatch');
         }
 
         if (strlen($filtered['password']) < 8)
         {
             $errors = true;
-            $this->messageService->add('error', 'register.weak_password', 'register.weak_password_extra');
+            $this->messageService->add('error', 'register.weak_password');
         }
 
         if ($filtered['accept_terms'] != 1)
         {
             $errors = true;
-            $this->messageService->add('error', 'register.accept_terms', 'register.accept_terms_extra');
+            $this->messageService->add('error', 'register.accept_terms');
         }
 
         if ($this->customValueCheck($request) !== true)
@@ -154,7 +154,7 @@ class Register
         if (!strlen($recaptchaResponse))
         {
             $errors = true;
-            $this->messageService->add('error', 'register.captcha_required', 'register.captcha_required_extra');
+            $this->messageService->add('error', 'register.captcha_required');
         }
         else
         {
@@ -179,11 +179,11 @@ class Register
         {
             if ($uniqueIdentifier == 'email')
             {
-                $this->messageService->add('error', 'register.email_exists', 'register.email_exists_extra');
+                $this->messageService->add('error', 'register.email_exists');
             }
             else
             {
-                $this->messageService->add('error', 'register.username_exists', 'register.username_exists_extra');
+                $this->messageService->add('error', 'register.username_exists');
             }
 
             return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
@@ -210,7 +210,6 @@ class Register
             [],
             'success',
             'register.verification_sent',
-            'register.verification_sent_extra',
         );
     }
 }
