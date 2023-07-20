@@ -14,6 +14,7 @@
 * Add UrlBuilder with support for messages
 * Support redirect url building directly from ResponseEmitter
 * Migrated example templates to latte
+* Support fromArray() in EntityCore to mass-fill
 
 # v6 release
 

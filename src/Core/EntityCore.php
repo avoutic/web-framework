@@ -10,6 +10,9 @@ abstract class EntityCore implements EntityInterface
     /** @var array<string> */
     public static array $privateFields = [];
 
+    /** @var array<string> */
+    public static array $fillableFields = [];
+
     /** @var array<string, mixed> */
     public array $originalValues = [];
 
@@ -96,6 +99,44 @@ abstract class EntityCore implements EntityInterface
         return $data;
     }
 
+    /**
+     * @param array<string, mixed> $values
+     * @param array<string>        $exclude
+     */
+    public function fromArray(array $values, array $exclude = []): void
+    {
+        $reflection = new \ReflectionClass($this);
+
+        foreach (static::$fillableFields as $name)
+        {
+            if (in_array($name, $exclude))
+            {
+                continue;
+            }
+
+            if (!array_key_exists($name, $values))
+            {
+                continue;
+            }
+
+            $function = $this->snakeToSetter($name);
+
+            // Set via getter if present
+            //
+            if (method_exists($this, $function))
+            {
+                $this->{$function}($values[$name]);
+            }
+            else
+            {
+                $property = $reflection->getProperty($this->snakeToCamel($name));
+                $property->setAccessible(true);
+
+                $property->setValue($this, $values[$name]);
+            }
+        }
+    }
+
     // Convert snake_case to camelCase
     //
     private function snakeToCamel(string $input): string
@@ -108,6 +149,13 @@ abstract class EntityCore implements EntityInterface
     private function snakeToGetter(string $input): string
     {
         return 'get'.str_replace('_', '', ucwords($input, '_'));
+    }
+
+    // Convert snake_case to setSnakeCase
+    //
+    private function snakeToSetter(string $input): string
+    {
+        return 'set'.str_replace('_', '', ucwords($input, '_'));
     }
 
     /**
