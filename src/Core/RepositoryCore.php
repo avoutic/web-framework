@@ -207,7 +207,7 @@ SQL;
 
         if ($entity->isNewObject())
         {
-            $values = $entity->toRawArray();
+            $values = $this->getEntityFields($entity, false);
             $obj = $this->create($values);
             $entity->setObjectId($this->getId($obj));
 
