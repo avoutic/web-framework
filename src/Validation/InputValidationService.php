@@ -10,6 +10,9 @@ class InputValidationService
     private array $errors = [];
 
     /** @var array<string, mixed> */
+    private array $all = [];
+
+    /** @var array<string, mixed> */
     private array $validated = [];
 
     /**
@@ -32,6 +35,8 @@ class InputValidationService
     public function validate(array $validators, array $inputs): array
     {
         $this->errors = [];
+        $this->validated = [];
+        $this->all = [];
 
         foreach ($validators as $field => $validator)
         {
@@ -60,9 +65,9 @@ class InputValidationService
 
                 $this->validated[$field] = [];
 
-                foreach ($values as $value)
+                foreach ($values as $key => $value)
                 {
-                    $this->validateField($field, $value, $required, $isArray, $validator);
+                    $this->validateField($field, $value, $required, $isArray, $validator, $key);
                 }
             }
             else
@@ -85,8 +90,17 @@ class InputValidationService
         return $this->validated;
     }
 
-    private function validateField(string $field, string $value, bool $required, bool $isArray, Validator $validator): void
+    private function validateField(string $field, string $value, bool $required, bool $isArray, Validator $validator, ?string $key = null): void
     {
+        if ($isArray)
+        {
+            $this->all[$field][$key] = $validator->getTyped($value);
+        }
+        else
+        {
+            $this->all[$field] = $validator->getTyped($value);
+        }
+
         if ($required && !strlen($value))
         {
             $this->registerError(
@@ -106,11 +120,11 @@ class InputValidationService
             {
                 if ($isArray)
                 {
-                    $this->validated[$field][] = '';
+                    $this->validated[$field][$key] = $validator->getDefault();
                 }
                 else
                 {
-                    $this->validated[$field] = '';
+                    $this->validated[$field] = $validator->getDefault();
                 }
 
                 return;
@@ -140,14 +154,23 @@ class InputValidationService
             return;
         }
 
+        $value = $validator->getTyped($value);
         if ($isArray)
         {
-            $this->validated[$field][] = trim($value);
+            $this->validated[$field][$key] = $value;
         }
         else
         {
-            $this->validated[$field] = trim($value);
+            $this->validated[$field] = $value;
         }
+    }
+
+    /**
+     * @return array<string, array<string>|string>
+     */
+    public function getAll(): array
+    {
+        return $this->all;
     }
 
     /**
@@ -156,5 +179,13 @@ class InputValidationService
     public function getErrors(): array
     {
         return $this->errors;
+    }
+
+    /**
+     * @return array<string, array<string>|string>
+     */
+    public function getValidated(): array
+    {
+        return $this->validated;
     }
 }

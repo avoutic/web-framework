@@ -2,25 +2,11 @@
 
 namespace WebFramework\Validation;
 
-class PasswordValidator implements Validator
+class PasswordValidator extends CustomValidator
 {
     public function __construct(
-        private string $name = 'password',
+        string $name = 'password',
     ) {
-    }
-
-    public function getName(): string
-    {
-        return $this->name;
-    }
-
-    public function getRules(): array
-    {
-        return [];
-    }
-
-    public function isRequired(): bool
-    {
-        return true;
+        parent::__construct($name, null, true, null);
     }
 }

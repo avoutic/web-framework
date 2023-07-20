@@ -8,7 +8,7 @@ class CustomValidator implements Validator
         private string $name,
         private ?string $filter = null,
         private bool $required = true,
-        private int $maxLength = 255,
+        private ?int $maxLength = 255,
     ) {
     }
 
@@ -26,7 +26,10 @@ class CustomValidator implements Validator
             $rules[] = new FilterRule($this->filter);
         }
 
-        $rules[] = new MaxLengthRule($this->maxLength);
+        if ($this->maxLength !== null)
+        {
+            $rules[] = new MaxLengthRule($this->maxLength);
+        }
 
         return $rules;
     }
@@ -34,5 +37,15 @@ class CustomValidator implements Validator
     public function isRequired(): bool
     {
         return $this->required;
+    }
+
+    public function getDefault(): mixed
+    {
+        return '';
+    }
+
+    public function getTyped(string $value): mixed
+    {
+        return $value;
     }
 }

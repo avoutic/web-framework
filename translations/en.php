@@ -64,6 +64,11 @@ return [
         'success' => 'Password reset',
         'success_extra' => 'You will receive a mail with your new password',
     ],
+    'validation' => [
+        'filter' => '{field_name} is not valid',
+        'max_length' => '{field_name} can be a maximum of {max_length} characters',
+        'required' => '{field_name} is verplicht',
+    ],
     'verify' => [
         'link_expired' => 'Verification link expired',
         'link_expired_extra' => 'Please login again to request a new one.',
