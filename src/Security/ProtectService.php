@@ -13,7 +13,7 @@ class ProtectService
     ) {
     }
 
-    private function internalPackString(string $str): string
+    public function packString(string $str): string
     {
         // First encrypt it
         //
@@ -50,11 +50,6 @@ class ProtectService
         return implode('--', $chunks);
     }
 
-    public function packString(string $value): string
-    {
-        return $this->internalPackString($value);
-    }
-
     /**
      * @param array<mixed> $array
      */
@@ -66,10 +61,10 @@ class ProtectService
             return '';
         }
 
-        return $this->internalPackString($str);
+        return $this->packString($str);
     }
 
-    private function internalUnpackString(string $str): string|false
+    public function unpackString(string $str): string|false
     {
         // Remove the double hyphens first
         //
@@ -119,17 +114,12 @@ class ProtectService
         return $original;
     }
 
-    public function unpackString(string $str): string|false
-    {
-        return $this->internalUnpackString($str);
-    }
-
     /**
      * @return array<mixed>|false
      */
     public function unpackArray(string $str): array|false
     {
-        $jsonEncoded = $this->internalUnpackString($str);
+        $jsonEncoded = $this->unpackString($str);
 
         if ($jsonEncoded === false)
         {
