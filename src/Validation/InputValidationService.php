@@ -166,7 +166,7 @@ class InputValidationService
     }
 
     /**
-     * @return array<string, array<string>|string>
+     * @return array<string, mixed>
      */
     public function getAll(): array
     {
@@ -182,7 +182,7 @@ class InputValidationService
     }
 
     /**
-     * @return array<string, array<string>|string>
+     * @return array<string, mixed>
      */
     public function getValidated(): array
     {
