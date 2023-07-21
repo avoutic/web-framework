@@ -7,7 +7,7 @@ use Stripe\StripeClient;
 class StripeFactory
 {
     /**
-     * @var array<string>
+     * @var array<callable>
      */
     private array $eventHandlers = [];
 
@@ -16,11 +16,6 @@ class StripeFactory
         private StripeClient $stripe,
         private string $endpointSecret,
     ) {
-        $this->init();
-    }
-
-    public function init(): void
-    {
     }
 
     public function verifyRequest(string $payload, string $sigHeader): bool
@@ -60,12 +55,12 @@ class StripeFactory
 
         $handlerFunction = $this->eventHandlers[$eventType];
 
-        return $this->{$handlerFunction}($object);
+        return $handlerFunction($object);
     }
 
-    protected function addEventHandler(string $eventType, string $handlerFunction): void
+    public function addEventHandler(string $eventType, callable $handler): void
     {
-        $this->eventHandlers[$eventType] = $handlerFunction;
+        $this->eventHandlers[$eventType] = $handler;
     }
 
     /**
