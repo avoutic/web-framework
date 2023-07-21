@@ -8,9 +8,9 @@ class UserMailer
      * @param array<string, string> $templateOverrides;
      */
     public function __construct(
-        protected MailService $mailService,
-        protected string $senderEmail,
-        protected array $templateOverrides,
+        private MailService $mailService,
+        private string $senderEmail,
+        private array $templateOverrides,
     ) {
     }
 

@@ -39,7 +39,7 @@ SQL;
         $this->database->query($query, $params);
     }
 
-    protected function registerSession(int $userId, string $sessionId): Session
+    private function registerSession(int $userId, string $sessionId): Session
     {
         $timestamp = date('Y-m-d H:i:s');
 

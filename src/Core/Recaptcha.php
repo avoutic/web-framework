@@ -9,12 +9,12 @@ class Recaptcha
     /**
      * @var array<string>
      */
-    protected array $errorCodes = [];
+    private array $errorCodes = [];
 
     public function __construct(
-        protected AssertService $assertService,
-        protected Client $client,
-        protected string $secretKey,
+        private AssertService $assertService,
+        private Client $client,
+        private string $secretKey,
     ) {
     }
 

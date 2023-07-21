@@ -10,8 +10,8 @@ class AssertService
     private int $inVerify = 0;             // Only go into an assert_handler for a maximum amount of times
 
     public function __construct(
-        protected DebugService $debugService,
-        protected ReportFunction $reportFunction,
+        private DebugService $debugService,
+        private ReportFunction $reportFunction,
     ) {
     }
 

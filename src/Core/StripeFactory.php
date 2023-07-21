@@ -2,7 +2,6 @@
 
 namespace WebFramework\Core;
 
-use Psr\Container\ContainerInterface as Container;
 use Stripe\StripeClient;
 
 class StripeFactory
@@ -13,11 +12,9 @@ class StripeFactory
     private array $eventHandlers = [];
 
     public function __construct(
-        protected Container $container,
-        protected AssertService $assertService,
-        protected ConfigService $configService,
-        protected StripeClient $stripe,
-        protected string $endpointSecret,
+        private AssertService $assertService,
+        private StripeClient $stripe,
+        private string $endpointSecret,
     ) {
         $this->init();
     }

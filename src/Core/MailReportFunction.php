@@ -5,9 +5,9 @@ namespace WebFramework\Core;
 class MailReportFunction implements ReportFunction
 {
     public function __construct(
-        protected Cache $cache,
-        protected MailService $mailService,
-        protected string $assertRecipient,
+        private Cache $cache,
+        private MailService $mailService,
+        private string $assertRecipient,
     ) {
     }
 

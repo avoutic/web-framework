@@ -82,7 +82,7 @@ class SanityCheckRunner
         return true;
     }
 
-    protected function needsRun(?string $commit): bool
+    private function needsRun(?string $commit): bool
     {
         if ($this->forceRun)
         {
@@ -115,7 +115,7 @@ class SanityCheckRunner
         return ($checked === '0');
     }
 
-    protected function registerRun(?string $commit): void
+    private function registerRun(?string $commit): void
     {
         // Register successful check of this commit
         //

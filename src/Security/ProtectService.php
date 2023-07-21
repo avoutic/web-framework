@@ -17,7 +17,7 @@ class ProtectService
         return openssl_random_pseudo_bytes($ivLen);
     }
 
-    protected function internalPackString(string $str): string
+    private function internalPackString(string $str): string
     {
         // First encrypt it
         //
@@ -73,7 +73,7 @@ class ProtectService
         return $this->internalPackString($str);
     }
 
-    protected function internalUnpackString(string $str): string|false
+    private function internalUnpackString(string $str): string|false
     {
         // Remove the double hyphens first
         //

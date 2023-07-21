@@ -8,8 +8,8 @@ use Psr\Http\Message\ResponseInterface as Response;
 class Webhook
 {
     public function __construct(
-        protected Client $client,
-        protected string $url,
+        private Client $client,
+        private string $url,
     ) {
     }
 

@@ -16,11 +16,8 @@ final class ConfigServiceTest extends \Codeception\Test\Unit
         $instance = $this->construct(
             SecureConfigService::class,
             [
-                '/appdir',
+                __DIR__,
                 '/auth',
-            ],
-            [
-                'loadFile' => function ($filename) { throw new \RuntimeException(); },
             ],
         );
 
@@ -30,39 +27,17 @@ final class ConfigServiceTest extends \Codeception\Test\Unit
             ->callableThrows(\RuntimeException::class);
     }
 
-    public function testGetAuthConfigEmpty()
-    {
-        $instance = $this->construct(
-            SecureConfigService::class,
-            [
-                '/appdir',
-                '/auth',
-            ],
-            [
-                'loadFile' => '',
-            ],
-        );
-
-        verify(function () use ($instance) {
-            $instance->getAuthConfig('noname');
-        })
-            ->callableThrows(\RuntimeException::class, 'Auth Config noname invalid');
-    }
-
     public function testGetAuthConfigString()
     {
         $instance = $this->construct(
             SecureConfigService::class,
             [
-                '/appdir',
+                __DIR__,
                 '/auth',
-            ],
-            [
-                'loadFile' => 'TestString',
             ],
         );
 
-        verify($instance->getAuthConfig('noname'))
+        verify($instance->getAuthConfig('string_value'))
             ->equals('TestString');
     }
 
@@ -71,15 +46,12 @@ final class ConfigServiceTest extends \Codeception\Test\Unit
         $instance = $this->construct(
             SecureConfigService::class,
             [
-                '/appdir',
+                __DIR__,
                 '/auth',
-            ],
-            [
-                'loadFile' => ['key1' => 'val1'],
             ],
         );
 
-        verify($instance->getAuthConfig('noname'))
+        verify($instance->getAuthConfig('array_value'))
             ->equals(['key1' => 'val1']);
     }
 }

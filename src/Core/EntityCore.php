@@ -16,7 +16,7 @@ abstract class EntityCore implements EntityInterface
     /** @var array<string, mixed> */
     public array $originalValues = [];
 
-    protected bool $isNewObject = true;
+    private bool $isNewObject = true;
 
     /**
      * @return array<string, mixed>

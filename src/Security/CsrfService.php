@@ -16,7 +16,7 @@ class CsrfService
         return openssl_random_pseudo_bytes(16);
     }
 
-    protected function storeNewToken(): void
+    private function storeNewToken(): void
     {
         $this->browserSession->set('csrf_token', $this->getRandomBytes());
     }

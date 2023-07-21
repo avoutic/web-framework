@@ -4,10 +4,10 @@ namespace WebFramework\Core;
 
 class UploadHandler
 {
-    protected string $varName;
-    protected string $tmpFilename = '';
-    protected string $origFilename = '';
-    protected string $mimeType = '';
+    private string $varName;
+    private string $tmpFilename = '';
+    private string $origFilename = '';
+    private string $mimeType = '';
 
     public function __construct(string $varName = 'file')
     {

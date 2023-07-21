@@ -8,7 +8,7 @@ use WebFramework\Exception\InvalidCaptchaException;
 class CaptchaService
 {
     public function __construct(
-        protected RecaptchaFactory $captchaFactory,
+        private RecaptchaFactory $captchaFactory,
     ) {
     }
 

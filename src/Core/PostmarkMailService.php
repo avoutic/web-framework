@@ -8,13 +8,13 @@ use Postmark\PostmarkClient;
 class PostmarkMailService implements MailService
 {
     public function __construct(
-        protected PostmarkClientFactory $clientFactory,
-        protected string $defaultSender,
-        protected string $serverName,
+        private PostmarkClientFactory $clientFactory,
+        private string $defaultSender,
+        private string $serverName,
     ) {
     }
 
-    protected function getClient(): PostmarkClient
+    private function getClient(): PostmarkClient
     {
         return $this->clientFactory->getClient();
     }

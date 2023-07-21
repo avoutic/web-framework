@@ -13,11 +13,11 @@ use WebFramework\Repository\UserRepository;
 class LoginService
 {
     public function __construct(
-        protected AuthenticationService $authenticationService,
-        protected BlacklistService $blacklistService,
-        protected ConfigService $configService,
-        protected CheckPasswordService $checkPasswordService,
-        protected UserRepository $userRepository,
+        private AuthenticationService $authenticationService,
+        private BlacklistService $blacklistService,
+        private ConfigService $configService,
+        private CheckPasswordService $checkPasswordService,
+        private UserRepository $userRepository,
     ) {
     }
 

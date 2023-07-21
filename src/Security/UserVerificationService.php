@@ -2,7 +2,6 @@
 
 namespace WebFramework\Security;
 
-use Psr\Container\ContainerInterface as Container;
 use WebFramework\Core\ConfigService;
 use WebFramework\Core\UrlBuilder;
 use WebFramework\Core\UserMailer;
@@ -13,12 +12,11 @@ use WebFramework\Repository\UserRepository;
 class UserVerificationService
 {
     public function __construct(
-        protected Container $container,
-        protected ConfigService $configService,
-        protected UrlBuilder $urlBuilder,
-        protected UserCodeService $userCodeService,
-        protected UserMailer $userMailer,
-        protected UserRepository $userRepository,
+        private ConfigService $configService,
+        private UrlBuilder $urlBuilder,
+        private UserCodeService $userCodeService,
+        private UserMailer $userMailer,
+        private UserRepository $userRepository,
     ) {
     }
 

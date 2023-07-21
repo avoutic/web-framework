@@ -5,8 +5,8 @@ namespace WebFramework\Security;
 class ConfigService
 {
     public function __construct(
-        protected string $appDir,
-        protected string $authDir,
+        private string $appDir,
+        private string $authDir,
     ) {
     }
 
@@ -25,7 +25,7 @@ class ConfigService
     /**
      * @return array<mixed>|string
      */
-    protected function loadFile(string $name): array|string
+    private function loadFile(string $name): array|string
     {
         $filename = "{$this->appDir}{$this->authDir}/{$name}.php";
 

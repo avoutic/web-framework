@@ -5,9 +5,9 @@ namespace WebFramework\Core;
 class DatabaseManager
 {
     public function __construct(
-        protected AssertService $assertService,
-        protected Database $database,
-        protected StoredValues $storedValues,
+        private AssertService $assertService,
+        private Database $database,
+        private StoredValues $storedValues,
     ) {
     }
 

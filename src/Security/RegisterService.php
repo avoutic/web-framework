@@ -12,8 +12,8 @@ use WebFramework\Exception\WeakPasswordException;
 class RegisterService
 {
     public function __construct(
-        protected UserService $userService,
-        protected UserVerificationService $userVerificationService,
+        private UserService $userService,
+        private UserVerificationService $userVerificationService,
     ) {
     }
 
