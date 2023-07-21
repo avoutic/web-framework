@@ -5,7 +5,6 @@ namespace WebFramework\Core;
 class DatabaseManager
 {
     public function __construct(
-        private AssertService $assertService,
         private Database $database,
         private StoredValues $storedValues,
     ) {
@@ -27,7 +26,10 @@ SQL;
         $params = [];
 
         $result = $this->database->query($query, $params);
-        $this->assertService->verify($result !== false, 'Failed to retrieve tables');
+        if ($result === false)
+        {
+            throw new \RuntimeException('Failed to retrieve tables');
+        }
 
         $dbDef = '';
 
@@ -44,7 +46,10 @@ SQL;
             $params = [];
 
             $result = $this->database->query($query, $params);
-            $this->assertService->verify($result !== false, 'Failed to retrieve create table');
+            if ($result === false)
+            {
+                throw new \RuntimeException('Failed to retrieve create table');
+            }
 
             $statement = $result->fields['Create Table'].PHP_EOL;
 
@@ -85,11 +90,17 @@ SQL;
      */
     public function execute(array $data, bool $ignoreVersion = false): void
     {
-        $this->assertService->verify(is_array($data['actions']), 'No action array specified');
+        if (!is_array($data['actions']))
+        {
+            throw new \InvalidArgumentException('No action array specified');
+        }
 
         if (!$ignoreVersion)
         {
-            $this->assertService->verify(isset($data['target_version']), 'No target version specified');
+            if (!isset($data['target_version']))
+            {
+                throw new \InvalidArgumentException('No target version specified');
+            }
 
             $startVersion = $data['target_version'] - 1;
 
@@ -103,65 +114,112 @@ SQL;
 
         foreach ($data['actions'] as $action)
         {
-            $this->assertService->verify(isset($action['type']), 'No action type specified');
+            if (!isset($action['type']))
+            {
+                throw new \InvalidArgumentException('No action type specified');
+            }
 
             if ($action['type'] == 'create_table')
             {
-                $this->assertService->verify(isset($action['fields']) && is_array($action['fields']), 'No fields array specified');
-                $this->assertService->verify(isset($action['constraints']) && is_array($action['constraints']), 'No constraints array specified');
+                if (!isset($action['fields']) || !is_array($action['fields']))
+                {
+                    throw new \InvalidArgumentException('No fields array specified');
+                }
+
+                if (!isset($action['constraints']) || !is_array($action['constraints']))
+                {
+                    throw new \InvalidArgumentException('No constraints array specified');
+                }
 
                 $result = $this->createTable($action['table_name'], $action['fields'], $action['constraints']);
                 $queries[] = $result;
             }
             elseif ($action['type'] == 'create_trigger')
             {
-                $this->assertService->verify(isset($action['trigger']) && is_array($action['trigger']), 'No trigger array specified');
+                if (!isset($action['trigger']) || !is_array($action['trigger']))
+                {
+                    throw new \InvalidArgumentException('No trigger array specified');
+                }
 
                 $result = $this->createTrigger($action['table_name'], $action['trigger']);
                 $queries[] = $result;
             }
             elseif ($action['type'] == 'add_column')
             {
-                $this->assertService->verify(is_array($action['field']), 'No field array specified');
+                if (!is_array($action['field']))
+                {
+                    throw new \InvalidArgumentException('No field array specified');
+                }
+
                 $result = $this->addColumn($action['table_name'], $action['field']);
                 $queries[] = $result;
             }
             elseif ($action['type'] == 'add_constraint')
             {
-                $this->assertService->verify(is_array($action['constraint']), 'No constraint array specified');
+                if (!is_array($action['constraint']))
+                {
+                    throw new \InvalidArgumentException('No constraint array specified');
+                }
+
                 $result = $this->addConstraint($action['table_name'], $action['constraint']);
                 $queries[] = $result;
             }
             elseif ($action['type'] == 'insert_row')
             {
-                $this->assertService->verify(isset($action['values']) && is_array($action['values']), 'No values array specified');
+                if (!isset($action['values']) || !is_array($action['values']))
+                {
+                    throw new \InvalidArgumentException('No values array specified');
+                }
 
                 $result = $this->insertRow($action['table_name'], $action['values']);
                 $queries[] = $result;
             }
             elseif ($action['type'] == 'modify_column_type')
             {
-                $this->assertService->verify(is_array($action['field']), 'No field array specified');
+                if (!is_array($action['field']))
+                {
+                    throw new \InvalidArgumentException('No field array specified');
+                }
+
                 $result = $this->modifyColumnType($action['table_name'], $action['field']);
                 $queries[] = $result;
             }
             elseif ($action['type'] == 'rename_column')
             {
-                $this->assertService->verify(isset($action['name']), 'No name specified');
-                $this->assertService->verify(isset($action['new_name']), 'No new_name specified');
+                if (!isset($action['name']))
+                {
+                    throw new \InvalidArgumentException('No name specified');
+                }
+
+                if (!isset($action['new_name']))
+                {
+                    throw new \InvalidArgumentException('No new_name specified');
+                }
+
                 $result = $this->renameColumn($action['table_name'], $action['name'], $action['new_name']);
                 $queries[] = $result;
             }
             elseif ($action['type'] == 'rename_table')
             {
-                $this->assertService->verify(isset($action['new_name']), 'No new_name specified');
+                if (!isset($action['new_name']))
+                {
+                    throw new \InvalidArgumentException('No new_name specified');
+                }
+
                 $result = $this->renameTable($action['table_name'], $action['new_name']);
                 $queries[] = $result;
             }
             elseif ($action['type'] == 'raw_query')
             {
-                $this->assertService->verify(isset($action['query']), 'No query specified');
-                $this->assertService->verify(isset($action['params']) && is_array($action['params']), 'No params array specified');
+                if (!isset($action['query']))
+                {
+                    throw new \InvalidArgumentException('No query specified');
+                }
+
+                if (!isset($action['params']) || !is_array($action['params']))
+                {
+                    throw new \InvalidArgumentException('No params array specified');
+                }
 
                 $result = $this->rawQuery($action['query'], $action['params']);
                 $queries[] = $result;
@@ -212,7 +270,10 @@ SQL;
     {
         $currentVersion = $this->getCurrentVersion();
 
-        $this->assertService->verify($currentVersion == $appDbVersion, "DB version '{$currentVersion}' does not match requested version '{$appDbVersion}'");
+        if ($currentVersion !== $appDbVersion)
+        {
+            throw new \RuntimeException("DB version '{$currentVersion}' does not match requested version '{$appDbVersion}'");
+        }
     }
 
     private function setVersion(int $to): void
@@ -229,8 +290,15 @@ SQL;
      */
     private function getFieldStatements(string $tableName, array $info, array &$fieldLines, array &$constraintLines): void
     {
-        $this->assertService->verify(isset($info['type']), 'No field type specified');
-        $this->assertService->verify(isset($info['name']), 'No field name specified');
+        if (!isset($info['type']))
+        {
+            throw new \InvalidArgumentException('No field type specified');
+        }
+
+        if (!isset($info['name']))
+        {
+            throw new \InvalidArgumentException('No field name specified');
+        }
 
         $dbType = strtoupper($info['type']);
         $null = (isset($info['null']) && $info['null']);
@@ -239,14 +307,24 @@ SQL;
         //
         if ($info['type'] == 'foreign_key')
         {
-            $this->assertService->verify(isset($info['foreign_table']), 'No target for foreign table set');
-            $this->assertService->verify(isset($info['foreign_field']), 'No target for foreign field set');
+            if (!isset($info['foreign_table']))
+            {
+                throw new \InvalidArgumentException('No target for foreign table set');
+            }
+
+            if (!isset($info['foreign_field']))
+            {
+                throw new \InvalidArgumentException('No target for foreign field set');
+            }
 
             $dbType = 'INT(11)';
         }
         elseif ($info['type'] == 'varchar')
         {
-            $this->assertService->verify(isset($info['size']), 'No varchar size set');
+            if (!isset($info['size']))
+            {
+                throw new \InvalidArgumentException('No varchar size set');
+            }
 
             $dbType = "VARCHAR({$info['size']})";
         }
@@ -289,12 +367,22 @@ SQL;
      */
     private function getConstraintStatements(string $tableName, array $info, array &$constraintLines): void
     {
-        $this->assertService->verify(isset($info['type']), 'No constraint type specified');
+        if (!isset($info['type']))
+        {
+            throw new \InvalidArgumentException('No constraint type specified');
+        }
 
         if ($info['type'] == 'unique')
         {
-            $this->assertService->verify(isset($info['values']), 'No values for unique specified');
-            $this->assertService->verify(is_array($info['values']), 'Values is not an array');
+            if (!isset($info['values']))
+            {
+                throw new \InvalidArgumentException('No values for unique specified');
+            }
+
+            if (!is_array($info['values']))
+            {
+                throw new \InvalidArgumentException('Values is not an array');
+            }
 
             $valuesFmt = implode('_', $info['values']);
             $fieldsFmt = implode('`, `', $info['values']);
@@ -357,10 +445,25 @@ SQL;
      */
     private function createTrigger(string $tableName, array $info): array
     {
-        $this->assertService->verify(isset($info['name']), 'No trigger name specified');
-        $this->assertService->verify(isset($info['time']), 'No trigger time specified');
-        $this->assertService->verify(isset($info['event']), 'No trigger event specified');
-        $this->assertService->verify(isset($info['action']), 'No trigger action specified');
+        if (!isset($info['name']))
+        {
+            throw new \InvalidArgumentException('No trigger name specified');
+        }
+
+        if (!isset($info['time']))
+        {
+            throw new \InvalidArgumentException('No trigger time specified');
+        }
+
+        if (!isset($info['event']))
+        {
+            throw new \InvalidArgumentException('No trigger event specified');
+        }
+
+        if (!isset($info['action']))
+        {
+            throw new \InvalidArgumentException('No trigger action specified');
+        }
 
         $query = <<<SQL
 CREATE TRIGGER `{$info['name']}` {$info['time']} {$info['event']} ON `{$tableName}`

@@ -12,7 +12,6 @@ class Recaptcha
     private array $errorCodes = [];
 
     public function __construct(
-        private AssertService $assertService,
         private Client $client,
         private string $secretKey,
     ) {
@@ -57,8 +56,15 @@ class Recaptcha
         {
             $this->errorCodes = $body['error_codes'];
 
-            $this->assertService->verify(!in_array('invalid-input-secret', $body['error-codes']), 'Invalid reCAPTCHA input secret used');
-            $this->assertService->verify(!in_array('invalid-keys-secret', $body['error-codes']), 'Invalid reCAPTCHA key used');
+            if (in_array('invalid-input-secret', $body['error-codes']))
+            {
+                throw new \RuntimeException('Invalid reCAPTCHA input secret used');
+            }
+
+            if (in_array('invalid-keys-secret', $body['error-codes']))
+            {
+                throw new \RuntimeException('Invalid reCAPTCHA key used');
+            }
         }
 
         return $body['success'];

@@ -8,7 +8,6 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 class LatteRenderService implements RenderService
 {
     public function __construct(
-        private AssertService $assertService,
         private \Latte\Engine $latteEngine,
         private string $templateDir,
         private string $tmpDir,
@@ -33,7 +32,10 @@ class LatteRenderService implements RenderService
         $this->latteEngine->setTempDirectory($this->tmpDir);
         $this->latteEngine->setLoader(new \Latte\Loaders\FileLoader($this->templateDir));
 
-        $this->assertService->verify(file_exists("{$this->templateDir}/{$templateFile}"), 'Requested template not present');
+        if (!file_exists("{$this->templateDir}/{$templateFile}"))
+        {
+            throw new \InvalidArgumentException('Requested template not present');
+        }
 
         return $this->latteEngine->renderToString($templateFile, $params);
     }

@@ -13,7 +13,6 @@ class Browserless
     private const PDF_MAGIC = '%PDF-';
 
     public function __construct(
-        private AssertService $assertService,
         private ProtectService $protectService,
         private string $localServer,
         private string $pdfEndpoint,
@@ -66,7 +65,10 @@ class Browserless
         $filename = $outputFilename;
 
         $result = $this->getPdfResult($targetUrl);
-        $this->assertService->verify($this->isPdfString($result), 'Failed to generate NDA: '.$result);
+        if (!$this->isPdfString($result))
+        {
+            throw new \RuntimeException('Failed to generate NDA: '.$result);
+        }
 
         header('Cache-Control: public');
         header('Content-type: application/pdf');
@@ -93,11 +95,17 @@ class Browserless
         }
 
         $tmpFile = tmpfile();
-        $this->assertService->verify($tmpFile !== false, 'Failed to get temporary stream');
+        if ($tmpFile === false)
+        {
+            throw new \RuntimeException('Failed to get temporary stream');
+        }
 
         $result = $this->getPdfResult($targetUrl, $tmpFile);
         $tmpPath = stream_get_meta_data($tmpFile)['uri'];
-        $this->assertService->verify($this->isPdf($tmpPath), 'Failed to generate PDF: '.file_get_contents($tmpPath));
+        if (!$this->isPdf($tmpPath))
+        {
+            throw new \RuntimeException('Failed to generate PDF: '.file_get_contents($tmpPath));
+        }
 
         return $tmpFile;
     }

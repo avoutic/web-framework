@@ -12,7 +12,6 @@ class StripeFactory
     private array $eventHandlers = [];
 
     public function __construct(
-        private AssertService $assertService,
         private StripeClient $stripe,
         private string $endpointSecret,
     ) {
@@ -197,7 +196,10 @@ class StripeFactory
     public function getWebhookEvents(): array
     {
         $webhooks = $this->stripe->webhookEndpoints->all();
-        $this->assertService->verify(count($webhooks) == 1, 'Not exactly 1 webhook in place');
+        if (count($webhooks) !== 1)
+        {
+            throw new \RuntimeException('Not exactly 1 webhook in place');
+        }
 
         return $webhooks->data[0]->enabled_events;
     }

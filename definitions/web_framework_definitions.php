@@ -148,7 +148,6 @@ return [
         ),
     Core\Recaptcha::class => DI\Factory(function (ContainerInterface $c) {
         return new Core\Recaptcha(
-            $c->get(Core\AssertService::class),
             $c->get(\GuzzleHttp\Client::class),
             $c->get('security.recaptcha.secret_key'),
         );
