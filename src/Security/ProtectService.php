@@ -8,13 +8,9 @@ class ProtectService
      * @param array<string> $moduleConfig
      */
     public function __construct(
+        private RandomProvider $randomProvider,
         private array $moduleConfig,
     ) {
-    }
-
-    protected function getRandomBytes(int $ivLen): string
-    {
-        return openssl_random_pseudo_bytes($ivLen);
     }
 
     private function internalPackString(string $str): string
@@ -28,7 +24,7 @@ class ProtectService
             return '';
         }
 
-        $iv = $this->getRandomBytes($ivLen);
+        $iv = $this->randomProvider->getRandom($ivLen);
         $key = hash('sha256', $this->moduleConfig['crypt_key'], true);
         $str = openssl_encrypt($str, $cipher, $key, 0, $iv);
         if ($str === false)

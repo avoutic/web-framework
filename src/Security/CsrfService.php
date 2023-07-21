@@ -7,18 +7,14 @@ use Odan\Session\SessionInterface;
 class CsrfService
 {
     public function __construct(
+        private RandomProvider $randomProvider,
         private SessionInterface $browserSession,
     ) {
     }
 
-    protected function getRandomBytes(): string
-    {
-        return openssl_random_pseudo_bytes(16);
-    }
-
     private function storeNewToken(): void
     {
-        $this->browserSession->set('csrf_token', $this->getRandomBytes());
+        $this->browserSession->set('csrf_token', $this->randomProvider->getRandom(16));
     }
 
     protected function getStoredToken(): string
@@ -42,7 +38,7 @@ class CsrfService
 
         $token = $this->getStoredToken();
 
-        $xor = $this->getRandomBytes();
+        $xor = $this->randomProvider->getRandom(16);
         for ($i = 0; $i < 16; $i++)
         {
             $token[$i] = chr(ord($xor[$i]) ^ ord($token[$i]));

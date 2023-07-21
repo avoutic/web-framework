@@ -4,6 +4,7 @@ namespace Tests\Unit;
 
 use Odan\Session\MemorySession;
 use WebFramework\Security\CsrfService;
+use WebFramework\Security\OpensslRandomProvider;
 
 /**
  * @internal
@@ -14,14 +15,19 @@ final class CsrfServiceTest extends \Codeception\Test\Unit
 {
     public function testGetToken()
     {
+        $randomProvider = $this->make(
+            OpensslRandomProvider::class,
+            [
+                'getRandom' => '1234567890123456',
+            ]
+        );
+
         $instance = $this->construct(
             CsrfService::class,
             [
+                $randomProvider,
                 new MemorySession(),
             ],
-            [
-                'getRandomBytes' => '1234567890123456',
-            ]
         );
 
         verify($instance->getToken())

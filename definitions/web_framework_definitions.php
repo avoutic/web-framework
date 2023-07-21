@@ -187,6 +187,11 @@ return [
 
     Security\AuthenticationService::class => DI\autowire(Security\NullAuthenticationService::class),
     Security\BlacklistService::class => DI\autowire(Security\NullBlacklistService::class),
+    Security\ConfigService::class => DI\autowire()
+        ->constructor(
+            DI\get('app_dir'),
+            DI\get('security.auth_dir'),
+        ),
     Security\DatabaseAuthenticationService::class => DI\autowire(Security\DatabaseAuthenticationService::class)
         ->constructor(
             sessionTimeout: DI\get('authenticator.session_timeout'),
@@ -198,18 +203,12 @@ return [
             triggerPeriod: DI\get('security.blacklist.trigger_period'),
         ),
     Security\ProtectService::class => DI\autowire()
-        ->constructor(
-            [
-                'hash' => DI\get('security.hash'),
-                'crypt_key' => DI\get('security.crypt_key'),
-                'hmac_key' => DI\get('security.hmac_key'),
-            ]
-        ),
-    Security\ConfigService::class => DI\autowire()
-        ->constructor(
-            DI\get('app_dir'),
-            DI\get('security.auth_dir'),
-        ),
+        ->constructorParameter('moduleConfig', [
+            'hash' => DI\get('security.hash'),
+            'crypt_key' => DI\get('security.crypt_key'),
+            'hmac_key' => DI\get('security.hmac_key'),
+        ]),
+    Security\RandomProvider::class => DI\get(Security\OpensslRandomProvider::class),
 
     Translation\TranslationLoader::class => DI\get(Translation\FileTranslationLoader::class),
     Translation\FileTranslationLoader::class => function (ContainerInterface $c) {

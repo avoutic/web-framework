@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use WebFramework\Security\OpensslRandomProvider;
 use WebFramework\Security\PasswordHashService;
 
 /**
@@ -42,10 +43,17 @@ final class PasswordHashServiceTest extends \Codeception\Test\Unit
 
     public function testGenerateHash()
     {
+        $randomProvider = $this->make(
+            OpensslRandomProvider::class,
+            [
+                'getRandom' => '012345678901234567890123',
+            ]
+        );
+
         $instance = $this->make(
             PasswordHashService::class,
             [
-                'getRandomBytes' => '012345678901234567890123',
+                'randomProvider' => $randomProvider,
                 'pbkdf2' => 'abcdef',
             ],
         );
@@ -58,10 +66,17 @@ final class PasswordHashServiceTest extends \Codeception\Test\Unit
 
     public function testGenerateHashTestVector()
     {
+        $randomProvider = $this->make(
+            OpensslRandomProvider::class,
+            [
+                'getRandom' => '012345678901234567890123',
+            ]
+        );
+
         $instance = $this->make(
             PasswordHashService::class,
             [
-                'getRandomBytes' => '012345678901234567890123',
+                'randomProvider' => $randomProvider,
             ],
         );
 

@@ -4,6 +4,11 @@ namespace WebFramework\Security;
 
 class PasswordHashService
 {
+    public function __construct(
+        private RandomProvider $randomProvider,
+    ) {
+    }
+
     public function pbkdf2(string $algorithm, string $password, string $salt, int $count, int $keyLength, bool $rawOutput = false): string
     {
         $algorithm = strtolower($algorithm);
@@ -42,14 +47,9 @@ class PasswordHashService
         return bin2hex(substr($output, 0, $keyLength));
     }
 
-    protected function getRandomBytes(int $length): string
-    {
-        return openssl_random_pseudo_bytes($length);
-    }
-
     public function generateHash(string $password): string
     {
-        $salt = base64_encode($this->getRandomBytes(24));
+        $salt = base64_encode($this->randomProvider->getRandom(24));
 
         return 'sha256:1000:'.$salt.':'.
                 $this->pbkdf2('sha256', $password, $salt, 1000, 24, false);
