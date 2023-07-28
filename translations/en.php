@@ -64,6 +64,14 @@ return [
         'success' => 'Password reset',
         'success_extra' => 'You will receive a mail with your new password',
     ],
+    'upload' => [
+        'file_too_large' => 'The provided file is too large',
+        'file_too_large_max_size' => 'The provided file is too large',
+        'file_too_large_max_size_extra' => 'Maximum allowed size is {max_size}',
+        'partial_upload' => 'Only part of a file was received',
+        'no_file' => 'No file was uploaded',
+        'mime_type_not_allowed' => 'Provided file type is not allowed',
+    ],
     'validation' => [
         'filter' => '{field_name} is not valid',
         'max_length' => '{field_name} can be a maximum of {max_length} characters',
