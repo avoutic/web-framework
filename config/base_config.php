@@ -92,6 +92,12 @@ return [
         'default_sender' => '',
         'assert_recipient' => '',
     ],
+    'translations' => [
+        'default_language' => 'en',
+        'directories' => [
+            'vendor/avoutic/web-framework/translations',
+        ],
+    ],
     'user_mailer' => [
         'template_overrides' => [
             'email-verification-link' => 'email-verification-link',
