@@ -1,5 +1,11 @@
 # v7 release
 
+## v7.1
+
+### New Features
+* Random Generation not behind RandomProvider interface
+* Add UploadValidationService
+
 ## v7.0
 
 ### Breaking changes
