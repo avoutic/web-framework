@@ -18,6 +18,19 @@ abstract class EntityCore implements EntityInterface
 
     private bool $isNewObject = true;
 
+    public function __toString(): string
+    {
+        return print_r($this->toArray(), true);
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    public function __debugInfo(): array
+    {
+        return $this->toArray();
+    }
+
     /**
      * @return array<string, mixed>
      */
