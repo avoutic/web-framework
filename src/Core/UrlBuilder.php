@@ -32,6 +32,11 @@ class UrlBuilder
             return $values[$matches[1]] ?? $matches[0];
         }, $template);
 
+        if ($url === null)
+        {
+            throw new \RuntimeException('Failed to replace url elements');
+        }
+
         if ($messageType)
         {
             $queryParameters['msg'] = $this->messageService->getForUrl(
@@ -42,17 +47,40 @@ class UrlBuilder
             );
         }
 
-        if (count($queryParameters))
+        // Split URL into its elements to properly insert the query parameters
+        // before the fragment in the url
+        //
+        $parts = parse_url($url);
+
+        if ($parts === false)
         {
-            $url .= '?'.http_build_query($queryParameters);
+            throw new \RuntimeException('Failed to parse url');
         }
+
+        $query_string = http_build_query($queryParameters);
+
+        // If there's already a query string in the url, append the new one with a &
+        //
+        if (isset($parts['query']))
+        {
+            $parts['query'] .= '&'.$query_string;
+        }
+        else
+        {
+            $parts['query'] = $query_string;
+        }
+
+        $builtUrl = '';
 
         if ($absolute)
         {
-            return $this->getServerUrl().$this->baseUrl.$url;
+            $builtUrl = $this->getServerUrl();
         }
 
-        return $this->baseUrl.$url;
+        return $this->baseUrl.
+            (isset($parts['path']) ? $parts['path'] : '').
+            (isset($parts['query']) ? '?'.$parts['query'] : '').
+            (isset($parts['fragment']) ? '#'.$parts['fragment'] : '');
     }
 
     /**
