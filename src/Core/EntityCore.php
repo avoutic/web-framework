@@ -57,6 +57,16 @@ abstract class EntityCore implements EntityInterface
                 continue;
             }
 
+            // Check if initialized
+            //
+            $property = $reflection->getProperty($this->snakeToCamel($name));
+            $property->setAccessible(true);
+
+            if (!$property->isInitialized($this))
+            {
+                continue;
+            }
+
             $function = $this->snakeToGetter($name);
 
             // Retrieve via getter if present
@@ -67,9 +77,6 @@ abstract class EntityCore implements EntityInterface
             }
             else
             {
-                $property = $reflection->getProperty($this->snakeToCamel($name));
-                $property->setAccessible(true);
-
                 $data[$name] = $property->getValue($this);
             }
         }
