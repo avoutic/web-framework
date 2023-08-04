@@ -2,21 +2,21 @@
 
 namespace WebFramework\Validation;
 
-class FilterRule implements ValidationRule
+class MinLengthRule implements ValidationRule
 {
     public function __construct(
-        protected string $regex,
+        protected int $minLength,
     ) {
     }
 
     public function isValid(string $value): bool
     {
-        return (preg_match("/^\\s*{$this->regex}\\s*$/m", $value) == 1);
+        return (strlen($value) >= $this->minLength);
     }
 
     public function getErrorMessage(): string
     {
-        return 'validation.filter';
+        return 'validation.min_length';
     }
 
     public function getErrorExtraMessage(): string
@@ -31,6 +31,7 @@ class FilterRule implements ValidationRule
     {
         return [
             'field_name' => $fieldName,
+            'min_length' => (string) $this->minLength,
         ];
     }
 }

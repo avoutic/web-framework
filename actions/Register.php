@@ -122,7 +122,7 @@ class Register
                     'email' => new EmailValidator(),
                     'password' => new PasswordValidator(),
                     'password2' => new PasswordValidator('password verification'),
-                    'accept_terms' => new CustomBoolValidator('term acceptance', required: true),
+                    'accept_terms' => (new CustomBoolValidator('term acceptance'))->required(),
                 ],
                 $request->getParams(),
             );

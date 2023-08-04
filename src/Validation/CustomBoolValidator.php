@@ -6,15 +6,10 @@ class CustomBoolValidator extends CustomValidator
 {
     public function __construct(
         string $name,
-        bool $required = false,
-        protected ?bool $default = null,
     ) {
-        parent::__construct($name, '0|1|true|false', $required, null);
-    }
+        parent::__construct($name);
 
-    public function getDefault(): mixed
-    {
-        return $this->default;
+        $this->filter('0|1|true|false');
     }
 
     public function getTyped(string $value): mixed

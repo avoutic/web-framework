@@ -7,6 +7,8 @@ class PasswordValidator extends CustomValidator
     public function __construct(
         string $name = 'password',
     ) {
-        parent::__construct($name, null, true, null);
+        parent::__construct($name);
+
+        $this->required();
     }
 }

@@ -1,5 +1,11 @@
 # v7 release
 
+## v7.2
+
+### Light changes
+
+* CustomValidator interface changed to fluid
+
 ## v7.1
 
 ### New Features

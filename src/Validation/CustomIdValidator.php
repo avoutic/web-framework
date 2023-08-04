@@ -6,15 +6,10 @@ class CustomIdValidator extends CustomValidator
 {
     public function __construct(
         string $name,
-        bool $required = true,
-        protected ?int $default = null,
     ) {
-        parent::__construct($name, FORMAT_ID, $required, null);
-    }
+        parent::__construct($name);
 
-    public function getDefault(): mixed
-    {
-        return $this->default;
+        $this->filter(FORMAT_ID)->default(null);
     }
 
     public function getTyped(string $value): mixed

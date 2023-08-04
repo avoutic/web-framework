@@ -9,11 +9,6 @@ class MaxLengthRule implements ValidationRule
     ) {
     }
 
-    public function getTag(): string
-    {
-        return 'filter';
-    }
-
     public function isValid(string $value): bool
     {
         return (strlen($value) <= $this->maxLength);
