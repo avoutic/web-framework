@@ -9,6 +9,6 @@ class UsernameValidator extends CustomValidator
     ) {
         parent::__construct($name);
 
-        $this->filter(FORMAT_USERNAME)->maxLength(255)->required();
+        $this->filter(FORMAT_USERNAME)->maxLength(255);
     }
 }

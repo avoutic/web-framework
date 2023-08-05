@@ -114,12 +114,18 @@ class Register
 
         try
         {
+            $usernameValidator = new UsernameValidator();
+            if ($uniqueIdentifier == 'username')
+            {
+                $usernameValidator->required();
+            }
+
             // Validate input
             //
             $filtered = $this->inputValidationService->validate(
                 [
-                    'username' => new UsernameValidator(),
-                    'email' => new EmailValidator(),
+                    'username' => $usernameValidator,
+                    'email' => (new EmailValidator())->required(),
                     'password' => new PasswordValidator(),
                     'password2' => new PasswordValidator('password verification'),
                     'accept_terms' => (new CustomBoolValidator('term acceptance'))->required(),

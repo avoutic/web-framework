@@ -56,7 +56,7 @@ class ForgotPassword
             // Validate input
             //
             $filtered = $this->inputValidationService->validate(
-                ['username' => $validator],
+                ['username' => $validator->required()],
                 $request->getParams(),
             );
 

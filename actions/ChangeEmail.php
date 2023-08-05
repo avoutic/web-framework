@@ -76,7 +76,7 @@ class ChangeEmail
             //
             $filtered = $this->inputValidationService->validate(
                 [
-                    'email' => new EmailValidator(),
+                    'email' => (new EmailValidator())->required(),
                 ],
                 $request->getParams(),
             );

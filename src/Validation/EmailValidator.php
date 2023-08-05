@@ -9,6 +9,6 @@ class EmailValidator extends CustomValidator
     ) {
         parent::__construct($name);
 
-        $this->filter(FORMAT_EMAIL)->maxLength(255)->required();
+        $this->filter(FORMAT_EMAIL)->maxLength(255);
     }
 }

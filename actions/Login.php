@@ -81,11 +81,13 @@ class Login
 
         try
         {
+            $validator = ($uniqueIdentifier === 'email') ? new EmailValidator() : new UsernameValidator();
+
             // Validate input
             //
             $filtered = $this->inputValidationService->validate(
                 [
-                    'username' => ($uniqueIdentifier === 'email') ? new EmailValidator() : new UsernameValidator(),
+                    'username' => $validator->required(),
                     'password' => new PasswordValidator(),
                 ],
                 $request->getParams(),

@@ -43,7 +43,7 @@ final class InputValidationServiceTest extends \Codeception\Test\Unit
         );
 
         $validators = [
-            'username' => new UsernameValidator(),
+            'username' => (new UsernameValidator())->required(),
         ];
 
         $inputs = [
@@ -62,7 +62,7 @@ final class InputValidationServiceTest extends \Codeception\Test\Unit
         );
 
         $validators = [
-            'username[]' => new UsernameValidator(),
+            'username' => (new UsernameValidator())->required(),
         ];
 
         $inputs = [
@@ -123,7 +123,7 @@ final class InputValidationServiceTest extends \Codeception\Test\Unit
         );
 
         $validators = [
-            'username' => new UsernameValidator(),
+            'username' => (new UsernameValidator())->required(),
         ];
 
         $inputs = [
@@ -143,7 +143,7 @@ final class InputValidationServiceTest extends \Codeception\Test\Unit
         );
 
         $validators = [
-            'username' => (new UsernameValidator())->optional(),
+            'username' => new UsernameValidator(),
         ];
 
         $inputs = [
@@ -164,7 +164,7 @@ final class InputValidationServiceTest extends \Codeception\Test\Unit
         );
 
         $validators = [
-            'username[]' => (new UsernameValidator())->optional(),
+            'username[]' => new UsernameValidator(),
         ];
 
         $inputs = [
@@ -185,7 +185,7 @@ final class InputValidationServiceTest extends \Codeception\Test\Unit
         );
 
         $validators = [
-            'username' => (new UsernameValidator())->optional(),
+            'username' => new UsernameValidator(),
         ];
 
         $inputs = [
