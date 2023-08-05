@@ -1,16 +1,27 @@
 # v7 release
 
+## v7.3
+
+### Light changes
+
+* CustomIdValidator now named IdValidator
+* Validators not required by default (except PasswordValidator)
+
+### New Features
+
+* CustomNumberValidator added
+* Support function arguments in condensed trace report
+* Support toArray() on uninitialized EntityCore fields
+
 ## v7.2
 
 ### Light changes
 
 * CustomValidator interface changed to fluid
-* CustomIdValidator now named IdValidator
 
 ### New Features
 
 * Support for minLength() in CustomValidator
-* CustomNumberValidator added
 
 ## v7.1
 
