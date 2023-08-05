@@ -2,7 +2,7 @@
 
 namespace WebFramework\Validation;
 
-class CustomIdValidator extends CustomValidator
+class IdValidator extends CustomValidator
 {
     public function __construct(
         string $name,

@@ -5,6 +5,12 @@
 ### Light changes
 
 * CustomValidator interface changed to fluid
+* CustomIdValidator now named IdValidator
+
+### New Features
+
+* Support for minLength() in CustomValidator
+* CustomNumberValidator added
 
 ## v7.1
 
