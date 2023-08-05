@@ -637,7 +637,7 @@ TXT;
                 'class' => 'DebugService',
                 'type' => '->',
                 'function' => 'filter_trace',
-                'args' => 'filter_args',
+                'args' => ['filter_arg' => 'val'],
                 'extra' => 'extra1',
             ],
             [
@@ -646,7 +646,7 @@ TXT;
                 'class' => 'FrameworkAssertService',
                 'type' => '->',
                 'function' => 'verify',
-                'args' => 'verify_args',
+                'args' => ['verify_arg' => 'val'],
                 'extra' => 'extra1',
             ],
             [
@@ -655,7 +655,7 @@ TXT;
                 'class' => 'Object2',
                 'type' => '->',
                 'function' => 'function2',
-                'args' => 'verify_args',
+                'args' => ['func2_arg' => 'val'],
                 'extra' => 'extra1',
             ],
             [
@@ -664,7 +664,7 @@ TXT;
                 'class' => 'Object1',
                 'type' => '->',
                 'function' => 'function1',
-                'args' => 'verify_args',
+                'args' => ['func1_arg' => 'val'],
                 'extra' => 'extra1',
             ],
         ];
@@ -685,7 +685,17 @@ Request: GET https://test.com
 
 Condensed backtrace:
 Object2.php(3): Object2->function2()
+Array
+(
+    [func2_arg] => val
+)
+
 Object1.php(4): Object1->function1()
+Array
+(
+    [func1_arg] => val
+)
+
 
 Last Database error:
 DB ERROR

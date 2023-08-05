@@ -200,6 +200,10 @@ TXT;
             }
 
             $stackCondensed .= $entry['function']."()\n";
+            if (isset($entry['args']) && count($entry['args']))
+            {
+                $stackCondensed .= print_r($entry['args'], true)."\n";
+            }
         }
 
         return $stackCondensed;
