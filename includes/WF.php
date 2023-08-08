@@ -67,6 +67,7 @@ class WF
     private array $global_config = [
         'debug' => false,
         'debug_mail' => true,
+        'sentry_enabled' => false,
         'preload' => false,
         'timezone' => 'UTC',
         'registration' => [

@@ -26,7 +26,8 @@
         "stripe/stripe-php": "^7.128",
         "cache/redis-adapter": "^1.1",
         "latte/latte": "^3.0",
-        "ext-redis": "*"
+        "ext-redis": "*",
+        "sentry/sentry": "^3.21"
     },
     "require-dev": {
         "phpstan/phpstan": "^1.8"
@@ -44,7 +45,8 @@
     },
     "config": {
         "allow-plugins": {
-            "phpro/grumphp-shim": false
+            "phpro/grumphp-shim": false,
+            "php-http/discovery": false
         }
     }
 }

@@ -39,6 +39,29 @@ class Database
             exit('Database connection not available. Exiting.');
         }
 
+        $parent = null;
+        $span = null;
+
+        if (WF::get_config('sentry_enabled'))
+        {
+            $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
+            $span = null;
+
+            // Check if we have a parent span (this is the case if we started a transaction earlier)
+            //
+            if ($parent !== null)
+            {
+                $context = new \Sentry\Tracing\SpanContext();
+                $context->setOp('db.sql.query');
+                $context->setDescription($query_str);
+                $span = $parent->startChild($context);
+
+                // Set the current span to the span we just started
+                //
+                \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
+            }
+        }
+
         $result = null;
 
         if (!count($value_array))
@@ -48,6 +71,17 @@ class Database
         else
         {
             $result = $this->database->execute_query($query_str, $value_array);
+        }
+
+        // We only have a span if we started a span earlier
+        //
+        if ($span !== null)
+        {
+            $span->finish();
+
+            // Restore the current span back to the parent span
+            //
+            \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
         }
 
         if (!$result)
