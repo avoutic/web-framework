@@ -68,6 +68,8 @@ class WFWebHandler extends WF
         );
         session_start();
 
+        $span = InstrumentationWrapper::get()->startSpan('app.authentication');
+
         $this->create_authenticator();
         $this->authenticator->cleanup();
         $this->auth_array = $this->authenticator->get_logged_in();
@@ -91,11 +93,15 @@ class WFWebHandler extends WF
                 );
             }
         }
+        InstrumentationWrapper::get()->finishSpan($span);
 
         $this->load_raw_input();
         $this->add_security_headers();
         $this->handle_fixed_input();
+
+        $span = InstrumentationWrapper::get()->startSpan('app.routing');
         $this->handle_action_routing();
+        InstrumentationWrapper::get()->finishSpan($span);
     }
 
     private function load_raw_input(): void

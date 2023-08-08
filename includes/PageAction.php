@@ -216,8 +216,16 @@ abstract class PageAction extends ActionCore
 
     public function html_main(): void
     {
+        $span = InstrumentationWrapper::get()->startSpan('page.check_sanity');
         $this->check_sanity();
+        InstrumentationWrapper::get()->finishSpan($span);
+
+        $span = InstrumentationWrapper::get()->startSpan('page.do_logic');
         $this->do_logic();
+        InstrumentationWrapper::get()->finishSpan($span);
+
+        $span = InstrumentationWrapper::get()->startSpan('page.display_frame');
         $this->display_frame();
+        InstrumentationWrapper::get()->finishSpan($span);
     }
 }
