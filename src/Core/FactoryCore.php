@@ -18,6 +18,7 @@ class FactoryCore
     protected AssertService $assertService;
     protected AuthenticationService $authenticationService;
     protected BlacklistService $blacklistService;
+    protected BuildInfoService $buildInfoService;
     protected ConfigService $configService;
     protected DebugService $debugService;
     protected MessageService $messageService;
@@ -282,6 +283,6 @@ class FactoryCore
      */
     protected function getBuildInfo(): array
     {
-        return $this->debugService->getBuildInfo();
+        return $this->buildInfoService->getInfo();
     }
 }

@@ -544,7 +544,6 @@ TXT;
             [
                 'authenticationService' => $this->makeEmpty(NullAuthenticationService::class),
                 'databaseProvider' => $this->makeEmpty(DatabaseProvider::class),
-                'appDir' => '',
                 'serverName' => 'TestServer',
             ],
             [
@@ -616,7 +615,6 @@ TXT;
                     ],
                 ),
                 'databaseProvider' => $databaseProvider,
-                'appDir' => '',
                 'serverName' => 'TestServer',
             ],
             [

@@ -36,6 +36,7 @@ abstract class ActionCore
         protected AssertService $assertService,
         protected AuthenticationService $authenticationService,
         protected BlacklistService $blacklistService,
+        protected BuildInfoService $buildInfoService,
         protected ConfigService $configService,
         protected CsrfService $csrfService,
         protected DebugService $debugService,
@@ -480,6 +481,6 @@ abstract class ActionCore
      */
     protected function getBuildInfo(): array
     {
-        return $this->debugService->getBuildInfo();
+        return $this->buildInfoService->getInfo();
     }
 }

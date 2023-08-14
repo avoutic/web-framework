@@ -2,6 +2,10 @@
 
 ## v7.3
 
+### Light changes
+
+* BuildInfoService->getInfo() replaces DebugService->getBuildInfo()
+
 ### New Features
 
 * Support Instrumentation

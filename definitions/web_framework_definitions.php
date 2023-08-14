@@ -87,6 +87,8 @@ return [
         ->constructor(
             appDir: DI\get('app_dir'),
         ),
+    Core\BuildInfoService::class => DI\autowire()
+        ->constructorParameter('appDir', DI\get('app_dir')),
     Core\Cache::class => DI\autowire(Core\NullCache::class),
     Core\ConfigService::class => DI\autowire()
         ->constructor(
@@ -123,10 +125,7 @@ return [
             storedValues: DI\get('DbStoredValues'),
         ),
     Core\DebugService::class => DI\autowire()
-        ->constructor(
-            appDir: DI\get('app_dir'),
-            serverName: DI\get('server_name'),
-        ),
+        ->constructorParameter('serverName', DI\get('server_name')),
     Core\Instrumentation::class => DI\autowire(Core\NullInstrumentation::class),
     Core\LatteRenderService::class => DI\autowire()
         ->constructor(
