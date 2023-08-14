@@ -8,6 +8,7 @@ use Postmark\PostmarkClient;
 class PostmarkMailService implements MailService
 {
     public function __construct(
+        private Instrumentation $instrumentation,
         private PostmarkClientFactory $clientFactory,
         private string $defaultSender,
         private string $serverName,
@@ -35,6 +36,7 @@ class PostmarkMailService implements MailService
 
         try
         {
+            $span = $this->instrumentation->startSpan('mail.send_raw');
             $result = $this->getClient()->sendEmail(
                 $from,
                 $to,
@@ -42,6 +44,7 @@ class PostmarkMailService implements MailService
                 null,
                 $message
             );
+            $this->instrumentation->finishSpan($span);
         }
         catch (\GuzzleHttp\Exception\ConnectException $e)
         {
@@ -76,6 +79,7 @@ class PostmarkMailService implements MailService
 
         try
         {
+            $span = $this->instrumentation->startSpan('mail.send_template');
             $result = $this->getClient()->sendEmailWithTemplate(
                 $from,
                 $to,
@@ -86,6 +90,7 @@ class PostmarkMailService implements MailService
                 true,               // trackOpens
                 $replyTo           // replyTo
             );
+            $this->instrumentation->finishSpan($span);
         }
         catch (PostmarkException $e)
         {

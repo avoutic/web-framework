@@ -8,6 +8,7 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 class LatteRenderService implements RenderService
 {
     public function __construct(
+        private Instrumentation $instrumentation,
         private \Latte\Engine $latteEngine,
         private string $templateDir,
         private string $tmpDir,
@@ -37,6 +38,10 @@ class LatteRenderService implements RenderService
             throw new \InvalidArgumentException('Requested template not present');
         }
 
-        return $this->latteEngine->renderToString($templateFile, $params);
+        $span = $this->instrumentation->startSpan('app.render');
+        $result = $this->latteEngine->renderToString($templateFile, $params);
+        $this->instrumentation->finishSpan($span);
+
+        return $result;
     }
 }

@@ -18,6 +18,7 @@ class SanityCheckRunner
      */
     public function __construct(
         private Container $container,
+        private Instrumentation $instrumentation,
         private StoredValues $storedValues,
         private array $buildInfo,
     ) {
@@ -69,7 +70,9 @@ class SanityCheckRunner
                 $module->setVerbose();
             }
 
+            $span = $this->instrumentation->startSpan('sanity_check.'.$info['class']);
             $result = $module->performChecks();
+            $this->instrumentation->finishSpan($span);
 
             if ($result === false)
             {

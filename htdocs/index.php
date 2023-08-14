@@ -15,6 +15,7 @@ use Slim\Psr7\Factory\ServerRequestFactory;
 use WebFramework\Core\BootstrapService;
 use WebFramework\Core\ConfigBuilder;
 use WebFramework\Core\DebugService;
+use WebFramework\Core\Instrumentation;
 use WebFramework\Core\MiddlewareRegistrar;
 use WebFramework\Core\ReportFunction;
 use WebFramework\Core\RouteRegistrar;
@@ -53,10 +54,18 @@ try
     AppFactory::setContainer($container);
     $app = AppFactory::create();
 
+    // Start instrumentation transaction
+    //
+    $instrumentation = $container->get(Instrumentation::class);
+    $request = ServerRequestFactory::createFromGlobals();
+    $transaction = $instrumentation->startTransaction('http.server', $request->getUri()->getPath());
+
     // Bootstrap WebFramework
     //
+    $span = $instrumentation->startSpan('app.bootstrap');
     $bootstrapService = $container->get(BootstrapService::class);
     $bootstrapService->bootstrap();
+    $instrumentation->finishSpan($span);
 
     // Registrer Middlewares
     //
@@ -70,7 +79,11 @@ try
 
     // Handle the request
     //
+    $span = $instrumentation->startSpan('app.run');
     $app->run();
+    $instrumentation->finishSpan($span);
+
+    $instrumentation->finishTransaction($transaction);
 }
 catch (Throwable $e)
 {

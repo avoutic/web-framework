@@ -8,6 +8,7 @@ class MysqliDatabase implements Database
 
     public function __construct(
         private \mysqli $database,
+        private Instrumentation $instrumentation,
     ) {
     }
 
@@ -21,6 +22,8 @@ class MysqliDatabase implements Database
             throw new \RuntimeException('Database connection not available');
         }
 
+        $span = $this->instrumentation->startSpan('db.sql.query', $queryStr);
+
         $result = null;
 
         if (!count($valueArray))
@@ -31,6 +34,8 @@ class MysqliDatabase implements Database
         {
             $result = $this->database->execute_query($queryStr, $valueArray);
         }
+
+        $this->instrumentation->finishSpan($span);
 
         if (!$result)
         {
