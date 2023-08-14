@@ -109,7 +109,10 @@ return [
             throw new \RuntimeException('Mysqli Database connection failed');
         }
 
-        $database = new Core\MysqliDatabase($mysql);
+        $database = new Core\MysqliDatabase(
+            $mysql,
+            $c->get(Core\Instrumentation::class),
+        );
 
         $c->get(Core\DatabaseProvider::class)->set($database);
 
@@ -124,6 +127,7 @@ return [
             appDir: DI\get('app_dir'),
             serverName: DI\get('server_name'),
         ),
+    Core\Instrumentation::class => DI\autowire(Core\NullInstrumentation::class),
     Core\LatteRenderService::class => DI\autowire()
         ->constructor(
             templateDir: DI\string('{app_dir}/templates'),

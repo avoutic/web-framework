@@ -2,6 +2,12 @@
 
 ## v7.3
 
+### New Features
+
+* Support Instrumentation
+
+## v7.3
+
 ### Light changes
 
 * CustomIdValidator now named IdValidator
