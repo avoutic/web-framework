@@ -166,12 +166,15 @@ TXT;
                 unset($entry['args']);
             }
 
-            $stack[] = $entry;
-        }
+            if ($scrubState)
+            {
+                if (isset($entry['args']))
+                {
+                    WFHelpers::scrubState($entry['args']);
+                }
+            }
 
-        if ($scrubState)
-        {
-            WFHelpers::scrubState($stack);
+            $stack[] = $entry;
         }
 
         return $stack;

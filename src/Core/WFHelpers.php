@@ -73,28 +73,46 @@ class WFHelpers
 
             if (is_object($value))
             {
-                $value = $item[$key] = get_object_vars($value);
+                if ($value instanceof EntityCore)
+                {
+                    $item[$key] = get_object_vars($value);
+                }
+                else
+                {
+                    $item[$key] = 'object';
+                }
+
+                continue;
+            }
+
+            if (is_string($value) && !mb_detect_encoding($value, 'ASCII', true))
+            {
+                $item[$key] = 'binary';
+
+                continue;
+            }
+            if ($key === 'database')
+            {
+                $item[$key] = 'scrubbed';
+
+                continue;
+            }
+            if ($key === 'databases')
+            {
+                $item[$key] = 'scrubbed';
+
+                continue;
+            }
+            if ($key === 'config')
+            {
+                $item[$key] = 'scrubbed';
+
+                continue;
             }
 
             if (is_array($value))
             {
                 self::scrubState($item[$key]);
-            }
-            elseif (!mb_detect_encoding($value, 'ASCII', true))
-            {
-                $item[$key] = 'binary';
-            }
-            elseif ($key === 'database')
-            {
-                $item[$key] = 'scrubbed';
-            }
-            elseif ($key === 'databases')
-            {
-                $item[$key] = 'scrubbed';
-            }
-            elseif ($key === 'config')
-            {
-                $item[$key] = 'scrubbed';
             }
         }
     }
