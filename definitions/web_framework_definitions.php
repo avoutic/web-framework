@@ -46,6 +46,12 @@ return [
 
         return new \Odan\Session\PhpSession($options);
     },
+    \Sentry\ClientInterface::class => function (ContainerInterface $container) {
+        $factory = $container->get(\WebFramework\Core\SentryClientFactory::class);
+        $options = $container->get('sentry_options');
+
+        return $factory->get($options);
+    },
     \Slim\Psr7\Factory\ResponseFactory::class => DI\create(),
     \Stripe\StripeClient::class => function (ContainerInterface $c) {
         $secureConfigService = $c->get(Security\ConfigService::class);
