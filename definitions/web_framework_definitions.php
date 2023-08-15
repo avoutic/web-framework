@@ -66,9 +66,9 @@ return [
     },
     'app_name' => 'app',
     'build_info' => function (ContainerInterface $c) {
-        $debugService = $c->get(Core\DebugService::class);
+        $buildInfoService = $c->get(Core\BuildInfoService::class);
 
-        return $debugService->getBuildInfo();
+        return $buildInfoService->getInfo();
     },
     'full_base_url' => DI\string('{http_mode}://{server_name}{base_url}'),
     'host_name' => $_SERVER['SERVER_NAME'] ?? 'app',
