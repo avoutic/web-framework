@@ -76,6 +76,7 @@ try
     //
     $routeRegistrar = new RouteRegistrar($app, $container, $appDir);
     $routeRegistrar->register($config['route_files']);
+    $app->addRoutingMiddleware();
 
     // Handle the request
     //

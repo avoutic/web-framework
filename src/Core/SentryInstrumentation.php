@@ -44,6 +44,11 @@ class SentryInstrumentation implements Instrumentation
         $transaction->finish();
     }
 
+    public function setTransactionName(mixed $transaction, string $name): void
+    {
+        $transaction->setName($name);
+    }
+
     public function startSpan(string $op, string $description = ''): mixed
     {
         $parent = null;

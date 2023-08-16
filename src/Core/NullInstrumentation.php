@@ -18,6 +18,10 @@ class NullInstrumentation implements Instrumentation
     {
     }
 
+    public function setTransactionName(mixed $transaction, string $name): void
+    {
+    }
+
     public function startSpan(string $op, string $description = ''): mixed
     {
         return null;
