@@ -1,6 +1,6 @@
 # v7 release
 
-## v7.3
+## v7.4
 
 ### Light changes
 
