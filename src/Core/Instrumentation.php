@@ -4,6 +4,8 @@ namespace WebFramework\Core;
 
 interface Instrumentation
 {
+    public function getCurrentTransaction(): mixed;
+
     public function startTransaction(string $op, string $name): mixed;
 
     public function finishTransaction(mixed $transaction): void;

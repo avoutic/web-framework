@@ -4,6 +4,11 @@ namespace WebFramework\Core;
 
 class NullInstrumentation implements Instrumentation
 {
+    public function getCurrentTransaction(): mixed
+    {
+        return null;
+    }
+
     public function startTransaction(string $op, string $name): mixed
     {
         return null;

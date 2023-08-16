@@ -3,13 +3,21 @@
 namespace WebFramework\Core;
 
 use Sentry\ClientInterface;
+use Sentry\Tracing\Transaction;
 
 class SentryInstrumentation implements Instrumentation
 {
+    private ?Transaction $currentTransaction = null;
+
     public function __construct(
         ClientInterface $client,
     ) {
         \Sentry\SentrySdk::getCurrentHub()->bindClient($client);
+    }
+
+    public function getCurrentTransaction(): mixed
+    {
+        return $this->currentTransaction;
     }
 
     public function startTransaction(string $op, string $name): mixed
@@ -22,13 +30,13 @@ class SentryInstrumentation implements Instrumentation
 
         // Start the transaction
         //
-        $transaction = \Sentry\startTransaction($transactionContext);
+        $this->currentTransaction = \Sentry\startTransaction($transactionContext);
 
         // Set the current transaction as the current span so we can retrieve >
         //
-        \Sentry\SentrySdk::getCurrentHub()->setSpan($transaction);
+        \Sentry\SentrySdk::getCurrentHub()->setSpan($this->currentTransaction);
 
-        return $transaction;
+        return $this->currentTransaction;
     }
 
     public function finishTransaction(mixed $transaction): void
