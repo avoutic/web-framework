@@ -227,6 +227,6 @@ abstract class PageAction extends ActionCore
         $this->doLogic();
         $this->displayFrame();
 
-        exit();
+        $this->exit();
     }
 }

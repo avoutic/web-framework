@@ -30,7 +30,7 @@ abstract class ApiAction extends ActionCore
         {
             echo(json_encode($output));
 
-            exit();
+            $this->exit();
         }
 
         echo(json_encode(
@@ -40,7 +40,7 @@ abstract class ApiAction extends ActionCore
             ]
         ));
 
-        exit();
+        $this->exit();
     }
 
     protected function outputFile(string $filename, string $hash = '', bool $asDownload = false): void

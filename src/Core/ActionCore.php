@@ -33,6 +33,7 @@ abstract class ActionCore
         protected Cache $cache,
         protected Container $container,
         protected Database $database,
+        protected Instrumentation $instrumentation,
         protected AssertService $assertService,
         protected AuthenticationService $authenticationService,
         protected BlacklistService $blacklistService,
@@ -482,5 +483,16 @@ abstract class ActionCore
     protected function getBuildInfo(): array
     {
         return $this->buildInfoService->getInfo();
+    }
+
+    protected function exit(): void
+    {
+        $transaction = $this->instrumentation->getCurrentTransaction();
+        if ($transaction)
+        {
+            $this->instrumentation->finishTransaction($transaction);
+        }
+
+        exit();
     }
 }
