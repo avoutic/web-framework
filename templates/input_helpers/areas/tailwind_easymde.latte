@@ -39,7 +39,7 @@
       id="{$id}"
       {ifset $model} x-model="{$model}" {/ifset}
       {ifset $name} name="{$name}" {/ifset}
-      {if $required} required {/if}
+      {if !$enable_editor && $required} required {/if}
       {ifset $rows} rows="{$rows}" {/ifset}
       class="shadow-sm {$colors['focus:ring']} {$colors['focus:border']} block w-full text-sm border-gray-300 rounded-md">{$value}</textarea>
 
