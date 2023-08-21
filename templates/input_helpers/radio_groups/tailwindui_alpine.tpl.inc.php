@@ -49,7 +49,7 @@ $count = 0;
 
 foreach ($parameters['options'] as $value => $optionInfo)
 {
-    if (!isset($optionsInfo['label']))
+    if (!isset($optionInfo['label']))
     {
         throw new \InvalidArgumentException('Label of option not set');
     }
