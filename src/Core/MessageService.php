@@ -31,7 +31,7 @@ class MessageService
     {
         // Check if it is a translation key
         //
-        if (!str_contains($message, ' '))
+        if (!str_contains($message, ' ') && str_contains($message, '.'))
         {
             $parts = explode('.', $message);
 
