@@ -93,6 +93,18 @@ return [
         ->constructor(
             appDir: DI\get('app_dir'),
         ),
+    Core\Browserless::class => function (ContainerInterface $c) {
+        $secureConfigService = $c->get(Security\ConfigService::class);
+
+        $config = $secureConfigService->getAuthConfig('browserless');
+
+        return new Core\Browserless(
+            $c->get(Security\ProtectService::class),
+            $config['local_server'],
+            $config['pdf_endpoint'],
+            $config['token'],
+        );
+    },
     Core\BuildInfoService::class => DI\autowire()
         ->constructorParameter('appDir', DI\get('app_dir')),
     Core\Cache::class => DI\autowire(Core\NullCache::class),
