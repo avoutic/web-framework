@@ -183,6 +183,16 @@ return [
             storedValues: DI\get('SanityCheckStoredValues'),
             buildInfo: DI\get('build_info'),
         ),
+    Core\StripeFactory::class => DI\factory(function (ContainerInterface $c) {
+        $secureConfigService = $c->get(Security\ConfigService::class);
+
+        $config = $secureConfigService->getAuthConfig('stripe');
+
+        return new Core\StripeFactory(
+            $c->get(\Stripe\StripeClient::class),
+            $config['endpoint_secret']
+        );
+    }),
     Core\UrlBuilder::class => DI\autowire()
         ->constructor(
             baseUrl: DI\Get('base_url'),
