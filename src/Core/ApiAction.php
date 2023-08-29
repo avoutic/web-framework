@@ -74,6 +74,26 @@ abstract class ApiAction extends ActionCore
         $finfo = new \finfo(FILEINFO_MIME_TYPE);
         $type = $finfo->file($filename);
 
+        $extensions = [
+            'image/png' => 'png',
+            'image/jpeg' => 'jpg',
+            'text/plain' => 'txt',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => 'docx',
+            'application/pdf' => 'pdf',
+        ];
+
+        $externalFilename = $filename;
+
+        if (isset($extensions[$type]))
+        {
+            $ext = $extensions[$type];
+
+            if (pathinfo($filename, PATHINFO_EXTENSION) !== $ext)
+            {
+                $externalFilename .= ".{$ext}";
+            }
+        }
+
         header('Cache-Control: public, max-age=604800');
         header('ETag: "'.$hash.'"');
         header('Content-Length: '.filesize($filename));
@@ -82,11 +102,11 @@ abstract class ApiAction extends ActionCore
 
         if ($asDownload)
         {
-            header('Content-Disposition: attachment; filename="'.basename($filename).'"');
+            header('Content-Disposition: attachment; filename="'.basename($externalFilename).'"');
         }
         else
         {
-            header('Content-Disposition: inline; filename="'.basename($filename).'"');
+            header('Content-Disposition: inline; filename="'.basename($externalFilename).'"');
         }
 
         readfile($filename);
