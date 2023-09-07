@@ -75,7 +75,7 @@ return [
     'validation' => [
         'filter' => '{field_name} is not valid',
         'max_length' => '{field_name} can be a maximum of {max_length} characters',
-        'required' => '{field_name} is verplicht',
+        'required' => '{field_name} is required',
     ],
     'verify' => [
         'link_expired' => 'Verification link expired',
