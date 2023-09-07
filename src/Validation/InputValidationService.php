@@ -63,6 +63,7 @@ class InputValidationService
                     throw new \InvalidArgumentException("Array field not array in inputs: {$field}");
                 }
 
+                $this->all[$field] = [];
                 $this->validated[$field] = [];
 
                 foreach ($values as $key => $value)
@@ -101,43 +102,25 @@ class InputValidationService
             $this->all[$field] = $validator->getTyped($value);
         }
 
-        if ($required && !strlen($value))
+        if (!strlen($value))
         {
-            if ($isArray)
+            if ($required)
             {
-                $this->all[$field][$key] = $validator->getDefault();
-            }
-            else
-            {
-                $this->all[$field] = $validator->getDefault();
-            }
-
-            $this->registerError(
-                $field,
-                'validation.required',
-                [
-                    'field_name' => $validator->getName(),
-                ],
-            );
-
-            return;
-        }
-
-        if (!$required)
-        {
-            if (!strlen($value))
-            {
-                if ($isArray)
-                {
-                    $this->validated[$field][$key] = $validator->getDefault();
-                }
-                else
-                {
-                    $this->validated[$field] = $validator->getDefault();
-                }
+                $this->registerError($field, 'validation.required', ['field_name' => $validator->getName()]);
 
                 return;
             }
+
+            if ($isArray)
+            {
+                $this->validated[$field][$key] = $validator->getDefault();
+            }
+            else
+            {
+                $this->validated[$field] = $validator->getDefault();
+            }
+
+            return;
         }
 
         // Value is now non-empty, so other rules can be applied
