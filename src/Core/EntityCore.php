@@ -13,6 +13,9 @@ abstract class EntityCore implements EntityInterface
     /** @var array<string> */
     public static array $fillableFields = [];
 
+    /** @var array<string> */
+    public static array $additionalIdFields = [];
+
     /** @var array<string, mixed> */
     public array $originalValues = [];
 

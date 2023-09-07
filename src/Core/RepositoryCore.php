@@ -12,6 +12,9 @@ abstract class RepositoryCore
     /** @var array<string> */
     protected array $baseFields;
 
+    /** @var array<string> */
+    protected array $additionalIdFields;
+
     /** @var class-string<T> */
     protected static string $entityClass;
 
@@ -26,6 +29,7 @@ abstract class RepositoryCore
         $class = static::$entityClass;
 
         $this->baseFields = $class::$baseFields;
+        $this->additionalIdFields = $class::$additionalIdFields;
         $this->tableName = $class::$tableName;
 
         if (property_exists($class, 'isCacheable'))
@@ -135,6 +139,13 @@ abstract class RepositoryCore
             $property = $reflection->getProperty($this->snakeToCamel($name));
             $property->setAccessible(true);
 
+            // Skip uninitialized values
+            //
+            if (!$property->isInitialized($entity))
+            {
+                continue;
+            }
+
             $info[$name] = $property->getValue($entity);
         }
 
@@ -210,6 +221,17 @@ SQL;
             $values = $this->getEntityFields($entity, false);
             $obj = $this->create($values);
             $entity->setObjectId($this->getId($obj));
+
+            // Initialize additional database generated fields
+            //
+            foreach ($this->additionalIdFields as $field)
+            {
+                $property = $reflection->getProperty($field);
+                $property->setAccessible(true);
+
+                $fieldValue = $property->getValue($obj);
+                $property->setValue($entity, $fieldValue);
+            }
 
             return;
         }

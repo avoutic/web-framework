@@ -5,6 +5,7 @@
 ### Light changes
 
 * ValidationException constructor changed for simplicity, MultiValidationException added
+* Support additional Database-generated ID fields (like guid) in EntityCore / RepositoryCore
 
 ## v7.4
 
