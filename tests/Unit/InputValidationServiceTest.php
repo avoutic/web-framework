@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use WebFramework\Exception\MultiValidationException;
+use WebFramework\Validation\CustomNumberValidator;
 use WebFramework\Validation\CustomValidator;
 use WebFramework\Validation\InputValidationService;
 use WebFramework\Validation\UsernameValidator;
@@ -384,5 +385,81 @@ final class InputValidationServiceTest extends \Codeception\Test\Unit
             $instance->validate($validators, $inputs);
         })
             ->callableThrows(MultiValidationException::class);
+    }
+
+    public function testValidNumber()
+    {
+        $instance = $this->make(
+            InputValidationService::class,
+        );
+
+        $validators = [
+            'number' => (new CustomNumberValidator('custom'))->filter('[1-5]'),
+        ];
+
+        $inputs = [
+            'number' => '1',
+        ];
+
+        $results = [
+            'number' => 1,
+        ];
+
+        verify($instance->validate($validators, $inputs))
+            ->equals($results);
+    }
+
+    public function testInvalidNumberDefaultNull()
+    {
+        $instance = $this->make(
+            InputValidationService::class,
+        );
+
+        $validators = [
+            'number' => (new CustomNumberValidator('custom'))->required(),
+        ];
+
+        $inputs = [
+            'number' => '',
+        ];
+
+        $results = [
+            'number' => null,
+        ];
+
+        verify(function () use ($instance, $validators, $inputs) {
+            $instance->validate($validators, $inputs);
+        })
+            ->callableThrows(MultiValidationException::class);
+
+        verify($instance->getAll())
+            ->equals($results);
+    }
+
+    public function testInvalidNumberDefaultNumber()
+    {
+        $instance = $this->make(
+            InputValidationService::class,
+        );
+
+        $validators = [
+            'number' => (new CustomNumberValidator('custom'))->required()->default(0),
+        ];
+
+        $inputs = [
+            'number' => '',
+        ];
+
+        $results = [
+            'number' => 0,
+        ];
+
+        verify(function () use ($instance, $validators, $inputs) {
+            $instance->validate($validators, $inputs);
+        })
+            ->callableThrows(MultiValidationException::class);
+
+        verify($instance->getAll())
+            ->equals($results);
     }
 }

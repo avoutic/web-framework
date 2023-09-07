@@ -103,6 +103,15 @@ class InputValidationService
 
         if ($required && !strlen($value))
         {
+            if ($isArray)
+            {
+                $this->all[$field][$key] = $validator->getDefault();
+            }
+            else
+            {
+                $this->all[$field] = $validator->getDefault();
+            }
+
             $this->registerError(
                 $field,
                 'validation.required',

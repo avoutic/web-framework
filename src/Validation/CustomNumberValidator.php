@@ -16,7 +16,7 @@ class CustomNumberValidator extends CustomValidator
     {
         if (!strlen($value))
         {
-            return null;
+            return $this->getDefault();
         }
 
         return (int) $value;
