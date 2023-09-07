@@ -2,7 +2,7 @@
 
 namespace WebFramework\Validation;
 
-use WebFramework\Exception\ValidationException;
+use WebFramework\Exception\MultiValidationException;
 
 class InputValidationService
 {
@@ -84,7 +84,7 @@ class InputValidationService
 
         if (count($this->errors))
         {
-            throw new ValidationException(errors: $this->getErrors());
+            throw new MultiValidationException(errors: $this->getErrors());
         }
 
         return $this->validated;

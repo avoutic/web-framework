@@ -2,7 +2,7 @@
 
 namespace Tests\Unit;
 
-use WebFramework\Exception\ValidationException;
+use WebFramework\Exception\MultiValidationException;
 use WebFramework\Validation\CustomValidator;
 use WebFramework\Validation\InputValidationService;
 use WebFramework\Validation\UsernameValidator;
@@ -133,7 +133,7 @@ final class InputValidationServiceTest extends \Codeception\Test\Unit
         verify(function () use ($instance, $validators, $inputs) {
             $instance->validate($validators, $inputs);
         })
-            ->callableThrows(ValidationException::class);
+            ->callableThrows(MultiValidationException::class);
     }
 
     public function testNotRequiredNotPresent()
@@ -267,7 +267,7 @@ final class InputValidationServiceTest extends \Codeception\Test\Unit
         verify(function () use ($instance, $validators, $inputs) {
             $instance->validate($validators, $inputs);
         })
-            ->callableThrows(ValidationException::class);
+            ->callableThrows(MultiValidationException::class);
     }
 
     public function testArrayInvalidLength()
@@ -290,7 +290,7 @@ final class InputValidationServiceTest extends \Codeception\Test\Unit
         verify(function () use ($instance, $validators, $inputs) {
             $instance->validate($validators, $inputs);
         })
-            ->callableThrows(ValidationException::class);
+            ->callableThrows(MultiValidationException::class);
     }
 
     public function testValidFilter()
@@ -332,7 +332,7 @@ final class InputValidationServiceTest extends \Codeception\Test\Unit
         verify(function () use ($instance, $validators, $inputs) {
             $instance->validate($validators, $inputs);
         })
-            ->callableThrows(ValidationException::class);
+            ->callableThrows(MultiValidationException::class);
     }
 
     public function testArrayValidFilter()
@@ -383,6 +383,6 @@ final class InputValidationServiceTest extends \Codeception\Test\Unit
         verify(function () use ($instance, $validators, $inputs) {
             $instance->validate($validators, $inputs);
         })
-            ->callableThrows(ValidationException::class);
+            ->callableThrows(MultiValidationException::class);
     }
 }

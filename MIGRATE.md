@@ -1,5 +1,11 @@
 # v7 release
 
+## v7.6
+
+### Light changes
+
+* ValidationException constructor changed for simplicity, MultiValidationException added
+
 ## v7.4
 
 ### Light changes

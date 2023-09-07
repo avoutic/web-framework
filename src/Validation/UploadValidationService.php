@@ -21,30 +21,15 @@ class UploadValidationService
         {
             if ($error == UPLOAD_ERR_INI_SIZE || $error == UPLOAD_ERR_FORM_SIZE)
             {
-                $error = [
-                    'message' => 'upload.file_too_large',
-                    'params' => [],
-                ];
-
-                throw new ValidationException(errors: ['upload' => [$error]]);
+                throw new ValidationException('upload', 'upload.file_too_large');
             }
             if ($error == UPLOAD_ERR_PARTIAL)
             {
-                $error = [
-                    'message' => 'upload.partial_upload',
-                    'params' => [],
-                ];
-
-                throw new ValidationException(errors: ['upload' => [$error]]);
+                throw new ValidationException('upload', 'upload.partial_upload');
             }
             if ($error == UPLOAD_ERR_NO_FILE)
             {
-                $error = [
-                    'message' => 'upload.no_file',
-                    'params' => [],
-                ];
-
-                throw new ValidationException(errors: ['upload' => [$error]]);
+                throw new ValidationException('upload', 'upload.no_file');
             }
             if ($error == UPLOAD_ERR_NO_TMP_DIR)
             {
@@ -64,12 +49,7 @@ class UploadValidationService
 
         if ($maxSize !== null && $uploadedFile->getSize() > $maxSize)
         {
-            $error = [
-                'message' => 'upload.file_too_large_max_size',
-                'params' => ['max_size' => (string) $maxSize],
-            ];
-
-            throw new ValidationException(errors: ['upload' => [$error]]);
+            throw new ValidationException('upload', 'upload.file_too_large_max_size', ['max_size' => (string) $maxSize]);
         }
 
         $finfo = new \finfo(FILEINFO_MIME_TYPE);
@@ -82,12 +62,7 @@ class UploadValidationService
 
         if ($whitelistMimeTypes !== null && !in_array($mimeType, $whitelistMimeTypes))
         {
-            $error = [
-                'message' => 'upload.mime_type_not_allowed',
-                'params' => [],
-            ];
-
-            throw new ValidationException(errors: ['upload' => [$error]]);
+            throw new ValidationException('upload', 'upload.mime_type_not_allowed');
         }
 
         return $mimeType;
