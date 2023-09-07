@@ -279,9 +279,9 @@ final class DebugServiceTest extends \Codeception\Test\Unit
                 'class' => 'Object2',
                 'function' => 'function2',
                 'extra' => [
-                    'database' => 'data',
-                    'databases' => 'data',
-                    'config' => 'data',
+                    'database' => 'scrubbed',
+                    'databases' => 'scrubbed',
+                    'config' => 'scrubbed',
                     'regular' => 'normal',
                 ],
             ],
