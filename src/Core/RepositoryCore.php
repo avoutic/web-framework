@@ -404,7 +404,7 @@ SQL;
      *
      * @return T
      */
-    protected function instantiateEntityFromData(array $data): EntityInterface
+    public function instantiateEntityFromData(array $data): EntityInterface
     {
         $entity = new static::$entityClass();
         $reflection = new \ReflectionClass($entity);
@@ -413,6 +413,11 @@ SQL;
 
         foreach ($this->baseFields as $name)
         {
+            if (!isset($data[$name]))
+            {
+                continue;
+            }
+
             $property = $reflection->getProperty($this->snakeToCamel($name));
             $property->setAccessible(true);
             $property->setValue($entity, $data[$name]);
@@ -522,6 +527,38 @@ SQL;
         {$limitFmt}
 SQL;
 
+        $result = $this->database->query($query, $params);
+        $class = static::$entityClass;
+        if ($result === false)
+        {
+            throw new \RuntimeException("Failed to retrieve objects ({$class})");
+        }
+
+        $info = [];
+        foreach ($result as $k => $row)
+        {
+            $data = [
+                'id' => $row['id'],
+            ];
+
+            foreach ($this->baseFields as $name)
+            {
+                $data[$name] = $row[$name];
+            }
+
+            $info[] = $this->instantiateEntityFromData($data);
+        }
+
+        return new EntityCollection($info);
+    }
+
+    /**
+     * @param array<null|bool|float|int|string> $params
+     *
+     * @return EntityCollection<T>
+     */
+    public function getFromQuery(string $query, array $params): EntityCollection
+    {
         $result = $this->database->query($query, $params);
         $class = static::$entityClass;
         if ($result === false)

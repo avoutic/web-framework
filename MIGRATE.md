@@ -1,5 +1,11 @@
 # v7 release
 
+## v7.7
+
+### New Features
+
+* Add getFromQuery() to RepositoryCore
+
 ## v7.6
 
 ### Light changes
