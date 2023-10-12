@@ -36,19 +36,19 @@ class ErrorRedirectMiddleware implements MiddlewareInterface
         }
         catch (HttpForbiddenException $e)
         {
-            return $this->responseEmitter->forbidden($request);
+            return $this->responseEmitter->forbidden($e->getRequest());
         }
         catch (HttpNotFoundException $e)
         {
-            return $this->responseEmitter->notFound($request);
+            return $this->responseEmitter->notFound($e->getRequest());
         }
         catch (HttpUnauthorizedException $e)
         {
-            return $this->responseEmitter->unauthorized($request);
+            return $this->responseEmitter->unauthorized($e->getRequest());
         }
         catch (BlacklistException $e)
         {
-            return $this->responseEmitter->blacklisted($request);
+            return $this->responseEmitter->blacklisted($e->getRequest());
         }
         catch (\Throwable $e)
         {

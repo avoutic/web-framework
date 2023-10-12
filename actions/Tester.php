@@ -39,6 +39,11 @@ class Tester
 
         if ($action === '401')
         {
+            // Remove query string from Uri or risk infinite loop when logged in, returning here
+            //
+            $uri = $request->getUri()->withQuery('');
+            $request = $request->withUri($uri);
+
             throw new HttpUnauthorizedException($request);
         }
 
