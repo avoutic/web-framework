@@ -87,6 +87,10 @@ return [
         'web_framework_definitions.php',
         'app_definitions.php',
     ],
+    'middlewares' => [
+        'pre_routing' => [],
+        'post_routing' => [],
+    ],
     'route_files' => [],                // The files in 'routes' to explicitly load
     'sender_core' => [
         'default_sender' => '',

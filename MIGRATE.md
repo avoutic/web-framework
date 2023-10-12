@@ -1,5 +1,11 @@
 # v7 release
 
+## v7.8
+
+### Light changes
+
+* Split middlewares into pre and post routing
+
 ## v7.7
 
 ### New Features

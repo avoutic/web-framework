@@ -67,16 +67,20 @@ try
     $bootstrapService->bootstrap();
     $instrumentation->finishSpan($span);
 
-    // Registrer Middlewares
+    // Registrer Post Routing Middlewares
     //
     $middlewareRegistrar = new MiddlewareRegistrar($app);
-    $middlewareRegistrar->register($config['middlewares'], $config['debug']);
+    $middlewareRegistrar->register($config['middlewares']['post_routing']);
 
     // Registrer Routes
     //
     $routeRegistrar = new RouteRegistrar($app, $container, $appDir);
     $routeRegistrar->register($config['route_files']);
     $app->addRoutingMiddleware();
+
+    // Registrer Pre Routing Middlewares
+    //
+    $middlewareRegistrar->register($config['middlewares']['pre_routing']);
 
     // Handle the request
     //

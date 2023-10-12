@@ -14,17 +14,11 @@ class MiddlewareRegistrar
     /**
      * @param array<string> $middlewares
      */
-    public function register(array $middlewares, bool $debug): void
+    public function register(array $middlewares): void
     {
         foreach ($middlewares as $middleware)
         {
             $this->app->add($middleware);
         }
-
-        $this->app->addErrorMiddleware(
-            $debug,
-            false,
-            false,
-        );
     }
 }
