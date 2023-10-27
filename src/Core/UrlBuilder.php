@@ -77,7 +77,9 @@ class UrlBuilder
             $builtUrl = $this->getServerUrl();
         }
 
-        return $this->baseUrl.
+        return
+            ($absolute ? $this->getServerUrl() : '').
+            $this->baseUrl.
             (isset($parts['path']) ? $parts['path'] : '').
             (isset($parts['query']) ? '?'.$parts['query'] : '').
             (isset($parts['fragment']) ? '#'.$parts['fragment'] : '');
