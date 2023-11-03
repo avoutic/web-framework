@@ -2,18 +2,15 @@
 
 namespace WebFramework\Core;
 
+use Stripe\Exception\SignatureVerificationException;
 use Stripe\StripeClient;
 
 class StripeFactory
 {
-    /**
-     * @var array<callable>
-     */
-    private array $eventHandlers = [];
-
     public function __construct(
         private StripeClient $stripe,
         private string $endpointSecret,
+        private bool $production,
     ) {
     }
 
@@ -21,53 +18,36 @@ class StripeFactory
     {
         try
         {
-            $event = \Stripe\Webhook::constructEvent(
-                $payload,
-                $sigHeader,
-                $this->endpointSecret,
-            );
+            if ($this->production)
+            {
+                $event = \Stripe\Webhook::constructEvent(
+                    $payload,
+                    $sigHeader,
+                    $this->endpointSecret,
+                );
+            }
+            else
+            {
+                // 10 year tolerance for testing
+                //
+                $event = \Stripe\Webhook::constructEvent(
+                    $payload,
+                    $sigHeader,
+                    $this->endpointSecret,
+                    10 * 365 * 24 * 60 * 60,
+                );
+            }
         }
         catch (\UnexpectedValueException $e)
         {
             return false;
         }
-        catch (\Stripe\Exception\SignatureVerificationException $e)
+        catch (SignatureVerificationException $e)
         {
             return false;
         }
 
         return true;
-    }
-
-    /**
-     * @param array<mixed> $payload
-     */
-    public function handleEvent(array $payload): bool|string
-    {
-        $eventType = $payload['type'];
-        $object = $payload['data']['object'];
-
-        if (!isset($this->eventHandlers[$eventType]))
-        {
-            return 'unhandled-event-type';
-        }
-
-        $handlerFunction = $this->eventHandlers[$eventType];
-
-        return $handlerFunction($object);
-    }
-
-    public function addEventHandler(string $eventType, callable $handler): void
-    {
-        $this->eventHandlers[$eventType] = $handler;
-    }
-
-    /**
-     * @return array<string>
-     */
-    public function getHandledEvents(): array
-    {
-        return array_keys($this->eventHandlers);
     }
 
     // Customer object

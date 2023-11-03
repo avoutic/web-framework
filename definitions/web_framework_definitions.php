@@ -190,7 +190,8 @@ return [
 
         return new Core\StripeFactory(
             $c->get(\Stripe\StripeClient::class),
-            $config['endpoint_secret']
+            $config['endpoint_secret'],
+            $c->get('production'),
         );
     }),
     Core\UrlBuilder::class => DI\autowire()

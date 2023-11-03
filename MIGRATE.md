@@ -1,5 +1,11 @@
 # v7 release
 
+## v7.9
+
+### Light changes
+
+* Removed deprecated event handling from StripeFactory
+
 ## v7.8
 
 ### Light changes
