@@ -74,8 +74,8 @@ try
 
     // Registrer Routes
     //
-    $routeRegistrar = new RouteRegistrar($app, $container, $appDir);
-    $routeRegistrar->register($config['route_files']);
+    $routeRegistrar = new RouteRegistrar($app, $container);
+    $routeRegistrar->register($config['routes']);
     $app->addRoutingMiddleware();
 
     // Registrer Pre Routing Middlewares

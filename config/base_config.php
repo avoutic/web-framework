@@ -91,7 +91,7 @@ return [
         'pre_routing' => [],
         'post_routing' => [],
     ],
-    'route_files' => [],                // The files in 'routes' to explicitly load
+    'routes' => [],                // The route classes to explicitly load
     'sender_core' => [
         'default_sender' => '',
         'assert_recipient' => '',
