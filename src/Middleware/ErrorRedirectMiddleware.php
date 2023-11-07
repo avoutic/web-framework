@@ -2,6 +2,7 @@
 
 namespace WebFramework\Middleware;
 
+use Psr\Container\ContainerInterface as Container;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Server\MiddlewareInterface;
@@ -18,6 +19,7 @@ use WebFramework\Exception\RedirectException;
 class ErrorRedirectMiddleware implements MiddlewareInterface
 {
     public function __construct(
+        private Container $container,
         private DebugService $debugService,
         private ReportFunction $reportFunction,
         private ResponseEmitter $responseEmitter,
@@ -66,7 +68,9 @@ class ErrorRedirectMiddleware implements MiddlewareInterface
                 //
             }
 
-            return $this->responseEmitter->error($request, 'Error');
+            $message = ($this->container->get('debug')) ? $errorReport['message'] : '';
+
+            return $this->responseEmitter->error($request, 'Error', $message);
         }
     }
 }
