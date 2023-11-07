@@ -47,9 +47,12 @@ class ResponseEmitter
 
     public function blacklisted(Request $request): Response
     {
+        $contentType = $request->getHeaderLine('Content-Type');
+        $isJson = (str_contains($contentType, 'application/json'));
+
         $response = $this->responseFactory->createResponse(403, 'Forbidden');
 
-        if ($request->getAttribute('is_json') === true)
+        if ($isJson)
         {
             $response = $response->withHeader('Content-type', 'application/json');
 
@@ -71,9 +74,12 @@ class ResponseEmitter
 
     public function error(Request $request, string $title, string $details = '', int $httpCode = 500, string $reasonPhrase = 'Internal error'): Response
     {
+        $contentType = $request->getHeaderLine('Content-Type');
+        $isJson = (str_contains($contentType, 'application/json'));
+
         $response = $this->responseFactory->createResponse($httpCode, $reasonPhrase);
 
-        if ($request->getAttribute('is_json') === true)
+        if ($isJson)
         {
             $response = $response->withHeader('Content-type', 'application/json');
 
@@ -99,9 +105,12 @@ class ResponseEmitter
 
     public function forbidden(Request $request): Response
     {
+        $contentType = $request->getHeaderLine('Content-Type');
+        $isJson = (str_contains($contentType, 'application/json'));
+
         $response = $this->responseFactory->createResponse(403, 'Forbidden');
 
-        if ($request->getAttribute('is_json') === true)
+        if ($isJson)
         {
             return $response->withHeader('Content-type', 'application/json');
         }
@@ -115,9 +124,12 @@ class ResponseEmitter
 
     public function notFound(Request $request): Response
     {
+        $contentType = $request->getHeaderLine('Content-Type');
+        $isJson = (str_contains($contentType, 'application/json'));
+
         $response = $this->responseFactory->createResponse(404, 'Not Found');
 
-        if ($request->getAttribute('is_json') === true)
+        if ($isJson)
         {
             return $response->withHeader('Content-type', 'application/json');
         }
@@ -159,9 +171,12 @@ class ResponseEmitter
 
     public function unauthorized(Request $request): Response
     {
+        $contentType = $request->getHeaderLine('Content-Type');
+        $isJson = (str_contains($contentType, 'application/json'));
+
         $response = $this->responseFactory->createResponse(401, 'Unauthorized');
 
-        if ($request->getAttribute('is_json') === true)
+        if ($isJson)
         {
             return $response->withHeader('Content-type', 'application/json');
         }
