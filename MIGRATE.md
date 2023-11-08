@@ -1,5 +1,11 @@
 # v7 release
 
+## v7.10
+
+### Light changes
+
+* Introduced RouteSet class
+
 ## v7.9
 
 ### Light changes
