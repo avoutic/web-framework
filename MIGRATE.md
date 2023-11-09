@@ -1,5 +1,11 @@
 # v7 release
 
+## v7.11
+
+### Light changes
+
+* Database query functions throw on error
+
 ## v7.10
 
 ### Light changes

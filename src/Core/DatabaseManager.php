@@ -25,11 +25,7 @@ SQL;
 
         $params = [];
 
-        $result = $this->database->query($query, $params);
-        if ($result === false)
-        {
-            throw new \RuntimeException('Failed to retrieve tables');
-        }
+        $result = $this->database->query($query, $params, 'Failed to retrieve tables');
 
         $dbDef = '';
 
@@ -45,11 +41,7 @@ SQL;
 
             $params = [];
 
-            $result = $this->database->query($query, $params);
-            if ($result === false)
-            {
-                throw new \RuntimeException('Failed to retrieve create table');
-            }
+            $result = $this->database->query($query, $params, 'Failed to retrieve create table');
 
             $statement = $result->fields['Create Table'].PHP_EOL;
 
@@ -238,9 +230,11 @@ SQL;
         {
             echo '   - Executing:'.PHP_EOL.$info['query'].PHP_EOL;
 
-            $result = $this->database->query($info['query'], $info['params']);
-
-            if ($result === false)
+            try
+            {
+                $result = $this->database->query($info['query'], $info['params']);
+            }
+            catch (\RuntimeException $e)
             {
                 echo '   Failed: ';
                 echo $this->database->getLastError().PHP_EOL;

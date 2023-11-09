@@ -29,13 +29,9 @@ class StoredValues
     {
         $result = $this->database->query(
             'SELECT name, value FROM config_values WHERE module = ?',
-            [$this->module]
+            [$this->module],
+            "Failed to retrieve stored values for {$this->module}",
         );
-
-        if ($result === false)
-        {
-            throw new \RuntimeException("Failed to retrieve stored values for {$this->module}");
-        }
 
         $info = [];
 
@@ -51,13 +47,9 @@ class StoredValues
     {
         $result = $this->database->query(
             'SELECT value FROM config_values WHERE module = ? AND name = ?',
-            [$this->module, $name]
+            [$this->module, $name],
+            "Failed to retrieve stored value for {$this->module}:{$name}",
         );
-
-        if ($result === false)
-        {
-            throw new \RuntimeException("Failed to retrieve stored value for {$this->module}:{$name}");
-        }
 
         if ($result->RecordCount() == 0)
         {
@@ -74,27 +66,19 @@ class StoredValues
 
     public function setValue(string $name, string $value): void
     {
-        $result = $this->database->query(
+        $this->database->query(
             'INSERT INTO config_values SET module = ?, name = ?, value = ? ON DUPLICATE KEY UPDATE value = ?',
-            [$this->module, $name, $value, $value]
+            [$this->module, $name, $value, $value],
+            "Failed to set stored value {$this->module}:{$name}",
         );
-
-        if ($result === false)
-        {
-            throw new \RuntimeException("Failed to set stored value {$this->module}:{$name}");
-        }
     }
 
     public function deleteValue(string $name): void
     {
-        $result = $this->database->query(
+        $this->database->query(
             'DELETE config_values WHERE module = ? AND name = ?',
-            [$this->module, $name]
+            [$this->module, $name],
+            "Failed to delete stored value {$this->module}:{$name}",
         );
-
-        if ($result === false)
-        {
-            throw new \RuntimeException("Failed to delete stored value {$this->module}:{$name}");
-        }
     }
 }

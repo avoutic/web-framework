@@ -70,11 +70,6 @@ abstract class RepositoryCore
         $result = $this->database->query('SELECT id FROM '.$this->tableName.
                                    ' WHERE id = ?', [$id]);
 
-        if ($result === false)
-        {
-            return false;
-        }
-
         if ($result->RecordCount() != 1)
         {
             return false;
@@ -167,11 +162,7 @@ SQL;
 
         $params = [$id];
 
-        $result = $this->database->query($query, $params);
-        if ($result === false)
-        {
-            throw new \RuntimeException("Failed to retrieve base fields for {$this->tableName}");
-        }
+        $result = $this->database->query($query, $params, "Failed to retrieve base fields for {$this->tableName}");
 
         if ($result->RecordCount() === 0)
         {
@@ -256,12 +247,8 @@ SQL;
 
         $params[] = $this->getId($entity);
 
-        $result = $this->database->query($query, $params);
         $class = static::$entityClass;
-        if ($result === false)
-        {
-            throw new \RuntimeException("Failed to update object ({$class})");
-        }
+        $this->database->query($query, $params, "Failed to update object ({$class})");
 
         $this->updateInCache($entity);
     }
@@ -280,11 +267,7 @@ SQL;
 
         $params = [$this->getId($entity)];
 
-        $result = $this->database->query($query, $params);
-        if ($result === false)
-        {
-            throw new \RuntimeException('Failed to delete item');
-        }
+        $this->database->query($query, $params, 'Failed to delete item');
     }
 
     /**
@@ -315,12 +298,8 @@ SQL;
 SQL;
         }
 
-        $result = $this->database->insertQuery($query, $params);
         $class = static::$entityClass;
-        if ($result === false)
-        {
-            throw new \RuntimeException("Failed to create object ({$class})");
-        }
+        $result = $this->database->insertQuery($query, $params, "Failed to create object ({$class})");
 
         // Cannot use the given data to instantiate because it missed database defaults or
         // fields updated or filled by triggers. So instantiate from scratch.
@@ -355,13 +334,9 @@ SQL;
         {$whereFmt}
 SQL;
 
-        $result = $this->database->query($query, $params);
         $class = static::$entityClass;
+        $result = $this->database->query($query, $params, "Failed to retrieve object ({$class})");
 
-        if ($result === false)
-        {
-            throw new \RuntimeException("Failed to retrieve object ({$class})");
-        }
         if ($result->RecordCount() != 1)
         {
             throw new \RuntimeException("Failed to count objects ({$class})");
@@ -461,13 +436,9 @@ SQL;
         {$whereFmt}
 SQL;
 
-        $result = $this->database->query($query, $params);
         $class = static::$entityClass;
+        $result = $this->database->query($query, $params, "Failed to retrieve object ({$class})");
 
-        if ($result === false)
-        {
-            throw new \RuntimeException("Failed to retrieve object ({$class})");
-        }
         if ($result->RecordCount() > 1)
         {
             throw new \RuntimeException("Non-unique object request ({$class})");
@@ -527,12 +498,8 @@ SQL;
         {$limitFmt}
 SQL;
 
-        $result = $this->database->query($query, $params);
         $class = static::$entityClass;
-        if ($result === false)
-        {
-            throw new \RuntimeException("Failed to retrieve objects ({$class})");
-        }
+        $result = $this->database->query($query, $params, "Failed to retrieve objects ({$class})");
 
         $info = [];
         foreach ($result as $k => $row)
@@ -559,12 +526,8 @@ SQL;
      */
     public function getFromQuery(string $query, array $params): EntityCollection
     {
-        $result = $this->database->query($query, $params);
         $class = static::$entityClass;
-        if ($result === false)
-        {
-            throw new \RuntimeException("Failed to retrieve objects ({$class})");
-        }
+        $result = $this->database->query($query, $params, "Failed to retrieve objects ({$class})");
 
         $info = [];
         foreach ($result as $k => $row)

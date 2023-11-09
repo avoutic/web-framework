@@ -27,13 +27,9 @@ class StoredUserValues
     {
         $result = $this->database->query(
             'SELECT name, value FROM user_config_values WHERE user_id = ? AND module = ?',
-            [$this->userId, $this->module]
+            [$this->userId, $this->module],
+            "Failed to retrieve stored user values for {$this->userId}:{$this->module}",
         );
-
-        if ($result === false)
-        {
-            throw new \RuntimeException("Failed to retrieve stored user values for {$this->userId}:{$this->module}");
-        }
 
         $info = [];
 
@@ -49,13 +45,9 @@ class StoredUserValues
     {
         $result = $this->database->query(
             'SELECT value FROM user_config_values WHERE user_id = ? AND module = ? AND name = ?',
-            [$this->userId, $this->module, $name]
+            [$this->userId, $this->module, $name],
+            "Failed to retrieve stored user value for {$this->userId}:{$this->module}:{$name}",
         );
-
-        if ($result === false)
-        {
-            throw new \RuntimeException("Failed to retrieve stored user value for {$this->userId}:{$this->module}:{$name}");
-        }
 
         if ($result->RecordCount() == 0)
         {
@@ -69,13 +61,9 @@ class StoredUserValues
     {
         $result = $this->database->query(
             'SELECT value FROM user_config_values WHERE user_id = ? AND module = ? AND name = ?',
-            [$this->userId, $this->module, $name]
+            [$this->userId, $this->module, $name],
+            "Failed to retrieve stored user value {$this->userId}:{$this->module}:{$name}",
         );
-
-        if ($result === false)
-        {
-            throw new \RuntimeException("Failed to retrieve stored user value {$this->userId}:{$this->module}:{$name}");
-        }
 
         if ($result->RecordCount() == 0)
         {
@@ -92,27 +80,19 @@ class StoredUserValues
 
     public function setValue(string $name, string $value): void
     {
-        $result = $this->database->query(
+        $this->database->query(
             'INSERT user_config_values SET user_id = ?, module = ?, name = ?, value = ? ON DUPLICATE KEY UPDATE value = ?',
-            [$this->userId, $this->module, $name, $value, $value]
+            [$this->userId, $this->module, $name, $value, $value],
+            "Failed to set stored user value {$this->userId}:{$this->module}:{$name}",
         );
-
-        if ($result === false)
-        {
-            throw new \RuntimeException("Failed to set stored user value {$this->userId}:{$this->module}:{$name}");
-        }
     }
 
     public function deleteValue(string $name): void
     {
-        $result = $this->database->query(
+        $this->database->query(
             'DELETE user_config_values WHERE user_id = ? AND module = ? AND name = ?',
-            [$this->userId, $this->module, $name]
+            [$this->userId, $this->module, $name],
+            "Failed to delete stored user value {$this->userId}:{$this->module}:{$name}",
         );
-
-        if ($result === false)
-        {
-            throw new \RuntimeException("Failed to delete stored user value {$this->userId}:{$this->module}:{$name}");
-        }
     }
 }

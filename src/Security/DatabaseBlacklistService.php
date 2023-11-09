@@ -25,11 +25,7 @@ SQL;
 
         $cutoff = time() - $this->storePeriod;
 
-        $result = $this->database->query($query, [$cutoff]);
-        if ($result === false)
-        {
-            throw new \RuntimeException('Failed to clean up blacklist entries');
-        }
+        $result = $this->database->query($query, [$cutoff], 'Failed to clean up blacklist entries');
     }
 
     public function addEntry(string $ip, ?int $userId, string $reason, int $severity = 1): void
@@ -67,12 +63,7 @@ SQL;
               )
 SQL;
 
-        $result = $this->database->query($query, $params);
-
-        if ($result === false)
-        {
-            throw new \RuntimeException('Failed to sum blacklist entries');
-        }
+        $result = $this->database->query($query, $params, 'Failed to sum blacklist entries');
 
         return $result->fields['total'] > $this->threshold;
     }

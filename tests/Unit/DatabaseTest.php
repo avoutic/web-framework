@@ -32,23 +32,6 @@ final class DatabaseTest extends \Codeception\Test\Unit
             ->callableThrows(\RuntimeException::class, 'Database connection not available');
     }
 
-    public function testTableExistsFails()
-    {
-        $instance = $this->construct(
-            MysqliDatabase::class,
-            [
-                'database' => $this->makeEmpty(\mysqli::class),
-                'instrumentation' => $this->makeEmpty(NullInstrumentation::class),
-            ],
-            [
-                'query' => false,
-            ]
-        );
-
-        verify(function () use ($instance) { $instance->tableExists('not_existing'); })
-            ->callableThrows(\RuntimeException::class, 'Check for table existence failed');
-    }
-
     public function testStartTransactionOnce()
     {
         $instance = $this->construct(

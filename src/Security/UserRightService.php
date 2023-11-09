@@ -96,11 +96,7 @@ SQL;
 
         $params = [$user->getId()];
 
-        $result = $this->database->query($query, $params);
-        if ($result === false)
-        {
-            throw new \RuntimeException('Failed to retrieve rights');
-        }
+        $result = $this->database->query($query, $params, 'Failed to retrieve rights');
 
         $data = [];
 

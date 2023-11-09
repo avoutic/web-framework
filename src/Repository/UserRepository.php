@@ -40,12 +40,7 @@ SQL;
             $string,
             "%{$string}%",
             "%{$string}%",
-        ]);
-
-        if ($result === false)
-        {
-            throw new \RuntimeException('Failed to search users');
-        }
+        ], 'Failed to search users');
 
         $data = [];
         foreach ($result as $row)

@@ -55,12 +55,7 @@ SQL;
     {
         $this->sessionChecked = false;
 
-        $result = $this->database->query('DELETE FROM sessions WHERE user_id = ?', [$userId]);
-
-        if ($result === false)
-        {
-            throw new \RuntimeException('Failed to delete all user\'s sessions');
-        }
+        $result = $this->database->query('DELETE FROM sessions WHERE user_id = ?', [$userId], 'Failed to delete all sessions for user');
     }
 
     public function authenticate(User $user): void

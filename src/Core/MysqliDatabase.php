@@ -15,7 +15,7 @@ class MysqliDatabase implements Database
     /**
      * @param array<null|bool|float|int|string> $valueArray
      */
-    public function query(string $queryStr, array $valueArray): DatabaseResultWrapper|false
+    public function query(string $queryStr, array $valueArray, string $exceptionMessage = 'Query failed'): DatabaseResultWrapper
     {
         if (!$this->database->ping())
         {
@@ -39,7 +39,7 @@ class MysqliDatabase implements Database
 
         if (!$result)
         {
-            return false;
+            throw new \RuntimeException($exceptionMessage);
         }
 
         return new DatabaseResultWrapper($result);
@@ -48,16 +48,11 @@ class MysqliDatabase implements Database
     /**
      * @param array<null|bool|float|int|string> $params
      */
-    public function insertQuery(string $query, array $params): int|false
+    public function insertQuery(string $query, array $params, string $exceptionMessage = 'Query failed'): int
     {
-        $result = $this->query($query, $params);
+        $this->query($query, $params, $exceptionMessage);
 
-        if ($this->database !== null && $result !== false)
-        {
-            return (int) $this->database->insert_id;
-        }
-
-        return false;
+        return (int) $this->database->insert_id;
     }
 
     public function getLastError(): string
@@ -69,11 +64,7 @@ class MysqliDatabase implements Database
     {
         $query = "SHOW TABLES LIKE '{$tableName}'";
 
-        $result = $this->query($query, []);
-        if ($result === false)
-        {
-            throw new \RuntimeException('Check for table existence failed');
-        }
+        $result = $this->query($query, [], "Failed to check for table {$tableName}");
 
         return $result->RecordCount() == 1;
     }
@@ -84,11 +75,7 @@ class MysqliDatabase implements Database
         //
         if ($this->transactionDepth == 0)
         {
-            $result = $this->query('START TRANSACTION', []);
-            if ($result === false)
-            {
-                throw new \RuntimeException('Failed to start transaction');
-            }
+            $this->query('START TRANSACTION', [], 'Failed to start transaction');
         }
 
         $this->transactionDepth++;
@@ -100,11 +87,7 @@ class MysqliDatabase implements Database
         //
         if ($this->transactionDepth == 1)
         {
-            $result = $this->query('COMMIT', []);
-            if ($result === false)
-            {
-                throw new \RuntimeException('Failed to commit transaction');
-            }
+            $this->query('COMMIT', [], 'Failed to commit transaction');
         }
 
         $this->transactionDepth--;
