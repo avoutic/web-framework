@@ -348,7 +348,7 @@ SQL;
         $this->updateInCache();
     }
 
-    public function decreaseField(string $field, int $value = 1, bool $minimum = false): void
+    public function decreaseField(string $field, int $value = 1, ?int $minimum = null): void
     {
         $tableName = static::$tableName;
 
