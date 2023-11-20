@@ -5,6 +5,7 @@
 ### Light changes
 
 * Database query functions throw on error
+* check() added to InputValidationService
 
 ## v7.10
 
