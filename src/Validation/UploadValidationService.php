@@ -14,22 +14,22 @@ class UploadValidationService
     /**
      * @param ?array<string> $whitelistMimeTypes
      */
-    public function validate(UploadedFileInterface $uploadedFile, ?int $maxSize = null, ?array $whitelistMimeTypes = null): string
+    public function check(UploadedFileInterface $uploadedFile, ?int $maxSize = null, ?array $whitelistMimeTypes = null): string|true
     {
         $error = $uploadedFile->getError();
         if ($error !== UPLOAD_ERR_OK)
         {
             if ($error == UPLOAD_ERR_INI_SIZE || $error == UPLOAD_ERR_FORM_SIZE)
             {
-                throw new ValidationException('upload', 'upload.file_too_large');
+                return 'file_too_large';
             }
             if ($error == UPLOAD_ERR_PARTIAL)
             {
-                throw new ValidationException('upload', 'upload.partial_upload');
+                return 'partial_upload';
             }
             if ($error == UPLOAD_ERR_NO_FILE)
             {
-                throw new ValidationException('upload', 'upload.no_file');
+                return 'no_file';
             }
             if ($error == UPLOAD_ERR_NO_TMP_DIR)
             {
@@ -49,7 +49,7 @@ class UploadValidationService
 
         if ($maxSize !== null && $uploadedFile->getSize() > $maxSize)
         {
-            throw new ValidationException('upload', 'upload.file_too_large_max_size', ['max_size' => (string) $maxSize]);
+            return 'file_too_large_max_size';
         }
 
         $finfo = new \finfo(FILEINFO_MIME_TYPE);
@@ -62,7 +62,35 @@ class UploadValidationService
 
         if ($whitelistMimeTypes !== null && !in_array($mimeType, $whitelistMimeTypes))
         {
-            throw new ValidationException('upload', 'upload.mime_type_not_allowed');
+            return 'mime_type_not_allowed';
+        }
+
+        return true;
+    }
+
+    /**
+     * @param ?array<string> $whitelistMimeTypes
+     */
+    public function validate(UploadedFileInterface $uploadedFile, ?int $maxSize = null, ?array $whitelistMimeTypes = null): string
+    {
+        $result = $this->check($uploadedFile, $maxSize, $whitelistMimeTypes);
+
+        if (is_string($result))
+        {
+            if ($result === 'file_too_large_max_size')
+            {
+                throw new ValidationException('upload', 'file_too_large_max_size', ['max_size' => (string) $maxSize]);
+            }
+
+            throw new ValidationException('upload', $result);
+        }
+
+        $finfo = new \finfo(FILEINFO_MIME_TYPE);
+        $mimeType = $finfo->buffer($uploadedFile->getStream());
+
+        if (!is_string($mimeType))
+        {
+            $mimeType = 'application/octet-stream';
         }
 
         return $mimeType;
