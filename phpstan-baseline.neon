@@ -104,3 +104,13 @@ parameters:
 			message: "#^Method WebFramework\\\\Security\\\\UserCodeService\\:\\:verify\\(\\) should return array\\{user_id\\: int, action\\: string, params\\: array, timestamp\\: int\\} but returns array\\.$#"
 			count: 1
 			path: src/Security/UserCodeService.php
+
+		-
+			message: "#^Parameter \\#1 \\$data of method WebFramework\\\\Core\\\\DatabaseManager\\:\\:execute\\(\\) expects array\\{target_version\\: int, actions\\: array\\<array\\>\\}, array given\\.$#"
+			count: 1
+			path: src/Task/DbInitTask.php
+
+		-
+			message: "#^Parameter \\#1 \\$data of method WebFramework\\\\Core\\\\DatabaseManager\\:\\:execute\\(\\) expects array\\{target_version\\: int, actions\\: array\\<array\\>\\}, array given\\.$#"
+			count: 1
+			path: src/Task/DbUpdateTask.php

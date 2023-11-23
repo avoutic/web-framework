@@ -1,11 +1,13 @@
 <?php
 
+use WebFramework\Core\ContainerWrapper;
+
 /**
  * @param array<string, string> $params
  */
 function __(string $category, string $tag, array $params = [], bool $requirePresence = false): string
 {
-    global $container;
+    $container = ContainerWrapper::get();
 
     $translationService = $container->get(WebFramework\Translation\TranslationService::class);
 
@@ -17,7 +19,7 @@ function __(string $category, string $tag, array $params = [], bool $requirePres
  */
 function __C(string $category): array
 {
-    global $container;
+    $container = ContainerWrapper::get();
 
     $translationService = $container->get(WebFramework\Translation\TranslationService::class);
 
@@ -26,7 +28,7 @@ function __C(string $category): array
 
 function __F(string $category): string
 {
-    global $container;
+    $container = ContainerWrapper::get();
 
     $translationService = $container->get(WebFramework\Translation\TranslationService::class);
 

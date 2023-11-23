@@ -6,6 +6,7 @@
 
 * Database query functions throw on error
 * check() added to InputValidationService
+* Convert scripts and index.php to TaskInterface
 
 ## v7.10
 
