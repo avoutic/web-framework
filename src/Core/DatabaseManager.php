@@ -2,9 +2,12 @@
 
 namespace WebFramework\Core;
 
+use Psr\Container\ContainerInterface as Container;
+
 class DatabaseManager
 {
     public function __construct(
+        private Container $container,
         private Database $database,
         private StoredValues $storedValues,
     ) {
@@ -102,7 +105,7 @@ SQL;
         }
 
         echo ' - Preparing all statements'.PHP_EOL;
-        $queries = [];
+        $steps = [];
 
         foreach ($data['actions'] as $action)
         {
@@ -124,7 +127,10 @@ SQL;
                 }
 
                 $result = $this->createTable($action['table_name'], $action['fields'], $action['constraints']);
-                $queries[] = $result;
+                $steps[] = [
+                    'type' => 'query',
+                    'data' => $result,
+                ];
             }
             elseif ($action['type'] == 'create_trigger')
             {
@@ -134,7 +140,10 @@ SQL;
                 }
 
                 $result = $this->createTrigger($action['table_name'], $action['trigger']);
-                $queries[] = $result;
+                $steps[] = [
+                    'type' => 'query',
+                    'data' => $result,
+                ];
             }
             elseif ($action['type'] == 'add_column')
             {
@@ -144,7 +153,10 @@ SQL;
                 }
 
                 $result = $this->addColumn($action['table_name'], $action['field']);
-                $queries[] = $result;
+                $steps[] = [
+                    'type' => 'query',
+                    'data' => $result,
+                ];
             }
             elseif ($action['type'] == 'add_constraint')
             {
@@ -154,7 +166,10 @@ SQL;
                 }
 
                 $result = $this->addConstraint($action['table_name'], $action['constraint']);
-                $queries[] = $result;
+                $steps[] = [
+                    'type' => 'query',
+                    'data' => $result,
+                ];
             }
             elseif ($action['type'] == 'insert_row')
             {
@@ -164,7 +179,10 @@ SQL;
                 }
 
                 $result = $this->insertRow($action['table_name'], $action['values']);
-                $queries[] = $result;
+                $steps[] = [
+                    'type' => 'query',
+                    'data' => $result,
+                ];
             }
             elseif ($action['type'] == 'modify_column_type')
             {
@@ -174,7 +192,10 @@ SQL;
                 }
 
                 $result = $this->modifyColumnType($action['table_name'], $action['field']);
-                $queries[] = $result;
+                $steps[] = [
+                    'type' => 'query',
+                    'data' => $result,
+                ];
             }
             elseif ($action['type'] == 'rename_column')
             {
@@ -189,7 +210,10 @@ SQL;
                 }
 
                 $result = $this->renameColumn($action['table_name'], $action['name'], $action['new_name']);
-                $queries[] = $result;
+                $steps[] = [
+                    'type' => 'query',
+                    'data' => $result,
+                ];
             }
             elseif ($action['type'] == 'rename_table')
             {
@@ -199,7 +223,10 @@ SQL;
                 }
 
                 $result = $this->renameTable($action['table_name'], $action['new_name']);
-                $queries[] = $result;
+                $steps[] = [
+                    'type' => 'query',
+                    'data' => $result,
+                ];
             }
             elseif ($action['type'] == 'raw_query')
             {
@@ -214,7 +241,28 @@ SQL;
                 }
 
                 $result = $this->rawQuery($action['query'], $action['params']);
-                $queries[] = $result;
+                $steps[] = [
+                    'type' => 'query',
+                    'data' => $result,
+                ];
+            }
+            elseif ($action['type'] == 'run_task')
+            {
+                if (!isset($action['task']))
+                {
+                    throw new \InvalidArgumentException('No task specified');
+                }
+
+                $task = $this->container->get($action['task']);
+                if (!$task instanceof TaskInterface)
+                {
+                    throw new \RuntimeException("Task {$action['task']} does not implement TaskInterface");
+                }
+
+                $steps[] = [
+                    'type' => 'task',
+                    'data' => $task,
+                ];
             }
             else
             {
@@ -222,24 +270,37 @@ SQL;
             }
         }
 
-        echo ' - Executing queries'.PHP_EOL;
+        echo ' - Executing steps'.PHP_EOL;
 
         $this->database->startTransaction();
 
-        foreach ($queries as $info)
+        foreach ($steps as $step)
         {
-            echo '   - Executing:'.PHP_EOL.$info['query'].PHP_EOL;
-
-            try
+            if ($step['type'] === 'query')
             {
-                $result = $this->database->query($info['query'], $info['params']);
+                $info = $step['data'];
+                echo '   - Executing:'.PHP_EOL.$info['query'].PHP_EOL;
+
+                try
+                {
+                    $result = $this->database->query($info['query'], $info['params']);
+                }
+                catch (\RuntimeException $e)
+                {
+                    echo '   Failed: ';
+                    echo $this->database->getLastError().PHP_EOL;
+
+                    exit();
+                }
             }
-            catch (\RuntimeException $e)
+            elseif ($step['type'] === 'task')
             {
-                echo '   Failed: ';
-                echo $this->database->getLastError().PHP_EOL;
-
-                exit();
+                $task = $step['data'];
+                $task->execute();
+            }
+            else
+            {
+                throw new \RuntimeException('Unknown step type: '.$step['type']);
             }
         }
 

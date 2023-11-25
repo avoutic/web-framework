@@ -7,6 +7,7 @@
 * Database query functions throw on error
 * check() added to InputValidationService
 * Convert scripts and index.php to TaskInterface
+* DatabaseManager supports Task as action
 
 ## v7.10
 
