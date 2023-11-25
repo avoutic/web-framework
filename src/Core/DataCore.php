@@ -123,6 +123,8 @@ abstract class DataCore
         $this->id = (int) $data['id'];
         $this->fillDependencies();
         $this->fillBaseFieldsFromObj($data);
+
+        $this->init();
     }
 
     public static function exists(int $id): bool
