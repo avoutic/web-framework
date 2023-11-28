@@ -8,6 +8,7 @@
 * check() added to InputValidationService
 * Convert scripts and index.php to TaskInterface
 * DatabaseManager supports Task as action
+* Add init() to Register, Login, ChangePassword and ChangeEmail
 
 ## v7.10
 

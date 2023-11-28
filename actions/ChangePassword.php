@@ -31,6 +31,11 @@ class ChangePassword
         protected RenderService $renderer,
         protected ResponseEmitter $responseEmitter,
     ) {
+        $this->init();
+    }
+
+    public function init(): void
+    {
     }
 
     /**

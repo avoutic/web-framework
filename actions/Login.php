@@ -39,6 +39,11 @@ class Login
         protected ResponseEmitter $responseEmitter,
         protected UserVerificationService $userVerificationService,
     ) {
+        $this->init();
+    }
+
+    public function init(): void
+    {
     }
 
     protected function customValueCheck(User $user): bool

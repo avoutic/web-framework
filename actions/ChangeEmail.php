@@ -29,6 +29,11 @@ class ChangeEmail
         protected ResponseEmitter $responseEmitter,
         protected ChangeEmailService $changeEmailService,
     ) {
+        $this->init();
+    }
+
+    public function init(): void
+    {
     }
 
     /**
