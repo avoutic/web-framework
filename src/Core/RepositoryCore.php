@@ -18,12 +18,10 @@ abstract class RepositoryCore
     /** @var class-string<T> */
     protected static string $entityClass;
 
-    protected bool $isCacheable = false;
     protected string $tableName;
 
     public function __construct(
         protected Container $container,
-        protected Cache $cache,
         protected Database $database,
     ) {
         $class = static::$entityClass;
@@ -31,11 +29,6 @@ abstract class RepositoryCore
         $this->baseFields = $class::$baseFields;
         $this->additionalIdFields = $class::$additionalIdFields;
         $this->tableName = $class::$tableName;
-
-        if (property_exists($class, 'isCacheable'))
-        {
-            $this->isCacheable = $class::$isCacheable;
-        }
     }
 
     // Convert snake_case to camelCase
@@ -59,14 +52,6 @@ abstract class RepositoryCore
 
     public function exists(int $id): bool
     {
-        if ($this->isCacheable)
-        {
-            if ($this->cache->exists($this->getCacheId($id)) === true)
-            {
-                return true;
-            }
-        }
-
         $result = $this->database->query('SELECT id FROM '.$this->tableName.
                                    ' WHERE id = ?', [$id]);
 
@@ -76,30 +61,6 @@ abstract class RepositoryCore
         }
 
         return true;
-    }
-
-    public function getCacheId(int $id): string
-    {
-        return $this->tableName.'['.$id.']';
-    }
-
-    /**
-     * @param T $entity
-     */
-    protected function updateInCache(EntityInterface $entity): void
-    {
-        if ($this->isCacheable)
-        {
-            $this->cache->set($this->getCacheId($this->getId($entity)), $entity);
-        }
-    }
-
-    protected function deleteFromCache(int $id): void
-    {
-        if ($this->isCacheable)
-        {
-            $this->cache->invalidate($this->getCacheId($id));
-        }
     }
 
     /**
@@ -249,8 +210,6 @@ SQL;
 
         $class = static::$entityClass;
         $this->database->query($query, $params, "Failed to update object ({$class})");
-
-        $this->updateInCache($entity);
     }
 
     /**
@@ -258,8 +217,6 @@ SQL;
      */
     public function delete(EntityInterface $entity): void
     {
-        $this->deleteFromCache($this->getId($entity));
-
         $query = <<<SQL
         DELETE FROM {$this->tableName}
         WHERE id = ?
@@ -345,26 +302,11 @@ SQL;
         return $result->fields['cnt'];
     }
 
-    // This is the base retrieval function that all object functions should use
-    // Cache checking is done here
-    //
     /**
      * @return ?T
      */
     public function getObjectById(int $id): ?EntityInterface
     {
-        if ($this->isCacheable)
-        {
-            $obj = $this->cache->get($this->getCacheId($id));
-
-            // Cache hit
-            //
-            if ($obj !== false)
-            {
-                return $obj;
-            }
-        }
-
         $data = $this->getFieldsFromDb($id);
         if ($data === null)
         {
@@ -396,13 +338,6 @@ SQL;
             $property = $reflection->getProperty($this->snakeToCamel($name));
             $property->setAccessible(true);
             $property->setValue($entity, $data[$name]);
-        }
-
-        // Cache miss
-        //
-        if ($this->isCacheable)
-        {
-            $this->updateInCache($entity);
         }
 
         $entity->setOriginalValues($data);
