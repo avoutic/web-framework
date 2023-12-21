@@ -11,9 +11,6 @@ CREATE TABLE IF NOT EXISTS config_values (
 );
 */
 
-// Not a FrameworkCore object because it needs to operate before all components have been loaded.
-// Therefore there is no StoreValue datacore object either.
-//
 class StoredValues
 {
     public function __construct(
