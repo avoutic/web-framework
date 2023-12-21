@@ -71,10 +71,10 @@ class Login
         }
 
         $params = [
-            'return_page' => $this->getReturnPage($request),
-            'return_query' => $this->getReturnQuery($request),
+            'returnPage' => $this->getReturnPage($request),
+            'returnQuery' => $this->getReturnQuery($request),
             'username' => $request->getParam('username', ''),
-            'recaptcha_needed' => false,
+            'recaptchaNeeded' => false,
         ];
 
         // Check if this is a login attempt
@@ -115,15 +115,15 @@ class Login
         {
             $this->messageService->add('error', 'login.captcha_required');
 
-            $params['recaptcha_needed'] = true;
-            $params['recaptcha_site_key'] = $this->configService->get('security.recaptcha.site_key');
+            $params['recaptchaNeeded'] = true;
+            $params['recaptchaSiteKey'] = $this->configService->get('security.recaptcha.site_key');
         }
         catch (InvalidCaptchaException $e)
         {
             $this->messageService->add('error', 'login.captcha_incorrect');
 
-            $params['recaptcha_needed'] = true;
-            $params['recaptcha_site_key'] = $this->configService->get('security.recaptcha.site_key');
+            $params['recaptchaNeeded'] = true;
+            $params['recaptchaSiteKey'] = $this->configService->get('security.recaptcha.site_key');
         }
         catch (InvalidPasswordException $e)
         {

@@ -1,10 +1,10 @@
 {parameters
-    ?array $override_colors,
-    ?array $override_texts,
-    string $default_width = '',
-    string $file_types = 'PNG, JPG, PDF',
-    string $max_size = '10 Mb',
-    ?string $extra_label,
+    ?array $overrideColors,
+    ?array $overrideTexts,
+    string $defaultWidth = '',
+    string $fileTypes = 'PNG, JPG, PDF',
+    string $maxSize = '10 Mb',
+    ?string $extraLabel,
     ?string $id,
     ?string $label,
     ?string $name,
@@ -20,8 +20,8 @@
     'hover:text' => 'hover:text-indigo-500',
     'focus-within:ring' => 'focus-within:ring-indigo-500',
 ]}
-{ifset $override_colors}
-    {foreach $override_colors as $key => $tag}
+{ifset $overrideColors}
+    {foreach $overrideColors as $key => $tag}
         {var $colors[$key] = $tag}
     {/foreach}
 {/ifset}
@@ -31,13 +31,13 @@
     'upload_file' => 'Upload file',
     'with_maximum_of' => 'with a maximum of',
 ]}
-{ifset ($override_texts)}
-    {foreach $override_texts as $key => $tag}
+{ifset ($overrideTexts)}
+    {foreach $overrideTexts as $key => $tag}
         {var $texts[$key] = $tag}
     {/foreach}
 {/ifset}
 
-<div x-data="{ fileSelected: false, filename: '' }" class="{$width ?: $default_width}"
+<div x-data="{ fileSelected: false, filename: '' }" class="{$width ?: $defaultWidth}"
 {ifset $show}
     x-cloak x-show="{$show}"
 {/ifset}
@@ -46,7 +46,7 @@
     {$label}
   </label>
 
-  <p n:ifset="$extra_label" class="text-sm text-gray-500">{$extra_label}</p>
+  <p n:ifset="$extraLabel" class="text-sm text-gray-500">{$extraLabel}</p>
 
   <div x-ref="border" class="mt-2 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md relative cursor-pointer">
     <input type="file"
@@ -67,7 +67,7 @@
         <p class="pl-1">{$texts['or_drag']}</p>
       </div>
       <p class="text-xs text-gray-500">
-        {$file_types} {$texts['with_maximum_of']} {$max_size}
+        {$fileTypes} {$texts['with_maximum_of']} {$maxSize}
       </p>
       <p x-cloak x-show="fileSelected" class="text-xs text-gray-500">
         {$texts['selected']}

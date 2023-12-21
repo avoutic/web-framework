@@ -1,10 +1,10 @@
 <form method="post" action="/login">
   <fieldset>
     <input type="hidden" name="do" value="yes"/>
-    <input type="hidden" name="token" value="{$csrf_token}"/>
+    <input type="hidden" name="token" value="{$csrfToken}"/>
     <input type="hidden" id="password" name="password" value=""/>
-    <input type="hidden" name="return_page" value="{$return_page}"/>
-    <input type="hidden" name="return_query" value="{$return_query}"/>
+    <input type="hidden" name="return_page" value="{$returnPage}"/>
+    <input type="hidden" name="return_query" value="{$returnQuery}"/>
     <legend>Login form</legend>
     <p>
       <label for="username">Username</label>
@@ -15,9 +15,9 @@
       <input type="password" id="password_helper" name="password_helper"/>
     </p>
 
-{if $recaptcha_needed}
+{if $recaptchaNeeded}
     <div>
-      <div class="g-recaptcha" data-sitekey="{$recaptcha_site_key}"></div>
+      <div class="g-recaptcha" data-sitekey="{$recaptchaSiteKey}"></div>
     </div>
 {/if}
 

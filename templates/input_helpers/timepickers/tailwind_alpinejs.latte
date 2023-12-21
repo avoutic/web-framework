@@ -1,7 +1,7 @@
 {parameters
-    ?array $override_colors,
-    string $default_width,
-    ?string $extra_label,
+    ?array $overrideColors,
+    string $defaultWidth,
+    ?string $extraLabel,
     ?string $id,
     ?string $label,
     string $locale = 'en',
@@ -17,8 +17,8 @@
     'focus:border' => 'focus:border-indigo-500',
     'focus:ring' => 'focus:ring-indigo-500',
 ]}
-{ifset $override_colors}
-    {foreach $override_colors as $key => $tag}
+{ifset $overrideColors}
+    {foreach $overrideColors as $key => $tag}
         {var $colors[$key] = $tag}
     {/foreach}
 {/ifset}
@@ -26,11 +26,11 @@
 <div
   {ifset $show} x-cloak x-show="{$show}" {/ifset}
   x-data="timePicker()" x-init="initTime('{$value}')"
-  class="{$width ?: $default_width}">
+  class="{$width ?: $defaultWidth}">
   <label for="{$id}" class="block text-sm font-medium text-gray-700">
     {$label}
   </label>
-  <p n:ifset="$extra_label" class="text-sm text-gray-500">{$extra_label}</p>
+  <p n:ifset="$extraLabel" class="text-sm text-gray-500">{$extraLabel}</p>
 
   <input type="hidden"
          name="{$name}"

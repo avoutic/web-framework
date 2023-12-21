@@ -1,7 +1,7 @@
 <form method="post" action="/change_email">
   <fieldset>
     <input type="hidden" name="do" value="yes"/>
-    <input type="hidden" name="token" value="{$crf_token}"/>
+    <input type="hidden" name="token" value="{$csrfToken}"/>
     <legend>Change email</legend>
     <p>
       <label for="email">E-mail</label> <input type="text" id="email" name="email" value="{$email}"/>
