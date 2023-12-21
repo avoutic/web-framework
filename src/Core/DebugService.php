@@ -10,6 +10,7 @@ class DebugService
     public function __construct(
         private AuthenticationService $authenticationService,
         private DatabaseProvider $databaseProvider,
+        private ReportFunction $reportFunction,
         private string $serverName,
     ) {
     }
@@ -21,6 +22,16 @@ class DebugService
         $key = "{$serverName}:{$requestSource}:{$file}:{$line}:{$message}";
 
         return sha1($key);
+    }
+
+    /**
+     * @param array<mixed> $stack
+     */
+    public function reportError(string $message, array $stack = [], ?Request $request = null, string $errorType = 'report_error'): void
+    {
+        $debugInfo = $this->getErrorReport($stack, $request, $errorType, $message);
+
+        $this->reportFunction->report($message, $errorType, $debugInfo);
     }
 
     /**
@@ -151,10 +162,7 @@ TXT;
         foreach ($trace as $entry)
         {
             if ($skipping && isset($entry['class'])
-                && in_array($entry['class'], [
-                    'FrameworkAssertService',
-                    'DebugService',
-                ]))
+                && $entry['class'] === 'DebugService')
             {
                 continue;
             }

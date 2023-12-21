@@ -8,15 +8,15 @@ use Slim\Exception\HttpNotFoundException;
 use Slim\Exception\HttpUnauthorizedException;
 use Slim\Http\Response;
 use Slim\Http\ServerRequest as Request;
-use WebFramework\Core\AssertService;
+use WebFramework\Core\DebugService;
 use WebFramework\Core\LatteRenderService;
 use WebFramework\Exception\BlacklistException;
 
 class Tester
 {
     public function __construct(
-        protected AssertService $assertService,
-        protected LatteRenderService $renderer,
+        private DebugService $debugService,
+        private LatteRenderService $renderer,
     ) {
     }
 
@@ -59,7 +59,7 @@ class Tester
 
         if ($action === 'report_error')
         {
-            $this->assertService->reportError('Reported error');
+            $this->debugService->reportError('Reported error');
         }
 
         if ($action === 'warning')

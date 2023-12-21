@@ -2,12 +2,15 @@
 
 namespace Tests\Unit;
 
+use Codeception\Stub\Expected;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Psr7\Factory\RequestFactory;
 use Slim\Psr7\Factory\StreamFactory;
 use WebFramework\Core\Database;
 use WebFramework\Core\DatabaseProvider;
 use WebFramework\Core\DebugService;
+use WebFramework\Core\MailReportFunction;
+use WebFramework\Core\NullReportFunction;
 use WebFramework\Entity\User;
 use WebFramework\Security\NullAuthenticationService;
 
@@ -145,12 +148,6 @@ final class DebugServiceTest extends \Codeception\Test\Unit
                 'extra' => 'extra1',
             ],
             [
-                'class' => 'FrameworkAssertService',
-                'function' => 'verify',
-                'args' => 'verify_args',
-                'extra' => 'extra1',
-            ],
-            [
                 'class' => 'Object2',
                 'function' => 'function2',
                 'args' => 'verify_args',
@@ -201,9 +198,9 @@ final class DebugServiceTest extends \Codeception\Test\Unit
                 'extra' => 'extra1',
             ],
             [
-                'class' => 'FrameworkAssertService',
-                'function' => 'verify',
-                'args' => 'verify_args',
+                'class' => 'DebugService',
+                'function' => 'getReport',
+                'args' => 'report_args',
                 'extra' => 'extra1',
             ],
             [
@@ -222,9 +219,9 @@ final class DebugServiceTest extends \Codeception\Test\Unit
                 'extra' => 'extra1',
             ],
             [
-                'class' => 'FrameworkAssertService',
-                'function' => 'verify',
-                'args' => 'verify_args',
+                'class' => 'DebugService',
+                'function' => 'getReport',
+                'args' => 'report_args',
                 'extra' => 'extra1',
             ],
             [
@@ -544,6 +541,7 @@ TXT;
             [
                 'authenticationService' => $this->makeEmpty(NullAuthenticationService::class),
                 'databaseProvider' => $this->makeEmpty(DatabaseProvider::class),
+                'reportFunction' => $this->makeEmpty(NullReportFunction::class),
                 'serverName' => 'TestServer',
             ],
             [
@@ -615,6 +613,7 @@ TXT;
                     ],
                 ),
                 'databaseProvider' => $databaseProvider,
+                'reportFunction' => $this->makeEmpty(NullReportFunction::class),
                 'serverName' => 'TestServer',
             ],
             [
@@ -636,15 +635,6 @@ TXT;
                 'type' => '->',
                 'function' => 'filter_trace',
                 'args' => ['filter_arg' => 'val'],
-                'extra' => 'extra1',
-            ],
-            [
-                'file' => 'AssertService.php',
-                'line' => 2,
-                'class' => 'FrameworkAssertService',
-                'type' => '->',
-                'function' => 'verify',
-                'args' => ['verify_arg' => 'val'],
                 'extra' => 'extra1',
             ],
             [
@@ -733,5 +723,28 @@ TXT;
             ->equals($lowInfoReportFmt);
         verify($report['message'])
             ->equals($reportFmt);
+    }
+
+    public function testReportError()
+    {
+        $instance = $this->construct(
+            DebugService::class,
+            [
+                'authenticationService' => $this->makeEmpty(NullAuthenticationService::class),
+                'databaseProvider' => $this->makeEmpty(DatabaseProvider::class),
+                'reportFunction' => $this->makeEmpty(
+                    MailReportFunction::class,
+                    [
+                        'report' => Expected::once(),
+                    ]
+                ),
+                'serverName' => 'testServer',
+            ],
+            [
+                'getErrorReport' => ['my_report'],
+            ]
+        );
+
+        verify($instance->reportError('TestMessage'));
     }
 }

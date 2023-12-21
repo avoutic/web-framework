@@ -1,21 +1,5 @@
-parameters:
-    universalObjectCratesClasses:
-        - WebFramework\Core\DataCore
-
 services:
     -
         class: WebFramework\PHPStan\EntityPropertiesExtension
         tags:
             - phpstan.properties.readWriteExtension
-    -
-        class: WebFramework\PHPStan\AssertHandlerVerifyMethodTypeSpecifyingExtension
-        tags:
-            - phpstan.typeSpecifier.methodTypeSpecifyingExtension
-    -
-        class: WebFramework\PHPStan\WFInternalVerifyMethodTypeSpecifyingExtension
-        tags:
-            - phpstan.typeSpecifier.methodTypeSpecifyingExtension
-    -
-        class: WebFramework\PHPStan\VerifyStaticMethodTypeSpecifyingExtension
-        tags:
-            - phpstan.typeSpecifier.staticMethodTypeSpecifyingExtension
