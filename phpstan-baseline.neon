@@ -21,21 +21,6 @@ parameters:
 			path: scripts/RouteConvertor.php
 
 		-
-			message: "#^Method WebFramework\\\\Core\\\\ActionCore\\:\\:getInputVar\\(\\) should return string but returns array\\<string\\>\\|string\\.$#"
-			count: 1
-			path: src/Core/ActionCore.php
-
-		-
-			message: "#^Method WebFramework\\\\Core\\\\ActionCore\\:\\:getRawInputArray\\(\\) should return array\\<string\\> but returns array\\<string\\>\\|string\\.$#"
-			count: 1
-			path: src/Core/ActionCore.php
-
-		-
-			message: "#^Method WebFramework\\\\Core\\\\ActionCore\\:\\:getRawInputVar\\(\\) should return string but returns array\\<string\\>\\|string\\.$#"
-			count: 1
-			path: src/Core/ActionCore.php
-
-		-
 			message: "#^Method WebFramework\\\\Core\\\\Browserless\\:\\:getPdfResult\\(\\) has parameter \\$outputStream with no type specified\\.$#"
 			count: 1
 			path: src/Core/Browserless.php
