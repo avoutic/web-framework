@@ -10,15 +10,15 @@ use Psr\Container\ContainerInterface as Container;
 abstract class RepositoryCore
 {
     /** @var array<string> */
-    protected array $baseFields;
+    private array $baseFields;
 
     /** @var array<string> */
-    protected array $additionalIdFields;
+    private array $additionalIdFields;
 
     /** @var class-string<T> */
     protected static string $entityClass;
 
-    protected string $tableName;
+    private string $tableName;
 
     public function __construct(
         protected Container $container,
@@ -32,7 +32,7 @@ abstract class RepositoryCore
     }
 
     // Convert snake_case to camelCase
-    protected function snakeToCamel(string $input): string
+    private function snakeToCamel(string $input): string
     {
         return lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $input))));
     }
@@ -98,7 +98,7 @@ abstract class RepositoryCore
     /**
      * @return ?array<string>
      */
-    protected function getFieldsFromDb(int $id): ?array
+    public function getFieldsFromDb(int $id): ?array
     {
         $fieldsFmt = implode('`, `', $this->baseFields);
 

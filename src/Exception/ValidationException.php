@@ -24,7 +24,7 @@ class ValidationException extends \Exception
     /**
      * @param array<string, array<int, array{message: string, params: array<string, string>}>> $errors
      */
-    protected function setErrors(array $errors): void
+    public function setErrors(array $errors): void
     {
         $this->errors = $errors;
     }

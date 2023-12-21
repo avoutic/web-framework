@@ -8,7 +8,7 @@ use Psr\Container\ContainerInterface as Container;
 // Do not use in new code
 class ContainerWrapper
 {
-    protected static Container $container;
+    private static Container $container;
 
     public static function setContainer(Container $container): void
     {

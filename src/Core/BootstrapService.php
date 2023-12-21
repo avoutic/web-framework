@@ -35,7 +35,7 @@ class BootstrapService
         }
     }
 
-    protected function initializeDebugging(): void
+    private function initializeDebugging(): void
     {
         // Enable debugging if configured
         //
@@ -46,14 +46,14 @@ class BootstrapService
         }
     }
 
-    protected function initializeTimezone(): void
+    private function initializeTimezone(): void
     {
         // Set default timezone
         //
         date_default_timezone_set($this->configService->get('timezone'));
     }
 
-    protected function initializeContainerWrapper(): void
+    private function initializeContainerWrapper(): void
     {
         // As long as old-style code is in WebFramework we need ContainerWrapper
         //
@@ -61,7 +61,7 @@ class BootstrapService
         ContainerWrapper::setContainer($this->container);
     }
 
-    protected function initializePreload(): void
+    private function initializePreload(): void
     {
         // Check for special loads before anything else
         //
@@ -100,27 +100,27 @@ class BootstrapService
         }
     }
 
-    protected function initializeDefines(): void
+    private function initializeDefines(): void
     {
         // Load global and site specific defines
         //
         require_once __DIR__.'/../Defines.php';
     }
 
-    protected function initializeTranslations(): void
+    private function initializeTranslations(): void
     {
         // Load translation helpers
         //
         require_once __DIR__.'/../Translations.php';
     }
 
-    protected function initializeCoreSanityChecks(): void
+    private function initializeCoreSanityChecks(): void
     {
         $this->sanityCheckRunner->add(RequiredCoreConfig::class, []);
         $this->sanityCheckRunner->add(DatabaseCompatibility::class, []);
     }
 
-    protected function initializeAppSanityChecks(): void
+    private function initializeAppSanityChecks(): void
     {
         $modules = $this->configService->get('sanity_check_modules');
 
@@ -130,7 +130,7 @@ class BootstrapService
         }
     }
 
-    protected function runSanityChecks(): void
+    private function runSanityChecks(): void
     {
         $this->sanityCheckRunner->execute();
     }
