@@ -4,6 +4,8 @@ namespace WebFramework\Core;
 
 interface EntityInterface
 {
+    public function getId(): int;
+
     public function isNewObject(): bool;
 
     public function setObjectId(int $id): void;

@@ -37,19 +37,6 @@ abstract class RepositoryCore
         return lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $input))));
     }
 
-    /**
-     * @param T $entity
-     */
-    protected function getId(EntityInterface $entity): int
-    {
-        $reflection = new \ReflectionClass($entity);
-
-        $property = $reflection->getProperty('id');
-        $property->setAccessible(true);
-
-        return $property->getValue($entity);
-    }
-
     public function exists(int $id): bool
     {
         $result = $this->database->query('SELECT id FROM '.$this->tableName.
@@ -172,7 +159,7 @@ SQL;
         {
             $values = $this->getEntityFields($entity, false);
             $obj = $this->create($values);
-            $entity->setObjectId($this->getId($obj));
+            $entity->setObjectId($obj->getId());
 
             // Initialize additional database generated fields
             //
@@ -206,7 +193,7 @@ SQL;
         WHERE id = ?
 SQL;
 
-        $params[] = $this->getId($entity);
+        $params = [$entity->getId()];
 
         $class = static::$entityClass;
         $this->database->query($query, $params, "Failed to update object ({$class})");
@@ -222,7 +209,7 @@ SQL;
         WHERE id = ?
 SQL;
 
-        $params = [$this->getId($entity)];
+        $params = [$entity->getId()];
 
         $this->database->query($query, $params, 'Failed to delete item');
     }
