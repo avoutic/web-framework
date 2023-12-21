@@ -1,3 +1,17 @@
+# v8 release
+
+## v8.0
+
+### Breaking changes
+* BREAK: PHP based templates removed
+* BREAK: ActionCore, ApiAction and PageAction removed
+* BREAK: CamelCaseAutoLoader removed
+* BREAK: DataCore and FactoryCore removed
+* BREAK: AssertService removed
+* BREAK: Caching removed from RepositoryCore
+* BREAK: EntityCore / EntityInterface changed
+
+###
 # v7 release
 
 ## v7.11

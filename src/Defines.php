@@ -2,7 +2,7 @@
 
 // Semantic versions of the current framework
 //
-define('FRAMEWORK_VERSION', 7);
+define('FRAMEWORK_VERSION', 8);
 define('FRAMEWORK_DB_VERSION', 2);
 
 // Format defines for verifying input
