@@ -6,9 +6,9 @@ use WebFramework\Core\EntityCore;
 
 class User extends EntityCore
 {
-    public static string $tableName = 'users';
-    public static array $baseFields = ['username', 'email', 'solid_password', 'terms_accepted', 'registered', 'verified', 'last_login', 'failed_login'];
-    public static array $privateFields = ['solid_password'];
+    protected static string $tableName = 'users';
+    protected static array $baseFields = ['username', 'email', 'solid_password', 'terms_accepted', 'registered', 'verified', 'last_login', 'failed_login'];
+    protected static array $privateFields = ['solid_password'];
 
     private int $id;
     private string $username = '';

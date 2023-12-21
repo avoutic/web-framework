@@ -26,9 +26,9 @@ abstract class RepositoryCore
     ) {
         $class = static::$entityClass;
 
-        $this->baseFields = $class::$baseFields;
-        $this->additionalIdFields = $class::$additionalIdFields;
-        $this->tableName = $class::$tableName;
+        $this->baseFields = $class::getBaseFields();
+        $this->additionalIdFields = $class::getAdditionalIdFields();
+        $this->tableName = $class::getTableName();
     }
 
     // Convert snake_case to camelCase

@@ -6,8 +6,8 @@ use WebFramework\Core\EntityCore;
 
 class Right extends EntityCore
 {
-    public static string $tableName = 'rights';
-    public static array $baseFields = ['short_name', 'name'];
+    protected static string $tableName = 'rights';
+    protected static array $baseFields = ['short_name', 'name'];
 
     private int $id;
     private string $shortName;

@@ -6,8 +6,8 @@ use WebFramework\Core\EntityCore;
 
 class BlacklistEntry extends EntityCore
 {
-    public static string $tableName = 'blacklist_entries';
-    public static array $baseFields = ['ip', 'user_id', 'severity', 'reason', 'timestamp'];
+    protected static string $tableName = 'blacklist_entries';
+    protected static array $baseFields = ['ip', 'user_id', 'severity', 'reason', 'timestamp'];
 
     private int $id;
     private string $ip;

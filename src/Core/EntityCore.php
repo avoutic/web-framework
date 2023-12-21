@@ -4,20 +4,22 @@ namespace WebFramework\Core;
 
 abstract class EntityCore implements EntityInterface
 {
-    /** @var array<string> */
-    public static array $baseFields = [];
+    protected static string $tableName = '';
 
     /** @var array<string> */
-    public static array $privateFields = [];
+    protected static array $baseFields = [];
 
     /** @var array<string> */
-    public static array $fillableFields = [];
+    protected static array $privateFields = [];
 
     /** @var array<string> */
-    public static array $additionalIdFields = [];
+    protected static array $fillableFields = [];
+
+    /** @var array<string> */
+    protected static array $additionalIdFields = [];
 
     /** @var array<string, mixed> */
-    public array $originalValues = [];
+    private array $originalValues = [];
 
     private bool $isNewObject = true;
 
@@ -32,6 +34,32 @@ abstract class EntityCore implements EntityInterface
     public function __debugInfo(): array
     {
         return $this->toArray();
+    }
+
+    public static function getTableName(): string
+    {
+        return static::$tableName;
+    }
+
+    /**
+     *  @return array<string>
+     */
+    public static function getBaseFields(): array
+    {
+        return static::$baseFields;
+    }
+
+    /**
+     *  @return array<string>
+     */
+    public static function getAdditionalIdFields(): array
+    {
+        return static::$additionalIdFields;
+    }
+
+    public function getCacheId(): string
+    {
+        return static::$tableName.'['.$this->getId().']';
     }
 
     /**

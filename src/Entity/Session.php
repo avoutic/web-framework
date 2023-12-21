@@ -6,8 +6,8 @@ use WebFramework\Core\EntityCore;
 
 class Session extends EntityCore
 {
-    public static string $tableName = 'sessions';
-    public static array $baseFields = ['user_id', 'session_id', 'start', 'last_active'];
+    protected static string $tableName = 'sessions';
+    protected static array $baseFields = ['user_id', 'session_id', 'start', 'last_active'];
 
     private int $id;
     private int $userId;
