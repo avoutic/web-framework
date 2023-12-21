@@ -8,10 +8,6 @@ services:
         tags:
             - phpstan.properties.readWriteExtension
     -
-        class: WebFramework\PHPStan\FactoryCoreVerifyMethodTypeSpecifyingExtension
-        tags:
-            - phpstan.typeSpecifier.methodTypeSpecifyingExtension
-    -
         class: WebFramework\PHPStan\AssertHandlerVerifyMethodTypeSpecifyingExtension
         tags:
             - phpstan.typeSpecifier.methodTypeSpecifyingExtension
