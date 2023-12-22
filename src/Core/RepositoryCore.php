@@ -193,7 +193,7 @@ SQL;
         WHERE id = ?
 SQL;
 
-        $params = [$entity->getId()];
+        $params[] = $entity->getId();
 
         $class = static::$entityClass;
         $this->database->query($query, $params, "Failed to update object ({$class})");
