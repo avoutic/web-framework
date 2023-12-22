@@ -10,15 +10,17 @@ class User extends EntityCore
     protected static array $baseFields = ['username', 'email', 'solid_password', 'terms_accepted', 'registered', 'verified', 'last_login', 'failed_login'];
     protected static array $privateFields = ['solid_password'];
 
-    private int $id;
-    private string $username = '';
-    private string $email = '';
-    private string $solidPassword = '';
-    private int $termsAccepted = 0;
-    private bool $verified = false;
-    private int $registered = 0;
-    private int $lastLogin = 0;
-    private int $failedLogin = 0;
+    // Protected because User is often extended with project specific fields
+    //
+    protected int $id;
+    protected string $username = '';
+    protected string $email = '';
+    protected string $solidPassword = '';
+    protected int $termsAccepted = 0;
+    protected bool $verified = false;
+    protected int $registered = 0;
+    protected int $lastLogin = 0;
+    protected int $failedLogin = 0;
 
     public function getId(): int
     {
