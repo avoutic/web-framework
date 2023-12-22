@@ -5,7 +5,7 @@ namespace WebFramework\Validation;
 class MaxLengthRule implements ValidationRule
 {
     public function __construct(
-        protected int $maxLength,
+        private int $maxLength,
     ) {
     }
 

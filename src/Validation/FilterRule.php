@@ -5,7 +5,7 @@ namespace WebFramework\Validation;
 class FilterRule implements ValidationRule
 {
     public function __construct(
-        protected string $regex,
+        private string $regex,
     ) {
     }
 

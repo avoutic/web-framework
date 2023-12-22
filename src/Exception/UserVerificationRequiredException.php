@@ -7,7 +7,7 @@ use WebFramework\Entity\User;
 class UserVerificationRequiredException extends \Exception
 {
     public function __construct(
-        protected User $user,
+        private User $user,
     ) {
     }
 

@@ -5,7 +5,7 @@ namespace WebFramework\Validation;
 class MinLengthRule implements ValidationRule
 {
     public function __construct(
-        protected int $minLength,
+        private int $minLength,
     ) {
     }
 

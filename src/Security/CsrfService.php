@@ -17,12 +17,12 @@ class CsrfService
         $this->browserSession->set('csrf_token', $this->randomProvider->getRandom(16));
     }
 
-    protected function getStoredToken(): string
+    public function getStoredToken(): string
     {
         return $this->browserSession->get('csrf_token');
     }
 
-    protected function isValidTokenStored(): bool
+    public function isValidTokenStored(): bool
     {
         $token = $this->browserSession->get('csrf_token');
 
