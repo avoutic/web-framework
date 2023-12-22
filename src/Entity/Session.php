@@ -11,13 +11,23 @@ class Session extends EntityCore
 
     private int $id;
     private int $userId;
-    private string $sessionId;
-    private string $start;
-    private string $lastActive;
+    private string $sessionId = '';
+    private string $start = '';
+    private string $lastActive = '';
 
     public function getId(): int
     {
         return $this->id;
+    }
+
+    public function getUserId(): int
+    {
+        return $this->userId;
+    }
+
+    public function setUserId(int $userId): void
+    {
+        $this->userId = $userId;
     }
 
     public function getSessionId(): string

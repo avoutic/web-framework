@@ -10,8 +10,8 @@ class Right extends EntityCore
     protected static array $baseFields = ['short_name', 'name'];
 
     private int $id;
-    private string $shortName;
-    private string $name;
+    private string $shortName = '';
+    private string $name = '';
 
     public function getId(): int
     {
@@ -23,8 +23,18 @@ class Right extends EntityCore
         return $this->shortName;
     }
 
+    public function setShortName(string $shortName): void
+    {
+        $this->shortName = $shortName;
+    }
+
     public function getName(): string
     {
         return $this->name;
+    }
+
+    public function setName(string $name): void
+    {
+        $this->name = $name;
     }
 }

@@ -95,6 +95,11 @@ class User extends EntityCore
         $this->failedLogin++;
     }
 
+    public function getLastLogin(): int
+    {
+        return $this->lastLogin;
+    }
+
     public function setLastLogin(int $timestamp): void
     {
         $this->lastLogin = $timestamp;

@@ -10,11 +10,11 @@ class BlacklistEntry extends EntityCore
     protected static array $baseFields = ['ip', 'user_id', 'severity', 'reason', 'timestamp'];
 
     private int $id;
-    private string $ip;
-    private ?int $userId;
-    private int $severity;
-    private string $reason;
-    private int $timestamp;
+    private string $ip = '';
+    private ?int $userId = null;
+    private int $severity = 0;
+    private string $reason = '';
+    private int $timestamp = 0;
 
     public function getId(): int
     {
