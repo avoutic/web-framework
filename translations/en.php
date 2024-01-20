@@ -75,6 +75,8 @@ return [
     'validation' => [
         'filter' => '{field_name} is not valid',
         'max_length' => '{field_name} can be a maximum of {max_length} characters',
+        'min_value' => '{field_name} should have a minimum value of {min_value}',
+        'max_value' => '{field_name} can be a maximum value of {max_value}',
         'required' => '{field_name} is required',
     ],
     'verify' => [
