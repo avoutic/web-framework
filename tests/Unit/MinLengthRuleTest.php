@@ -1,0 +1,65 @@
+<?php
+
+namespace Tests\Unit;
+
+use WebFramework\Validation\MinLengthRule;
+
+/**
+ * @internal
+ *
+ * @coversNothing
+ */
+final class MinLengthRuleTest extends \Codeception\Test\Unit
+{
+    public function testValid()
+    {
+        $instance = $this->construct(
+            MinLengthRule::class,
+            [
+                10,
+            ]
+        );
+
+        verify($instance->isValid('abcdefghijklm'))
+            ->equals(true);
+    }
+
+    public function testInvalidEmpty()
+    {
+        $instance = $this->construct(
+            MinLengthRule::class,
+            [
+                10,
+            ]
+        );
+
+        verify($instance->isValid(''))
+            ->equals(false);
+    }
+
+    public function testValidLimit()
+    {
+        $instance = $this->construct(
+            MinLengthRule::class,
+            [
+                10,
+            ]
+        );
+
+        verify($instance->isValid('ABCDEFGHIJ'))
+            ->equals(true);
+    }
+
+    public function testInvalid()
+    {
+        $instance = $this->construct(
+            MinLengthRule::class,
+            [
+                10,
+            ]
+        );
+
+        verify($instance->isValid('ABCDEFGHI'))
+            ->equals(false);
+    }
+}
