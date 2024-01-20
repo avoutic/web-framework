@@ -94,12 +94,12 @@ class PostmarkMailService implements MailService
         }
         catch (PostmarkException $e)
         {
-            if ($e->postmarkApiErrorCode == 406)
+            if ($e->PostmarkApiErrorCode == 406)
             {
                 return 'inactive_address';
             }
 
-            if ($e->postmarkApiErrorCode == 1101)
+            if ($e->PostmarkApiErrorCode == 1101)
             {
                 throw new \RuntimeException("Template ID {$templateId} not correct");
             }
