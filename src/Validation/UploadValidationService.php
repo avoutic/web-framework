@@ -79,10 +79,10 @@ class UploadValidationService
         {
             if ($result === 'file_too_large_max_size')
             {
-                throw new ValidationException('upload', 'file_too_large_max_size', ['max_size' => (string) $maxSize]);
+                throw new ValidationException('upload', 'upload.file_too_large_max_size', ['max_size' => (string) $maxSize]);
             }
 
-            throw new ValidationException('upload', $result);
+            throw new ValidationException('upload', 'upload.'.$result);
         }
 
         $finfo = new \finfo(FILEINFO_MIME_TYPE);
