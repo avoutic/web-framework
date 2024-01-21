@@ -36,15 +36,25 @@ class MailReportFunction implements ReportFunction
 
         $this->cache->set($cacheId, $cached, time() + 10 * 60);
 
-        // More than 3 in the last 10 minutes, update timestamp, and skip mail
+        // If more than 3 occurred in the last 10 minutes, only send out mail sporadically
         //
+        if ($cached['count'] > 1000 && $cached['count'] % 1000 !== 0)
+        {
+            return;
+        }
+
+        if ($cached['count'] > 100 && $cached['count'] % 100 !== 0)
+        {
+            return;
+        }
+
         if ($cached['count'] > 3 && $cached['count'] % 25 !== 0)
         {
             return;
         }
 
         $title = $debugInfo['title'];
-        if ($cached['count'] % 25 === 0)
+        if ($cached['count'] > 3)
         {
             $title = "[{$cached['count']} times]: {$title}";
         }
