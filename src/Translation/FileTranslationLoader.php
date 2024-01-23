@@ -3,6 +3,7 @@
 namespace WebFramework\Translation;
 
 use WebFramework\Core\Cache;
+use WebFramework\Core\RuntimeEnvironment;
 
 class FileTranslationLoader implements TranslationLoader
 {
@@ -11,7 +12,7 @@ class FileTranslationLoader implements TranslationLoader
 
     public function __construct(
         private Cache $cache,
-        private string $appDir,
+        private RuntimeEnvironment $runtimeEnvironment,
         /** @var array<string> */
         private array $directories,
     ) {
@@ -54,7 +55,7 @@ class FileTranslationLoader implements TranslationLoader
 
         foreach ($this->directories as $directory)
         {
-            $translationsFile = "{$this->appDir}/{$directory}/{$language}.php";
+            $translationsFile = "{$this->runtimeEnvironment->getAppDir()}/{$directory}/{$language}.php";
             if (!file_exists($translationsFile))
             {
                 continue;

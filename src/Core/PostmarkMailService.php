@@ -10,8 +10,8 @@ class PostmarkMailService implements MailService
     public function __construct(
         private Instrumentation $instrumentation,
         private PostmarkClientFactory $clientFactory,
+        private RuntimeEnvironment $runtimeEnvironment,
         private string $defaultSender,
-        private string $serverName,
     ) {
     }
 
@@ -74,7 +74,7 @@ class PostmarkMailService implements MailService
 
         if (!isset($templateVariables['server_name']))
         {
-            $templateVariables['server_name'] = $this->serverName;
+            $templateVariables['server_name'] = $this->runtimeEnvironment->getServerName();
         }
 
         try

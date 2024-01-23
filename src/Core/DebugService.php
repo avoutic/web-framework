@@ -11,7 +11,7 @@ class DebugService
         private AuthenticationService $authenticationService,
         private DatabaseProvider $databaseProvider,
         private ReportFunction $reportFunction,
-        private string $serverName,
+        private RuntimeEnvironment $runtimeEnvironment,
     ) {
     }
 
@@ -73,7 +73,7 @@ class DebugService
     private function getReport(string $file, int $line, array $filteredStack, ?Request $request, string $errorType, string $message): array
     {
         $info = [
-            'title' => "{$this->serverName} - {$errorType}: {$message}",
+            'title' => "{$this->runtimeEnvironment->getServerName()} - {$errorType}: {$message}",
             'low_info_message' => '',
             'message' => '',
             'hash' => '',
@@ -82,7 +82,7 @@ class DebugService
         // Retrieve request
         //
         $requestSource = 'app';
-        if ($this->serverName !== 'app' && $request !== null)
+        if ($this->runtimeEnvironment->getServerName() !== 'app' && $request !== null)
         {
             $requestMethod = $request->getMethod();
 
@@ -93,7 +93,7 @@ class DebugService
 
         // Cache hash
         //
-        $info['hash'] = $this->generateHash($this->serverName, $requestSource, $file, $line, $message);
+        $info['hash'] = $this->generateHash($this->runtimeEnvironment->getServerName(), $requestSource, $file, $line, $message);
 
         // Construct base message
         //
@@ -128,7 +128,7 @@ Line: {$line}
 ErrorType: {$errorType}
 Message: {$message}
 
-Server: {$this->serverName}
+Server: {$this->runtimeEnvironment->getServerName()}
 Request: {$requestSource}
 
 Condensed backtrace:

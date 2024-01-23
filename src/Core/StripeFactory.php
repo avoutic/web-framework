@@ -8,9 +8,9 @@ use Stripe\StripeClient;
 class StripeFactory
 {
     public function __construct(
+        private RuntimeEnvironment $runtimeEnvironment,
         private StripeClient $stripe,
         private string $endpointSecret,
-        private bool $production,
     ) {
     }
 
@@ -18,7 +18,7 @@ class StripeFactory
     {
         try
         {
-            if ($this->production)
+            if ($this->runtimeEnvironment->isProduction())
             {
                 $event = \Stripe\Webhook::constructEvent(
                     $payload,

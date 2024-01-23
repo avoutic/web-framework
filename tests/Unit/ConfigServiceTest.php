@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use WebFramework\Core\RuntimeEnvironment;
 use WebFramework\Security\ConfigService as SecureConfigService;
 
 /**
@@ -16,7 +17,7 @@ final class ConfigServiceTest extends \Codeception\Test\Unit
         $instance = $this->construct(
             SecureConfigService::class,
             [
-                __DIR__,
+                $this->makeEmpty(RuntimeEnvironment::class, ['getAppDir' => __DIR__]),
                 '/auth',
             ],
         );
@@ -32,7 +33,7 @@ final class ConfigServiceTest extends \Codeception\Test\Unit
         $instance = $this->construct(
             SecureConfigService::class,
             [
-                __DIR__,
+                $this->makeEmpty(RuntimeEnvironment::class, ['getAppDir' => __DIR__]),
                 '/auth',
             ],
         );
@@ -46,7 +47,7 @@ final class ConfigServiceTest extends \Codeception\Test\Unit
         $instance = $this->construct(
             SecureConfigService::class,
             [
-                __DIR__,
+                $this->makeEmpty(RuntimeEnvironment::class, ['getAppDir' => __DIR__]),
                 '/auth',
             ],
         );

@@ -2,10 +2,12 @@
 
 namespace WebFramework\SanityCheck;
 
+use WebFramework\Core\RuntimeEnvironment;
+
 class RequiredAuth extends Base
 {
     public function __construct(
-        private string $appDir,
+        private RuntimeEnvironment $runtimeEnvironment,
     ) {
     }
 
@@ -19,7 +21,7 @@ class RequiredAuth extends Base
 
         foreach ($this->config as $filename)
         {
-            $path = "{$this->appDir}/config/auth/{$filename}";
+            $path = "{$this->runtimeEnvironment->getAppDir()}/config/auth/{$filename}";
 
             $exists = file_exists($path);
 

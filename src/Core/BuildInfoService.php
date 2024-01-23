@@ -5,7 +5,7 @@ namespace WebFramework\Core;
 class BuildInfoService
 {
     public function __construct(
-        private string $appDir,
+        private RuntimeEnvironment $runtimeEnvironment,
     ) {
     }
 
@@ -16,7 +16,7 @@ class BuildInfoService
      */
     public function getInfo(): array
     {
-        if (!file_exists($this->appDir.'/build_commit') || !file_exists($this->appDir.'/build_timestamp'))
+        if (!file_exists($this->runtimeEnvironment->getAppDir().'/build_commit') || !file_exists($this->runtimeEnvironment->getAppDir().'/build_timestamp'))
         {
             return [
                 'commit' => null,
@@ -24,7 +24,7 @@ class BuildInfoService
             ];
         }
 
-        $commit = file_get_contents($this->appDir.'/build_commit');
+        $commit = file_get_contents($this->runtimeEnvironment->getAppDir().'/build_commit');
         if ($commit === false)
         {
             throw new \RuntimeException('Failed to retrieve build_commit');
@@ -32,7 +32,7 @@ class BuildInfoService
 
         $commit = substr($commit, 0, 8);
 
-        $buildTime = file_get_contents($this->appDir.'/build_timestamp');
+        $buildTime = file_get_contents($this->runtimeEnvironment->getAppDir().'/build_timestamp');
         if ($buildTime === false)
         {
             throw new \RuntimeException('Failed to retrieve build_timestamp');

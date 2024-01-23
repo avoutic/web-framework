@@ -13,8 +13,8 @@ class BootstrapService
     public function __construct(
         private Container $container,
         private ConfigService $configService,
+        private RuntimeEnvironment $runtimeEnvironment,
         private SanityCheckRunner $sanityCheckRunner,
-        private string $appDir,
     ) {
     }
 
@@ -71,11 +71,11 @@ class BootstrapService
 
         if ($preload === true)
         {
-            if (file_exists("{$this->appDir}/src/preload.inc.php"))
+            if (file_exists("{$this->runtimeEnvironment->getAppDir()}/src/preload.inc.php"))
             {
                 $filename = 'src/preload.inc.php';
             }
-            elseif (file_exists("{$this->appDir}/includes/preload.inc.php"))
+            elseif (file_exists("{$this->runtimeEnvironment->getAppDir()}/includes/preload.inc.php"))
             {
                 $filename = 'includes/preload.inc.php';
             }
@@ -91,12 +91,12 @@ class BootstrapService
 
         if ($filename)
         {
-            if (!file_exists("{$this->appDir}/{$filename}"))
+            if (!file_exists("{$this->runtimeEnvironment->getAppDir()}/{$filename}"))
             {
                 throw new \InvalidArgumentException("The file '{$filename}' does not exist");
             }
 
-            require_once "{$this->appDir}/{$filename}";
+            require_once "{$this->runtimeEnvironment->getAppDir()}/{$filename}";
         }
     }
 

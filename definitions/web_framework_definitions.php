@@ -165,7 +165,6 @@ return [
     Core\PostmarkMailService::class => DI\autowire()
         ->constructor(
             defaultSender: DI\get('sender_core.default_sender'),
-            serverName: DI\get('server_name'),
         ),
     Core\Recaptcha::class => DI\Factory(function (ContainerInterface $c) {
         return new Core\Recaptcha(
@@ -178,6 +177,13 @@ return [
             secretKey: DI\get('security.recaptcha.secret_key'),
         ),
     Core\ReportFunction::class => DI\autowire(Core\NullReportFunction::class),
+    Core\RuntimeEnvironment::class => DI\autowire()
+        ->constructorParameter('appDir', DI\get('app_dir'))
+        ->constructorParameter('baseUrl', DI\get('base_url'))
+        ->constructorParameter('debug', DI\get('debug'))
+        ->constructorParameter('httpMode', DI\get('http_mode'))
+        ->constructorParameter('production', DI\get('production'))
+        ->constructorParameter('serverName', DI\get('server_name')),
     Core\SanityCheckRunner::class => DI\autowire()
         ->constructor(
             storedValues: DI\get('SanityCheckStoredValues'),
@@ -194,12 +200,6 @@ return [
             $c->get('production'),
         );
     }),
-    Core\UrlBuilder::class => DI\autowire()
-        ->constructor(
-            baseUrl: DI\Get('base_url'),
-            httpMode: DI\Get('http_mode'),
-            serverName: DI\Get('server_name'),
-        ),
     Core\UserMailer::class => function (ContainerInterface $c) {
         $configService = $c->get(Core\ConfigService::class);
         $templateOverrides = $configService->get('user_mailer.template_overrides');
@@ -210,18 +210,11 @@ return [
             templateOverrides: $templateOverrides,
         );
     },
-    Core\ValidatorService::class => DI\autowire(),
-
-    SanityCheck\RequiredAuth::class => DI\autowire()
-        ->constructor(
-            appDir: DI\get('app_dir'),
-        ),
 
     Security\AuthenticationService::class => DI\autowire(Security\NullAuthenticationService::class),
     Security\BlacklistService::class => DI\autowire(Security\NullBlacklistService::class),
     Security\ConfigService::class => DI\autowire()
         ->constructor(
-            DI\get('app_dir'),
             DI\get('security.auth_dir'),
         ),
     Security\DatabaseAuthenticationService::class => DI\autowire(Security\DatabaseAuthenticationService::class)
@@ -249,7 +242,7 @@ return [
 
         return new Translation\FileTranslationLoader(
             cache: $c->get(Core\Cache::class),
-            appDir: $c->get('app_dir'),
+            runtimeEnvironment: $c->get(Core\RuntimeEnvironment::class),
             directories: $directories,
         );
     },

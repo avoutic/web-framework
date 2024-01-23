@@ -11,6 +11,7 @@ use WebFramework\Core\DatabaseProvider;
 use WebFramework\Core\DebugService;
 use WebFramework\Core\MailReportFunction;
 use WebFramework\Core\NullReportFunction;
+use WebFramework\Core\RuntimeEnvironment;
 use WebFramework\Entity\User;
 use WebFramework\Security\NullAuthenticationService;
 
@@ -542,7 +543,12 @@ TXT;
                 'authenticationService' => $this->makeEmpty(NullAuthenticationService::class),
                 'databaseProvider' => $this->makeEmpty(DatabaseProvider::class),
                 'reportFunction' => $this->makeEmpty(NullReportFunction::class),
-                'serverName' => 'TestServer',
+                'runtimeEnvironment' => $this->makeEmpty(
+                    RuntimeEnvironment::class,
+                    [
+                        'getServerName' => 'TestServer',
+                    ]
+                ),
             ],
             [
                 'generateHash' => 'my_hash',
@@ -614,7 +620,12 @@ TXT;
                 ),
                 'databaseProvider' => $databaseProvider,
                 'reportFunction' => $this->makeEmpty(NullReportFunction::class),
-                'serverName' => 'TestServer',
+                'runtimeEnvironment' => $this->makeEmpty(
+                    RuntimeEnvironment::class,
+                    [
+                        'getServerName' => 'TestServer',
+                    ]
+                ),
             ],
             [
                 'generateHash' => 'my_hash',
@@ -738,7 +749,12 @@ TXT;
                         'report' => Expected::once(),
                     ]
                 ),
-                'serverName' => 'testServer',
+                'runtimeEnvironment' => $this->makeEmpty(
+                    RuntimeEnvironment::class,
+                    [
+                        'getServerName' => 'TestServer',
+                    ]
+                ),
             ],
             [
                 'getErrorReport' => ['my_report'],

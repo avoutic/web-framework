@@ -2,10 +2,12 @@
 
 namespace WebFramework\Security;
 
+use WebFramework\Core\RuntimeEnvironment;
+
 class ConfigService
 {
     public function __construct(
-        private string $appDir,
+        private RuntimeEnvironment $runtimeEnvironment,
         private string $authDir,
     ) {
     }
@@ -27,7 +29,7 @@ class ConfigService
      */
     private function loadFile(string $name): array|string
     {
-        $filename = "{$this->appDir}{$this->authDir}/{$name}.php";
+        $filename = "{$this->runtimeEnvironment->getAppDir()}{$this->authDir}/{$name}.php";
 
         if (!file_exists($filename))
         {

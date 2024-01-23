@@ -6,9 +6,7 @@ class UrlBuilder
 {
     public function __construct(
         private MessageService $messageService,
-        private string $baseUrl,
-        private string $httpMode,
-        private string $serverName,
+        private RuntimeEnvironment $runtimeEnvironment,
     ) {
     }
 
@@ -79,7 +77,7 @@ class UrlBuilder
 
         return
             ($absolute ? $this->getServerUrl() : '').
-            $this->baseUrl.
+            $this->runtimeEnvironment->getBaseUrl().
             (isset($parts['path']) ? $parts['path'] : '').
             (isset($parts['query']) ? '?'.$parts['query'] : '').
             (isset($parts['fragment']) ? '#'.$parts['fragment'] : '');
@@ -95,6 +93,6 @@ class UrlBuilder
 
     public function getServerUrl(): string
     {
-        return "{$this->httpMode}://{$this->serverName}";
+        return "{$this->runtimeEnvironment->getHttpMode()}://{$this->runtimeEnvironment->getServerName()}";
     }
 }
