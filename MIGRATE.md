@@ -1,5 +1,14 @@
 # v8 release
 
+## v8.1
+
+### Light changes
+
+* Introduced MinValue and MaxValue rules
+* postmark-php updated to v6
+* MailReportFunction sends less on repeated errors
+* Introduced RuntimeEnvironment to encapsulate runtime values
+
 ## v8.0
 
 ### Breaking changes
