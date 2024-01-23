@@ -81,18 +81,10 @@ return [
     'server_name' => $_SERVER['SERVER_NAME'] ?? 'app',
 
     'DbStoredValues' => DI\autowire(Core\StoredValues::class)
-        ->constructor(
-            module: 'db',
-        ),
+        ->constructorParameter('module', 'db'),
     'SanityCheckStoredValues' => DI\autowire(Core\StoredValues::class)
-        ->constructor(
-            module: 'sanity_check',
-        ),
+        ->constructorParameter('module', 'sanity_check'),
 
-    Core\BootstrapService::class => DI\autowire()
-        ->constructor(
-            appDir: DI\get('app_dir'),
-        ),
     Core\Browserless::class => function (ContainerInterface $c) {
         $secureConfigService = $c->get(Security\ConfigService::class);
 
@@ -105,13 +97,9 @@ return [
             $config['token'],
         );
     },
-    Core\BuildInfoService::class => DI\autowire()
-        ->constructorParameter('appDir', DI\get('app_dir')),
     Core\Cache::class => DI\autowire(Core\NullCache::class),
     Core\ConfigService::class => DI\autowire()
-        ->constructor(
-            DI\get('config_tree'),
-        ),
+        ->constructorParameter('config', DI\get('config_tree')),
     Core\Database::class => function (ContainerInterface $c) {
         $secureConfigService = $c->get(Security\ConfigService::class);
 
@@ -139,21 +127,13 @@ return [
         return $database;
     },
     Core\DatabaseManager::class => DI\autowire()
-        ->constructor(
-            storedValues: DI\get('DbStoredValues'),
-        ),
-    Core\DebugService::class => DI\autowire()
-        ->constructorParameter('serverName', DI\get('server_name')),
+        ->constructorParameter('storedValues', DI\get('DbStoredValues')),
     Core\Instrumentation::class => DI\autowire(Core\NullInstrumentation::class),
     Core\LatteRenderService::class => DI\autowire()
-        ->constructor(
-            templateDir: DI\string('{app_dir}/templates'),
-            tmpDir: '/tmp/latte',
-        ),
+        ->constructorParameter('templateDir', DI\string('{app_dir}/templates'))
+        ->constructorParameter('tmpDir', '/tmp/latte'),
     Core\MailReportFunction::class => DI\autowire()
-        ->constructor(
-            assertRecipient: DI\get('sender_core.assert_recipient'),
-        ),
+        ->constructorParameter('assertRecipient', DI\get('sender_core.assert_recipient')),
     Core\MailService::class => DI\autowire(Core\NullMailService::class),
     Core\PostmarkClientFactory::class => DI\factory(function (ContainerInterface $c) {
         $secureConfigService = $c->get(Security\ConfigService::class);
@@ -163,9 +143,7 @@ return [
         return new Core\PostmarkClientFactory($apiKey);
     }),
     Core\PostmarkMailService::class => DI\autowire()
-        ->constructor(
-            defaultSender: DI\get('sender_core.default_sender'),
-        ),
+        ->constructorParameter('defaultSender', DI\get('sender_core.default_sender')),
     Core\Recaptcha::class => DI\Factory(function (ContainerInterface $c) {
         return new Core\Recaptcha(
             $c->get(\GuzzleHttp\Client::class),
@@ -173,9 +151,7 @@ return [
         );
     }),
     Core\RecaptchaFactory::class => DI\autowire()
-        ->constructor(
-            secretKey: DI\get('security.recaptcha.secret_key'),
-        ),
+        ->constructorParameter('secretKey', DI\get('security.recaptcha.secret_key')),
     Core\ReportFunction::class => DI\autowire(Core\NullReportFunction::class),
     Core\RuntimeEnvironment::class => DI\autowire()
         ->constructorParameter('appDir', DI\get('app_dir'))
@@ -185,10 +161,8 @@ return [
         ->constructorParameter('production', DI\get('production'))
         ->constructorParameter('serverName', DI\get('server_name')),
     Core\SanityCheckRunner::class => DI\autowire()
-        ->constructor(
-            storedValues: DI\get('SanityCheckStoredValues'),
-            buildInfo: DI\get('build_info'),
-        ),
+        ->constructorParameter('storedValues', DI\get('SanityCheckStoredValues'))
+        ->constructorParameter('buildInfo', DI\get('build_info')),
     Core\StripeFactory::class => DI\factory(function (ContainerInterface $c) {
         $secureConfigService = $c->get(Security\ConfigService::class);
 
@@ -214,19 +188,13 @@ return [
     Security\AuthenticationService::class => DI\autowire(Security\NullAuthenticationService::class),
     Security\BlacklistService::class => DI\autowire(Security\NullBlacklistService::class),
     Security\ConfigService::class => DI\autowire()
-        ->constructor(
-            DI\get('security.auth_dir'),
-        ),
+        ->constructorParameter('authDir', DI\get('security.auth_dir')),
     Security\DatabaseAuthenticationService::class => DI\autowire(Security\DatabaseAuthenticationService::class)
-        ->constructor(
-            sessionTimeout: DI\get('authenticator.session_timeout'),
-        ),
+        ->constructorParameter('sessionTimeout', DI\get('authenticator.session_timeout')),
     Security\DatabaseBlacklistService::class => DI\autowire()
-        ->constructor(
-            storePeriod: DI\get('security.blacklist.store_period'),
-            threshold: DI\get('security.blacklist.threshold'),
-            triggerPeriod: DI\get('security.blacklist.trigger_period'),
-        ),
+        ->constructorParameter('storePeriod', DI\get('security.blacklist.store_period'))
+        ->constructorParameter('threshold', DI\get('security.blacklist.threshold'))
+        ->constructorParameter('triggerPeriod', DI\get('security.blacklist.trigger_period')),
     Security\ProtectService::class => DI\autowire()
         ->constructorParameter('moduleConfig', [
             'hash' => DI\get('security.hash'),
@@ -247,7 +215,5 @@ return [
         );
     },
     Translation\TranslationService::class => DI\autowire()
-        ->constructor(
-            language: DI\get('translations.default_language'),
-        ),
+        ->constructorParameter('language', DI\get('translations.default_language')),
 ];
