@@ -59,7 +59,12 @@ abstract class EntityCore implements EntityInterface
 
     public function getCacheId(): string
     {
-        return static::$tableName.'['.$this->getId().']';
+        return static::getCacheIdFor($this->getId());
+    }
+
+    public static function getCacheIdFor(int $id): string
+    {
+        return static::$tableName.'['.$id.']';
     }
 
     /**
