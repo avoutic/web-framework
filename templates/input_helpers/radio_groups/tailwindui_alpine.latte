@@ -15,11 +15,17 @@
 
 {var $id = isset($id) ?: 'input_' . $name}
 {var $colors = [
-    'bg' => 'bg-indigo-50',
-    'border' => 'border-indigo-200',
-    'text-input' => 'text-indigo-600',
-    'text-label' => 'text-indigo-900',
-    'text-extra-label' => 'text-indigo-700',
+    'label-text' => 'text-gray-700',
+    'extra-label-text' => 'text-gray-500',
+    'item-bg' => 'bg-white',
+    'item-text' => 'text-indigo-600',
+    'item-border' => 'border-gray-200',
+    'item-label-text' => 'text-gray-900',
+    'item-extra-label-text' => 'text-gray-500',
+    'selected:item-bg' => 'bg-indigo-50',
+    'selected:item-border' => 'border-indigo-200',
+    'selected:item-label-text' => 'text-indigo-900',
+    'selected:item-extra-label-text' => 'text-indigo-700',
     'focus:ring' => 'focus:ring-indigo-500',
 ]}
 {ifset $overrideColors}
@@ -31,10 +37,12 @@
 <div
   {ifset $show} x-cloak x-show="{$show}" {/ifset}
   class="{$width ?: $defaultWidth}">
-  <label n:ifset="$label" for="{$id}" class="block text-sm font-medium text-gray-700">
+  <label n:ifset="$label" for="{$id}" class="block text-sm font-medium {$colors['label-text']}">
     {$label|stripHtml}
   </label>
-  <p n:ifset="$extraLabel" class="text-sm text-gray-500">{$extraLabel|stripHtml}</p>
+  <p n:ifset="$extraLabel" class="text-sm {$colors['extra-label-text']}">
+    {$extraLabel|stripHtml}
+  </p>
 
   <fieldset
 {if !isset($model)}
@@ -43,7 +51,7 @@
      x-data="{json_encode($data)}"
 {/if}
     >
-    <div class="bg-white rounded-md -space-y-px mt-3">
+    <div class="{$colors['item-bg']} rounded-md -space-y-px mt-3">
 
 {foreach $options as $option_value => $option_info}
     {var $option_id = "{$id}-{$iterator->counter}"}
@@ -52,8 +60,8 @@
         class="relative border flex
           {first} rounded-tl-md rounded-tr-md {/first}
           {last} rounded-bl-md rounded-br-md {/last}"
-        :class="{ '{$colors['bg']} {$colors['border']} z-10': {$model} == {$option_value},
-                  'border-gray-200': {$model} != {$option_value} }"
+        :class="{ '{$colors['selected:item-bg']} {$colors['selected:item-border']} z-10': {$model} == {$option_value},
+                  '{$colors['item-border']}': {$model} != {$option_value} }"
         >
         <div class="flex items-center h-5 my-4 ml-4">
           <input
@@ -62,17 +70,17 @@
             {ifset $name} name="{$name}" {/ifset}
             type="radio"
             value="{$option_value}"
-            class="{$colors['focus:ring']} h-4 w-4 {$colors['text-input']} cursor-pointer border-gray-300">
+            class="{$colors['focus:ring']} h-4 w-4 {$colors['item-text']} cursor-pointer border-gray-300">
         </div>
         <label for="{$option_id}" class="p-4 pl-3 flex flex-col cursor-pointer w-full">
           <span
             class="block text-sm font-medium"
-            :class="{ '{$colors['text-label']}': {$model} == {$option_value}, 'text-gray-900': {$model} != {$option_value} }"
+            :class="{ '{$colors['selected:item-label-text']}': {$model} == {$option_value}, '{$colors['item-label-text']}': {$model} != {$option_value} }"
             >
             {$option_info['label']}
           </span>
           <span n:ifset="$option_info['extraLabel']" class="block text-sm"
-                :class="{ '{$colors['text-extra-label']}': {$model} == {$option_value}, 'text-gray-500': {$model} != {$option_value} }"
+                :class="{ '{$colors['selected:item-extra-label-text']}': {$model} == {$option_value}, '{$colors['item-extra-label-text']}': {$model} != {$option_value} }"
                 >
             {$option_info['extraLabel']}
           </span>

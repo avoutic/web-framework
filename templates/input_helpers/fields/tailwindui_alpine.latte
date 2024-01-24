@@ -21,6 +21,9 @@
 
 {var $id = isset($id) ?: 'input_' . $name}
 {var $colors = [
+    'label-text' => 'text-gray-700',
+    'extra-label-text' => 'text-gray-500',
+    'remaining-text' => 'text-gray-500',
     'readonly:bg' => 'bg-gray-100',
     'focus:border' => 'focus:border-indigo-500',
     'focus:ring' => 'focus:ring-indigo-500',
@@ -40,10 +43,12 @@
   {ifset $show} x-cloak x-show="{$show}" {/ifset}
   x-data="{json_encode($counter_info)}"
   class="{$width ?: $defaultWidth}">
-  <label n:ifset="$label" for="{$id}" class="block text-sm font-medium text-gray-700">
+  <label n:ifset="$label" for="{$id}" class="block text-sm font-medium {$colors['label-text']}">
     {$label|stripHtml}
   </label>
-  <p n:ifset="$extraLabel" class="text-sm text-gray-500">{$extraLabel|stripHtml}</p>
+  <p n:ifset="$extraLabel" class="text-sm {$colors['extra-label-text']}">
+    {$extraLabel|stripHtml}
+  </p>
 
 {ifset $prefix}
   <div class="mt-1 flex rounded-md shadow-sm">
@@ -62,13 +67,13 @@
       {if $required} required {/if}
       {if $readonly} readonly {/if}
       {ifset $placeholder} placeholder="{$placeholder}" {/ifset}
-      class="{$readonly ? $colors['readonly:bg']} {$colors['focus:ring']} {$colors['focus:border']} block w-full sm:text-sm border-gray-300 {ifset $prefix} flex-1 rounded-none rounded-r-md {else} block w-full mt-1 shadow-sm rounded-md {/ifset}" />
+      class="{$readonly ? $colors['readonly:bg']} {$colors['focus:ring']} {$colors['focus:border']} block w-full sm:text-sm text-black border-gray-300 {ifset $prefix} flex-1 rounded-none rounded-r-md {else} block w-full mt-1 shadow-sm rounded-md {/ifset}" />
 {ifset $prefix}
   </div>
 {/ifset}
 {ifset $maxLength}
   <div class="text-right">
-    <span x-ref="remaining" class="text-xs text-gray-500">( <span x-text="limit - {$model}.length"></span> / <span x-text="limit"></span> )</span>
+    <span x-ref="remaining" class="text-xs {$colors['remaining-text']}">( <span x-text="limit - {$model}.length"></span> / <span x-text="limit"></span> )</span>
   </div>
 {/ifset}
 </div>

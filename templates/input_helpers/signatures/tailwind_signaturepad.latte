@@ -12,6 +12,8 @@
 
 {var $id = isset($id) ?: 'input_' . $name}
 {var $colors = [
+    'label-text' => 'text-gray-700',
+    'extra-label-text' => 'text-gray-500',
     'focus:border' => 'focus:border-indigo-500',
     'focus:ring' => 'focus:ring-indigo-500',
 ]}
@@ -34,10 +36,13 @@
   x-data="canvas()" x-init="initializePad()"
   id="{$id}"
   class="{$width ?: $defaultWidth}">
-  <label n:ifset="$label" for="{$id}" class="block text-sm font-medium text-gray-700">
+  <label n:ifset="$label" for="{$id}" class="block text-sm font-medium {$colors['label-text']}">
     {$label|stripHtml}
   </label>
-  <p n:ifset="$extraLabel" class="text-sm text-gray-500">{$extraLabel|stripHtml}</p>
+  <p n:ifset="$extraLabel" class="text-sm {$colors['extra-label-text']}">
+    {$extraLabel|stripHtml}
+  </p>
+
   <input x-model="signatureData" type="hidden" {ifset $name} name="{$name}" {/ifset} value="" />
   <div x-on:mouseup="saveSignature()" x-on:touchend="saveSignature()" class="w-72 h-48 bg-gray-200 rounded-md border {$colors['border']}">
     <canvas x-ref="canvas" class="w-full h-full"></canvas>

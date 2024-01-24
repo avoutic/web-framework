@@ -16,6 +16,8 @@
 
 {var $id = isset($id) ?: 'input_' . $name}
 {var $colors = [
+    'label-text' => 'text-gray-700',
+    'extra-label-text' => 'text-gray-500',
     'focus:border' => 'focus:border-indigo-500',
     'focus:ring' => 'focus:ring-indigo-500',
 ]}
@@ -28,10 +30,12 @@
 <div
   {ifset $show} x-cloak x-show="{$show}" {/ifset}
   class="{$width ?: $defaultWidth}">
-  <label n:ifset="$label" for="{$id}" class="block text-sm font-medium text-gray-700">
+  <label n:ifset="$label" for="{$id}" class="block text-sm font-medium {$colors['label-text']}">
     {$label|stripHtml}
   </label>
-  <p n:ifset="$extraLabel" class="text-sm text-gray-500">{$extraLabel|stripHtml}</p>
+  <p n:ifset="$extraLabel" class="text-sm {$colors['extra-label-text']}">
+    {$extraLabel|stripHtml}
+  </p>
 
   <div class="mt-1">
     <textarea
@@ -41,7 +45,7 @@
       {ifset $name} name="{$name}" {/ifset}
       {if $required && !$enableEditor} required {/if}
       {ifset $rows} rows="{$rows}" {/ifset}
-      class="shadow-sm {$colors['focus:ring']} {$colors['focus:border']} block w-full text-sm border-gray-300 rounded-md">{$value}</textarea>
+      class="shadow-sm {$colors['focus:ring']} {$colors['focus:border']} block w-full text-sm text-black border-gray-300 rounded-md">{$value}</textarea>
 
 {if $enableEditor}
     <script>

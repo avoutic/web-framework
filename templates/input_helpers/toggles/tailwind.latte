@@ -15,6 +15,8 @@
 {var $id = isset($id) ?: 'input_' . $name}
 {var $colors = [
     'bg' => 'bg-indigo-600',
+    'label-text' => 'text-gray-700',
+    'extra-label-text' => 'text-gray-500',
     'focus:ring' => 'focus:ring-indigo-500',
 ]}
 {ifset $overrideColors}
@@ -31,10 +33,12 @@
   {/if}
   class="flex items-center justify-between {$width ?: $defaultWidth}">
   <span class="flex-grow flex flex-col" id="{$id}-label">
-    <label n:ifset="$label" for="{$id}" class="text-sm font-base text-gray-900">
+    <label n:ifset="$label" for="{$id}" class="text-sm font-base {$colors['label-text']}">
       {$label|stripHtml}
     </label>
-    <p n:ifset="$extraLabel" class="text-sm text-gray-500">{$extraLabel|stripHtml}</p>
+    <p n:ifset="$extraLabel" class="text-sm {$colors['extra-label-text']}">
+      {$extraLabel|stripHtml}
+    </p>
   </span>
   <input
     x-model="{$model}"

@@ -14,6 +14,8 @@
 
 {var $id = isset($id) ?: 'input_' . $name}
 {var $colors = [
+    'label-text' => 'text-gray-700',
+    'extra-label-text' => 'text-gray-500',
     'text' => 'text-indigo-600',
     'focus:ring' => 'focus:ring-indigo-500',
 ]}
@@ -36,9 +38,11 @@
       class="{$colors['focus:ring']} h-4 w-4 {$colors['text']} border-gray-300 rounded">
   </div>
   <div class="ml-3 text-sm">
-    <label n:ifset="$label" for="{$id}" class="font-medium text-gray-700">
+    <label n:ifset="$label" for="{$id}" class="font-medium {$colors['label-text']}">
       {$label|stripHtml}
     </label>
-    <p n:ifset="$extraLabel" class="text-sm text-gray-500">{$extraLabel|stripHtml}</p>
+    <p n:ifset="$extraLabel" class="text-sm {$colors['extra-label-text']}">
+      {$extraLabel|stripHtml}
+    </p>
   </div>
 </div>
