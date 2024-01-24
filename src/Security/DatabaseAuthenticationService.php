@@ -14,6 +14,7 @@ use WebFramework\Repository\UserRepository;
 class DatabaseAuthenticationService implements AuthenticationService
 {
     private bool $sessionChecked = false;
+    private ?User $authenticatedUser = null;
 
     public function __construct(
         private Database $database,
@@ -68,6 +69,7 @@ SQL;
         $this->browserSession->set('user_id', $user->getId());
         $this->browserSession->set('db_session_id', $session->getId());
 
+        $this->authenticatedUser = $user;
         $this->sessionChecked = true;
     }
 
@@ -202,6 +204,8 @@ SQL;
         $this->browserSession->set('logged_in', false);
         $this->browserSession->set('user_id', null);
         $this->browserSession->set('db_session_id', null);
+
+        $this->authenticatedUser = null;
     }
 
     public function getAuthenticatedUserId(): int
@@ -217,12 +221,21 @@ SQL;
     public function getAuthenticatedUser(): User
     {
         $userId = $this->getAuthenticatedUserId();
-        $user = $this->userRepository->getObjectById($userId);
-        if ($user === null)
+
+        if ($this->authenticatedUser === null)
         {
-            throw new \RuntimeException('User not present');
+            $this->authenticatedUser = $this->userRepository->getObjectById($userId);
+            if ($this->authenticatedUser === null)
+            {
+                throw new \RuntimeException('User not present');
+            }
         }
 
-        return $user;
+        if ($this->authenticatedUser->getId() !== $userId)
+        {
+            throw new \RuntimeException('Authenticated user changed during run');
+        }
+
+        return $this->authenticatedUser;
     }
 }
