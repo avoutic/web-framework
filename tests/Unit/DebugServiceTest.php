@@ -567,7 +567,7 @@ ErrorType: test
 Message: TestMessage
 
 Server: TestServer
-Request: app
+Request: unknown
 
 Condensed backtrace:
 
@@ -636,7 +636,7 @@ TXT;
         $databaseProvider->set($database);
 
         $requestFactory = new RequestFactory();
-        $request = $requestFactory->createRequest('GET', 'https://test.com');
+        $request = $requestFactory->createRequest('GET', 'https://test.com/test-url');
 
         $trace = [
             [
@@ -680,7 +680,7 @@ ErrorType: test
 Message: TestMessage
 
 Server: TestServer
-Request: GET https://test.com
+Request: GET /test-url
 
 Condensed backtrace:
 Object2.php(3): Object2->function2()

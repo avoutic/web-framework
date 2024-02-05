@@ -3,6 +3,7 @@
 namespace WebFramework\Core;
 
 use Psr\Http\Message\ServerRequestInterface as Request;
+use Slim\Routing\RouteContext;
 use WebFramework\Security\AuthenticationService;
 
 class DebugService
@@ -81,19 +82,48 @@ class DebugService
 
         // Retrieve request
         //
-        $requestSource = 'app';
-        if ($this->runtimeEnvironment->getServerName() !== 'app' && $request !== null)
+        $requestSource = 'unknown';
+        if ($request !== null)
         {
-            $requestMethod = $request->getMethod();
+            try
+            {
+                $routeContext = RouteContext::fromRequest($request);
+                $route = $routeContext->getRoute();
 
-            $uri = (string) $request->getUri();
+                // Use route name as base source
+                //
+                if (!empty($route))
+                {
+                    $requestMethod = $request->getMethod();
 
-            $requestSource = $requestMethod.' '.$uri;
+                    $requestSource = $requestMethod.' '.$route->getPattern();
+                }
+            }
+            catch (\RuntimeException $e)
+            {
+            }
+
+            // Fallback to direct method
+            //
+            if ($requestSource === 'unknown')
+            {
+                $requestMethod = $request->getMethod();
+
+                $uri = $request->getUri();
+
+                $requestSource = $requestMethod.' '.$uri->getPath();
+            }
         }
 
         // Cache hash
         //
-        $info['hash'] = $this->generateHash($this->runtimeEnvironment->getServerName(), $requestSource, $file, $line, $message);
+        $info['hash'] = $this->generateHash(
+            $this->runtimeEnvironment->getServerName(),
+            $requestSource,
+            $file,
+            $line,
+            $message,
+        );
 
         // Construct base message
         //
