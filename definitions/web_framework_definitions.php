@@ -169,9 +169,9 @@ return [
         $config = $secureConfigService->getAuthConfig('stripe');
 
         return new Core\StripeFactory(
+            $c->get(Core\RuntimeEnvironment::class),
             $c->get(\Stripe\StripeClient::class),
             $config['endpoint_secret'],
-            $c->get('production'),
         );
     }),
     Core\UserMailer::class => function (ContainerInterface $c) {
