@@ -78,6 +78,7 @@ return [
     },
     'full_base_url' => DI\string('{http_mode}://{server_name}{base_url}'),
     'host_name' => $_SERVER['SERVER_NAME'] ?? 'app',
+    'offline_mode' => false,
     'server_name' => $_SERVER['SERVER_NAME'] ?? 'app',
 
     'DbStoredValues' => DI\autowire(Core\StoredValues::class)
@@ -158,6 +159,7 @@ return [
         ->constructorParameter('baseUrl', DI\get('base_url'))
         ->constructorParameter('debug', DI\get('debug'))
         ->constructorParameter('httpMode', DI\get('http_mode'))
+        ->constructorParameter('offlineMode', DI\get('offline_mode'))
         ->constructorParameter('production', DI\get('production'))
         ->constructorParameter('serverName', DI\get('server_name')),
     Core\SanityCheckRunner::class => DI\autowire()

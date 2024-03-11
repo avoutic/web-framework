@@ -9,6 +9,7 @@ class RuntimeEnvironment
         private string $baseUrl,
         private bool $debug,
         private string $httpMode,
+        private bool $offlineMode,
         private bool $production,
         private string $serverName,
     ) {
@@ -32,6 +33,11 @@ class RuntimeEnvironment
     public function getHttpMode(): string
     {
         return $this->httpMode;
+    }
+
+    public function isOfflineMode(): bool
+    {
+        return $this->offlineMode;
     }
 
     public function isProduction(): bool
