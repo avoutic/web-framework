@@ -126,11 +126,11 @@ class Helpers
         );
     }
 
-    public static function timeElapsedString(int $ptime): string
+    public static function timeElapsedString(int $now, int $since): string
     {
-        $etime = time() - $ptime;
+        $elapsed = $now - $since;
 
-        if ($etime < 1)
+        if ($elapsed < 1)
         {
             return '0 seconds';
         }
@@ -152,7 +152,7 @@ class Helpers
 
         foreach ($a as $secs => $str)
         {
-            $d = $etime / $secs;
+            $d = $elapsed / $secs;
 
             if ($d >= 1)
             {
