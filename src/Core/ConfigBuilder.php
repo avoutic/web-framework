@@ -119,7 +119,7 @@ class ConfigBuilder
         {
             if (is_array($value))
             {
-                $result = $result + $this->flatten($value, $prefix.$key.'.');
+                $result += $this->flatten($value, $prefix.$key.'.');
             }
             else
             {
