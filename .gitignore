@@ -1,3 +1,7 @@
 .php-cs-fixer.cache
 composer.lock
 /vendor/
+/venv
+
+# Caching
+/site
