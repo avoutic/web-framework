@@ -78,9 +78,9 @@ class Recaptcha
         $body = $response->getBody();
         $body = json_decode($body, true);
 
-        if (isset($body['error_codes']))
+        if (isset($body['error-codes']))
         {
-            $this->errorCodes = $body['error_codes'];
+            $this->errorCodes = $body['error-codes'];
 
             if (in_array('invalid-input-secret', $body['error-codes']))
             {
