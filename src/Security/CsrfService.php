@@ -9,8 +9,7 @@ class CsrfService
     public function __construct(
         private RandomProvider $randomProvider,
         private SessionInterface $browserSession,
-    ) {
-    }
+    ) {}
 
     private function storeNewToken(): void
     {

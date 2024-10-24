@@ -8,8 +8,7 @@ use WebFramework\Exception\ValidationException;
 class UploadValidationService
 {
     public function __construct(
-    ) {
-    }
+    ) {}
 
     /**
      * @param ?array<string> $whitelistMimeTypes

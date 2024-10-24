@@ -2,6 +2,4 @@
 
 namespace WebFramework\Exception;
 
-class UsernameUnavailableException extends \RuntimeException
-{
-}
+class UsernameUnavailableException extends \RuntimeException {}

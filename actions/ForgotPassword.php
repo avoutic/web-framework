@@ -28,8 +28,7 @@ class ForgotPassword
         protected ResetPasswordService $resetPasswordService,
         protected UserRepository $userRepository,
         protected ValidatorService $validatorService,
-    ) {
-    }
+    ) {}
 
     protected function getTemplateName(): string
     {

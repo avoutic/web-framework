@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use Codeception\Stub\Expected;
+use Codeception\Test\Unit;
 use WebFramework\Core\MailReportFunction;
 use WebFramework\Core\NullCache;
 use WebFramework\Core\NullMailService;
@@ -12,7 +13,7 @@ use WebFramework\Core\NullMailService;
  *
  * @coversNothing
  */
-final class MailReportFunctionTest extends \Codeception\Test\Unit
+final class MailReportFunctionTest extends Unit
 {
     public function testReportUncached()
     {

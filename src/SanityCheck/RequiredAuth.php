@@ -8,8 +8,7 @@ class RequiredAuth extends Base
 {
     public function __construct(
         private RuntimeEnvironment $runtimeEnvironment,
-    ) {
-    }
+    ) {}
 
     public function performChecks(): bool
     {

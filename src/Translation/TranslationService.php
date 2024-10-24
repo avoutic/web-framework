@@ -7,8 +7,7 @@ class TranslationService
     public function __construct(
         private TranslationLoader $loader,
         private string $language = 'en',
-    ) {
-    }
+    ) {}
 
     /**
      * @param array<string, string> $params

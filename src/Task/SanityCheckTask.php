@@ -9,8 +9,7 @@ class SanityCheckTask implements TaskInterface
 {
     public function __construct(
         private BootstrapService $bootstrapService,
-    ) {
-    }
+    ) {}
 
     public function execute(): void
     {

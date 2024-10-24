@@ -6,8 +6,7 @@ class MaxValueRule implements ValidationRule
 {
     public function __construct(
         private int $maxValue,
-    ) {
-    }
+    ) {}
 
     public function isValid(string $value): bool
     {

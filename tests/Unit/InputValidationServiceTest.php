@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use Codeception\Test\Unit;
 use WebFramework\Exception\MultiValidationException;
 use WebFramework\Validation\CustomNumberValidator;
 use WebFramework\Validation\CustomValidator;
@@ -15,7 +16,7 @@ require_once 'src/Defines.php';
  *
  * @coversNothing
  */
-final class InputValidationServiceTest extends \Codeception\Test\Unit
+final class InputValidationServiceTest extends Unit
 {
     public function testNoValidatorsNoResults()
     {
@@ -34,7 +35,8 @@ final class InputValidationServiceTest extends \Codeception\Test\Unit
         ];
 
         verify($instance->validate($validators, $inputs))
-            ->equals($validated);
+            ->equals($validated)
+        ;
     }
 
     public function testRequiredNotPresent()
@@ -56,13 +58,16 @@ final class InputValidationServiceTest extends \Codeception\Test\Unit
         verify(function () use ($instance, $validators, $inputs) {
             $instance->validate($validators, $inputs);
         })
-            ->callableThrows(\InvalidArgumentException::class, 'Required field not present in inputs: username');
+            ->callableThrows(\InvalidArgumentException::class, 'Required field not present in inputs: username')
+        ;
 
         verify($instance->getValidated())
-            ->equals($validated);
+            ->equals($validated)
+        ;
 
         verify($instance->getAll())
-            ->equals($inputs);
+            ->equals($inputs)
+        ;
     }
 
     public function testArrayRequiredNotPresent()
@@ -84,13 +89,16 @@ final class InputValidationServiceTest extends \Codeception\Test\Unit
         verify(function () use ($instance, $validators, $inputs) {
             $instance->validate($validators, $inputs);
         })
-            ->callableThrows(\InvalidArgumentException::class, 'Required field not present in inputs: username');
+            ->callableThrows(\InvalidArgumentException::class, 'Required field not present in inputs: username')
+        ;
 
         verify($instance->getValidated())
-            ->equals($validated);
+            ->equals($validated)
+        ;
 
         verify($instance->getAll())
-            ->equals($inputs);
+            ->equals($inputs)
+        ;
     }
 
     public function testArrayNotArrayInput()
@@ -116,13 +124,16 @@ final class InputValidationServiceTest extends \Codeception\Test\Unit
         verify(function () use ($instance, $validators, $inputs) {
             $instance->validate($validators, $inputs);
         })
-            ->callableThrows(\InvalidArgumentException::class, 'Array field not array in inputs: username');
+            ->callableThrows(\InvalidArgumentException::class, 'Array field not array in inputs: username')
+        ;
 
         verify($instance->getValidated())
-            ->equals($validated);
+            ->equals($validated)
+        ;
 
         verify($instance->getAll())
-            ->equals($all);
+            ->equals($all)
+        ;
     }
 
     public function testStringArrayInput()
@@ -150,13 +161,16 @@ final class InputValidationServiceTest extends \Codeception\Test\Unit
         verify(function () use ($instance, $validators, $inputs) {
             $instance->validate($validators, $inputs);
         })
-            ->callableThrows(\InvalidArgumentException::class, 'String field is array in inputs: username');
+            ->callableThrows(\InvalidArgumentException::class, 'String field is array in inputs: username')
+        ;
 
         verify($instance->getValidated())
-            ->equals($validated);
+            ->equals($validated)
+        ;
 
         verify($instance->getAll())
-            ->equals($all);
+            ->equals($all)
+        ;
     }
 
     public function testRequiredEmpty()
@@ -179,13 +193,16 @@ final class InputValidationServiceTest extends \Codeception\Test\Unit
         verify(function () use ($instance, $validators, $inputs) {
             $instance->validate($validators, $inputs);
         })
-            ->callableThrows(MultiValidationException::class);
+            ->callableThrows(MultiValidationException::class)
+        ;
 
         verify($instance->getValidated())
-            ->equals($validated);
+            ->equals($validated)
+        ;
 
         verify($instance->getAll())
-            ->equals($inputs);
+            ->equals($inputs)
+        ;
     }
 
     public function testNotRequiredNotPresent()
@@ -210,10 +227,12 @@ final class InputValidationServiceTest extends \Codeception\Test\Unit
         ];
 
         verify($instance->validate($validators, $inputs))
-            ->equals($validated);
+            ->equals($validated)
+        ;
 
         verify($instance->getAll())
-            ->equals($all);
+            ->equals($all)
+        ;
     }
 
     public function testNotRequiredArrayNotPresent()
@@ -238,10 +257,12 @@ final class InputValidationServiceTest extends \Codeception\Test\Unit
         ];
 
         verify($instance->validate($validators, $inputs))
-            ->equals($validated);
+            ->equals($validated)
+        ;
 
         verify($instance->getAll())
-            ->equals($all);
+            ->equals($all)
+        ;
     }
 
     public function testNotRequiredEmpty()
@@ -263,10 +284,12 @@ final class InputValidationServiceTest extends \Codeception\Test\Unit
         ];
 
         verify($instance->validate($validators, $inputs))
-            ->equals($validated);
+            ->equals($validated)
+        ;
 
         verify($instance->getAll())
-            ->equals($inputs);
+            ->equals($inputs)
+        ;
     }
 
     public function testValidLength()
@@ -288,10 +311,12 @@ final class InputValidationServiceTest extends \Codeception\Test\Unit
         ];
 
         verify($instance->validate($validators, $inputs))
-            ->equals($validated);
+            ->equals($validated)
+        ;
 
         verify($instance->getAll())
-            ->equals($inputs);
+            ->equals($inputs)
+        ;
     }
 
     public function testArrayValidLength()
@@ -319,10 +344,12 @@ final class InputValidationServiceTest extends \Codeception\Test\Unit
         ];
 
         verify($instance->validate($validators, $inputs))
-            ->equals($validated);
+            ->equals($validated)
+        ;
 
         verify($instance->getAll())
-            ->equals($inputs);
+            ->equals($inputs)
+        ;
     }
 
     public function testInvalidLength()
@@ -345,13 +372,16 @@ final class InputValidationServiceTest extends \Codeception\Test\Unit
         verify(function () use ($instance, $validators, $inputs) {
             $instance->validate($validators, $inputs);
         })
-            ->callableThrows(MultiValidationException::class);
+            ->callableThrows(MultiValidationException::class)
+        ;
 
         verify($instance->getValidated())
-            ->equals($validated);
+            ->equals($validated)
+        ;
 
         verify($instance->getAll())
-            ->equals($inputs);
+            ->equals($inputs)
+        ;
     }
 
     public function testArrayInvalidLength()
@@ -380,13 +410,16 @@ final class InputValidationServiceTest extends \Codeception\Test\Unit
         verify(function () use ($instance, $validators, $inputs) {
             $instance->validate($validators, $inputs);
         })
-            ->callableThrows(MultiValidationException::class);
+            ->callableThrows(MultiValidationException::class)
+        ;
 
         verify($instance->getValidated())
-            ->equals($validated);
+            ->equals($validated)
+        ;
 
         verify($instance->getAll())
-            ->equals($inputs);
+            ->equals($inputs)
+        ;
     }
 
     public function testValidFilter()
@@ -408,10 +441,12 @@ final class InputValidationServiceTest extends \Codeception\Test\Unit
         ];
 
         verify($instance->validate($validators, $inputs))
-            ->equals($validated);
+            ->equals($validated)
+        ;
 
         verify($instance->getAll())
-            ->equals($inputs);
+            ->equals($inputs)
+        ;
     }
 
     public function testInvalidFilter()
@@ -434,13 +469,16 @@ final class InputValidationServiceTest extends \Codeception\Test\Unit
         verify(function () use ($instance, $validators, $inputs) {
             $instance->validate($validators, $inputs);
         })
-            ->callableThrows(MultiValidationException::class);
+            ->callableThrows(MultiValidationException::class)
+        ;
 
         verify($instance->getValidated())
-            ->equals($validated);
+            ->equals($validated)
+        ;
 
         verify($instance->getAll())
-            ->equals($inputs);
+            ->equals($inputs)
+        ;
     }
 
     public function testArrayValidFilter()
@@ -468,10 +506,12 @@ final class InputValidationServiceTest extends \Codeception\Test\Unit
         ];
 
         verify($instance->validate($validators, $inputs))
-            ->equals($validated);
+            ->equals($validated)
+        ;
 
         verify($instance->getAll())
-            ->equals($inputs);
+            ->equals($inputs)
+        ;
     }
 
     public function testArrayInvalidFilter()
@@ -500,13 +540,16 @@ final class InputValidationServiceTest extends \Codeception\Test\Unit
         verify(function () use ($instance, $validators, $inputs) {
             $instance->validate($validators, $inputs);
         })
-            ->callableThrows(MultiValidationException::class);
+            ->callableThrows(MultiValidationException::class)
+        ;
 
         verify($instance->getValidated())
-            ->equals($validated);
+            ->equals($validated)
+        ;
 
         verify($instance->getAll())
-            ->equals($inputs);
+            ->equals($inputs)
+        ;
     }
 
     public function testValidNumber()
@@ -528,10 +571,12 @@ final class InputValidationServiceTest extends \Codeception\Test\Unit
         ];
 
         verify($instance->validate($validators, $inputs))
-            ->equals($validated);
+            ->equals($validated)
+        ;
 
         verify($instance->getAll())
-            ->equals($inputs);
+            ->equals($inputs)
+        ;
     }
 
     public function testInvalidNumberDefaultNull()
@@ -558,13 +603,16 @@ final class InputValidationServiceTest extends \Codeception\Test\Unit
         verify(function () use ($instance, $validators, $inputs) {
             $instance->validate($validators, $inputs);
         })
-            ->callableThrows(MultiValidationException::class);
+            ->callableThrows(MultiValidationException::class)
+        ;
 
         verify($instance->getValidated())
-            ->equals($validated);
+            ->equals($validated)
+        ;
 
         verify($instance->getAll())
-            ->equals($all);
+            ->equals($all)
+        ;
     }
 
     public function testInvalidNumberDefaultNumber()
@@ -591,12 +639,15 @@ final class InputValidationServiceTest extends \Codeception\Test\Unit
         verify(function () use ($instance, $validators, $inputs) {
             $instance->validate($validators, $inputs);
         })
-            ->callableThrows(MultiValidationException::class);
+            ->callableThrows(MultiValidationException::class)
+        ;
 
         verify($instance->getValidated())
-            ->equals($validated);
+            ->equals($validated)
+        ;
 
         verify($instance->getAll())
-            ->equals($all);
+            ->equals($all)
+        ;
     }
 }

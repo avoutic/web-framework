@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use Codeception\Test\Unit;
 use WebFramework\Validation\MaxLengthRule;
 
 /**
@@ -9,7 +10,7 @@ use WebFramework\Validation\MaxLengthRule;
  *
  * @coversNothing
  */
-final class MaxLengthRuleTest extends \Codeception\Test\Unit
+final class MaxLengthRuleTest extends Unit
 {
     public function testValid()
     {
@@ -21,7 +22,8 @@ final class MaxLengthRuleTest extends \Codeception\Test\Unit
         );
 
         verify($instance->isValid('abc'))
-            ->equals(true);
+            ->equals(true)
+        ;
     }
 
     public function testValidEmpty()
@@ -34,7 +36,8 @@ final class MaxLengthRuleTest extends \Codeception\Test\Unit
         );
 
         verify($instance->isValid(''))
-            ->equals(true);
+            ->equals(true)
+        ;
     }
 
     public function testValidLimit()
@@ -47,7 +50,8 @@ final class MaxLengthRuleTest extends \Codeception\Test\Unit
         );
 
         verify($instance->isValid('ABCDEFGHIJ'))
-            ->equals(true);
+            ->equals(true)
+        ;
     }
 
     public function testInvalid()
@@ -60,6 +64,7 @@ final class MaxLengthRuleTest extends \Codeception\Test\Unit
         );
 
         verify($instance->isValid('ABCDEFGHIJK'))
-            ->equals(false);
+            ->equals(false)
+        ;
     }
 }

@@ -18,8 +18,7 @@ class CsrfValidationMiddleware implements MiddlewareInterface
         private CsrfService $csrfService,
         private MessageService $messageService,
         private ValidatorService $validatorService,
-    ) {
-    }
+    ) {}
 
     public function process(Request $request, RequestHandlerInterface $handler): Response
     {

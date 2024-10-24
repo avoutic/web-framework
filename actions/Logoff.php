@@ -13,8 +13,7 @@ class Logoff
     public function __construct(
         protected AuthenticationService $authenticationService,
         protected ResponseEmitter $responseEmitter,
-    ) {
-    }
+    ) {}
 
     /**
      * @param array<string, string> $routeArgs

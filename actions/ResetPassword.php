@@ -16,8 +16,7 @@ class ResetPassword
         protected ConfigService $configService,
         protected ResponseEmitter $responseEmitter,
         protected ResetPasswordService $resetPasswordService,
-    ) {
-    }
+    ) {}
 
     /**
      * @param array<string, string> $routeArgs

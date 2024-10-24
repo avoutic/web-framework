@@ -13,8 +13,7 @@ class DbInitTask implements TaskInterface
         private Container $container,
         private BootstrapService $bootstrapService,
         private DatabaseManager $databaseManager,
-    ) {
-    }
+    ) {}
 
     public function execute(): void
     {

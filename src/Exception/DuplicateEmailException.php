@@ -2,6 +2,4 @@
 
 namespace WebFramework\Exception;
 
-class DuplicateEmailException extends \RuntimeException
-{
-}
+class DuplicateEmailException extends \RuntimeException {}

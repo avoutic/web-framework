@@ -2,6 +2,4 @@
 
 namespace WebFramework\Exception;
 
-class InvalidPasswordException extends \RuntimeException
-{
-}
+class InvalidPasswordException extends \RuntimeException {}

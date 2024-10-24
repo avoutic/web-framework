@@ -9,8 +9,7 @@ class ConfigService
     public function __construct(
         private RuntimeEnvironment $runtimeEnvironment,
         private string $authDir,
-    ) {
-    }
+    ) {}
 
     public function getAuthConfig(string $name): mixed
     {

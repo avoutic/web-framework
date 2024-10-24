@@ -23,8 +23,7 @@ class ErrorRedirectMiddleware implements MiddlewareInterface
         private DebugService $debugService,
         private ReportFunction $reportFunction,
         private ResponseEmitter $responseEmitter,
-    ) {
-    }
+    ) {}
 
     public function process(Request $request, RequestHandlerInterface $next): Response
     {

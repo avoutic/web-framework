@@ -2,6 +2,4 @@
 
 namespace WebFramework\Exception;
 
-class CodeVerificationException extends \RuntimeException
-{
-}
+class CodeVerificationException extends \RuntimeException {}

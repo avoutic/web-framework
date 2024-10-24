@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use Codeception\Test\Unit;
 use WebFramework\Validation\MinLengthRule;
 
 /**
@@ -9,7 +10,7 @@ use WebFramework\Validation\MinLengthRule;
  *
  * @coversNothing
  */
-final class MinLengthRuleTest extends \Codeception\Test\Unit
+final class MinLengthRuleTest extends Unit
 {
     public function testValid()
     {
@@ -21,7 +22,8 @@ final class MinLengthRuleTest extends \Codeception\Test\Unit
         );
 
         verify($instance->isValid('abcdefghijklm'))
-            ->equals(true);
+            ->equals(true)
+        ;
     }
 
     public function testInvalidEmpty()
@@ -34,7 +36,8 @@ final class MinLengthRuleTest extends \Codeception\Test\Unit
         );
 
         verify($instance->isValid(''))
-            ->equals(false);
+            ->equals(false)
+        ;
     }
 
     public function testValidLimit()
@@ -47,7 +50,8 @@ final class MinLengthRuleTest extends \Codeception\Test\Unit
         );
 
         verify($instance->isValid('ABCDEFGHIJ'))
-            ->equals(true);
+            ->equals(true)
+        ;
     }
 
     public function testInvalid()
@@ -60,6 +64,7 @@ final class MinLengthRuleTest extends \Codeception\Test\Unit
         );
 
         verify($instance->isValid('ABCDEFGHI'))
-            ->equals(false);
+            ->equals(false)
+        ;
     }
 }

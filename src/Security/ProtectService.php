@@ -10,8 +10,7 @@ class ProtectService
     public function __construct(
         private RandomProvider $randomProvider,
         private array $moduleConfig,
-    ) {
-    }
+    ) {}
 
     public function packString(string $str): string
     {
@@ -64,7 +63,7 @@ class ProtectService
         return $this->packString($str);
     }
 
-    public function unpackString(string $str): string|false
+    public function unpackString(string $str): false|string
     {
         // Remove the double hyphens first
         //

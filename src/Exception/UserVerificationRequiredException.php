@@ -8,8 +8,7 @@ class UserVerificationRequiredException extends \Exception
 {
     public function __construct(
         private User $user,
-    ) {
-    }
+    ) {}
 
     public function getUser(): User
     {

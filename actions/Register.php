@@ -40,9 +40,7 @@ class Register
         $this->init();
     }
 
-    public function init(): void
-    {
-    }
+    public function init(): void {}
 
     /**
      * @return array<mixed>
@@ -65,9 +63,7 @@ class Register
         return true;
     }
 
-    protected function customFinalizeCreate(Request $request, User $user): void
-    {
-    }
+    protected function customFinalizeCreate(Request $request, User $user): void {}
 
     protected function getTemplateName(): string
     {

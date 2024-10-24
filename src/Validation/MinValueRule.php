@@ -6,8 +6,7 @@ class MinValueRule implements ValidationRule
 {
     public function __construct(
         private int $minValue,
-    ) {
-    }
+    ) {}
 
     public function isValid(string $value): bool
     {

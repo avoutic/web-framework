@@ -13,8 +13,7 @@ class InstrumentationMiddleware implements MiddlewareInterface
 {
     public function __construct(
         private Instrumentation $instrumentation,
-    ) {
-    }
+    ) {}
 
     public function process(Request $request, RequestHandlerInterface $handler): Response
     {

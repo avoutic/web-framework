@@ -13,8 +13,7 @@ class UserRightService
         private Database $database,
         private RightRepository $rightRepository,
         private UserRightRepository $userRightRepository,
-    ) {
-    }
+    ) {}
 
     public function addRight(User $user, string $shortName): void
     {

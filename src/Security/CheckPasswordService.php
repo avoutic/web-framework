@@ -10,8 +10,7 @@ class CheckPasswordService
     public function __construct(
         private PasswordHashService $passwordHashService,
         private UserRepository $userRepository,
-    ) {
-    }
+    ) {}
 
     public function checkPassword(User $user, string $password): bool
     {

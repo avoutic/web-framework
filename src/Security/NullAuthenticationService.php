@@ -6,9 +6,7 @@ use WebFramework\Entity\User;
 
 class NullAuthenticationService implements AuthenticationService
 {
-    public function cleanup(): void
-    {
-    }
+    public function cleanup(): void {}
 
     public function isAuthenticated(): bool
     {
@@ -20,13 +18,9 @@ class NullAuthenticationService implements AuthenticationService
         throw new \RuntimeException('Cannot authenticate in null mode');
     }
 
-    public function deauthenticate(): void
-    {
-    }
+    public function deauthenticate(): void {}
 
-    public function invalidateSessions(int $userId): void
-    {
-    }
+    public function invalidateSessions(int $userId): void {}
 
     public function getAuthenticatedUserId(): int
     {

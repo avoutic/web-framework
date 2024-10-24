@@ -5,8 +5,7 @@ class RouteConvertor
     public function __construct(
         private string $collectorName = 'app',
         private string $prefix = '',
-    ) {
-    }
+    ) {}
 
     /**
      * @param array<string> $variables

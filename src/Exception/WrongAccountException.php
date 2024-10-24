@@ -2,6 +2,4 @@
 
 namespace WebFramework\Exception;
 
-class WrongAccountException extends \RuntimeException
-{
-}
+class WrongAccountException extends \RuntimeException {}

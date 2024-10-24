@@ -15,8 +15,7 @@ class DbUpdateTask implements TaskInterface
         private BootstrapService $bootstrapService,
         private ConfigService $configService,
         private DatabaseManager $databaseManager,
-    ) {
-    }
+    ) {}
 
     public function execute(): void
     {

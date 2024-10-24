@@ -2,6 +2,4 @@
 
 namespace WebFramework\Exception;
 
-class CaptchaRequiredException extends \RuntimeException
-{
-}
+class CaptchaRequiredException extends \RuntimeException {}

@@ -18,8 +18,7 @@ class LoginService
         private ConfigService $configService,
         private CheckPasswordService $checkPasswordService,
         private UserRepository $userRepository,
-    ) {
-    }
+    ) {}
 
     public function validate(Request $request, string $username, string $password, bool $validCaptcha): User
     {

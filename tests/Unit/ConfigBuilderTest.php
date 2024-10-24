@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use Codeception\Test\Unit;
 use WebFramework\Core\ConfigBuilder;
 
 /**
@@ -9,7 +10,7 @@ use WebFramework\Core\ConfigBuilder;
  *
  * @coversNothing
  */
-final class ConfigBuilderTest extends \Codeception\Test\Unit
+final class ConfigBuilderTest extends Unit
 {
     public function testMergeConfigEmpty()
     {
@@ -23,7 +24,8 @@ final class ConfigBuilderTest extends \Codeception\Test\Unit
         $instance->mergeConfigOnTop([]);
 
         verify($instance->getConfig())
-            ->equals([]);
+            ->equals([])
+        ;
     }
 
     public function testMergeConfigSeparate()
@@ -47,7 +49,8 @@ final class ConfigBuilderTest extends \Codeception\Test\Unit
             ->equals([
                 'key1' => 'val1',
                 'key2' => 'val2',
-            ]);
+            ])
+        ;
     }
 
     public function testMergeConfigSeparateDeep()
@@ -77,7 +80,8 @@ final class ConfigBuilderTest extends \Codeception\Test\Unit
                     'key1.1' => 'val1.1',
                     'key1.2' => 'val1.2',
                 ],
-            ]);
+            ])
+        ;
     }
 
     public function testMergeConfigOverwrite()
@@ -102,7 +106,8 @@ final class ConfigBuilderTest extends \Codeception\Test\Unit
             ->equals([
                 'key1' => 'val1',
                 'key2' => 'val3',
-            ]);
+            ])
+        ;
     }
 
     public function testMergeConfigOverwriteDeep()
@@ -133,6 +138,7 @@ final class ConfigBuilderTest extends \Codeception\Test\Unit
                     'key1.1' => 'val1.1',
                     'key1.2' => 'val1.3',
                 ],
-            ]);
+            ])
+        ;
     }
 }

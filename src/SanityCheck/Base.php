@@ -13,7 +13,7 @@ abstract class Base implements SanityCheckModule
     abstract public function performChecks(): bool;
 
     /**
-     *  @param array<mixed> $config
+     * @param array<mixed> $config
      */
     public function setConfig(array $config): void
     {

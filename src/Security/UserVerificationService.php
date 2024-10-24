@@ -17,8 +17,7 @@ class UserVerificationService
         private UserCodeService $userCodeService,
         private UserMailer $userMailer,
         private UserRepository $userRepository,
-    ) {
-    }
+    ) {}
 
     public function handleSendVerify(string $code): void
     {

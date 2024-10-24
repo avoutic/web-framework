@@ -2,6 +2,4 @@
 
 namespace WebFramework\Exception;
 
-class WeakPasswordException extends \RuntimeException
-{
-}
+class WeakPasswordException extends \RuntimeException {}

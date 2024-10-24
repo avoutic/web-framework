@@ -12,8 +12,7 @@ class CustomValidator implements Validator
 
     public function __construct(
         private string $name,
-    ) {
-    }
+    ) {}
 
     public function filter(string $filter): self
     {

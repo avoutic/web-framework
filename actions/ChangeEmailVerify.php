@@ -20,8 +20,7 @@ class ChangeEmailVerify
         protected ConfigService $configService,
         protected ResponseEmitter $responseEmitter,
         protected ChangeEmailService $changeEmailService,
-    ) {
-    }
+    ) {}
 
     /**
      * @param array<string, string> $routeArgs

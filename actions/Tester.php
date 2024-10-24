@@ -17,8 +17,7 @@ class Tester
     public function __construct(
         private DebugService $debugService,
         private LatteRenderService $renderer,
-    ) {
-    }
+    ) {}
 
     /**
      * @param array<string, string> $routeArgs

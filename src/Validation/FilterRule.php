@@ -6,8 +6,7 @@ class FilterRule implements ValidationRule
 {
     public function __construct(
         private string $regex,
-    ) {
-    }
+    ) {}
 
     public function isValid(string $value): bool
     {

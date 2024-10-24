@@ -14,8 +14,7 @@ class RegisterService
     public function __construct(
         private UserService $userService,
         private UserVerificationService $userVerificationService,
-    ) {
-    }
+    ) {}
 
     public function validate(string $username, string $email, string $password, string $passwordVerification, bool $validCaptcha): void
     {

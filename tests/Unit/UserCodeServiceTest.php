@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use Codeception\Stub\Expected;
+use Codeception\Test\Unit;
 use WebFramework\Exception\CodeVerificationException;
 use WebFramework\Security\ProtectService;
 use WebFramework\Security\UserCodeService;
@@ -12,7 +13,7 @@ use WebFramework\Security\UserCodeService;
  *
  * @coversNothing
  */
-final class UserCodeServiceTest extends \Codeception\Test\Unit
+final class UserCodeServiceTest extends Unit
 {
     public function testVerifyNoCode()
     {
@@ -23,7 +24,8 @@ final class UserCodeServiceTest extends \Codeception\Test\Unit
         verify(function () use ($instance) {
             $instance->verify('', '', 0);
         })
-            ->callableThrows(CodeVerificationException::class);
+            ->callableThrows(CodeVerificationException::class)
+        ;
     }
 
     public function testVerifyNoArray()
@@ -43,7 +45,8 @@ final class UserCodeServiceTest extends \Codeception\Test\Unit
         verify(function () use ($instance) {
             $instance->verify('packed', '', 0);
         })
-            ->callableThrows(CodeVerificationException::class);
+            ->callableThrows(CodeVerificationException::class)
+        ;
     }
 
     public function testVerifyNoAction()
@@ -63,7 +66,8 @@ final class UserCodeServiceTest extends \Codeception\Test\Unit
         verify(function () use ($instance) {
             $instance->verify('packed', '', 0);
         })
-            ->callableThrows(CodeVerificationException::class);
+            ->callableThrows(CodeVerificationException::class)
+        ;
     }
 
     public function testVerifyWrongAction()
@@ -83,7 +87,8 @@ final class UserCodeServiceTest extends \Codeception\Test\Unit
         verify(function () use ($instance) {
             $instance->verify('packed', 'thisAction', 0);
         })
-            ->callableThrows(CodeVerificationException::class);
+            ->callableThrows(CodeVerificationException::class)
+        ;
     }
 
     public function testVerifyNoTimestamp()
@@ -103,7 +108,8 @@ final class UserCodeServiceTest extends \Codeception\Test\Unit
         verify(function () use ($instance) {
             $instance->verify('packed', 'thisAction', 0);
         })
-            ->callableThrows(CodeVerificationException::class);
+            ->callableThrows(CodeVerificationException::class)
+        ;
     }
 
     public function testVerifyExpiredTimestamp()
@@ -126,7 +132,8 @@ final class UserCodeServiceTest extends \Codeception\Test\Unit
         verify(function () use ($instance) {
             $instance->verify('packed', 'thisAction', 0);
         })
-            ->callableThrows(CodeVerificationException::class);
+            ->callableThrows(CodeVerificationException::class)
+        ;
     }
 
     public function testVerifySuccess()
@@ -151,6 +158,7 @@ final class UserCodeServiceTest extends \Codeception\Test\Unit
         );
 
         verify($instance->verify('packed', 'thisAction', 1))
-            ->equals($data);
+            ->equals($data)
+        ;
     }
 }

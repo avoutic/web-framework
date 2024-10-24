@@ -14,8 +14,7 @@ class MessageMiddleware implements MiddlewareInterface
     public function __construct(
         private MessageService $messageService,
         private ValidatorService $validatorService,
-    ) {
-    }
+    ) {}
 
     public function process(Request $request, RequestHandlerInterface $handler): Response
     {

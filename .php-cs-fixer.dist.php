@@ -17,7 +17,7 @@ return $config->setRules([
         '@PhpCsFixer:risky' => true,
 
         // Preferences
-        'curly_braces_position' => [ 'control_structures_opening_brace' => 'next_line_unless_newline_at_signature_end'], // Allman style
+        'braces_position' => [ 'control_structures_opening_brace' => 'next_line_unless_newline_at_signature_end'], // Allman style
         'control_structure_continuation_position' => [ 'position' => 'next_line'], // Allman style
         'echo_tag_syntax' => [ 'format' => 'short' ],
         'increment_style' => [ 'style' => 'post' ],
@@ -28,6 +28,7 @@ return $config->setRules([
         'no_unneeded_control_parentheses' => false,
         'octal_notation' => true,
         'random_api_migration' => true,
+        'static_lambda' => false, // Does not work well with Slim routing groups and closures
         'strict_comparison' => false,
         'strict_param' => false,
         'yoda_style' => false,

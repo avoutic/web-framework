@@ -14,8 +14,7 @@ class DatabaseCompatibility extends Base
         private bool $checkDb = true,
         private bool $checkWfDbVersion = true,
         private bool $checkAppDbVersion = true,
-    ) {
-    }
+    ) {}
 
     public function performChecks(): bool
     {

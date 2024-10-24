@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use Codeception\Test\Unit;
 use WebFramework\Core\ValidatorService;
 
 /**
@@ -9,7 +10,7 @@ use WebFramework\Core\ValidatorService;
  *
  * @coversNothing
  */
-final class ValidatorServiceTest extends \Codeception\Test\Unit
+final class ValidatorServiceTest extends Unit
 {
     public function testGetFilterResultsEmpty()
     {
@@ -33,7 +34,8 @@ final class ValidatorServiceTest extends \Codeception\Test\Unit
         ];
 
         verify($instance->getFilterResults($params, $filters))
-            ->equals($results);
+            ->equals($results)
+        ;
     }
 
     public function testGetFilterResultsOnlyFiltered()
@@ -58,7 +60,8 @@ final class ValidatorServiceTest extends \Codeception\Test\Unit
         ];
 
         verify($instance->getFilterResults($params, $filters))
-            ->equals($results);
+            ->equals($results)
+        ;
     }
 
     public function testGetFilterResultsJsonFirst()
@@ -84,7 +87,8 @@ final class ValidatorServiceTest extends \Codeception\Test\Unit
         ];
 
         verify($instance->getFilterResults($params, $filters))
-            ->equals($results);
+            ->equals($results)
+        ;
     }
 
     public function testGetFilterResultsArrayJsonFirst()
@@ -110,7 +114,8 @@ final class ValidatorServiceTest extends \Codeception\Test\Unit
         ];
 
         verify($instance->getFilterResults($params, $filters))
-            ->equals($results);
+            ->equals($results)
+        ;
     }
 
     public function testGetFilterResultsPostSecond()
@@ -136,7 +141,8 @@ final class ValidatorServiceTest extends \Codeception\Test\Unit
         ];
 
         verify($instance->getFilterResults($params, $filters))
-            ->equals($results);
+            ->equals($results)
+        ;
     }
 
     public function testGetFilterResultsArrayPostSecond()
@@ -162,7 +168,8 @@ final class ValidatorServiceTest extends \Codeception\Test\Unit
         ];
 
         verify($instance->getFilterResults($params, $filters))
-            ->equals($results);
+            ->equals($results)
+        ;
     }
 
     public function testGetFilterResultsQueryThird()
@@ -188,7 +195,8 @@ final class ValidatorServiceTest extends \Codeception\Test\Unit
         ];
 
         verify($instance->getFilterResults($params, $filters))
-            ->equals($results);
+            ->equals($results)
+        ;
     }
 
     public function testGetFilterResultsArrayQueryThird()
@@ -214,7 +222,8 @@ final class ValidatorServiceTest extends \Codeception\Test\Unit
         ];
 
         verify($instance->getFilterResults($params, $filters))
-            ->equals($results);
+            ->equals($results)
+        ;
     }
 
     public function testGetFilterResultsFiltered()
@@ -240,7 +249,8 @@ final class ValidatorServiceTest extends \Codeception\Test\Unit
         ];
 
         verify($instance->getFilterResults($params, $filters))
-            ->equals($results);
+            ->equals($results)
+        ;
     }
 
     public function testGetFilterResultsArrayFiltered()
@@ -266,7 +276,8 @@ final class ValidatorServiceTest extends \Codeception\Test\Unit
         ];
 
         verify($instance->getFilterResults($params, $filters))
-            ->equals($results);
+            ->equals($results)
+        ;
     }
 
     public function testGetFilterResultsEmptyRegex()
@@ -289,6 +300,7 @@ final class ValidatorServiceTest extends \Codeception\Test\Unit
         verify(function () use ($instance, $params, $filters) {
             $instance->getFilterResults($params, $filters);
         })
-            ->callableThrows(\InvalidArgumentException::class, 'Zero-length regex provided');
+            ->callableThrows(\InvalidArgumentException::class, 'Zero-length regex provided')
+        ;
     }
 }

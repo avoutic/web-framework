@@ -8,8 +8,7 @@ class RequiredCoreConfig extends Base
 {
     public function __construct(
         private ConfigService $configService,
-    ) {
-    }
+    ) {}
 
     public function performChecks(): bool
     {

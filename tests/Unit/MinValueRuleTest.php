@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use Codeception\Test\Unit;
 use WebFramework\Validation\MinValueRule;
 
 /**
@@ -9,7 +10,7 @@ use WebFramework\Validation\MinValueRule;
  *
  * @coversNothing
  */
-final class MinValueRuleTest extends \Codeception\Test\Unit
+final class MinValueRuleTest extends Unit
 {
     public function testValid()
     {
@@ -21,7 +22,8 @@ final class MinValueRuleTest extends \Codeception\Test\Unit
         );
 
         verify($instance->isValid('11'))
-            ->equals(true);
+            ->equals(true)
+        ;
     }
 
     public function testInvalidString()
@@ -34,7 +36,8 @@ final class MinValueRuleTest extends \Codeception\Test\Unit
         );
 
         verify($instance->isValid(''))
-            ->equals(false);
+            ->equals(false)
+        ;
     }
 
     public function testValidLimit()
@@ -47,7 +50,8 @@ final class MinValueRuleTest extends \Codeception\Test\Unit
         );
 
         verify($instance->isValid('10'))
-            ->equals(true);
+            ->equals(true)
+        ;
     }
 
     public function testInvalid()
@@ -60,6 +64,7 @@ final class MinValueRuleTest extends \Codeception\Test\Unit
         );
 
         verify($instance->isValid('9'))
-            ->equals(false);
+            ->equals(false)
+        ;
     }
 }

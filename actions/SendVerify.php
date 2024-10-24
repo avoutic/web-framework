@@ -16,8 +16,7 @@ class SendVerify
         protected ConfigService $configService,
         protected ResponseEmitter $responseEmitter,
         protected UserVerificationService $userVerificationService,
-    ) {
-    }
+    ) {}
 
     /**
      * @param array<string, string> $routeArgs

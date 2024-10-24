@@ -15,8 +15,7 @@ class FileTranslationLoader implements TranslationLoader
         private RuntimeEnvironment $runtimeEnvironment,
         /** @var array<string> */
         private array $directories,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array<string, array<string, string>>

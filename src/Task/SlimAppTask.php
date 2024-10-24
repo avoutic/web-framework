@@ -19,8 +19,7 @@ class SlimAppTask implements TaskInterface
         private ConfigService $configService,
         private Instrumentation $instrumentation,
         private BootstrapService $bootstrapService,
-    ) {
-    }
+    ) {}
 
     public function execute(): void
     {

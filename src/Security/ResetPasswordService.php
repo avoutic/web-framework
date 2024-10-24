@@ -20,8 +20,7 @@ class ResetPasswordService
         private UserMailer $userMailer,
         private UserRepository $userRepository,
         private SecurityIteratorService $securityIteratorService,
-    ) {
-    }
+    ) {}
 
     public function updatePassword(User $user, string $newPassword): void
     {

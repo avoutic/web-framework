@@ -9,8 +9,7 @@ class SecurityIteratorService
 {
     public function __construct(
         private StoredUserValuesFactory $storedUserValuesFactory,
-    ) {
-    }
+    ) {}
 
     public function incrementFor(User $user): int
     {

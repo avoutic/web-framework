@@ -2,6 +2,4 @@
 
 namespace WebFramework\Exception;
 
-class PasswordMismatchException extends \RuntimeException
-{
-}
+class PasswordMismatchException extends \RuntimeException {}

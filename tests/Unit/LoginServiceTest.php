@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use Codeception\Stub\Expected;
+use Codeception\Test\Unit;
 use Slim\Http\ServerRequest as Request;
 use WebFramework\Core\ConfigService;
 use WebFramework\Entity\User;
@@ -20,7 +21,7 @@ use WebFramework\Security\NullBlacklistService;
  *
  * @coversNothing
  */
-final class LoginServiceTest extends \Codeception\Test\Unit
+final class LoginServiceTest extends Unit
 {
     public function testValidateUnknownUser()
     {
@@ -42,7 +43,8 @@ final class LoginServiceTest extends \Codeception\Test\Unit
         verify(function () use ($instance, $request) {
             $instance->validate($request, 'noname', '', false);
         })
-            ->callableThrows(InvalidPasswordException::class);
+            ->callableThrows(InvalidPasswordException::class)
+        ;
     }
 
     public function testValidateWrongPassword()
@@ -71,7 +73,8 @@ final class LoginServiceTest extends \Codeception\Test\Unit
         verify(function () use ($instance, $request) {
             $instance->validate($request, 'noname', '', true);
         })
-            ->callableThrows(InvalidPasswordException::class);
+            ->callableThrows(InvalidPasswordException::class)
+        ;
     }
 
     public function testValidateCaptchaRequired()
@@ -94,7 +97,8 @@ final class LoginServiceTest extends \Codeception\Test\Unit
         verify(function () use ($instance, $request) {
             $instance->validate($request, 'noname', '', false);
         })
-            ->callableThrows(CaptchaRequiredException::class);
+            ->callableThrows(CaptchaRequiredException::class)
+        ;
     }
 
     public function testValidateNotVerified()
@@ -129,7 +133,8 @@ final class LoginServiceTest extends \Codeception\Test\Unit
         verify(function () use ($instance, $request) {
             $instance->validate($request, 'noname', '', true);
         })
-            ->callableThrows(UserVerificationRequiredException::class);
+            ->callableThrows(UserVerificationRequiredException::class)
+        ;
     }
 
     public function testValidateSuccess()
@@ -158,7 +163,8 @@ final class LoginServiceTest extends \Codeception\Test\Unit
         $request = $this->makeEmpty(Request::class, ['getAttribute' => '']);
 
         verify($instance->validate($request, 'noname', '', true))
-            ->equals($user);
+            ->equals($user)
+        ;
     }
 
     public function testAuthenticateWrongPassword()
@@ -180,7 +186,8 @@ final class LoginServiceTest extends \Codeception\Test\Unit
         verify(function () use ($instance, $user) {
             $instance->authenticate($user, '');
         })
-            ->callableThrows(InvalidPasswordException::class);
+            ->callableThrows(InvalidPasswordException::class)
+        ;
     }
 
     public function testAuthenticateNotVerified()
@@ -202,7 +209,8 @@ final class LoginServiceTest extends \Codeception\Test\Unit
         verify(function () use ($instance, $user) {
             $instance->authenticate($user, '');
         })
-            ->callableThrows(UserVerificationRequiredException::class);
+            ->callableThrows(UserVerificationRequiredException::class)
+        ;
     }
 
     public function testAuthenticateSuccess()
@@ -247,7 +255,8 @@ final class LoginServiceTest extends \Codeception\Test\Unit
         );
 
         verify($instance->captchaRequired($user))
-            ->equals(false);
+            ->equals(false)
+        ;
     }
 
     public function testCaptchaRequired()
@@ -267,7 +276,8 @@ final class LoginServiceTest extends \Codeception\Test\Unit
         );
 
         verify($instance->captchaRequired($user))
-            ->equals(true);
+            ->equals(true)
+        ;
     }
 
     public function testCaptchaNotRequired()
@@ -287,6 +297,7 @@ final class LoginServiceTest extends \Codeception\Test\Unit
         );
 
         verify($instance->captchaRequired($user))
-            ->equals(false);
+            ->equals(false)
+        ;
     }
 }

@@ -6,8 +6,7 @@ class MaxLengthRule implements ValidationRule
 {
     public function __construct(
         private int $maxLength,
-    ) {
-    }
+    ) {}
 
     public function isValid(string $value): bool
     {

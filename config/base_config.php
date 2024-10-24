@@ -2,6 +2,8 @@
 
 namespace WebFramework\Core;
 
+use WebFramework\Entity\User;
+
 // Default configuration
 //
 return [
@@ -34,7 +36,7 @@ return [
         'unique_identifier' => 'email',
         'auth_required_message' => 'Authentication required. Please login.',
         'session_timeout' => 900,
-        'user_class' => \WebFramework\Entity\User::class,
+        'user_class' => User::class,
     ],
     'security' => [
         'auth_dir' => '/config/auth', // Relative directory with auth configuration files

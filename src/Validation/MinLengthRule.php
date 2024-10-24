@@ -6,8 +6,7 @@ class MinLengthRule implements ValidationRule
 {
     public function __construct(
         private int $minLength,
-    ) {
-    }
+    ) {}
 
     public function isValid(string $value): bool
     {

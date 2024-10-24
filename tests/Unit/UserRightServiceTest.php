@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use Codeception\Stub\Expected;
+use Codeception\Test\Unit;
 use WebFramework\Entity\Right;
 use WebFramework\Entity\User;
 use WebFramework\Entity\UserRight;
@@ -15,7 +16,7 @@ use WebFramework\Security\UserRightService;
  *
  * @coversNothing
  */
-final class UserRightServiceTest extends \Codeception\Test\Unit
+final class UserRightServiceTest extends Unit
 {
     public function testAddRightUnkown()
     {
@@ -45,7 +46,8 @@ final class UserRightServiceTest extends \Codeception\Test\Unit
         verify(function () use ($instance, $user) {
             $instance->addRight($user, 'NoRight');
         })
-            ->callableThrows(\InvalidArgumentException::class, 'Right unknown');
+            ->callableThrows(\InvalidArgumentException::class, 'Right unknown')
+        ;
     }
 
     public function testAddRightNew()
@@ -152,7 +154,8 @@ final class UserRightServiceTest extends \Codeception\Test\Unit
         verify(function () use ($instance, $user) {
             $instance->deleteRight($user, 'NoRight');
         })
-            ->callableThrows(\InvalidArgumentException::class, 'Right unknown');
+            ->callableThrows(\InvalidArgumentException::class, 'Right unknown')
+        ;
     }
 
     public function testDeleteRightOwned()
@@ -254,7 +257,8 @@ final class UserRightServiceTest extends \Codeception\Test\Unit
         );
 
         verify($instance->hasRight($user, 'NoRight'))
-            ->equals(false);
+            ->equals(false)
+        ;
     }
 
     public function testHasRightOwned()
@@ -292,7 +296,8 @@ final class UserRightServiceTest extends \Codeception\Test\Unit
         );
 
         verify($instance->hasRight($user, 'Right'))
-            ->equals(true);
+            ->equals(true)
+        ;
     }
 
     public function testHasRightNotOwned()
@@ -328,6 +333,7 @@ final class UserRightServiceTest extends \Codeception\Test\Unit
         );
 
         verify($instance->hasRight($user, 'Right'))
-            ->equals(false);
+            ->equals(false)
+        ;
     }
 }

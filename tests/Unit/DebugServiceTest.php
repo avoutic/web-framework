@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use Codeception\Stub\Expected;
+use Codeception\Test\Unit;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Psr7\Factory\RequestFactory;
 use Slim\Psr7\Factory\StreamFactory;
@@ -20,14 +21,15 @@ use WebFramework\Security\NullAuthenticationService;
  *
  * @coversNothing
  */
-final class DebugServiceTest extends \Codeception\Test\Unit
+final class DebugServiceTest extends Unit
 {
     public function testGenerateHash()
     {
         $instance = $this->makeEmptyExcept(DebugService::class, 'generateHash');
 
         verify($instance->generateHash('ServerName', 'RequestSource', 'File', 1, 'Message'))
-            ->equals('5bd8c554bf94a90d97e9f31c63b69fde17ac4bb9');
+            ->equals('5bd8c554bf94a90d97e9f31c63b69fde17ac4bb9')
+        ;
     }
 
     public function testGenerateHashNoServerName()
@@ -35,7 +37,8 @@ final class DebugServiceTest extends \Codeception\Test\Unit
         $instance = $this->makeEmptyExcept(DebugService::class, 'generateHash');
 
         verify($instance->generateHash('', 'RequestSource', 'File', 1, 'Message'))
-            ->equals('bf0a0f18bf3c2e20ea0fe62092376caccefcbb7a');
+            ->equals('bf0a0f18bf3c2e20ea0fe62092376caccefcbb7a')
+        ;
     }
 
     public function testGenerateHashNoRequestSource()
@@ -43,7 +46,8 @@ final class DebugServiceTest extends \Codeception\Test\Unit
         $instance = $this->makeEmptyExcept(DebugService::class, 'generateHash');
 
         verify($instance->generateHash('ServerName', '', 'File', 1, 'Message'))
-            ->equals('bf0f9b3a2f36e3e1a8359c289494a41a3c673c45');
+            ->equals('bf0f9b3a2f36e3e1a8359c289494a41a3c673c45')
+        ;
     }
 
     public function testGenerateHashNoFile()
@@ -51,7 +55,8 @@ final class DebugServiceTest extends \Codeception\Test\Unit
         $instance = $this->makeEmptyExcept(DebugService::class, 'generateHash');
 
         verify($instance->generateHash('ServerName', 'RequestSource', 'unknown', 1, 'Message'))
-            ->equals('8bdac8c96d84253c28d5981d096550747be0d2f8');
+            ->equals('8bdac8c96d84253c28d5981d096550747be0d2f8')
+        ;
     }
 
     public function testGenerateHasNoLine()
@@ -59,7 +64,8 @@ final class DebugServiceTest extends \Codeception\Test\Unit
         $instance = $this->makeEmptyExcept(DebugService::class, 'generateHash');
 
         verify($instance->generateHash('ServerName', 'RequestSource', 'File', 0, 'Message'))
-            ->equals('72a2066e2671474739c142d668a25da79b8184a0');
+            ->equals('72a2066e2671474739c142d668a25da79b8184a0')
+        ;
     }
 
     public function testGenerateHashNoMessage()
@@ -67,7 +73,8 @@ final class DebugServiceTest extends \Codeception\Test\Unit
         $instance = $this->makeEmptyExcept(DebugService::class, 'generateHash');
 
         verify($instance->generateHash('ServerName', 'RequestSource', 'File', 1, ''))
-            ->equals('2d63a5522289108ab2091fd5b99f0ba0499bff76');
+            ->equals('2d63a5522289108ab2091fd5b99f0ba0499bff76')
+        ;
     }
 
     public function testGetDatabaseErrorNull()
@@ -75,7 +82,8 @@ final class DebugServiceTest extends \Codeception\Test\Unit
         $instance = $this->makeEmptyExcept(DebugService::class, 'getDatabaseError');
 
         verify($instance->getDatabaseError(null))
-            ->equals('Not initialized yet');
+            ->equals('Not initialized yet')
+        ;
     }
 
     public function testGetDatabaseErrorNoError()
@@ -84,7 +92,8 @@ final class DebugServiceTest extends \Codeception\Test\Unit
         $database = $this->makeEmpty(Database::class, ['getLastError' => '']);
 
         verify($instance->getDatabaseError($database))
-            ->equals('None');
+            ->equals('None')
+        ;
     }
 
     public function testGetDatabaseErrorError()
@@ -93,7 +102,8 @@ final class DebugServiceTest extends \Codeception\Test\Unit
         $database = $this->makeEmpty(Database::class, ['getLastError' => 'DB ERROR']);
 
         verify($instance->getDatabaseError($database))
-            ->equals('DB ERROR');
+            ->equals('DB ERROR')
+        ;
     }
 
     public function testGetAuthenticationStatusNone()
@@ -111,7 +121,8 @@ final class DebugServiceTest extends \Codeception\Test\Unit
         );
 
         verify($instance->getAuthenticationStatus())
-            ->equals("Not authenticated\n");
+            ->equals("Not authenticated\n")
+        ;
     }
 
     public function testGetAuthenticationStatusSimple()
@@ -136,7 +147,8 @@ final class DebugServiceTest extends \Codeception\Test\Unit
         );
 
         verify($instance->getAuthenticationStatus())
-            ->equals(print_r($authData, true));
+            ->equals(print_r($authData, true))
+        ;
     }
 
     public function testFilterTraceSkipStart()
@@ -180,7 +192,8 @@ final class DebugServiceTest extends \Codeception\Test\Unit
         $instance = $this->make(DebugService::class);
 
         verify($instance->filterTrace($trace, true, false))
-            ->equals($traceFiltered);
+            ->equals($traceFiltered)
+        ;
     }
 
     public function testFilterTraceLeaveMiddle()
@@ -236,7 +249,8 @@ final class DebugServiceTest extends \Codeception\Test\Unit
         $instance = $this->make(DebugService::class);
 
         verify($instance->filterTrace($trace, true, false))
-            ->equals($traceFiltered);
+            ->equals($traceFiltered)
+        ;
     }
 
     public function testFilterTraceNoSkip()
@@ -267,7 +281,8 @@ final class DebugServiceTest extends \Codeception\Test\Unit
         $instance = $this->make(DebugService::class);
 
         verify($instance->filterTrace($trace, false, false))
-            ->equals($trace);
+            ->equals($trace)
+        ;
     }
 
     public function testFilterTraceScrub()
@@ -312,7 +327,8 @@ final class DebugServiceTest extends \Codeception\Test\Unit
         $instance = $this->make(DebugService::class);
 
         verify($instance->filterTrace($trace, false, true))
-            ->equals($traceFiltered);
+            ->equals($traceFiltered)
+        ;
     }
 
     public function testFilterTraceUnsetExitArgs()
@@ -344,7 +360,8 @@ final class DebugServiceTest extends \Codeception\Test\Unit
         $instance = $this->make(DebugService::class);
 
         verify($instance->filterTrace($trace, false, false))
-            ->equals($traceFiltered);
+            ->equals($traceFiltered)
+        ;
     }
 
     public function testCondenseStack()
@@ -373,7 +390,8 @@ TXT;
         $instance = $this->make(DebugService::class);
 
         verify($instance->condenseStack($trace))
-            ->equals($condensedStack);
+            ->equals($condensedStack)
+        ;
     }
 
     public function testScrubRequestHeaders()
@@ -394,7 +412,8 @@ TXT;
         $instance = $this->make(DebugService::class);
 
         verify($instance->scrubRequestHeaders($headers))
-            ->equals($headersScrubbed);
+            ->equals($headersScrubbed)
+        ;
     }
 
     public function testScrubRequestHeadersCaseInsensitive()
@@ -415,7 +434,8 @@ TXT;
         $instance = $this->make(DebugService::class);
 
         verify($instance->scrubRequestHeaders($headers))
-            ->equals($headersScrubbed);
+            ->equals($headersScrubbed)
+        ;
     }
 
     public function testGetInputsReportEmpty()
@@ -430,7 +450,8 @@ TXT;
         ]);
 
         verify($instance->getInputsReport($request))
-            ->equals("No inputs\n");
+            ->equals("No inputs\n")
+        ;
     }
 
     public function testGetInputsReportJustGet()
@@ -454,7 +475,8 @@ GET:
 
 TXT;
         verify($instance->getInputsReport($request))
-            ->equals($inputsFmt);
+            ->equals($inputsFmt)
+        ;
     }
 
     public function testGetInputsReportJustPost()
@@ -478,7 +500,8 @@ POST:
 
 TXT;
         verify($instance->getInputsReport($request))
-            ->equals($inputsFmt);
+            ->equals($inputsFmt)
+        ;
     }
 
     public function testGetInputsReportJustJson()
@@ -506,7 +529,8 @@ JSON data:
 
 TXT;
         verify($instance->getInputsReport($request))
-            ->equals($inputsFmt);
+            ->equals($inputsFmt)
+        ;
     }
 
     public function testGetInputsReportBadJson()
@@ -532,7 +556,8 @@ JSON parsing failed:
 
 TXT;
         verify($instance->getInputsReport($request))
-            ->equals($inputsFmt);
+            ->equals($inputsFmt)
+        ;
     }
 
     public function testErrorReportEmpty()
@@ -590,11 +615,14 @@ TXT;
         $report = $instance->getErrorReport([], null, 'test', 'TestMessage');
 
         verify($report['hash'])
-            ->equals('my_hash');
+            ->equals('my_hash')
+        ;
         verify($report['low_info_message'])
-            ->equals($lowInfoReportFmt);
+            ->equals($lowInfoReportFmt)
+        ;
         verify($report['message'])
-            ->equals($reportFmt);
+            ->equals($reportFmt)
+        ;
     }
 
     public function testErrorReportContent()
@@ -729,11 +757,14 @@ TXT;
         $report = $instance->getErrorReport($trace, $request, 'test', 'TestMessage');
 
         verify($report['hash'])
-            ->equals('my_hash');
+            ->equals('my_hash')
+        ;
         verify($report['low_info_message'])
-            ->equals($lowInfoReportFmt);
+            ->equals($lowInfoReportFmt)
+        ;
         verify($report['message'])
-            ->equals($reportFmt);
+            ->equals($reportFmt)
+        ;
     }
 
     public function testReportError()

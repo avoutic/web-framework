@@ -2,11 +2,23 @@
 
 namespace WebFramework;
 
+use Cache\Adapter\Redis\RedisCachePool;
+use Composer\Autoload\ClassLoader;
 use DI;
+use GuzzleHttp\Client;
+use Latte\Engine;
+use Odan\Session\PhpSession;
+use Odan\Session\SessionInterface;
+use Odan\Session\SessionManagerInterface;
 use Psr\Container\ContainerInterface;
+use Sentry\ClientInterface;
+use Slim\Psr7\Factory\ResponseFactory;
+use Stripe\Stripe;
+use Stripe\StripeClient;
+use WebFramework\Core\SentryClientFactory;
 
 return [
-    \Cache\Adapter\Redis\RedisCachePool::class => function (ContainerInterface $c) {
+    RedisCachePool::class => function (ContainerInterface $c) {
         $secureConfigService = $c->get(Security\ConfigService::class);
 
         $cacheConfig = $secureConfigService->getAuthConfig('redis');
@@ -28,13 +40,13 @@ return [
             throw new \RuntimeException('Redis Cache connection failed');
         }
 
-        return new \Cache\Adapter\Redis\RedisCachePool($redisClient);
+        return new RedisCachePool($redisClient);
     },
-    \Latte\Engine::class => DI\create(),
-    \Odan\Session\SessionManagerInterface::class => function (ContainerInterface $container) {
-        return $container->get(\Odan\Session\SessionInterface::class);
+    Engine::class => DI\create(),
+    SessionManagerInterface::class => function (ContainerInterface $container) {
+        return $container->get(SessionInterface::class);
     },
-    \Odan\Session\SessionInterface::class => function (ContainerInterface $container) {
+    SessionInterface::class => function (ContainerInterface $container) {
         $options = [
             'name' => $container->get('app_name'),
             'lifetime' => $container->get('authenticator.session_timeout'),
@@ -44,29 +56,29 @@ return [
             'httponly' => true,
         ];
 
-        return new \Odan\Session\PhpSession($options);
+        return new PhpSession($options);
     },
-    \Sentry\ClientInterface::class => function (ContainerInterface $container) {
-        $factory = $container->get(\WebFramework\Core\SentryClientFactory::class);
+    ClientInterface::class => function (ContainerInterface $container) {
+        $factory = $container->get(SentryClientFactory::class);
         $options = $container->get('sentry_options');
 
         return $factory->get($options);
     },
-    \Slim\Psr7\Factory\ResponseFactory::class => DI\create(),
-    \Stripe\StripeClient::class => function (ContainerInterface $c) {
+    ResponseFactory::class => DI\create(),
+    StripeClient::class => function (ContainerInterface $c) {
         $secureConfigService = $c->get(Security\ConfigService::class);
 
         $stripeConfig = $secureConfigService->getAuthConfig('stripe');
 
-        \Stripe\Stripe::setApiKey($stripeConfig['api_key']);
+        Stripe::setApiKey($stripeConfig['api_key']);
 
-        return new \Stripe\StripeClient($stripeConfig['api_key']);
+        return new StripeClient($stripeConfig['api_key']);
     },
 
     'app_dir' => function (ContainerInterface $c) {
         // Determine app dir
         //
-        $reflection = new \ReflectionClass(\Composer\Autoload\ClassLoader::class);
+        $reflection = new \ReflectionClass(ClassLoader::class);
 
         return dirname($reflection->getFileName() ?: '', 3);
     },
@@ -147,7 +159,7 @@ return [
         ->constructorParameter('defaultSender', DI\get('sender_core.default_sender')),
     Core\Recaptcha::class => DI\Factory(function (ContainerInterface $c) {
         return new Core\Recaptcha(
-            $c->get(\GuzzleHttp\Client::class),
+            $c->get(Client::class),
             $c->get('security.recaptcha.secret_key'),
         );
     }),
@@ -172,7 +184,7 @@ return [
 
         return new Core\StripeFactory(
             $c->get(Core\RuntimeEnvironment::class),
-            $c->get(\Stripe\StripeClient::class),
+            $c->get(StripeClient::class),
             $config['endpoint_secret'],
         );
     }),

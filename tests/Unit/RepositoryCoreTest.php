@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use Codeception\Test\Unit;
 use WebFramework\Core\RepositoryCore;
 
 /**
@@ -9,7 +10,7 @@ use WebFramework\Core\RepositoryCore;
  *
  * @coversNothing
  */
-final class RepositoryCoreTest extends \Codeception\Test\Unit
+final class RepositoryCoreTest extends Unit
 {
     public function testMgetFilterArrayEmpty()
     {
@@ -24,7 +25,8 @@ final class RepositoryCoreTest extends \Codeception\Test\Unit
             ->equals([
                 'query' => '',
                 'params' => [],
-            ]);
+            ])
+        ;
     }
 
     public function testMgetFilterArrayNull()
@@ -41,7 +43,8 @@ final class RepositoryCoreTest extends \Codeception\Test\Unit
             ->equals([
                 'query' => '`key1` IS NULL',
                 'params' => [],
-            ]);
+            ])
+        ;
     }
 
     public function testMgetFilterArrayFalse()
@@ -60,7 +63,8 @@ final class RepositoryCoreTest extends \Codeception\Test\Unit
                 'params' => [
                     0,
                 ],
-            ]);
+            ])
+        ;
     }
 
     public function testMgetFilterArrayString()
@@ -79,7 +83,8 @@ final class RepositoryCoreTest extends \Codeception\Test\Unit
                 'params' => [
                     'val1',
                 ],
-            ]);
+            ])
+        ;
     }
 
     public function testMgetFilterArrayMultiple()
@@ -100,7 +105,8 @@ final class RepositoryCoreTest extends \Codeception\Test\Unit
                     'val1',
                     'val2',
                 ],
-            ]);
+            ])
+        ;
     }
 
     public function testMgetFilterArrayAdvancedOperator()
@@ -119,7 +125,8 @@ final class RepositoryCoreTest extends \Codeception\Test\Unit
                 'params' => [
                     'val1',
                 ],
-            ]);
+            ])
+        ;
     }
 
     public function testMgetFilterArrayIllegalAdvancedOperator()
@@ -142,6 +149,7 @@ final class RepositoryCoreTest extends \Codeception\Test\Unit
                 ])
             ;
         })
-            ->callableThrows(\RuntimeException::class, 'Invalid filter definition');
+            ->callableThrows(\RuntimeException::class, 'Invalid filter definition')
+        ;
     }
 }

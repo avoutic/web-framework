@@ -23,8 +23,7 @@ class DatabaseAuthenticationService implements AuthenticationService
         private SessionRepository $sessionRepository,
         private UserRepository $userRepository,
         private int $sessionTimeout,
-    ) {
-    }
+    ) {}
 
     public function cleanup(): void
     {

@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use Codeception\Test\Unit;
 use WebFramework\Core\RuntimeEnvironment;
 use WebFramework\Security\ConfigService as SecureConfigService;
 
@@ -10,7 +11,7 @@ use WebFramework\Security\ConfigService as SecureConfigService;
  *
  * @coversNothing
  */
-final class ConfigServiceTest extends \Codeception\Test\Unit
+final class ConfigServiceTest extends Unit
 {
     public function testGetAuthConfigNonExisting()
     {
@@ -25,7 +26,8 @@ final class ConfigServiceTest extends \Codeception\Test\Unit
         verify(function () use ($instance) {
             $instance->getAuthConfig('noname');
         })
-            ->callableThrows(\RuntimeException::class);
+            ->callableThrows(\RuntimeException::class)
+        ;
     }
 
     public function testGetAuthConfigString()
@@ -39,7 +41,8 @@ final class ConfigServiceTest extends \Codeception\Test\Unit
         );
 
         verify($instance->getAuthConfig('string_value'))
-            ->equals('TestString');
+            ->equals('TestString')
+        ;
     }
 
     public function testGetAuthConfigArray()
@@ -53,6 +56,7 @@ final class ConfigServiceTest extends \Codeception\Test\Unit
         );
 
         verify($instance->getAuthConfig('array_value'))
-            ->equals(['key1' => 'val1']);
+            ->equals(['key1' => 'val1'])
+        ;
     }
 }

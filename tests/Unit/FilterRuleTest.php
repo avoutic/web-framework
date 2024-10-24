@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use Codeception\Test\Unit;
 use WebFramework\Validation\FilterRule;
 
 /**
@@ -9,7 +10,7 @@ use WebFramework\Validation\FilterRule;
  *
  * @coversNothing
  */
-final class FilterRuleTest extends \Codeception\Test\Unit
+final class FilterRuleTest extends Unit
 {
     public function testValid()
     {
@@ -21,7 +22,8 @@ final class FilterRuleTest extends \Codeception\Test\Unit
         );
 
         verify($instance->isValid('abc'))
-            ->equals(true);
+            ->equals(true)
+        ;
     }
 
     public function testValidEmpty()
@@ -34,7 +36,8 @@ final class FilterRuleTest extends \Codeception\Test\Unit
         );
 
         verify($instance->isValid(''))
-            ->equals(true);
+            ->equals(true)
+        ;
     }
 
     public function testInvalidEmpty()
@@ -47,7 +50,8 @@ final class FilterRuleTest extends \Codeception\Test\Unit
         );
 
         verify($instance->isValid(''))
-            ->equals(false);
+            ->equals(false)
+        ;
     }
 
     public function testInvalid()
@@ -60,6 +64,7 @@ final class FilterRuleTest extends \Codeception\Test\Unit
         );
 
         verify($instance->isValid('ABC'))
-            ->equals(false);
+            ->equals(false)
+        ;
     }
 }

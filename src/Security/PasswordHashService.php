@@ -6,8 +6,7 @@ class PasswordHashService
 {
     public function __construct(
         private RandomProvider $randomProvider,
-    ) {
-    }
+    ) {}
 
     public function pbkdf2(string $algorithm, string $password, string $salt, int $count, int $keyLength, bool $rawOutput = false): string
     {

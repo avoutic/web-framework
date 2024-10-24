@@ -42,9 +42,7 @@ class Login
         $this->init();
     }
 
-    public function init(): void
-    {
-    }
+    public function init(): void {}
 
     protected function customValueCheck(User $user): bool
     {

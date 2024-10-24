@@ -15,8 +15,7 @@ class ChangePasswordService
         private PasswordHashService $passwordHashService,
         private UserRepository $userRepository,
         private SecurityIteratorService $securityIteratorService,
-    ) {
-    }
+    ) {}
 
     public function validate(User $user, string $oldPassword, string $newPassword, string $verificationPassword): void
     {

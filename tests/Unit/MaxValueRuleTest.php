@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use Codeception\Test\Unit;
 use WebFramework\Validation\MaxValueRule;
 
 /**
@@ -9,7 +10,7 @@ use WebFramework\Validation\MaxValueRule;
  *
  * @coversNothing
  */
-final class MaxValueRuleTest extends \Codeception\Test\Unit
+final class MaxValueRuleTest extends Unit
 {
     public function testValid()
     {
@@ -21,7 +22,8 @@ final class MaxValueRuleTest extends \Codeception\Test\Unit
         );
 
         verify($instance->isValid('9'))
-            ->equals(true);
+            ->equals(true)
+        ;
     }
 
     public function testInvalidString()
@@ -34,7 +36,8 @@ final class MaxValueRuleTest extends \Codeception\Test\Unit
         );
 
         verify($instance->isValid(''))
-            ->equals(false);
+            ->equals(false)
+        ;
     }
 
     public function testValidLimit()
@@ -47,7 +50,8 @@ final class MaxValueRuleTest extends \Codeception\Test\Unit
         );
 
         verify($instance->isValid('10'))
-            ->equals(true);
+            ->equals(true)
+        ;
     }
 
     public function testInvalid()
@@ -60,6 +64,7 @@ final class MaxValueRuleTest extends \Codeception\Test\Unit
         );
 
         verify($instance->isValid('11'))
-            ->equals(false);
+            ->equals(false)
+        ;
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use Codeception\Test\Unit;
 use WebFramework\Core\Database;
 use WebFramework\Core\DatabaseResultWrapper;
 use WebFramework\Repository\BlacklistEntryRepository;
@@ -12,7 +13,7 @@ use WebFramework\Security\DatabaseBlacklistService;
  *
  * @coversNothing
  */
-final class DatabaseBlacklistServiceTest extends \Codeception\Test\Unit
+final class DatabaseBlacklistServiceTest extends Unit
 {
     public function testIsBlacklistedNoTotal()
     {
@@ -43,7 +44,8 @@ final class DatabaseBlacklistServiceTest extends \Codeception\Test\Unit
         );
 
         verify($instance->isBlacklisted('ip1', null))
-            ->equals(false);
+            ->equals(false)
+        ;
     }
 
     public function testIsBlacklistedOverThreshold()
@@ -75,6 +77,7 @@ final class DatabaseBlacklistServiceTest extends \Codeception\Test\Unit
         );
 
         verify($instance->isBlacklisted('ip1', null))
-            ->equals(true);
+            ->equals(true)
+        ;
     }
 }

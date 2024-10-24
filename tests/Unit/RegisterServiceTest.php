@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use Codeception\Stub\Expected;
+use Codeception\Test\Unit;
 use WebFramework\Core\UserService;
 use WebFramework\Exception\InvalidCaptchaException;
 use WebFramework\Exception\PasswordMismatchException;
@@ -15,7 +16,7 @@ use WebFramework\Security\RegisterService;
  *
  * @coversNothing
  */
-final class RegisterServiceTest extends \Codeception\Test\Unit
+final class RegisterServiceTest extends Unit
 {
     public function testValidateInvalidCaptcha()
     {
@@ -26,7 +27,8 @@ final class RegisterServiceTest extends \Codeception\Test\Unit
         verify(function () use ($instance) {
             $instance->validate('username', 'email', 'password', 'verify', false);
         })
-            ->callableThrows(InvalidCaptchaException::class);
+            ->callableThrows(InvalidCaptchaException::class)
+        ;
     }
 
     public function testValidatePasswordMismatch()
@@ -38,7 +40,8 @@ final class RegisterServiceTest extends \Codeception\Test\Unit
         verify(function () use ($instance) {
             $instance->validate('username', 'email', 'password', 'verify', true);
         })
-            ->callableThrows(PasswordMismatchException::class);
+            ->callableThrows(PasswordMismatchException::class)
+        ;
     }
 
     public function testValidateWeakPassword()
@@ -50,7 +53,8 @@ final class RegisterServiceTest extends \Codeception\Test\Unit
         verify(function () use ($instance) {
             $instance->validate('username', 'email', 'passwor', 'passwor', true);
         })
-            ->callableThrows(WeakPasswordException::class);
+            ->callableThrows(WeakPasswordException::class)
+        ;
     }
 
     public function testValidateUsernameTaken()
@@ -70,7 +74,8 @@ final class RegisterServiceTest extends \Codeception\Test\Unit
         verify(function () use ($instance) {
             $instance->validate('username', 'email', 'password1', 'password1', true);
         })
-            ->callableThrows(UsernameUnavailableException::class);
+            ->callableThrows(UsernameUnavailableException::class)
+        ;
     }
 
     public function testValidateSuccess()

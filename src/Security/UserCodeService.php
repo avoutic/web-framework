@@ -9,8 +9,7 @@ class UserCodeService
 {
     public function __construct(
         private ProtectService $protectService,
-    ) {
-    }
+    ) {}
 
     /**
      * @param array<mixed> $params

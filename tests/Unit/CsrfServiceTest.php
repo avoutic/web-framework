@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use Codeception\Test\Unit;
 use Odan\Session\MemorySession;
 use WebFramework\Security\CsrfService;
 use WebFramework\Security\OpensslRandomProvider;
@@ -11,7 +12,7 @@ use WebFramework\Security\OpensslRandomProvider;
  *
  * @coversNothing
  */
-final class CsrfServiceTest extends \Codeception\Test\Unit
+final class CsrfServiceTest extends Unit
 {
     public function testGetToken()
     {
@@ -31,7 +32,8 @@ final class CsrfServiceTest extends \Codeception\Test\Unit
         );
 
         verify($instance->getToken())
-            ->equals('3132333435363738393031323334353600000000000000000000000000000000');
+            ->equals('3132333435363738393031323334353600000000000000000000000000000000')
+        ;
     }
 
     public function testValidateToken()
@@ -45,7 +47,8 @@ final class CsrfServiceTest extends \Codeception\Test\Unit
         );
 
         verify($instance->validateToken('3132333435363738393031323334353600000000000000000000000000000000'))
-            ->equals(true);
+            ->equals(true)
+        ;
     }
 
     public function testValidateTokenMismatch()
@@ -59,6 +62,7 @@ final class CsrfServiceTest extends \Codeception\Test\Unit
         );
 
         verify($instance->validateToken('3132333435363738393031323334353600000000000000000000000000000000'))
-            ->equals(false);
+            ->equals(false)
+        ;
     }
 }

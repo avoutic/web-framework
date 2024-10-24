@@ -21,8 +21,7 @@ class ChangeEmailService
         private UserCodeService $userCodeService,
         private UserMailer $userMailer,
         private UserRepository $userRepository,
-    ) {
-    }
+    ) {}
 
     public function changeEmail(User $user, string $email, bool $requireUnique = true): void
     {

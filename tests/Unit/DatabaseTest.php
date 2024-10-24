@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use Codeception\Stub\Expected;
+use Codeception\Test\Unit;
 use WebFramework\Core\DatabaseResultWrapper;
 use WebFramework\Core\MysqliDatabase;
 use WebFramework\Core\NullInstrumentation;
@@ -12,7 +13,7 @@ use WebFramework\Core\NullInstrumentation;
  *
  * @coversNothing
  */
-final class DatabaseTest extends \Codeception\Test\Unit
+final class DatabaseTest extends Unit
 {
     public function testUnconnectedQuery()
     {
@@ -20,7 +21,8 @@ final class DatabaseTest extends \Codeception\Test\Unit
         $instance = new MysqliDatabase($mysql, new NullInstrumentation());
 
         verify(function () use ($instance) { $instance->query('', []); })
-            ->callableThrows(\RuntimeException::class, 'Database connection not available');
+            ->callableThrows(\RuntimeException::class, 'Database connection not available')
+        ;
     }
 
     public function testUnconnectedInsertQuery()
@@ -29,7 +31,8 @@ final class DatabaseTest extends \Codeception\Test\Unit
         $instance = new MysqliDatabase($mysql, new NullInstrumentation());
 
         verify(function () use ($instance) { $instance->insertQuery('', []); })
-            ->callableThrows(\RuntimeException::class, 'Database connection not available');
+            ->callableThrows(\RuntimeException::class, 'Database connection not available')
+        ;
     }
 
     public function testStartTransactionOnce()
@@ -50,13 +53,15 @@ final class DatabaseTest extends \Codeception\Test\Unit
         $instance->startTransaction();
 
         verify($instance->getTransactionDepth())
-            ->equals(3);
+            ->equals(3)
+        ;
 
         $instance->commitTransaction();
         $instance->commitTransaction();
         $instance->commitTransaction();
 
         verify($instance->getTransactionDepth())
-            ->equals(0);
+            ->equals(0)
+        ;
     }
 }

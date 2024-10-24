@@ -12,8 +12,7 @@ class TransactionMiddleware implements MiddlewareInterface
 {
     public function __construct(
         private Database $database,
-    ) {
-    }
+    ) {}
 
     public function process(Request $request, RequestHandlerInterface $handler): Response
     {

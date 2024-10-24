@@ -13,8 +13,7 @@ class DatabaseBlacklistService implements BlacklistService
         private int $storePeriod,
         private int $threshold,
         private int $triggerPeriod,
-    ) {
-    }
+    ) {}
 
     public function cleanup(): void
     {
