@@ -1,6 +1,14 @@
 <?php
 
-// Semantic versions of the current framework
+/**
+ * This file is part of WebFramework.
+ *
+ * (c) Avoutic <avoutic@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 //
 define('FRAMEWORK_VERSION', 8);
 define('FRAMEWORK_DB_VERSION', 2);
