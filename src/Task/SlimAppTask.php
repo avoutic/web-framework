@@ -12,8 +12,21 @@ use WebFramework\Core\MiddlewareRegistrar;
 use WebFramework\Core\RouteRegistrar;
 use WebFramework\Core\TaskInterface;
 
+/**
+ * Class SlimAppTask.
+ *
+ * This task is responsible for setting up and running the Slim application.
+ */
 class SlimAppTask implements TaskInterface
 {
+    /**
+     * SlimAppTask constructor.
+     *
+     * @param Container        $container        The dependency injection container
+     * @param ConfigService    $configService    The configuration service
+     * @param Instrumentation  $instrumentation  The instrumentation service
+     * @param BootstrapService $bootstrapService The bootstrap service
+     */
     public function __construct(
         private Container $container,
         private ConfigService $configService,
@@ -21,6 +34,16 @@ class SlimAppTask implements TaskInterface
         private BootstrapService $bootstrapService,
     ) {}
 
+    /**
+     * Execute the Slim application task.
+     *
+     * This method sets up the Slim application, registers middlewares and routes,
+     * and handles the request.
+     *
+     * @uses config middlewares.post_routing
+     * @uses config routes
+     * @uses config middlewares.pre_routing
+     */
     public function execute(): void
     {
         // Create and start Slim framework

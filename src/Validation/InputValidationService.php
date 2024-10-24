@@ -4,6 +4,11 @@ namespace WebFramework\Validation;
 
 use WebFramework\Exception\MultiValidationException;
 
+/**
+ * Class InputValidationService.
+ *
+ * This service is responsible for validating input data against a set of validators.
+ */
 class InputValidationService
 {
     /** @var array<string, array<int, array{message: string, params: array<string, string>}>> */
@@ -16,7 +21,11 @@ class InputValidationService
     private array $validated = [];
 
     /**
-     * @param array<string, string> $params
+     * Register an error for a specific field.
+     *
+     * @param string                $field   The field name
+     * @param string                $message The error message
+     * @param array<string, string> $params  Additional parameters for the error message
      */
     private function registerError(string $field, string $message, array $params = []): void
     {
@@ -27,10 +36,15 @@ class InputValidationService
     }
 
     /**
-     * @param array<Validator>                    $validators
-     * @param array<string, array<string>|string> $inputs
+     * Validate input data against a set of validators.
      *
-     * @return array<string, mixed>
+     * @param array<Validator>                    $validators The validators to use
+     * @param array<string, array<string>|string> $inputs     The input data to validate
+     *
+     * @return array<string, mixed> The validated data
+     *
+     * @throws MultiValidationException  If validation fails
+     * @throws \InvalidArgumentException If required fields are missing or have incorrect types
      */
     public function validate(array $validators, array $inputs): array
     {
@@ -91,6 +105,16 @@ class InputValidationService
         return $this->validated;
     }
 
+    /**
+     * Validate a single field.
+     *
+     * @param string      $field     The field name
+     * @param string      $value     The field value
+     * @param bool        $required  Whether the field is required
+     * @param bool        $isArray   Whether the field is an array
+     * @param Validator   $validator The validator to use
+     * @param null|string $key       The array key (if applicable)
+     */
     private function validateField(string $field, string $value, bool $required, bool $isArray, Validator $validator, ?string $key = null): void
     {
         if ($isArray)
@@ -158,7 +182,9 @@ class InputValidationService
     }
 
     /**
-     * @return array<string, mixed>
+     * Get all input data (including invalid inputs).
+     *
+     * @return array<string, mixed> All input data
      */
     public function getAll(): array
     {
@@ -166,7 +192,9 @@ class InputValidationService
     }
 
     /**
-     * @return array<string, array<int, array{message: string, params: array<string, string>}>>
+     * Get all validation errors.
+     *
+     * @return array<string, array<int, array{message: string, params: array<string, string>}>> The validation errors
      */
     public function getErrors(): array
     {
@@ -174,7 +202,9 @@ class InputValidationService
     }
 
     /**
-     * @return array<string, mixed>
+     * Get all validated data.
+     *
+     * @return array<string, mixed> The validated data
      */
     public function getValidated(): array
     {

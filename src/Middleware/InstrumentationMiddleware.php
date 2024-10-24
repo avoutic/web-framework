@@ -9,12 +9,24 @@ use Psr\Http\Server\RequestHandlerInterface;
 use Slim\Routing\RouteContext;
 use WebFramework\Core\Instrumentation;
 
+/**
+ * Middleware to handle instrumentation for performance monitoring.
+ */
 class InstrumentationMiddleware implements MiddlewareInterface
 {
+    /**
+     * @param Instrumentation $instrumentation The instrumentation service
+     */
     public function __construct(
         private Instrumentation $instrumentation,
     ) {}
 
+    /**
+     * Process an incoming server request.
+     *
+     * @param Request                 $request The request
+     * @param RequestHandlerInterface $handler The handler
+     */
     public function process(Request $request, RequestHandlerInterface $handler): Response
     {
         $routeContext = RouteContext::fromRequest($request);

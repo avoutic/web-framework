@@ -2,11 +2,21 @@
 
 namespace WebFramework\Validation;
 
+/**
+ * Class CustomNumberValidator.
+ *
+ * This class extends CustomValidator to provide number validation functionality.
+ */
 class CustomNumberValidator extends CustomValidator
 {
     private ?int $minValue = null;
     private ?int $maxValue = null;
 
+    /**
+     * CustomNumberValidator constructor.
+     *
+     * @param string $name The name of the field to validate
+     */
     public function __construct(
         string $name,
     ) {
@@ -15,6 +25,13 @@ class CustomNumberValidator extends CustomValidator
         $this->filter('\d+')->default(null);
     }
 
+    /**
+     * Convert the validated string value to an integer.
+     *
+     * @param string $value The value to convert
+     *
+     * @return null|int The converted integer value or null if empty
+     */
     public function getTyped(string $value): mixed
     {
         if (!strlen($value))
@@ -25,6 +42,11 @@ class CustomNumberValidator extends CustomValidator
         return (int) $value;
     }
 
+    /**
+     * Get the validation rules for this validator.
+     *
+     * @return array<ValidationRule> The array of validation rules
+     */
     public function getRules(): array
     {
         $rules = parent::getRules();
@@ -42,6 +64,11 @@ class CustomNumberValidator extends CustomValidator
         return $rules;
     }
 
+    /**
+     * Set the minimum allowed value.
+     *
+     * @param int $value The minimum value
+     */
     public function minValue(int $value): self
     {
         $this->minValue = $value;
@@ -49,6 +76,11 @@ class CustomNumberValidator extends CustomValidator
         return $this;
     }
 
+    /**
+     * Set the maximum allowed value.
+     *
+     * @param int $value The maximum value
+     */
     public function maxValue(int $value): self
     {
         $this->maxValue = $value;

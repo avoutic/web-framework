@@ -12,15 +12,38 @@ use WebFramework\Core\DebugService;
 use WebFramework\Core\LatteRenderService;
 use WebFramework\Exception\BlacklistException;
 
+/**
+ * Class Tester.
+ *
+ * This action is used for testing various error and exception scenarios.
+ */
 class Tester
 {
+    /**
+     * Tester constructor.
+     *
+     * @param DebugService       $debugService The debug service
+     * @param LatteRenderService $renderer     The Latte render service
+     */
     public function __construct(
         private DebugService $debugService,
         private LatteRenderService $renderer,
     ) {}
 
     /**
-     * @param array<string, string> $routeArgs
+     * Handle the test request.
+     *
+     * @param Request               $request   The current request
+     * @param Response              $response  The response object
+     * @param array<string, string> $routeArgs Route arguments
+     *
+     * @return ResponseInterface The response
+     *
+     * @throws HttpNotFoundException     If a 404 error is requested
+     * @throws HttpForbiddenException    If a 403 error is requested
+     * @throws HttpUnauthorizedException If a 401 error is requested
+     * @throws BlacklistException        If a blacklist error is requested
+     * @throws \RuntimeException         If a general exception is requested
      */
     public function __invoke(Request $request, Response $response, $routeArgs): ResponseInterface
     {

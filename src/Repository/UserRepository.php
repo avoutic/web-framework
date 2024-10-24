@@ -7,24 +7,47 @@ use WebFramework\Core\RepositoryCore;
 use WebFramework\Entity\User;
 
 /**
+ * Repository class for User entities.
+ *
  * @extends RepositoryCore<User>
  */
 class UserRepository extends RepositoryCore
 {
+    /** @var class-string<User> The entity class associated with this repository */
     protected static string $entityClass = User::class;
 
+    /**
+     * Get a User entity by username.
+     *
+     * @param string $username The username to search for
+     *
+     * @return null|User The User entity if found, null otherwise
+     */
     public function getUserByUsername(string $username): ?User
     {
         return $this->getObject(['username' => $username]);
     }
 
+    /**
+     * Get a User entity by email address.
+     *
+     * @param string $email The email address to search for
+     *
+     * @return null|User The User entity if found, null otherwise
+     */
     public function getUserByEmail(string $email): ?User
     {
         return $this->getObject(['email' => $email]);
     }
 
     /**
-     * @return EntityCollection<User>
+     * Search for users based on a string.
+     *
+     * @param string $string The search string
+     *
+     * @return EntityCollection<User> A collection of matching User entities
+     *
+     * @throws \RuntimeException If a user retrieval fails
      */
     public function searchUsers(string $string): EntityCollection
     {

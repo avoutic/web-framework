@@ -5,13 +5,32 @@ namespace WebFramework\Security;
 use WebFramework\Entity\User;
 use WebFramework\Repository\UserRepository;
 
+/**
+ * Class CheckPasswordService.
+ *
+ * Handles password checking and related operations.
+ */
 class CheckPasswordService
 {
+    /**
+     * CheckPasswordService constructor.
+     *
+     * @param PasswordHashService $passwordHashService The password hash service
+     * @param UserRepository      $userRepository      The user repository
+     */
     public function __construct(
         private PasswordHashService $passwordHashService,
         private UserRepository $userRepository,
     ) {}
 
+    /**
+     * Check if the provided password is correct for the given user.
+     *
+     * @param User   $user     The user to check the password for
+     * @param string $password The password to check
+     *
+     * @return bool True if the password is correct, false otherwise
+     */
     public function checkPassword(User $user, string $password): bool
     {
         $storedHash = $user->getSolidPassword();

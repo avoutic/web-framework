@@ -16,8 +16,17 @@ use WebFramework\Core\ResponseEmitter;
 use WebFramework\Exception\BlacklistException;
 use WebFramework\Exception\RedirectException;
 
+/**
+ * Middleware to handle errors and exceptions.
+ */
 class ErrorRedirectMiddleware implements MiddlewareInterface
 {
+    /**
+     * @param Container       $container       The DI container
+     * @param DebugService    $debugService    The debug service
+     * @param ReportFunction  $reportFunction  The report function
+     * @param ResponseEmitter $responseEmitter The response emitter
+     */
     public function __construct(
         private Container $container,
         private DebugService $debugService,
@@ -25,6 +34,12 @@ class ErrorRedirectMiddleware implements MiddlewareInterface
         private ResponseEmitter $responseEmitter,
     ) {}
 
+    /**
+     * Process an incoming server request.
+     *
+     * @param Request                 $request The request
+     * @param RequestHandlerInterface $next    The handler
+     */
     public function process(Request $request, RequestHandlerInterface $next): Response
     {
         try

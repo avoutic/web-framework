@@ -8,8 +8,21 @@ use WebFramework\Exception\PasswordMismatchException;
 use WebFramework\Exception\WeakPasswordException;
 use WebFramework\Repository\UserRepository;
 
+/**
+ * Class ChangePasswordService.
+ *
+ * Handles the process of changing a user's password.
+ */
 class ChangePasswordService
 {
+    /**
+     * ChangePasswordService constructor.
+     *
+     * @param AuthenticationService   $authenticationService   The authentication service
+     * @param PasswordHashService     $passwordHashService     The password hash service
+     * @param UserRepository          $userRepository          The user repository
+     * @param SecurityIteratorService $securityIteratorService The security iterator service
+     */
     public function __construct(
         private AuthenticationService $authenticationService,
         private PasswordHashService $passwordHashService,
@@ -17,6 +30,18 @@ class ChangePasswordService
         private SecurityIteratorService $securityIteratorService,
     ) {}
 
+    /**
+     * Validate the password change request.
+     *
+     * @param User   $user                 The user changing their password
+     * @param string $oldPassword          The current password
+     * @param string $newPassword          The new password
+     * @param string $verificationPassword The new password verification
+     *
+     * @throws PasswordMismatchException If the new password and verification don't match
+     * @throws WeakPasswordException     If the new password is too weak
+     * @throws InvalidPasswordException  If the old password is incorrect
+     */
     public function validate(User $user, string $oldPassword, string $newPassword, string $verificationPassword): void
     {
         if ($newPassword !== $verificationPassword)
@@ -37,6 +62,16 @@ class ChangePasswordService
         }
     }
 
+    /**
+     * Change the user's password.
+     *
+     * @param User   $user        The user changing their password
+     * @param string $oldPassword The current password
+     * @param string $newPassword The new password
+     *
+     * @throws WeakPasswordException    If the new password is too weak
+     * @throws InvalidPasswordException If the old password is incorrect
+     */
     public function changePassword(User $user, string $oldPassword, string $newPassword): void
     {
         if (strlen($newPassword) < 8)

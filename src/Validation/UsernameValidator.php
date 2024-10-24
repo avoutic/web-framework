@@ -2,8 +2,18 @@
 
 namespace WebFramework\Validation;
 
+/**
+ * Class UsernameValidator.
+ *
+ * This class extends CustomValidator to provide username validation functionality.
+ */
 class UsernameValidator extends CustomValidator
 {
+    /**
+     * UsernameValidator constructor.
+     *
+     * @param string $name The name of the field to validate (default: 'username')
+     */
     public function __construct(
         string $name = 'username',
     ) {

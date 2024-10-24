@@ -9,8 +9,20 @@ use WebFramework\Entity\User;
 use WebFramework\Exception\CodeVerificationException;
 use WebFramework\Repository\UserRepository;
 
+/**
+ * Handles user verification processes.
+ */
 class UserVerificationService
 {
+    /**
+     * UserVerificationService constructor.
+     *
+     * @param ConfigService   $configService   The configuration service
+     * @param UrlBuilder      $urlBuilder      The URL builder service
+     * @param UserCodeService $userCodeService The user code service
+     * @param UserMailer      $userMailer      The user mailer service
+     * @param UserRepository  $userRepository  The user repository
+     */
     public function __construct(
         private ConfigService $configService,
         private UrlBuilder $urlBuilder,
@@ -19,6 +31,13 @@ class UserVerificationService
         private UserRepository $userRepository,
     ) {}
 
+    /**
+     * Handle sending a verification email.
+     *
+     * @param string $code The verification code
+     *
+     * @throws CodeVerificationException If the code is invalid
+     */
     public function handleSendVerify(string $code): void
     {
         ['user_id' => $codeUserId, 'params' => $verifyParams] = $this->userCodeService->verify(
@@ -42,7 +61,10 @@ class UserVerificationService
     }
 
     /**
-     * @param array<mixed> $afterVerifyData
+     * Send a verification email to a user.
+     *
+     * @param User         $user            The user to send the verification email to
+     * @param array<mixed> $afterVerifyData Additional data to include after verification
      */
     public function sendVerifyMail(User $user, array $afterVerifyData = []): void
     {
@@ -65,6 +87,13 @@ class UserVerificationService
         );
     }
 
+    /**
+     * Handle user verification.
+     *
+     * @param string $code The verification code
+     *
+     * @throws CodeVerificationException If the code is invalid
+     */
     public function handleVerify(string $code): void
     {
         ['user_id' => $codeUserId, 'params' => $verifyParams] = $this->userCodeService->verify(

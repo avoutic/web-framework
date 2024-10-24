@@ -4,12 +4,27 @@ namespace WebFramework\SanityCheck;
 
 use WebFramework\Core\ConfigService;
 
+/**
+ * Class RequiredCoreConfig.
+ *
+ * Performs sanity checks related to required core configuration options.
+ */
 class RequiredCoreConfig extends Base
 {
+    /**
+     * RequiredCoreConfig constructor.
+     *
+     * @param ConfigService $configService The configuration service
+     */
     public function __construct(
         private ConfigService $configService,
     ) {}
 
+    /**
+     * Perform checks for required core configuration options.
+     *
+     * @return bool True if all checks pass, false otherwise
+     */
     public function performChecks(): bool
     {
         // Check if all required config options files are present

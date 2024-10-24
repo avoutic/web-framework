@@ -9,12 +9,26 @@ use Psr\Http\Server\RequestHandlerInterface;
 use WebFramework\Exception\BlacklistException;
 use WebFramework\Security\BlacklistService;
 
+/**
+ * Middleware to check if a request is blacklisted.
+ */
 class BlacklistMiddleware implements MiddlewareInterface
 {
+    /**
+     * @param BlacklistService $blacklistService The blacklist service
+     */
     public function __construct(
         private BlacklistService $blacklistService,
     ) {}
 
+    /**
+     * Process an incoming server request.
+     *
+     * @param Request                 $request The request
+     * @param RequestHandlerInterface $handler The handler
+     *
+     * @throws BlacklistException If the request is blacklisted
+     */
     public function process(Request $request, RequestHandlerInterface $handler): Response
     {
         if ($this->blacklistService->isBlacklisted(

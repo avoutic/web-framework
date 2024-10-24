@@ -11,11 +11,26 @@ use WebFramework\Entity\User;
 use WebFramework\Repository\SessionRepository;
 use WebFramework\Repository\UserRepository;
 
+/**
+ * Class DatabaseAuthenticationService.
+ *
+ * Implements the AuthenticationService interface using a database for session storage.
+ */
 class DatabaseAuthenticationService implements AuthenticationService
 {
     private bool $sessionChecked = false;
     private ?User $authenticatedUser = null;
 
+    /**
+     * DatabaseAuthenticationService constructor.
+     *
+     * @param Database                $database              The database service
+     * @param SessionInterface        $browserSession        The browser session service
+     * @param SessionManagerInterface $browserSessionManager The browser session manager
+     * @param SessionRepository       $sessionRepository     The session repository
+     * @param UserRepository          $userRepository        The user repository
+     * @param int                     $sessionTimeout        The session timeout in seconds
+     */
     public function __construct(
         private Database $database,
         private SessionInterface $browserSession,
@@ -25,6 +40,9 @@ class DatabaseAuthenticationService implements AuthenticationService
         private int $sessionTimeout,
     ) {}
 
+    /**
+     * Perform cleanup of expired sessions.
+     */
     public function cleanup(): void
     {
         $timestamp = date('Y-m-d H:i:s');
@@ -39,6 +57,14 @@ SQL;
         $this->database->query($query, $params);
     }
 
+    /**
+     * Register a new session for a user.
+     *
+     * @param int    $userId    The ID of the user
+     * @param string $sessionId The session ID
+     *
+     * @return Session The created session
+     */
     private function registerSession(int $userId, string $sessionId): Session
     {
         $timestamp = date('Y-m-d H:i:s');
@@ -51,6 +77,11 @@ SQL;
         ]);
     }
 
+    /**
+     * Invalidate all sessions for a user.
+     *
+     * @param int $userId The ID of the user
+     */
     public function invalidateSessions(int $userId): void
     {
         $this->sessionChecked = false;
@@ -58,6 +89,11 @@ SQL;
         $result = $this->database->query('DELETE FROM sessions WHERE user_id = ?', [$userId], 'Failed to delete all sessions for user');
     }
 
+    /**
+     * Authenticate a user.
+     *
+     * @param User $user The user to authenticate
+     */
     public function authenticate(User $user): void
     {
         $this->deauthenticate();
@@ -72,6 +108,9 @@ SQL;
         $this->sessionChecked = true;
     }
 
+    /**
+     * Validate the current session.
+     */
     public function validateSession(): void
     {
         if ($this->sessionChecked)
@@ -137,6 +176,13 @@ SQL;
         $this->extendDatabaseSession($session);
     }
 
+    /**
+     * Check if a database session is valid.
+     *
+     * @param Session $session The session to check
+     *
+     * @return bool True if the session is valid, false otherwise
+     */
     public function isDatabaseSessionValid(Session $session): bool
     {
         // Check for session timeout
@@ -147,6 +193,11 @@ SQL;
         return ($current - $lastActiveTimestamp <= $this->sessionTimeout);
     }
 
+    /**
+     * Extend the duration of a database session.
+     *
+     * @param Session $session The session to extend
+     */
     public function extendDatabaseSession(Session $session): void
     {
         $current = time();
@@ -176,6 +227,11 @@ SQL;
         $this->sessionRepository->save($session);
     }
 
+    /**
+     * Check if a user is currently authenticated.
+     *
+     * @return bool True if a user is authenticated, false otherwise
+     */
     public function isAuthenticated(): bool
     {
         $this->validateSession();
@@ -185,6 +241,9 @@ SQL;
         return ($loggedIn === true);
     }
 
+    /**
+     * Deauthenticate the current user.
+     */
     public function deauthenticate(): void
     {
         $sessionId = $this->browserSession->get('db_session_id');
@@ -207,6 +266,13 @@ SQL;
         $this->authenticatedUser = null;
     }
 
+    /**
+     * Get the ID of the currently authenticated user.
+     *
+     * @return int The ID of the authenticated user
+     *
+     * @throws \RuntimeException If no user is authenticated
+     */
     public function getAuthenticatedUserId(): int
     {
         if (!$this->isAuthenticated())
@@ -217,6 +283,13 @@ SQL;
         return $this->browserSession->get('user_id');
     }
 
+    /**
+     * Get the currently authenticated user.
+     *
+     * @return User The authenticated user
+     *
+     * @throws \RuntimeException If no user is authenticated or the user cannot be found
+     */
     public function getAuthenticatedUser(): User
     {
         $userId = $this->getAuthenticatedUserId();

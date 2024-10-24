@@ -2,13 +2,20 @@
 
 namespace WebFramework\Exception;
 
+/**
+ * Exception thrown when validation fails.
+ */
 class ValidationException extends \Exception
 {
     /** @var array<string, array<int, array{message: string, params: array<string, string>}>> */
     private array $errors = [];
 
     /**
-     * @param array<string, string> $params
+     * ValidationException constructor.
+     *
+     * @param string                $field   The field that failed validation
+     * @param string                $message The error message
+     * @param array<string, string> $params  Additional parameters for the error message
      */
     public function __construct(
         string $field,
@@ -22,7 +29,9 @@ class ValidationException extends \Exception
     }
 
     /**
-     * @param array<string, array<int, array{message: string, params: array<string, string>}>> $errors
+     * Set the validation errors.
+     *
+     * @param array<string, array<int, array{message: string, params: array<string, string>}>> $errors The validation errors
      */
     public function setErrors(array $errors): void
     {
@@ -30,7 +39,9 @@ class ValidationException extends \Exception
     }
 
     /**
-     * @return array<string, array<int, array{message: string, params: array<string, string>}>>
+     * Get the validation errors.
+     *
+     * @return array<string, array<int, array{message: string, params: array<string, string>}>> The validation errors
      */
     public function getErrors(): array
     {

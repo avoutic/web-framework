@@ -8,12 +8,24 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use WebFramework\Core\Database;
 
+/**
+ * Middleware to ensure the request is wrapped in a database transaction.
+ */
 class TransactionMiddleware implements MiddlewareInterface
 {
+    /**
+     * @param Database $database The database service
+     */
     public function __construct(
         private Database $database,
     ) {}
 
+    /**
+     * Process an incoming server request.
+     *
+     * @param Request                 $request The request
+     * @param RequestHandlerInterface $handler The handler
+     */
     public function process(Request $request, RequestHandlerInterface $handler): Response
     {
         $this->database->startTransaction();

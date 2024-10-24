@@ -2,15 +2,33 @@
 
 namespace WebFramework\Translation;
 
+/**
+ * Class TranslationService.
+ *
+ * This service provides translation functionality using a TranslationLoader.
+ */
 class TranslationService
 {
+    /**
+     * TranslationService constructor.
+     *
+     * @param TranslationLoader $loader   The translation loader
+     * @param string            $language The default language code
+     */
     public function __construct(
         private TranslationLoader $loader,
         private string $language = 'en',
     ) {}
 
     /**
-     * @param array<string, string> $params
+     * Translate a specific tag within a category.
+     *
+     * @param string                $category        The translation category
+     * @param string                $tag             The translation tag
+     * @param array<string, string> $params          Parameters to replace in the translation
+     * @param bool                  $requirePresence Whether to require the translation to be present
+     *
+     * @return string The translated string with parameters replaced
      */
     public function translate(string $category, string $tag, array $params = [], bool $requirePresence = false): string
     {
@@ -25,9 +43,11 @@ class TranslationService
     }
 
     /**
-     * Returns a whole category.
+     * Get all translations for a specific category.
      *
-     * @return array<string, string>
+     * @param string $category The translation category
+     *
+     * @return array<string, string> The category translations
      */
     public function getCategory(string $category): array
     {
@@ -35,7 +55,11 @@ class TranslationService
     }
 
     /**
-     * Return category keys as filter.
+     * Get a filter string containing all keys of a category.
+     *
+     * @param string $category The translation category
+     *
+     * @return string A pipe-separated string of category keys
      */
     public function getFilter(string $category): string
     {
@@ -44,6 +68,14 @@ class TranslationService
         return implode('|', $keys);
     }
 
+    /**
+     * Check if a translation tag exists in a category.
+     *
+     * @param string $category The translation category
+     * @param string $tag      The translation tag
+     *
+     * @return bool True if the tag exists, false otherwise
+     */
     public function tagExists(string $category, string $tag): bool
     {
         $translation = $this->loader->loadTranslation($this->language, $category, $tag);

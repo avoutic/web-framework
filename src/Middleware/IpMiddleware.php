@@ -7,8 +7,17 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
+/**
+ * Middleware to add the client IP address to the request attributes.
+ */
 class IpMiddleware implements MiddlewareInterface
 {
+    /**
+     * Process an incoming server request.
+     *
+     * @param Request                 $request The request
+     * @param RequestHandlerInterface $handler The handler
+     */
     public function process(Request $request, RequestHandlerInterface $handler): Response
     {
         $serverParams = $request->getServerParams();

@@ -11,8 +11,17 @@ use WebFramework\Core\ValidatorService;
 use WebFramework\Security\BlacklistService;
 use WebFramework\Security\CsrfService;
 
+/**
+ * Middleware to validate CSRF tokens.
+ */
 class CsrfValidationMiddleware implements MiddlewareInterface
 {
+    /**
+     * @param BlacklistService $blacklistService The blacklist service
+     * @param CsrfService      $csrfService      The CSRF service
+     * @param MessageService   $messageService   The message service
+     * @param ValidatorService $validatorService The validator service
+     */
     public function __construct(
         private BlacklistService $blacklistService,
         private CsrfService $csrfService,
@@ -20,6 +29,12 @@ class CsrfValidationMiddleware implements MiddlewareInterface
         private ValidatorService $validatorService,
     ) {}
 
+    /**
+     * Process an incoming server request.
+     *
+     * @param Request                 $request The request
+     * @param RequestHandlerInterface $handler The handler
+     */
     public function process(Request $request, RequestHandlerInterface $handler): Response
     {
         $params = $this->validatorService->getFilteredParams(

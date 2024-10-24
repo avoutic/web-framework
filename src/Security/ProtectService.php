@@ -2,16 +2,31 @@
 
 namespace WebFramework\Security;
 
+/**
+ * Class ProtectService.
+ *
+ * Provides encryption and decryption services for sensitive data.
+ */
 class ProtectService
 {
     /**
-     * @param array<string> $moduleConfig
+     * ProtectService constructor.
+     *
+     * @param RandomProvider $randomProvider The random provider service
+     * @param array<string>  $moduleConfig   The module configuration
      */
     public function __construct(
         private RandomProvider $randomProvider,
         private array $moduleConfig,
     ) {}
 
+    /**
+     * Encrypt and encode a string.
+     *
+     * @param string $str The string to encrypt and encode
+     *
+     * @return string The encrypted and encoded string
+     */
     public function packString(string $str): string
     {
         // First encrypt it
@@ -50,7 +65,11 @@ class ProtectService
     }
 
     /**
-     * @param array<mixed> $array
+     * Encrypt and encode an array.
+     *
+     * @param array<mixed> $array The array to encrypt and encode
+     *
+     * @return string The encrypted and encoded string
      */
     public function packArray(array $array): string
     {
@@ -63,6 +82,13 @@ class ProtectService
         return $this->packString($str);
     }
 
+    /**
+     * Decrypt and decode a string.
+     *
+     * @param string $str The string to decrypt and decode
+     *
+     * @return false|string The decrypted and decoded string, or false on failure
+     */
     public function unpackString(string $str): false|string
     {
         // Remove the double hyphens first
@@ -114,7 +140,11 @@ class ProtectService
     }
 
     /**
-     * @return array<mixed>|false
+     * Decrypt and decode an array.
+     *
+     * @param string $str The string to decrypt and decode
+     *
+     * @return array<mixed>|false The decrypted and decoded array, or false on failure
      */
     public function unpackArray(string $str): array|false
     {

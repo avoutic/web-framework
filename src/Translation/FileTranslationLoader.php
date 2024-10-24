@@ -5,11 +5,23 @@ namespace WebFramework\Translation;
 use WebFramework\Core\Cache;
 use WebFramework\Core\RuntimeEnvironment;
 
+/**
+ * Class FileTranslationLoader.
+ *
+ * This class is responsible for loading translations from files and caching them.
+ */
 class FileTranslationLoader implements TranslationLoader
 {
     /** @var array<string, array<string, array<string, string>>> */
     private array $translations = [];
 
+    /**
+     * FileTranslationLoader constructor.
+     *
+     * @param Cache              $cache              The cache service
+     * @param RuntimeEnvironment $runtimeEnvironment The runtime environment
+     * @param array<string>      $directories        The directories to search for translation files
+     */
     public function __construct(
         private Cache $cache,
         private RuntimeEnvironment $runtimeEnvironment,
@@ -18,7 +30,11 @@ class FileTranslationLoader implements TranslationLoader
     ) {}
 
     /**
-     * @return array<string, array<string, string>>
+     * Get translations for a specific language.
+     *
+     * @param string $language The language code
+     *
+     * @return array<string, array<string, string>> The translations
      */
     private function getTranslations(string $language): array
     {
@@ -46,7 +62,11 @@ class FileTranslationLoader implements TranslationLoader
     }
 
     /**
-     * @return array<string, array<string, string>>
+     * Retrieve and merge translations for a specific language from all directories.
+     *
+     * @param string $language The language code
+     *
+     * @return array<string, array<string, string>> The merged translations
      */
     private function retrieveMergedLanguage(string $language): array
     {
@@ -68,6 +88,19 @@ class FileTranslationLoader implements TranslationLoader
         return $mergedTranslations;
     }
 
+    /**
+     * Load a specific translation.
+     *
+     * @param string      $language         The language code
+     * @param string      $category         The translation category
+     * @param string      $tag              The translation tag
+     * @param bool        $requirePresence  Whether to require the translation to be present
+     * @param null|string $fallbackLanguage The fallback language code
+     *
+     * @return string The translated string
+     *
+     * @throws \RuntimeException If the translation is required but not found
+     */
     public function loadTranslation(string $language, string $category, string $tag, bool $requirePresence = false, ?string $fallbackLanguage = 'en'): string
     {
         $translations = $this->getTranslations($language);
@@ -99,9 +132,14 @@ class FileTranslationLoader implements TranslationLoader
     }
 
     /**
-     * Return whole category.
+     * Load all translations for a specific category.
      *
-     * @return array<string, string>
+     * @param string $language The language code
+     * @param string $category The translation category
+     *
+     * @return array<string, string> The category translations
+     *
+     * @throws \RuntimeException If the category is not found
      */
     public function loadCategory(string $language, string $category): array
     {

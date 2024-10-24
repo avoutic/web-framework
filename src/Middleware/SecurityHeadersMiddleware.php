@@ -7,8 +7,17 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
+/**
+ * Middleware to add security headers to the response.
+ */
 class SecurityHeadersMiddleware implements MiddlewareInterface
 {
+    /**
+     * Process an incoming server request.
+     *
+     * @param Request                 $request The request
+     * @param RequestHandlerInterface $handler The handler
+     */
     public function process(Request $request, RequestHandlerInterface $handler): Response
     {
         $response = $handler->handle($request);

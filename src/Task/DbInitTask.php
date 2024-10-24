@@ -7,14 +7,33 @@ use WebFramework\Core\BootstrapService;
 use WebFramework\Core\DatabaseManager;
 use WebFramework\Core\TaskInterface;
 
+/**
+ * Class DbInitTask.
+ *
+ * Task for initializing the database schema.
+ */
 class DbInitTask implements TaskInterface
 {
+    /**
+     * DbInitTask constructor.
+     *
+     * @param Container        $container        The dependency injection container
+     * @param BootstrapService $bootstrapService The bootstrap service
+     * @param DatabaseManager  $databaseManager  The database manager service
+     */
     public function __construct(
         private Container $container,
         private BootstrapService $bootstrapService,
         private DatabaseManager $databaseManager,
     ) {}
 
+    /**
+     * Execute the database initialization task.
+     *
+     * This method initializes the database schema if it hasn't been initialized yet.
+     *
+     * @throws \RuntimeException If the change set array is not found in the scheme file
+     */
     public function execute(): void
     {
         $this->bootstrapService->skipSanityChecks();

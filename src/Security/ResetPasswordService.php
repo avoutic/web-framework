@@ -9,8 +9,23 @@ use WebFramework\Entity\User;
 use WebFramework\Exception\CodeVerificationException;
 use WebFramework\Repository\UserRepository;
 
+/**
+ * Handles password reset operations.
+ */
 class ResetPasswordService
 {
+    /**
+     * ResetPasswordService constructor.
+     *
+     * @param AuthenticationService   $authenticationService   The authentication service
+     * @param ConfigService           $configService           The configuration service
+     * @param PasswordHashService     $passwordHashService     The password hash service
+     * @param UrlBuilder              $urlBuilder              The URL builder service
+     * @param UserCodeService         $userCodeService         The user code service
+     * @param UserMailer              $userMailer              The user mailer service
+     * @param UserRepository          $userRepository          The user repository
+     * @param SecurityIteratorService $securityIteratorService The security iterator service
+     */
     public function __construct(
         private AuthenticationService $authenticationService,
         private ConfigService $configService,
@@ -22,6 +37,12 @@ class ResetPasswordService
         private SecurityIteratorService $securityIteratorService,
     ) {}
 
+    /**
+     * Update a user's password.
+     *
+     * @param User   $user        The user whose password is being updated
+     * @param string $newPassword The new password
+     */
     public function updatePassword(User $user, string $newPassword): void
     {
         // Change password
@@ -34,6 +55,13 @@ class ResetPasswordService
         $this->securityIteratorService->incrementFor($user);
     }
 
+    /**
+     * Send a password reset email to a user.
+     *
+     * @param User $user The user requesting a password reset
+     *
+     * @return bool|string True if the email was sent successfully, or an error message
+     */
     public function sendPasswordResetMail(User $user): bool|string
     {
         $securityIterator = $this->securityIteratorService->incrementFor($user);
@@ -57,6 +85,13 @@ class ResetPasswordService
         );
     }
 
+    /**
+     * Handle a password reset request.
+     *
+     * @param string $code The password reset code
+     *
+     * @throws CodeVerificationException If the code is invalid or expired
+     */
     public function handlePasswordReset(string $code): void
     {
         ['user_id' => $codeUserId, 'params' => $verifyParams] = $this->userCodeService->verify(
@@ -87,6 +122,13 @@ class ResetPasswordService
         $this->authenticationService->invalidateSessions($user->getId());
     }
 
+    /**
+     * Send a new password to a user.
+     *
+     * @param User $user The user to send the new password to
+     *
+     * @return bool|string True if the email was sent successfully, or an error message
+     */
     public function sendNewPassword(User $user): bool|string
     {
         // Generate and store password

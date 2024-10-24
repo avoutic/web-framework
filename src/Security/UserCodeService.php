@@ -5,14 +5,28 @@ namespace WebFramework\Security;
 use WebFramework\Entity\User;
 use WebFramework\Exception\CodeVerificationException;
 
+/**
+ * Handles generation and verification of user-specific codes.
+ */
 class UserCodeService
 {
+    /**
+     * UserCodeService constructor.
+     *
+     * @param ProtectService $protectService The protect service
+     */
     public function __construct(
         private ProtectService $protectService,
     ) {}
 
     /**
-     * @param array<mixed> $params
+     * Generate a code for a user.
+     *
+     * @param User         $user   The user to generate the code for
+     * @param string       $action The action associated with the code
+     * @param array<mixed> $params Additional parameters to include in the code
+     *
+     * @return string The generated code
      */
     public function generate(User $user, string $action, array $params = []): string
     {
@@ -27,7 +41,15 @@ class UserCodeService
     }
 
     /**
-     * @return array{user_id: int, action: string, params: array<mixed>, timestamp: int}
+     * Verify a user code.
+     *
+     * @param string $packedCode The packed code to verify
+     * @param string $action     The expected action
+     * @param int    $validity   The validity period of the code in seconds
+     *
+     * @return array{user_id: int, action: string, params: array<mixed>, timestamp: int} The unpacked code data
+     *
+     * @throws CodeVerificationException If the code is invalid or expired
      */
     public function verify(string $packedCode, string $action, int $validity): array
     {

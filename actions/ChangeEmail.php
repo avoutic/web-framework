@@ -17,8 +17,25 @@ use WebFramework\Security\ChangeEmailService;
 use WebFramework\Validation\EmailValidator;
 use WebFramework\Validation\InputValidationService;
 
+/**
+ * Class ChangeEmail.
+ *
+ * This action handles the process of changing a user's email address.
+ */
 class ChangeEmail
 {
+    /**
+     * ChangeEmail constructor.
+     *
+     * @param Container              $container              The dependency injection container
+     * @param AuthenticationService  $authenticationService  The authentication service
+     * @param ConfigService          $configService          The configuration service
+     * @param InputValidationService $inputValidationService The input validation service
+     * @param MessageService         $messageService         The message service
+     * @param RenderService          $renderer               The render service
+     * @param ResponseEmitter        $responseEmitter        The response emitter
+     * @param ChangeEmailService     $changeEmailService     The change email service
+     */
     public function __construct(
         protected Container $container,
         protected AuthenticationService $authenticationService,
@@ -32,28 +49,56 @@ class ChangeEmail
         $this->init();
     }
 
+    /**
+     * Initialize the action.
+     */
     public function init(): void {}
 
     /**
-     * @return array<string, mixed>
+     * Get custom parameters for the action.
+     *
+     * @param Request $request The current request
+     *
+     * @return array<string, mixed> Custom parameters
      */
     protected function customParams(Request $request): array
     {
         return [];
     }
 
+    /**
+     * Get the template name for rendering.
+     *
+     * @return string The template name
+     */
     protected function getTemplateName(): string
     {
         return 'ChangeEmail.latte';
     }
 
+    /**
+     * Get the return page after successful email change.
+     *
+     * @return string The return page URL
+     *
+     * @uses config actions.change_email.return_page
+     */
     protected function getReturnPage(): string
     {
         return $this->configService->get('actions.change_email.return_page');
     }
 
     /**
-     * @param array<string, string> $routeArgs
+     * Handle the change email request.
+     *
+     * @param Request               $request   The current request
+     * @param Response              $response  The response object
+     * @param array<string, string> $routeArgs Route arguments
+     *
+     * @return ResponseInterface The response
+     *
+     * @throws ValidationException     If the input validation fails
+     * @throws DuplicateEmailException If the new email is already in use
      */
     public function __invoke(Request $request, Response $response, array $routeArgs): ResponseInterface
     {

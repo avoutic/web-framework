@@ -6,8 +6,22 @@ use WebFramework\Core\ConfigService;
 use WebFramework\Core\Database;
 use WebFramework\Core\StoredValues;
 
+/**
+ * Class DatabaseCompatibility.
+ *
+ * Performs sanity checks related to database compatibility.
+ */
 class DatabaseCompatibility extends Base
 {
+    /**
+     * DatabaseCompatibility constructor.
+     *
+     * @param Database      $database          The database service
+     * @param ConfigService $configService     The configuration service
+     * @param bool          $checkDb           Whether to check the database
+     * @param bool          $checkWfDbVersion  Whether to check the WebFramework database version
+     * @param bool          $checkAppDbVersion Whether to check the application database version
+     */
     public function __construct(
         private Database $database,
         private ConfigService $configService,
@@ -16,6 +30,11 @@ class DatabaseCompatibility extends Base
         private bool $checkAppDbVersion = true,
     ) {}
 
+    /**
+     * Perform database compatibility checks.
+     *
+     * @return bool True if all checks pass, false otherwise
+     */
     public function performChecks(): bool
     {
         // Verify all versions for compatibility

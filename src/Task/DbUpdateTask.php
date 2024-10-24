@@ -8,8 +8,19 @@ use WebFramework\Core\ConfigService;
 use WebFramework\Core\DatabaseManager;
 use WebFramework\Core\TaskInterface;
 
+/**
+ * Task for updating the database schema.
+ */
 class DbUpdateTask implements TaskInterface
 {
+    /**
+     * DbUpdateTask constructor.
+     *
+     * @param Container        $container        The dependency injection container
+     * @param BootstrapService $bootstrapService The bootstrap service
+     * @param ConfigService    $configService    The configuration service
+     * @param DatabaseManager  $databaseManager  The database manager service
+     */
     public function __construct(
         private Container $container,
         private BootstrapService $bootstrapService,
@@ -17,6 +28,11 @@ class DbUpdateTask implements TaskInterface
         private DatabaseManager $databaseManager,
     ) {}
 
+    /**
+     * Execute the database update task.
+     *
+     * This method applies the schema changes defined in the update data.
+     */
     public function execute(): void
     {
         $this->bootstrapService->skipSanityChecks();

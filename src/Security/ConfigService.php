@@ -4,13 +4,33 @@ namespace WebFramework\Security;
 
 use WebFramework\Core\RuntimeEnvironment;
 
+/**
+ * Class ConfigService.
+ *
+ * Handles configuration related to authentication configuration files.
+ */
 class ConfigService
 {
+    /**
+     * ConfigService constructor.
+     *
+     * @param RuntimeEnvironment $runtimeEnvironment The runtime environment
+     * @param string             $authDir            The directory containing auth configuration files
+     */
     public function __construct(
         private RuntimeEnvironment $runtimeEnvironment,
         private string $authDir,
     ) {}
 
+    /**
+     * Get the authentication configuration for a specific name.
+     *
+     * @param string $name The name of the auth configuration to retrieve
+     *
+     * @return mixed The auth configuration
+     *
+     * @throws \RuntimeException If the configuration is invalid or doesn't exist
+     */
     public function getAuthConfig(string $name): mixed
     {
         $authConfig = $this->loadFile($name);
@@ -24,7 +44,13 @@ class ConfigService
     }
 
     /**
-     * @return array<mixed>|string
+     * Load a configuration file.
+     *
+     * @param string $name The name of the configuration file to load
+     *
+     * @return array<mixed>|string The loaded configuration
+     *
+     * @throws \RuntimeException If the configuration file doesn't exist
      */
     private function loadFile(string $name): array|string
     {

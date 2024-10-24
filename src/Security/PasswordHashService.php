@@ -2,12 +2,34 @@
 
 namespace WebFramework\Security;
 
+/**
+ * Class PasswordHashService.
+ *
+ * Handles password hashing and verification.
+ */
 class PasswordHashService
 {
+    /**
+     * PasswordHashService constructor.
+     *
+     * @param RandomProvider $randomProvider The random provider service
+     */
     public function __construct(
         private RandomProvider $randomProvider,
     ) {}
 
+    /**
+     * Implement the PBKDF2 key derivation function.
+     *
+     * @param string $algorithm The hash algorithm to use
+     * @param string $password  The password to derive from
+     * @param string $salt      The salt
+     * @param int    $count     The iteration count
+     * @param int    $keyLength The length of the derived key
+     * @param bool   $rawOutput When set to true, outputs raw binary data. false outputs lowercase hexits.
+     *
+     * @return string A $keyLength-byte derived key
+     */
     public function pbkdf2(string $algorithm, string $password, string $salt, int $count, int $keyLength, bool $rawOutput = false): string
     {
         $algorithm = strtolower($algorithm);
@@ -46,6 +68,13 @@ class PasswordHashService
         return bin2hex(substr($output, 0, $keyLength));
     }
 
+    /**
+     * Generate a password hash.
+     *
+     * @param string $password The password to hash
+     *
+     * @return string The generated password hash
+     */
     public function generateHash(string $password): string
     {
         $salt = base64_encode($this->randomProvider->getRandom(24));
@@ -55,7 +84,14 @@ class PasswordHashService
     }
 
     /**
-     * @return array{stored: string, calculated: string}
+     * Get the stored and calculated hashes for a password.
+     *
+     * @param string $passwordHash The stored password hash
+     * @param string $password     The password to check
+     *
+     * @return array{stored: string, calculated: string} The stored and calculated hashes
+     *
+     * @throws \InvalidArgumentException If the hash format is invalid or unknown
      */
     private function getHashes(string $passwordHash, string $password): array
     {
@@ -110,6 +146,14 @@ class PasswordHashService
         throw new \InvalidArgumentException('Unknown password hash format');
     }
 
+    /**
+     * Check if a password matches a hash.
+     *
+     * @param string $passwordHash The stored password hash
+     * @param string $password     The password to check
+     *
+     * @return bool True if the password matches, false otherwise
+     */
     public function checkPassword(string $passwordHash, string $password): bool
     {
         $hashed = $this->getHashes($passwordHash, $password);
@@ -124,6 +168,15 @@ class PasswordHashService
         return ($diff === 0);
     }
 
+    /**
+     * Check if a password hash should be migrated to a newer format.
+     *
+     * @param string $passwordHash The stored password hash
+     *
+     * @return bool True if the hash should be migrated, false otherwise
+     *
+     * @throws \InvalidArgumentException If the hash format is unknown
+     */
     public function shouldMigrate(string $passwordHash): bool
     {
         $params = explode(':', $passwordHash);

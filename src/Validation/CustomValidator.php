@@ -2,6 +2,11 @@
 
 namespace WebFramework\Validation;
 
+/**
+ * Class CustomValidator.
+ *
+ * This class implements the Validator interface and provides basic validation functionality.
+ */
 class CustomValidator implements Validator
 {
     private ?string $filter = null;
@@ -10,10 +15,20 @@ class CustomValidator implements Validator
     private ?int $maxLength = null;
     private mixed $default = '';
 
+    /**
+     * CustomValidator constructor.
+     *
+     * @param string $name The name of the field to validate
+     */
     public function __construct(
         private string $name,
     ) {}
 
+    /**
+     * Set the filter for this validator.
+     *
+     * @param string $filter The filter regex
+     */
     public function filter(string $filter): self
     {
         $this->filter = $filter;
@@ -21,6 +36,9 @@ class CustomValidator implements Validator
         return $this;
     }
 
+    /**
+     * Mark this field as optional.
+     */
     public function optional(): self
     {
         $this->required = false;
@@ -28,6 +46,9 @@ class CustomValidator implements Validator
         return $this;
     }
 
+    /**
+     * Mark this field as required.
+     */
     public function required(): self
     {
         $this->required = true;
@@ -35,6 +56,11 @@ class CustomValidator implements Validator
         return $this;
     }
 
+    /**
+     * Set the minimum length for this field.
+     *
+     * @param int $length The minimum length
+     */
     public function minLength(int $length): self
     {
         $this->minLength = $length;
@@ -42,6 +68,11 @@ class CustomValidator implements Validator
         return $this;
     }
 
+    /**
+     * Set the maximum length for this field.
+     *
+     * @param int $length The maximum length
+     */
     public function maxLength(int $length): self
     {
         $this->maxLength = $length;
@@ -49,6 +80,11 @@ class CustomValidator implements Validator
         return $this;
     }
 
+    /**
+     * Set the default value for this field.
+     *
+     * @param mixed $default The default value
+     */
     public function default(mixed $default): self
     {
         $this->default = $default;
@@ -56,11 +92,21 @@ class CustomValidator implements Validator
         return $this;
     }
 
+    /**
+     * Get the name of this field.
+     *
+     * @return string The field name
+     */
     public function getName(): string
     {
         return $this->name;
     }
 
+    /**
+     * Get the validation rules for this validator.
+     *
+     * @return array<ValidationRule> The array of validation rules
+     */
     public function getRules(): array
     {
         $rules = [];
@@ -83,16 +129,33 @@ class CustomValidator implements Validator
         return $rules;
     }
 
+    /**
+     * Check if this field is required.
+     *
+     * @return bool True if the field is required, false otherwise
+     */
     public function isRequired(): bool
     {
         return $this->required;
     }
 
+    /**
+     * Get the default value for this field.
+     *
+     * @return mixed The default value
+     */
     public function getDefault(): mixed
     {
         return $this->default;
     }
 
+    /**
+     * Convert the validated string value to the appropriate type.
+     *
+     * @param string $value The value to convert
+     *
+     * @return mixed The converted value
+     */
     public function getTyped(string $value): mixed
     {
         return $value;

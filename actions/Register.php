@@ -24,8 +24,26 @@ use WebFramework\Validation\InputValidationService;
 use WebFramework\Validation\PasswordValidator;
 use WebFramework\Validation\UsernameValidator;
 
+/**
+ * Class Register.
+ *
+ * This action handles the user registration process.
+ */
 class Register
 {
+    /**
+     * Register constructor.
+     *
+     * @param Container              $container              The dependency injection container
+     * @param AuthenticationService  $authenticationService  The authentication service
+     * @param CaptchaService         $captchaService         The captcha service
+     * @param ConfigService          $configService          The configuration service
+     * @param InputValidationService $inputValidationService The input validation service
+     * @param MessageService         $messageService         The message service
+     * @param RegisterService        $registerService        The register service
+     * @param RenderService          $renderer               The render service
+     * @param ResponseEmitter        $responseEmitter        The response emitter
+     */
     public function __construct(
         protected Container $container,
         protected AuthenticationService $authenticationService,
@@ -40,10 +58,17 @@ class Register
         $this->init();
     }
 
+    /**
+     * Initialize the action.
+     */
     public function init(): void {}
 
     /**
-     * @return array<mixed>
+     * Get additional data to be passed after verification.
+     *
+     * @param Request $request The current request
+     *
+     * @return array<mixed> Additional data
      */
     protected function getAfterVerifyData(Request $request): array
     {
@@ -51,27 +76,65 @@ class Register
     }
 
     /**
-     * @return array<string, mixed>
+     * Prepare custom page content.
+     *
+     * @param Request $request The current request
+     *
+     * @return array<string, mixed> Custom page content
      */
     protected function customPreparePageContent(Request $request): array
     {
         return [];
     }
 
+    /**
+     * Perform custom value checks.
+     *
+     * @param Request $request The current request
+     *
+     * @return bool True if the checks pass, false otherwise
+     */
     protected function customValueCheck(Request $request): bool
     {
         return true;
     }
 
+    /**
+     * Perform custom finalization after user creation.
+     *
+     * @param Request $request The current request
+     * @param User    $user    The newly created user
+     */
     protected function customFinalizeCreate(Request $request, User $user): void {}
 
+    /**
+     * Get the template name for rendering.
+     *
+     * @return string The template name
+     */
     protected function getTemplateName(): string
     {
         return 'Register.latte';
     }
 
     /**
-     * @param array<string, string> $routeArgs
+     * Handle the registration request.
+     *
+     * @param Request               $request   The current request
+     * @param Response              $response  The response object
+     * @param array<string, string> $routeArgs Route arguments
+     *
+     * @return ResponseInterface The response
+     *
+     * @throws InvalidCaptchaException      If the provided captcha is invalid
+     * @throws PasswordMismatchException    If the provided passwords don't match
+     * @throws UsernameUnavailableException If the chosen username is already taken
+     * @throws WeakPasswordException        If the provided password is too weak
+     *
+     * @uses config authenticator.unique_identifier
+     * @uses config security.recaptcha.site_key
+     * @uses config actions.login.default_return_page
+     * @uses config actions.send_verify.after_verify_page
      */
     public function __invoke(Request $request, Response $response, array $routeArgs): ResponseInterface
     {

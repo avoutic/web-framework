@@ -4,12 +4,27 @@ namespace WebFramework\SanityCheck;
 
 use WebFramework\Core\RuntimeEnvironment;
 
+/**
+ * Class RequiredAuth.
+ *
+ * Performs sanity checks related to required authentication files.
+ */
 class RequiredAuth extends Base
 {
+    /**
+     * RequiredAuth constructor.
+     *
+     * @param RuntimeEnvironment $runtimeEnvironment The runtime environment service
+     */
     public function __construct(
         private RuntimeEnvironment $runtimeEnvironment,
     ) {}
 
+    /**
+     * Perform checks for required authentication files.
+     *
+     * @return bool True if all checks pass, false otherwise
+     */
     public function performChecks(): bool
     {
         // Check if all required auth files are present

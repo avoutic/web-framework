@@ -5,13 +5,28 @@ namespace WebFramework\Validation;
 use Psr\Http\Message\UploadedFileInterface;
 use WebFramework\Exception\ValidationException;
 
+/**
+ * Class UploadValidationService.
+ *
+ * This service is responsible for validating uploaded files.
+ */
 class UploadValidationService
 {
-    public function __construct(
-    ) {}
+    /**
+     * UploadValidationService constructor.
+     */
+    public function __construct() {}
 
     /**
-     * @param ?array<string> $whitelistMimeTypes
+     * Check the validity of an uploaded file.
+     *
+     * @param UploadedFileInterface $uploadedFile       The uploaded file to check
+     * @param null|int              $maxSize            The maximum allowed file size in bytes (optional)
+     * @param null|array<string>    $whitelistMimeTypes The allowed MIME types (optional)
+     *
+     * @return string|true Returns true if the file is valid, or an error message string if not
+     *
+     * @throws \RuntimeException If there's an error during the upload process
      */
     public function check(UploadedFileInterface $uploadedFile, ?int $maxSize = null, ?array $whitelistMimeTypes = null): string|true
     {
@@ -68,7 +83,16 @@ class UploadValidationService
     }
 
     /**
-     * @param ?array<string> $whitelistMimeTypes
+     * Validate an uploaded file and throw an exception if it's invalid.
+     *
+     * @param UploadedFileInterface $uploadedFile       The uploaded file to validate
+     * @param null|int              $maxSize            The maximum allowed file size in bytes (optional)
+     * @param null|array<string>    $whitelistMimeTypes The allowed MIME types (optional)
+     *
+     * @return string The MIME type of the validated file
+     *
+     * @throws ValidationException If the file is invalid
+     * @throws \RuntimeException   If there's an error during the upload process
      */
     public function validate(UploadedFileInterface $uploadedFile, ?int $maxSize = null, ?array $whitelistMimeTypes = null): string
     {

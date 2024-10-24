@@ -10,8 +10,20 @@ use WebFramework\Core\ResponseEmitter;
 use WebFramework\Exception\CodeVerificationException;
 use WebFramework\Security\ResetPasswordService;
 
+/**
+ * Class ResetPassword.
+ *
+ * This action handles the password reset process.
+ */
 class ResetPassword
 {
+    /**
+     * ResetPassword constructor.
+     *
+     * @param ConfigService        $configService        The configuration service
+     * @param ResponseEmitter      $responseEmitter      The response emitter
+     * @param ResetPasswordService $resetPasswordService The reset password service
+     */
     public function __construct(
         protected ConfigService $configService,
         protected ResponseEmitter $responseEmitter,
@@ -19,7 +31,18 @@ class ResetPassword
     ) {}
 
     /**
-     * @param array<string, string> $routeArgs
+     * Handle the password reset request.
+     *
+     * @param Request               $request   The current request
+     * @param Response              $response  The response object
+     * @param array<string, string> $routeArgs Route arguments
+     *
+     * @return ResponseInterface The response
+     *
+     * @throws CodeVerificationException If the verification code is invalid or expired
+     *
+     * @uses config actions.login.location
+     * @uses config actions.forgot_password.location
      */
     public function __invoke(Request $request, Response $response, array $routeArgs): ResponseInterface
     {

@@ -4,7 +4,14 @@ use WebFramework\Core\ContainerWrapper;
 use WebFramework\Translation\TranslationService;
 
 /**
- * @param array<string, string> $params
+ * Translate a specific tag within a category.
+ *
+ * @param string                $category        The translation category
+ * @param string                $tag             The translation tag
+ * @param array<string, string> $params          Parameters to replace in the translation
+ * @param bool                  $requirePresence Whether to require the translation to be present
+ *
+ * @return string The translated string with parameters replaced
  */
 function __(string $category, string $tag, array $params = [], bool $requirePresence = false): string
 {
@@ -16,7 +23,11 @@ function __(string $category, string $tag, array $params = [], bool $requirePres
 }
 
 /**
- * @return array<string, string>
+ * Get all translations for a specific category.
+ *
+ * @param string $category The translation category
+ *
+ * @return array<string, string> The category translations
  */
 function __C(string $category): array
 {
@@ -27,6 +38,13 @@ function __C(string $category): array
     return $translationService->getCategory($category);
 }
 
+/**
+ * Get a filter string containing all keys of a category.
+ *
+ * @param string $category The translation category
+ *
+ * @return string A pipe-separated string of category keys
+ */
 function __F(string $category): string
 {
     $container = ContainerWrapper::get();

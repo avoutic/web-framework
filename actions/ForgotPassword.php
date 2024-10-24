@@ -17,8 +17,25 @@ use WebFramework\Validation\EmailValidator;
 use WebFramework\Validation\InputValidationService;
 use WebFramework\Validation\UsernameValidator;
 
+/**
+ * Class ForgotPassword.
+ *
+ * This action handles the process of initiating a password reset.
+ */
 class ForgotPassword
 {
+    /**
+     * ForgotPassword constructor.
+     *
+     * @param ConfigService          $configService          The configuration service
+     * @param InputValidationService $inputValidationService The input validation service
+     * @param MessageService         $messageService         The message service
+     * @param RenderService          $renderer               The render service
+     * @param ResponseEmitter        $responseEmitter        The response emitter
+     * @param ResetPasswordService   $resetPasswordService   The reset password service
+     * @param UserRepository         $userRepository         The user repository
+     * @param ValidatorService       $validatorService       The validator service
+     */
     public function __construct(
         protected ConfigService $configService,
         protected InputValidationService $inputValidationService,
@@ -30,13 +47,29 @@ class ForgotPassword
         protected ValidatorService $validatorService,
     ) {}
 
+    /**
+     * Get the template name for rendering.
+     *
+     * @return string The template name
+     */
     protected function getTemplateName(): string
     {
         return 'ForgotPassword.latte';
     }
 
     /**
-     * @param array<string, string> $routeArgs
+     * Handle the forgot password request.
+     *
+     * @param Request               $request   The current request
+     * @param Response              $response  The response object
+     * @param array<string, string> $routeArgs Route arguments
+     *
+     * @return ResponseInterface The response
+     *
+     * @throws ValidationException If the input validation fails
+     *
+     * @uses config authenticator.unique_identifier
+     * @uses config actions.login.location
      */
     public function __invoke(Request $request, Response $response, array $routeArgs): ResponseInterface
     {

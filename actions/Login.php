@@ -25,8 +25,27 @@ use WebFramework\Validation\InputValidationService;
 use WebFramework\Validation\PasswordValidator;
 use WebFramework\Validation\UsernameValidator;
 
+/**
+ * Class Login.
+ *
+ * This action handles the user login process.
+ */
 class Login
 {
+    /**
+     * Login constructor.
+     *
+     * @param Container               $container               The dependency injection container
+     * @param AuthenticationService   $authenticationService   The authentication service
+     * @param CaptchaService          $captchaService          The captcha service
+     * @param ConfigService           $configService           The configuration service
+     * @param InputValidationService  $inputValidationService  The input validation service
+     * @param LoginService            $loginService            The login service
+     * @param MessageService          $messageService          The message service
+     * @param RenderService           $renderer                The render service
+     * @param ResponseEmitter         $responseEmitter         The response emitter
+     * @param UserVerificationService $userVerificationService The user verification service
+     */
     public function __construct(
         protected Container $container,
         protected AuthenticationService $authenticationService,
@@ -42,20 +61,52 @@ class Login
         $this->init();
     }
 
+    /**
+     * Initialize the action.
+     */
     public function init(): void {}
 
+    /**
+     * Perform custom value checks.
+     *
+     * @param User $user The user to check
+     *
+     * @return bool True if the checks pass, false otherwise
+     */
     protected function customValueCheck(User $user): bool
     {
         return true;
     }
 
+    /**
+     * Get the template name for rendering.
+     *
+     * @return string The template name
+     */
     protected function getTemplateName(): string
     {
         return 'Login.latte';
     }
 
     /**
-     * @param array<string, string> $routeArgs
+     * Handle the login request.
+     *
+     * @param Request               $request   The current request
+     * @param Response              $response  The response object
+     * @param array<string, string> $routeArgs Route arguments
+     *
+     * @return ResponseInterface The response
+     *
+     * @throws ValidationException               If the input validation fails
+     * @throws CaptchaRequiredException          If a captcha is required but not provided
+     * @throws InvalidCaptchaException           If the provided captcha is invalid
+     * @throws InvalidPasswordException          If the provided password is incorrect
+     * @throws UserVerificationRequiredException If the user needs to verify their account
+     *
+     * @uses config authenticator.unique_identifier
+     * @uses config actions.login.default_return_page
+     * @uses config security.recaptcha.site_key
+     * @uses config actions.send_verify.after_verify_page
      */
     public function __invoke(Request $request, Response $response, array $routeArgs): ResponseInterface
     {
@@ -146,6 +197,15 @@ class Login
         return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
     }
 
+    /**
+     * Get the return page after successful login.
+     *
+     * @param Request $request The current request
+     *
+     * @return string The return page URL
+     *
+     * @uses config actions.login.default_return_page
+     */
     protected function getReturnPage(Request $request): string
     {
         $returnPage = $request->getParam('return_page', '');
@@ -165,7 +225,11 @@ class Login
     }
 
     /**
-     * @return array<mixed>
+     * Get the return query parameters.
+     *
+     * @param Request $request The current request
+     *
+     * @return array<mixed> The return query parameters
      */
     protected function getReturnQuery(Request $request): array
     {
@@ -176,6 +240,15 @@ class Login
         return $returnQuery;
     }
 
+    /**
+     * Build the success redirect response.
+     *
+     * @param Request $request     The current request
+     * @param string  $messageType The type of message to display
+     * @param string  $message     The message to display
+     *
+     * @return ResponseInterface The redirect response
+     */
     protected function successRedirect(Request $request, string $messageType, string $message): ResponseInterface
     {
         return $this->responseEmitter->buildQueryRedirect(

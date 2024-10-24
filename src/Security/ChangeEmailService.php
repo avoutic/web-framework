@@ -11,8 +11,24 @@ use WebFramework\Exception\DuplicateEmailException;
 use WebFramework\Exception\WrongAccountException;
 use WebFramework\Repository\UserRepository;
 
+/**
+ * Class ChangeEmailService.
+ *
+ * Handles the process of changing a user's email address.
+ */
 class ChangeEmailService
 {
+    /**
+     * ChangeEmailService constructor.
+     *
+     * @param AuthenticationService   $authenticationService   The authentication service
+     * @param ConfigService           $configService           The configuration service
+     * @param SecurityIteratorService $securityIteratorService The security iterator service
+     * @param UrlBuilder              $urlBuilder              The URL builder service
+     * @param UserCodeService         $userCodeService         The user code service
+     * @param UserMailer              $userMailer              The user mailer service
+     * @param UserRepository          $userRepository          The user repository
+     */
     public function __construct(
         private AuthenticationService $authenticationService,
         private ConfigService $configService,
@@ -23,6 +39,15 @@ class ChangeEmailService
         private UserRepository $userRepository,
     ) {}
 
+    /**
+     * Change the email address for a user.
+     *
+     * @param User   $user          The user whose email is being changed
+     * @param string $email         The new email address
+     * @param bool   $requireUnique Whether to require the new email to be unique
+     *
+     * @throws DuplicateEmailException If the email already exists and $requireUnique is true
+     */
     public function changeEmail(User $user, string $email, bool $requireUnique = true): void
     {
         if ($requireUnique)
@@ -47,6 +72,15 @@ class ChangeEmailService
         $this->userRepository->save($user);
     }
 
+    /**
+     * Send a verification email for changing the email address.
+     *
+     * @param User   $user          The user requesting the email change
+     * @param string $email         The new email address
+     * @param bool   $requireUnique Whether to require the new email to be unique
+     *
+     * @throws DuplicateEmailException If the email already exists and $requireUnique is true
+     */
     public function sendChangeEmailVerify(User $user, string $email, bool $requireUnique = true): void
     {
         if ($requireUnique)
@@ -80,6 +114,15 @@ class ChangeEmailService
         );
     }
 
+    /**
+     * Handle the verification of an email change request.
+     *
+     * @param User   $user The user verifying the email change
+     * @param string $code The verification code
+     *
+     * @throws CodeVerificationException If the verification code is invalid
+     * @throws WrongAccountException     If the code doesn't match the current user
+     */
     public function handleChangeEmailVerify(User $user, string $code): void
     {
         ['user_id' => $codeUserId, 'params' => $verifyParams] = $this->userCodeService->verify(
