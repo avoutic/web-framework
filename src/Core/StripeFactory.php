@@ -2,25 +2,49 @@
 
 namespace WebFramework\Core;
 
+use Stripe\Customer;
 use Stripe\Exception\SignatureVerificationException;
+use Stripe\Invoice;
+use Stripe\Product;
 use Stripe\StripeClient;
+use Stripe\Subscription;
+use Stripe\Webhook;
 
+/**
+ * Class StripeFactory.
+ *
+ * Provides methods for interacting with the Stripe API.
+ */
 class StripeFactory
 {
+    /**
+     * StripeFactory constructor.
+     *
+     * @param RuntimeEnvironment $runtimeEnvironment The runtime environment service
+     * @param StripeClient       $stripe             The Stripe client
+     * @param string             $endpointSecret     The Stripe webhook endpoint secret
+     */
     public function __construct(
         private RuntimeEnvironment $runtimeEnvironment,
         private StripeClient $stripe,
         private string $endpointSecret,
-    ) {
-    }
+    ) {}
 
+    /**
+     * Verify a Stripe webhook request.
+     *
+     * @param string $payload   The raw payload from the webhook
+     * @param string $sigHeader The Stripe signature header
+     *
+     * @return bool True if the request is verified, false otherwise
+     */
     public function verifyRequest(string $payload, string $sigHeader): bool
     {
         try
         {
             if ($this->runtimeEnvironment->isProduction())
             {
-                $event = \Stripe\Webhook::constructEvent(
+                $event = Webhook::constructEvent(
                     $payload,
                     $sigHeader,
                     $this->endpointSecret,
@@ -29,8 +53,7 @@ class StripeFactory
             else
             {
                 // 10 year tolerance for testing
-                //
-                $event = \Stripe\Webhook::constructEvent(
+                $event = Webhook::constructEvent(
                     $payload,
                     $sigHeader,
                     $this->endpointSecret,
@@ -50,26 +73,30 @@ class StripeFactory
         return true;
     }
 
-    // Customer object
-    //
     /**
-     * @param array<mixed> $data
+     * Create a new Stripe customer.
      *
-     * @return array<mixed>
+     * @param array<mixed> $data Customer data
+     *
+     * @return array<mixed> The created customer data
      */
     public function createCustomer(array $data): array
     {
-        $customer = \Stripe\Customer::create($data);
+        $customer = Customer::create($data);
 
         return $customer->toArray();
     }
 
     /**
-     * @return array<mixed>
+     * Retrieve a Stripe customer by ID.
+     *
+     * @param string $customerId The Stripe customer ID
+     *
+     * @return array<mixed> The customer data
      */
     public function getCustomerData(string $customerId): array
     {
-        $customer = \Stripe\Customer::retrieve(
+        $customer = Customer::retrieve(
             [
                 'id' => $customerId,
             ]
@@ -78,14 +105,16 @@ class StripeFactory
         return $customer->toArray();
     }
 
-    // Invoice object
-    //
     /**
-     * @return array<mixed>
+     * Retrieve invoice data for a given invoice ID.
+     *
+     * @param string $invoiceId The Stripe invoice ID
+     *
+     * @return array<mixed> The invoice data
      */
     public function getInvoiceData(string $invoiceId): array
     {
-        $invoice = \Stripe\Invoice::retrieve(
+        $invoice = Invoice::retrieve(
             [
                 'id' => $invoiceId,
             ]
@@ -94,12 +123,12 @@ class StripeFactory
         return $invoice->toArray();
     }
 
-    // Price object
-    //
     /**
-     * @param array<mixed> $data
+     * Create a new Stripe price.
      *
-     * @return array<mixed>
+     * @param array<mixed> $data Price data
+     *
+     * @return array<mixed> The created price data
      */
     public function createPrice(array $data): array
     {
@@ -108,12 +137,12 @@ class StripeFactory
         return $price->toArray();
     }
 
-    // Product object
-    //
     /**
-     * @param array<mixed> $data
+     * Create a new Stripe product.
      *
-     * @return array<mixed>
+     * @param array<mixed> $data Product data
+     *
+     * @return array<mixed> The created product data
      */
     public function createProduct(array $data): array
     {
@@ -123,24 +152,31 @@ class StripeFactory
     }
 
     /**
-     * @param array<mixed> $filter
+     * Retrieve Stripe products.
      *
-     * @return array<mixed>
+     * @param array<mixed> $filter Filter criteria
+     *
+     * @return array<mixed> The retrieved products
      */
     public function getProductsData(array $filter = []): array
     {
-        $products = \Stripe\Product::all();
+        $products = Product::all();
 
         $data = $products->toArray();
 
         return $data['data'];
     }
 
-    // Subscription object
-    //
+    /**
+     * Cancel a Stripe subscription.
+     *
+     * @param string $subscriptionId The Stripe subscription ID
+     *
+     * @return bool True if the subscription was successfully canceled
+     */
     public function cancelSubscription(string $subscriptionId): bool
     {
-        $subscription = \Stripe\Subscription::retrieve(
+        $subscription = Subscription::retrieve(
             [
                 'id' => $subscriptionId,
             ]
@@ -152,13 +188,16 @@ class StripeFactory
     }
 
     /**
-     * @param array<string> $expand
+     * Retrieve a Stripe subscription.
      *
-     * @return array<mixed>
+     * @param string        $subscriptionId The Stripe subscription ID
+     * @param array<string> $expand         Additional fields to expand
+     *
+     * @return array<mixed> The subscription data
      */
     public function getSubscriptionData(string $subscriptionId, array $expand = []): array
     {
-        $subscription = \Stripe\Subscription::retrieve(
+        $subscription = Subscription::retrieve(
             [
                 'id' => $subscriptionId,
                 'expand' => $expand,
@@ -168,10 +207,12 @@ class StripeFactory
         return $subscription->toArray();
     }
 
-    // Webhook related
-    //
     /**
-     * @return array<string>
+     * Get the enabled webhook events.
+     *
+     * @return array<string> The enabled webhook events
+     *
+     * @throws \RuntimeException If there isn't exactly one webhook configured
      */
     public function getWebhookEvents(): array
     {

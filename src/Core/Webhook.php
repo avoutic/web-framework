@@ -3,25 +3,45 @@
 namespace WebFramework\Core;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\Exception\RequestException;
 use Psr\Http\Message\ResponseInterface as Response;
 
+/**
+ * Class Webhook.
+ *
+ * Handles sending webhook notifications to external services.
+ */
 class Webhook
 {
+    /**
+     * Webhook constructor.
+     *
+     * @param Client $client The HTTP client for making requests
+     * @param string $url    The URL to send webhook notifications to
+     */
     public function __construct(
         private Client $client,
         private string $url,
-    ) {
-    }
+    ) {}
 
     /**
-     * @param array<mixed> $data
+     * Trigger a webhook notification.
+     *
+     * @param array<mixed> $data The data to send in the webhook payload
+     *
+     * @return Response The response from the webhook endpoint
+     *
+     * @throws GuzzleException   If there's an error sending the request
+     * @throws \RuntimeException If the webhook data cannot be encoded
      */
     public function trigger(array $data): Response
     {
         $jsonEncodedData = json_encode($data);
+
         if ($jsonEncodedData === false)
         {
-            throw new \RuntimeException('Failed to encode data');
+            throw new \RuntimeException('Failed to encode webhook data');
         }
 
         try
@@ -33,7 +53,7 @@ class Webhook
                 'body' => $jsonEncodedData,
             ]);
         }
-        catch (\GuzzleHttp\Exception\RequestException $e)
+        catch (RequestException $e)
         {
             throw $e;
         }

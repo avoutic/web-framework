@@ -5,21 +5,32 @@ namespace WebFramework\Core;
 use Psr\Container\ContainerInterface as Container;
 
 /**
+ * Abstract Class RepositoryCore.
+ *
+ * Provides a base implementation for repository classes in the WebFramework.
+ *
  * @template T of EntityInterface
  */
 abstract class RepositoryCore
 {
-    /** @var array<string> */
+    /** @var array<string> Base fields of the entity */
     private array $baseFields;
 
-    /** @var array<string> */
+    /** @var array<string> Additional ID fields of the entity */
     private array $additionalIdFields;
 
-    /** @var class-string<T> */
+    /** @var class-string<T> The entity class associated with this repository */
     protected static string $entityClass;
 
+    /** @var string The table name associated with this repository */
     private string $tableName;
 
+    /**
+     * RepositoryCore constructor.
+     *
+     * @param Container $container The dependency injection container
+     * @param Database  $database  The database interface
+     */
     public function __construct(
         protected Container $container,
         protected Database $database,
@@ -51,9 +62,14 @@ abstract class RepositoryCore
     }
 
     /**
-     * @param T $entity
+     * Get the entity fields as an array.
      *
-     * @return array<string>
+     * @param T    $entity    The entity to get fields from
+     * @param bool $includeId Whether to include the ID field
+     *
+     * @return array<string> The entity fields
+     *
+     * @throws \InvalidArgumentException If the provided entity is not of the correct type
      */
     public function getEntityFields(EntityInterface $entity, bool $includeId = true): array
     {
@@ -96,7 +112,13 @@ abstract class RepositoryCore
     }
 
     /**
-     * @return ?array<string>
+     * Get the fields of an entity from the database.
+     *
+     * @param int $id The ID of the entity
+     *
+     * @return null|array<string> The entity fields or null if not found
+     *
+     * @throws \RuntimeException If multiple entities are found for the given ID
      */
     public function getFieldsFromDb(int $id): ?array
     {
@@ -136,9 +158,11 @@ SQL;
     }
 
     /**
-     * @param T $entity
+     * Get the changed fields of an entity.
      *
-     * @return array<string, mixed>
+     * @param T $entity The entity to check for changes
+     *
+     * @return array<string, mixed> The changed fields
      */
     public function getChangedFields(EntityInterface $entity): array
     {
@@ -149,7 +173,11 @@ SQL;
     }
 
     /**
-     * @param T $entity
+     * Save an entity to the database.
+     *
+     * @param T $entity The entity to save
+     *
+     * @throws \RuntimeException If there's an error during the save operation
      */
     public function save(EntityInterface $entity): void
     {
@@ -200,7 +228,9 @@ SQL;
     }
 
     /**
-     * @param T $entity
+     * Delete an entity from the database.
+     *
+     * @param T $entity The entity to delete
      */
     public function delete(EntityInterface $entity): void
     {
@@ -215,9 +245,13 @@ SQL;
     }
 
     /**
-     * @param array<null|bool|float|int|string> $data
+     * Create a new entity in the database.
      *
-     * @return T
+     * @param array<null|bool|float|int|string> $data The data to create the entity with
+     *
+     * @return T The created entity
+     *
+     * @throws \RuntimeException If there's an error during the creation
      */
     public function create(array $data): EntityInterface
     {
@@ -258,7 +292,7 @@ SQL;
     }
 
     /**
-     * @param array<null|bool|float|int|string|array{string, bool|float|int|string}> $filter
+     * @param array<null|array{string, bool|float|int|string}|bool|float|int|string> $filter
      */
     public function countObjects(array $filter = []): int
     {
@@ -335,7 +369,7 @@ SQL;
     // Helper retrieval functions
     //
     /**
-     * @param array<null|bool|float|int|string|array{string, bool|float|int|string}> $filter
+     * @param array<null|array{string, bool|float|int|string}|bool|float|int|string> $filter
      *
      * @return ?T
      */
@@ -385,7 +419,7 @@ SQL;
     }
 
     /**
-     * @param array<null|bool|float|int|string|array{string, bool|float|int|string}> $filter
+     * @param array<null|array{string, bool|float|int|string}|bool|float|int|string> $filter
      *
      * @return EntityCollection<T>
      */
@@ -516,7 +550,7 @@ SQL;
     }
 
     /**
-     * @param array<null|bool|float|int|string|array{string, bool|float|int|string}> $filter
+     * @param array<null|array{string, bool|float|int|string}|bool|float|int|string> $filter
      *
      * @return array{query: string, params: array<bool|float|int|string>}
      */

@@ -2,6 +2,11 @@
 
 namespace WebFramework\Core;
 
+/**
+ * Class UploadHandler.
+ *
+ * Handles file uploads and performs various checks and operations on uploaded files.
+ */
 class UploadHandler
 {
     private string $varName;
@@ -9,15 +14,25 @@ class UploadHandler
     private string $origFilename = '';
     private string $mimeType = '';
 
+    /**
+     * UploadHandler constructor.
+     *
+     * @param string $varName The name of the file input field
+     */
     public function __construct(string $varName = 'file')
     {
         $this->varName = $varName;
     }
 
     /**
-     * @param array<string>|true $whitelistMimeTypes
+     * Check the uploaded file against various criteria.
+     *
+     * @param int                $maxSize            The maximum allowed file size in bytes
+     * @param array<string>|true $whitelistMimeTypes Array of allowed MIME types or true to allow all
+     *
+     * @return string|true True if the file passes all checks, or an error string
      */
-    public function checkUpload(int $maxSize, true|array $whitelistMimeTypes = true): string|true
+    public function checkUpload(int $maxSize, array|true $whitelistMimeTypes = true): string|true
     {
         $varName = $this->varName;
 
@@ -61,6 +76,11 @@ class UploadHandler
         return true;
     }
 
+    /**
+     * Get the file extension based on the MIME type.
+     *
+     * @return false|string The file extension or false if not recognized
+     */
     public function getExtension(): false|string
     {
         $ext = array_search($this->mimeType, [
@@ -77,21 +97,43 @@ class UploadHandler
         return $ext;
     }
 
+    /**
+     * Get the MIME type of the uploaded file.
+     *
+     * @return string The MIME type
+     */
     public function getMimeType(): string
     {
         return $this->mimeType;
     }
 
+    /**
+     * Get the original filename of the uploaded file.
+     *
+     * @return string The original filename
+     */
     public function getOrigFilename(): string
     {
         return $this->origFilename;
     }
 
+    /**
+     * Get the temporary filename of the uploaded file.
+     *
+     * @return string The temporary filename
+     */
     public function getTmpFilename(): string
     {
         return $this->tmpFilename;
     }
 
+    /**
+     * Move the uploaded file to a new location.
+     *
+     * @param string $newLocation The new location for the file
+     *
+     * @return string|true True if the move was successful, or 'save_failed' on failure
+     */
     public function move(string $newLocation): string|true
     {
         $result = move_uploaded_file($this->tmpFilename, $newLocation);

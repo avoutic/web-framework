@@ -2,16 +2,31 @@
 
 namespace WebFramework\Core;
 
+/**
+ * Class ConfigService.
+ *
+ * Provides access to configuration values for the WebFramework.
+ */
 class ConfigService
 {
     /**
-     * @param array<string, mixed> $config
+     * ConfigService constructor.
+     *
+     * @param array<string, mixed> $config The configuration array
      */
     public function __construct(
         private array $config,
-    ) {
-    }
+    ) {}
 
+    /**
+     * Get a configuration value by its location.
+     *
+     * @param string $location The dot-notation location of the configuration value
+     *
+     * @return mixed The configuration value
+     *
+     * @throws \InvalidArgumentException If the configuration value is not found
+     */
     public function get(string $location = ''): mixed
     {
         if (!strlen($location))

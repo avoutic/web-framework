@@ -5,18 +5,30 @@ namespace WebFramework\Core;
 use WebFramework\Security\ProtectService;
 use WebFramework\Translation\TranslationService;
 
+/**
+ * Class MessageService.
+ *
+ * Manages messages for the application, including translation and URL encoding.
+ */
 class MessageService
 {
     /** @var array<array{mtype: string, message: string, extra_message: string}> */
     private array $messages = [];
 
+    /**
+     * MessageService constructor.
+     *
+     * @param ProtectService     $protectService     Service for protecting sensitive data
+     * @param TranslationService $translationService Service for handling translations
+     */
     public function __construct(
         private ProtectService $protectService,
         private TranslationService $translationService,
-    ) {
-    }
+    ) {}
 
     /**
+     * Get all stored messages.
+     *
      * @return array<array{mtype: string, message: string, extra_message: string}>
      */
     public function getMessages(): array
@@ -25,12 +37,16 @@ class MessageService
     }
 
     /**
-     * @param array<mixed> $params
+     * Add a new message.
+     *
+     * @param string       $type         The message type
+     * @param string       $message      The message content or translation key
+     * @param string       $extraMessage Additional message content or translation key
+     * @param array<mixed> $params       Parameters for translation
      */
     public function add(string $type, string $message, string $extraMessage = '', array $params = []): void
     {
         // Check if it is a translation key
-        //
         if (!str_contains($message, ' ') && str_contains($message, '.'))
         {
             $parts = explode('.', $message);
@@ -67,6 +83,11 @@ class MessageService
         ];
     }
 
+    /**
+     * Add a message from a URL-encoded string.
+     *
+     * @param string $data The URL-encoded message data
+     */
     public function addFromUrl(string $data): void
     {
         $msg = $this->protectService->unpackArray($data);
@@ -83,6 +104,16 @@ class MessageService
         );
     }
 
+    /**
+     * Get a URL-encoded string representation of a message.
+     *
+     * @param string $mtype        The message type
+     * @param string $message      The message content
+     * @param string $extraMessage Additional message content
+     * @param bool   $includeKey   Whether to include the 'msg=' key in the output
+     *
+     * @return string The URL-encoded message string
+     */
     public function getForUrl(string $mtype, string $message, string $extraMessage = '', bool $includeKey = true): string
     {
         $msg = ['mtype' => $mtype, 'message' => $message, 'extra_message' => $extraMessage];
@@ -91,7 +122,9 @@ class MessageService
     }
 
     /**
-     * @param array<mixed> $errors
+     * Add multiple error messages.
+     *
+     * @param array<mixed> $errors An array of error messages
      */
     public function addErrors(array $errors): void
     {

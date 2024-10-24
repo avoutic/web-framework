@@ -2,14 +2,29 @@
 
 namespace WebFramework\Core;
 
+/**
+ * Class RecaptchaFactory.
+ *
+ * Factory class for creating Recaptcha instances.
+ */
 class RecaptchaFactory
 {
+    /**
+     * RecaptchaFactory constructor.
+     *
+     * @param GuzzleClientFactory $guzzleClientFactory Factory for creating Guzzle HTTP clients
+     * @param string              $secretKey           The reCAPTCHA secret key
+     */
     public function __construct(
         private GuzzleClientFactory $guzzleClientFactory,
         private string $secretKey,
-    ) {
-    }
+    ) {}
 
+    /**
+     * Get a new Recaptcha instance.
+     *
+     * @return Recaptcha A new Recaptcha instance
+     */
     public function getRecaptcha(): Recaptcha
     {
         return new Recaptcha(

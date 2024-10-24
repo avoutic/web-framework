@@ -12,11 +12,18 @@ class Image
     private int $type;
     public bool $isImage = false;
 
+    /**
+     * Image constructor.
+     *
+     * @param string $location The file path of the image
+     */
     public function __construct(
         private string $location,
-    ) {
-    }
+    ) {}
 
+    /**
+     * Analyze the image file to determine its properties.
+     */
     public function analyze(): void
     {
         $size = getimagesize($this->location);
@@ -32,7 +39,16 @@ class Image
         $this->type = $size[2];
     }
 
-    private function createFrom(string $location): \GdImage|false
+    /**
+     * Create a GD image resource from the file.
+     *
+     * @param string $location The file path of the image
+     *
+     * @return false|\GdImage The GD image resource or false on failure
+     *
+     * @throws \InvalidArgumentException If the image type is unknown
+     */
+    private function createFrom(string $location): false|\GdImage
     {
         if ($this->type == IMAGETYPE_GIF)
         {
@@ -52,6 +68,16 @@ class Image
         throw new \InvalidArgumentException('Unknown image type');
     }
 
+    /**
+     * Output the GD image to a file.
+     *
+     * @param \GdImage $image    The GD image resource
+     * @param string   $location The output file path
+     *
+     * @return bool True on success, false on failure
+     *
+     * @throws \InvalidArgumentException If the image type is unknown
+     */
     private function imageOutput(\GdImage $image, string $location): bool
     {
         if ($this->type == IMAGETYPE_GIF)
@@ -72,33 +98,55 @@ class Image
         throw new \InvalidArgumentException('Unknown image type');
     }
 
+    /**
+     * Get the width of the image.
+     *
+     * @return int The image width
+     */
     public function getWidth(): int
     {
         return $this->width;
     }
 
+    /**
+     * Get the height of the image.
+     *
+     * @return int The image height
+     */
     public function getHeight(): int
     {
         return $this->height;
     }
 
     /**
-     * @return array{0: int, 1: int}
+     * Get the size of the image.
+     *
+     * @return array{0: int, 1: int} An array containing the width and height
      */
     public function getSize(): array
     {
         return [$this->width, $this->height];
     }
 
+    /**
+     * Get the type of the image.
+     *
+     * @return int The image type constant
+     */
     public function getType(): int
     {
         return $this->type;
     }
 
     /**
-     * Resizes an image file.
+     * Resize an image file.
      *
-     * @param array{0: int, 1: int} $size
+     * @param string                $newLocation The output file path
+     * @param array{0: int, 1: int} $size        The new size [width, height]
+     *
+     * @return bool True on success, false on failure
+     *
+     * @throws \RuntimeException If the output location is not writable
      */
     public function resize(string $newLocation, array $size = [100, 100]): bool
     {
@@ -121,7 +169,6 @@ class Image
         $this->resizeImage($image, $size);
 
         // Save
-        //
         if (!$this->imageOutput($image, $newLocation))
         {
             return false;
@@ -133,14 +180,16 @@ class Image
     }
 
     /**
-     * Resizes a GD image.
+     * Resize a GD image.
      *
-     * @param \GdImage             $image The GD image of the image to resize
-     * @param array{0: int, 1:int} $size  An 2D array with the new maximum width and height
+     * @param \GdImage             $image The GD image resource
+     * @param array{0: int, 1:int} $size  The new size [width, height]
      *
-     * @return bool
+     * @return bool True on success, false on failure
+     *
+     * @throws \InvalidArgumentException If the size is not correctly structured
      */
-    private function resizeImage(\GdImage &$image, array $size = [100, 100])
+    private function resizeImage(\GdImage &$image, array $size = [100, 100]): bool
     {
         if (count($size) !== 2 || $size[0] <= 0 || $size[1] <= 0)
         {
@@ -196,9 +245,14 @@ class Image
     /**
      * Rotate an image file.
      *
-     * @param string $newLocation     An absolute path where the resized image will be saved
+     * @param string $newLocation     The output file path
      * @param int    $degrees         How many degrees to rotate
-     * @param int    $backgroundColor RGB-color
+     * @param int    $backgroundColor RGB-color for the background
+     *
+     * @return bool True on success, false on failure
+     *
+     * @throws \RuntimeException         If the output location is not writable
+     * @throws \InvalidArgumentException If the rotation angle is invalid
      */
     public function rotate(string $newLocation, int $degrees, int $backgroundColor = 16777215): bool
     {
@@ -234,11 +288,15 @@ class Image
     }
 
     /**
-     * Rotate a GD image image.
+     * Rotate a GD image.
      *
-     * @param \GdImage $image           The GD image of the image to rotate
+     * @param \GdImage $image           The GD image resource
      * @param int      $degrees         How many degrees to rotate
-     * @param int      $backgroundColor Backgroundcolor as a raw int
+     * @param int      $backgroundColor Background color as a raw int
+     *
+     * @return bool True on success, false on failure
+     *
+     * @throws \InvalidArgumentException If the rotation angle is invalid
      */
     private function rotateImage(\GdImage &$image, int $degrees, int $backgroundColor = 16777215): bool
     {
@@ -259,8 +317,12 @@ class Image
      * Crop an image file.
      *
      * @param string                $newLocation Absolute filepath to the new location
-     * @param array{0: int, 1: int} $size        The new size
-     * @param array{0: int, 1: int} $offset      Offset
+     * @param array{0: int, 1: int} $size        The new size [width, height]
+     * @param array{0: int, 1: int} $offset      Offset [x, y]
+     *
+     * @return bool True on success, false on failure
+     *
+     * @throws \RuntimeException If the output location is not writable
      */
     public function crop(string $newLocation, array $size, array $offset = [0, 0]): bool
     {
@@ -290,11 +352,15 @@ class Image
     }
 
     /**
-     * Crop a GD image image.
+     * Crop a GD image.
      *
-     * @param \GdImage              $image  The GD image of the image to crop
-     * @param array{0: int, 1: int} $size   The new size
-     * @param array{0: int, 1: int} $offset Offset
+     * @param \GdImage              $image  The GD image resource
+     * @param array{0: int, 1: int} $size   The new size [width, height]
+     * @param array{0: int, 1: int} $offset Offset [x, y]
+     *
+     * @return bool True on success, false on failure
+     *
+     * @throws \InvalidArgumentException If the size or offset is not correctly structured
      */
     public static function cropImage(\GdImage &$image, array $size, array $offset = [0, 0]): bool
     {
@@ -323,9 +389,10 @@ class Image
 
     /**
      * Convert a GIF/JPEG/PNG image to the specified format.
-     * The converted imagefile will be saved in the same directory, with a different extension.
      *
      * @param string $newFile Absolute local path to new file
+     *
+     * @return bool True on success, false on failure
      */
     public function convert(string $newFile): bool
     {

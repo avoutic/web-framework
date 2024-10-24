@@ -4,32 +4,58 @@ namespace WebFramework\Core;
 
 use GuzzleHttp\Client;
 
+/**
+ * Class Recaptcha.
+ *
+ * Handles reCAPTCHA verification using Google's reCAPTCHA API.
+ */
 class Recaptcha
 {
     /**
-     * @var array<string>
+     * @var array<string> Array to store error codes returned by the reCAPTCHA API
      */
     private array $errorCodes = [];
 
+    /**
+     * Recaptcha constructor.
+     *
+     * @param Client $client    The HTTP client for making API requests
+     * @param string $secretKey The reCAPTCHA secret key
+     */
     public function __construct(
         private Client $client,
         private string $secretKey,
-    ) {
-    }
+    ) {}
 
+    /**
+     * Set the reCAPTCHA secret key.
+     *
+     * @param string $secretKey The new secret key
+     */
     public function setSecretKey(string $secretKey): void
     {
         $this->secretKey = $secretKey;
     }
 
     /**
-     * @return array<string>
+     * Get the error codes from the last verification attempt.
+     *
+     * @return array<string> Array of error codes
      */
     public function getErrorCodes(): array
     {
         return $this->errorCodes;
     }
 
+    /**
+     * Verify the reCAPTCHA response.
+     *
+     * @param string $recaptchaResponse The reCAPTCHA response string to verify
+     *
+     * @return bool True if verification succeeds, false otherwise
+     *
+     * @throws \RuntimeException If there's an error with the reCAPTCHA configuration
+     */
     public function verifyResponse(string $recaptchaResponse): bool
     {
         if (!strlen($recaptchaResponse))

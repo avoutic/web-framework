@@ -2,25 +2,53 @@
 
 namespace WebFramework\Core;
 
+use GuzzleHttp\Exception\ConnectException;
 use Postmark\Models\PostmarkException;
 use Postmark\PostmarkClient;
 
+/**
+ * Class PostmarkMailService.
+ *
+ * Implements the MailService interface using the Postmark email service.
+ */
 class PostmarkMailService implements MailService
 {
+    /**
+     * PostmarkMailService constructor.
+     *
+     * @param Instrumentation       $instrumentation    The instrumentation service for performance tracking
+     * @param PostmarkClientFactory $clientFactory      The factory for creating Postmark client instances
+     * @param RuntimeEnvironment    $runtimeEnvironment The runtime environment service
+     * @param string                $defaultSender      The default sender email address
+     */
     public function __construct(
         private Instrumentation $instrumentation,
         private PostmarkClientFactory $clientFactory,
         private RuntimeEnvironment $runtimeEnvironment,
         private string $defaultSender,
-    ) {
-    }
+    ) {}
 
+    /**
+     * Get the Postmark client instance.
+     */
     private function getClient(): PostmarkClient
     {
         return $this->clientFactory->getClient();
     }
 
-    public function sendRawMail(?string $from, string $to, string $subject, string $message): bool
+    /**
+     * Send a raw email.
+     *
+     * @param null|string $from    The sender's email address (null to use default)
+     * @param string      $to      The recipient's email address
+     * @param string      $subject The email subject
+     * @param string      $message The email body
+     *
+     * @return bool|string True if sent successfully, or an error message string
+     *
+     * @throws \RuntimeException If no recipient or sender email is specified
+     */
+    public function sendRawMail(?string $from, string $to, string $subject, string $message): bool|string
     {
         $from = $this->defaultSender;
 
@@ -46,7 +74,7 @@ class PostmarkMailService implements MailService
             );
             $this->instrumentation->finishSpan($span);
         }
-        catch (\GuzzleHttp\Exception\ConnectException $e)
+        catch (ConnectException $e)
         {
             throw new \RuntimeException('Postmark Connection failure', previous: $e);
         }
@@ -55,7 +83,16 @@ class PostmarkMailService implements MailService
     }
 
     /**
-     * @param array<mixed> $templateVariables
+     * Send an email using a template.
+     *
+     * @param string               $templateId        The ID of the email template to use
+     * @param null|string          $from              The sender's email address (null to use default)
+     * @param string               $to                The recipient's email address
+     * @param array<string, mixed> $templateVariables Variables to be used in the template
+     *
+     * @return bool|string True if sent successfully, or an error message string
+     *
+     * @throws \RuntimeException If no recipient or sender email is specified
      */
     public function sendTemplateMail(string $templateId, ?string $from, string $to, array $templateVariables): bool|string
     {

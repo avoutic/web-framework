@@ -11,16 +11,28 @@ CREATE TABLE IF NOT EXISTS config_values (
 );
 */
 
+/**
+ * Class StoredValues.
+ *
+ * Manages stored configuration values in the database.
+ */
 class StoredValues
 {
+    /**
+     * StoredValues constructor.
+     *
+     * @param Database $database The database interface
+     * @param string   $module   The module name for which values are stored
+     */
     public function __construct(
         private Database $database,
         private string $module,
-    ) {
-    }
+    ) {}
 
     /**
-     * @return array<string>
+     * Get all stored values for the current module.
+     *
+     * @return array<string> An associative array of stored values
      */
     public function getValues(): array
     {
@@ -40,6 +52,14 @@ class StoredValues
         return $info;
     }
 
+    /**
+     * Get a specific stored value.
+     *
+     * @param string $name    The name of the value to retrieve
+     * @param string $default The default value to return if not found
+     *
+     * @return string The stored value or the default value
+     */
     public function getValue(string $name, string $default = ''): string
     {
         $result = $this->database->query(
@@ -61,6 +81,12 @@ class StoredValues
         return $result->fields['value'];
     }
 
+    /**
+     * Set a stored value.
+     *
+     * @param string $name  The name of the value to set
+     * @param string $value The value to store
+     */
     public function setValue(string $name, string $value): void
     {
         $this->database->query(
@@ -70,6 +96,11 @@ class StoredValues
         );
     }
 
+    /**
+     * Delete a stored value.
+     *
+     * @param string $name The name of the value to delete
+     */
     public function deleteValue(string $name): void
     {
         $this->database->query(

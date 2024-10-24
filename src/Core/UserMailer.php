@@ -2,20 +2,33 @@
 
 namespace WebFramework\Core;
 
+/**
+ * Class UserMailer.
+ *
+ * Handles sending various types of emails to users.
+ */
 class UserMailer
 {
     /**
-     * @param array<string, string> $templateOverrides;
+     * UserMailer constructor.
+     *
+     * @param MailService           $mailService       The mail service for sending emails
+     * @param string                $senderEmail       The default sender email address
+     * @param array<string, string> $templateOverrides Template overrides for different email types
      */
     public function __construct(
         private MailService $mailService,
         private string $senderEmail,
         private array $templateOverrides,
-    ) {
-    }
+    ) {}
 
     /**
-     * @param array<mixed> $params
+     * Send an email verification link to a user.
+     *
+     * @param string       $to     The recipient's email address
+     * @param array<mixed> $params Parameters for the email template
+     *
+     * @return bool|string True if sent successfully, or an error message string
      */
     public function emailVerificationLink(string $to, array $params): bool|string
     {
@@ -32,7 +45,12 @@ class UserMailer
     }
 
     /**
-     * @param array<mixed> $params
+     * Send a change email verification link to a user.
+     *
+     * @param string       $to     The recipient's email address
+     * @param array<mixed> $params Parameters for the email template
+     *
+     * @return bool|string True if sent successfully, or an error message string
      */
     public function changeEmailVerificationLink(string $to, array $params): bool|string
     {
@@ -49,7 +67,12 @@ class UserMailer
     }
 
     /**
-     * @param array<mixed> $params
+     * Send a password reset email to a user.
+     *
+     * @param string       $to     The recipient's email address
+     * @param array<mixed> $params Parameters for the email template
+     *
+     * @return bool|string True if sent successfully, or an error message string
      */
     public function passwordReset(string $to, array $params): bool|string
     {
@@ -66,7 +89,12 @@ class UserMailer
     }
 
     /**
-     * @param array<mixed> $params
+     * Send a new password email to a user.
+     *
+     * @param string       $to     The recipient's email address
+     * @param array<mixed> $params Parameters for the email template
+     *
+     * @return bool|string True if sent successfully, or an error message string
      */
     public function newPassword(string $to, array $params): bool|string
     {

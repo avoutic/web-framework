@@ -21,16 +21,6 @@ parameters:
 			path: scripts/RouteConvertor.php
 
 		-
-			message: "#^Method WebFramework\\\\Core\\\\Browserless\\:\\:getPdfResult\\(\\) has parameter \\$outputStream with no type specified\\.$#"
-			count: 1
-			path: src/Core/Browserless.php
-
-		-
-			message: "#^Method WebFramework\\\\Core\\\\Browserless\\:\\:getPdfResult\\(\\) has parameter \\$url with no type specified\\.$#"
-			count: 1
-			path: src/Core/Browserless.php
-
-		-
 			message: "#^Parameter \\#1 \\$hour of function mktime expects int, int\\|false given\\.$#"
 			count: 2
 			path: src/Core/Helpers.php

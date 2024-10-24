@@ -4,10 +4,20 @@ namespace WebFramework\Core;
 
 use Psr\Http\Message\ServerRequestInterface as Request;
 
+/**
+ * Class ValidatorService.
+ *
+ * Provides validation and filtering services for request data.
+ */
 class ValidatorService
 {
     /**
-     * @param array<string, string> $filters
+     * Filter and validate request data based on provided filters.
+     *
+     * @param Request               $request The request object to filter
+     * @param array<string, string> $filters An array of filters to apply
+     *
+     * @return Request The filtered request object
      */
     public function filterRequest(Request $request, array $filters): Request
     {
@@ -27,10 +37,12 @@ class ValidatorService
     }
 
     /**
+     * Get filtered results based on provided parameters and filters.
+     *
      * @param array{query: array<string, mixed>, post: array<string, mixed>, json: array<string, mixed>} $params
      * @param array<string, string>                                                                      $filters
      *
-     * @return array{raw:array<string, mixed>, filtered:array<string, mixed>}
+     * @return array{raw: array<string, mixed>, filtered: array<string, mixed>}
      */
     public function getFilterResults(array $params, array $filters): array
     {
@@ -114,9 +126,11 @@ class ValidatorService
     }
 
     /**
+     * Get the filtered parameter from a request, based on a specific set of filters.
+     *
      * @param array<string, string> $filters
      *
-     * @return array<string, mixed>
+     * @return array<string, mixed> The filtered values
      */
     public function getFilteredParams(Request $request, array $filters): array
     {
@@ -128,7 +142,10 @@ class ValidatorService
     }
 
     /**
-     * @param array<string, string> $filters
+     * Get filtered parameters from a request.
+     *
+     * @param Request               $request The request object
+     * @param array<string, string> $filters An array of filters to apply
      *
      * @return array{raw:array<string, mixed>, filtered:array<string, mixed>}
      */
@@ -140,6 +157,10 @@ class ValidatorService
     }
 
     /**
+     * Extract parameters from a request object.
+     *
+     * @param Request $request The request object
+     *
      * @return array{query: array<string, mixed>, post: array<string, mixed>, json: array<string, mixed>}
      */
     private function extractParams(Request $request): array

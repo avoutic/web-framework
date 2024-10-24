@@ -2,21 +2,34 @@
 
 namespace WebFramework\Core;
 
+/**
+ * Class Helpers.
+ *
+ * Provides various helper methods for common operations.
+ */
 class Helpers
 {
     /**
-     * Valid email adress?
+     * Check if an email address is valid.
+     *
+     * @param string $string The email address to validate
+     *
+     * @return bool True if the email is valid, false otherwise
      */
     public static function validEmail(string $string): bool
     {
         // filter_var has the weird tendency to accept emails like yourname or test@test
         return
             filter_var($string, FILTER_VALIDATE_EMAIL) !== false
-            && preg_match('/^[(\\w)\\.!#$%&*+-=?^_~]+@[(\\w)\\.-]+\\.[a-z]{2,6}$/Dis', $string) > 0;
+            && preg_match('/^[(\w)\.!#$%&*+-=?^_~]+@[(\w)\.-]+\.[a-z]{2,6}$/Dis', $string) > 0;
     }
 
     /**
      * Replace any accents in the string with ASCII characters.
+     *
+     * @param string $str The string to process
+     *
+     * @return string The string with accents removed
      */
     public static function removeAccents(string $str): string
     {
@@ -70,11 +83,13 @@ class Helpers
     }
 
     /**
-     * Converts a title to human readable string which can be used in the URL.
+     * Converts a title to a human-readable string which can be used in a URL.
      *
-     * @return string
+     * @param string $str The title to convert
+     *
+     * @return null|string The URL-friendly string or null if conversion fails
      */
-    public static function title(string $str): string|null
+    public static function title(string $str): ?string
     {
         // Convert HTML entities to normal characters
         $str = html_entity_decode($str, ENT_QUOTES, 'UTF-8');
@@ -95,10 +110,17 @@ class Helpers
         $str = str_replace(['/', '.', ','], '-', $str);
 
         // Remove other non alphanumeric characters and convert spaces to dashes
-        return preg_replace('/\\s+/s', '-', trim(preg_replace('/\\W/s', ' ', $str)));
+        return preg_replace('/\s+/s', '-', trim(preg_replace('/\W/s', ' ', $str)));
     }
 
-    public static function mysqlDatetimeToTimestamp(string $timeStr): int|false
+    /**
+     * Convert a MySQL datetime string to a Unix timestamp.
+     *
+     * @param string $timeStr The MySQL datetime string
+     *
+     * @return false|int The Unix timestamp or false on failure
+     */
+    public static function mysqlDatetimeToTimestamp(string $timeStr): false|int
     {
         $ftime = date_parse_from_format('Y-m-d H:i:s', $timeStr);
 
@@ -112,7 +134,14 @@ class Helpers
         );
     }
 
-    public static function mysqlDateToTimestamp(string $timeStr): int|false
+    /**
+     * Convert a MySQL date string to a Unix timestamp.
+     *
+     * @param string $timeStr The MySQL date string
+     *
+     * @return false|int The Unix timestamp or false on failure
+     */
+    public static function mysqlDateToTimestamp(string $timeStr): false|int
     {
         $ftime = date_parse_from_format('Y-m-d', $timeStr);
 
@@ -126,6 +155,14 @@ class Helpers
         );
     }
 
+    /**
+     * Get a human-readable string representing the time elapsed since a given timestamp.
+     *
+     * @param int $now   The current timestamp
+     * @param int $since The timestamp to compare against
+     *
+     * @return string A human-readable string representing the elapsed time
+     */
     public static function timeElapsedString(int $now, int $since): string
     {
         $elapsed = $now - $since;

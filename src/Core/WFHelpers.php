@@ -2,8 +2,20 @@
 
 namespace WebFramework\Core;
 
+/**
+ * Class WFHelpers.
+ *
+ * Provides various helper functions for the WebFramework.
+ */
 class WFHelpers
 {
+    /**
+     * Get a string representation of an error type.
+     *
+     * @param int|string $type The error type constant or string
+     *
+     * @return string The string representation of the error type
+     */
     public static function getErrorTypeString(int|string $type): string
     {
         switch ($type)
@@ -52,9 +64,10 @@ class WFHelpers
 
             case E_USER_DEPRECATED: // 16384 //
                 return 'E_USER_DEPRECATED';
-        }
 
-        return (string) $type;
+            default:
+                return (string) $type;
+        }
     }
 
     public static function scrubState(mixed &$item): void

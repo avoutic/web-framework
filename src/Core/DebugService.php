@@ -6,18 +6,39 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Routing\RouteContext;
 use WebFramework\Security\AuthenticationService;
 
+/**
+ * Class DebugService.
+ *
+ * Provides debugging and error reporting functionality for the application.
+ */
 class DebugService
 {
+    /**
+     * DebugService constructor.
+     *
+     * @param AuthenticationService $authenticationService Service for handling authentication
+     * @param DatabaseProvider      $databaseProvider      Provider for database access
+     * @param ReportFunction        $reportFunction        Function for reporting errors
+     * @param RuntimeEnvironment    $runtimeEnvironment    Runtime environment information
+     */
     public function __construct(
         private AuthenticationService $authenticationService,
         private DatabaseProvider $databaseProvider,
         private ReportFunction $reportFunction,
         private RuntimeEnvironment $runtimeEnvironment,
-    ) {
-    }
+    ) {}
 
-    // Generate Cache hash
-    //
+    /**
+     * Generate a hash for caching error reports.
+     *
+     * @param string $serverName    The server name
+     * @param string $requestSource The source of the request
+     * @param string $file          The file where the error occurred
+     * @param int    $line          The line number where the error occurred
+     * @param string $message       The error message
+     *
+     * @return string The generated hash
+     */
     public function generateHash(string $serverName, string $requestSource, string $file, int $line, string $message): string
     {
         $key = "{$serverName}:{$requestSource}:{$file}:{$line}:{$message}";
@@ -26,7 +47,12 @@ class DebugService
     }
 
     /**
-     * @param array<mixed> $stack
+     * Report an error.
+     *
+     * @param string       $message   The error message
+     * @param array<mixed> $stack     The error stack trace
+     * @param null|Request $request   The request object, if available
+     * @param string       $errorType The type of error
      */
     public function reportError(string $message, array $stack = [], ?Request $request = null, string $errorType = 'report_error'): void
     {
@@ -36,7 +62,12 @@ class DebugService
     }
 
     /**
-     * @return array{title: string, low_info_message: string, message: string, hash: string}
+     * Get a report for a Throwable.
+     *
+     * @param \Throwable   $e       The Throwable object
+     * @param null|Request $request The request object, if available
+     *
+     * @return array{title: string, low_info_message: string, message: string, hash: string} The error report
      */
     public function getThrowableReport(\Throwable $e, ?Request $request = null): array
     {
@@ -51,9 +82,14 @@ class DebugService
     }
 
     /**
-     * @param array<mixed> $trace
+     * Get an error report from a stack trace.
      *
-     * @return array{title: string, low_info_message: string, message: string, hash: string}
+     * @param array<mixed> $trace     The stack trace
+     * @param null|Request $request   The request object, if available
+     * @param string       $errorType The type of error
+     * @param string       $message   The error message
+     *
+     * @return array{title: string, low_info_message: string, message: string, hash: string} The error report
      */
     public function getErrorReport(array $trace, ?Request $request, string $errorType, string $message): array
     {
@@ -67,9 +103,16 @@ class DebugService
     }
 
     /**
-     * @param array<mixed> $filteredStack
+     * Generate a detailed error report.
      *
-     * @return array{title: string, low_info_message: string, message: string, hash: string}
+     * @param string       $file          The file where the error occurred
+     * @param int          $line          The line number where the error occurred
+     * @param array<mixed> $filteredStack The filtered stack trace
+     * @param null|Request $request       The request object, if available
+     * @param string       $errorType     The type of error
+     * @param string       $message       The error message
+     *
+     * @return array{title: string, low_info_message: string, message: string, hash: string} The detailed error report
      */
     private function getReport(string $file, int $line, array $filteredStack, ?Request $request, string $errorType, string $message): array
     {
@@ -180,9 +223,13 @@ TXT;
     }
 
     /**
-     * @param array<array<mixed>> $trace
+     * Filter a stack trace.
      *
-     * @return array<array<mixed>>
+     * @param array<array<mixed>> $trace        The original stack trace
+     * @param bool                $skipInternal Whether to skip internal frames
+     * @param bool                $scrubState   Whether to scrub sensitive state information
+     *
+     * @return array<array<mixed>> The filtered stack trace
      */
     public function filterTrace(array $trace, bool $skipInternal = true, bool $scrubState = true): array
     {
@@ -219,7 +266,11 @@ TXT;
     }
 
     /**
-     * @param array<array<mixed>> $stack
+     * Condense a stack trace into a string representation.
+     *
+     * @param array<array<mixed>> $stack The stack trace to condense
+     *
+     * @return string The condensed stack trace
      */
     public function condenseStack(array $stack): string
     {
@@ -249,8 +300,13 @@ TXT;
         return $stackCondensed;
     }
 
-    // Retrieve database status
-    //
+    /**
+     * Get the last database error.
+     *
+     * @param null|Database $database The database object
+     *
+     * @return string The last database error or 'None' if no error
+     */
     public function getDatabaseError(?Database $database): string
     {
         if ($database === null)
@@ -268,8 +324,11 @@ TXT;
         return 'None';
     }
 
-    // Retrieve auth data
-    //
+    /**
+     * Get the current authentication status.
+     *
+     * @return string A string representation of the authentication status
+     */
     public function getAuthenticationStatus(): string
     {
         $authData = "Not authenticated\n";
@@ -289,8 +348,13 @@ TXT;
         return $authData;
     }
 
-    // Retrieve inputs
-    //
+    /**
+     * Get a report of the request inputs.
+     *
+     * @param Request $request The request object
+     *
+     * @return string A string representation of the request inputs
+     */
     public function getInputsReport(Request $request): string
     {
         $inputsFmt = '';
@@ -365,9 +429,11 @@ TXT;
     }
 
     /**
-     * @param array<array<mixed>> $headers
+     * Scrub sensitive information from request headers.
      *
-     * @return array<array<mixed>>
+     * @param array<array<mixed>> $headers The original headers
+     *
+     * @return array<array<mixed>> The scrubbed headers
      */
     public function scrubRequestHeaders(array $headers): array
     {

@@ -3,16 +3,30 @@
 namespace WebFramework\Core;
 
 use Sentry\ClientInterface;
+use Sentry\SentrySdk;
+use Sentry\Tracing\SpanContext;
 use Sentry\Tracing\Transaction;
+use Sentry\Tracing\TransactionContext;
 
+/**
+ * Class SentryInstrumentation.
+ *
+ * Implements the Instrumentation interface using Sentry for performance monitoring and tracing.
+ */
 class SentryInstrumentation implements Instrumentation
 {
+    /** @var null|Transaction The current transaction */
     private ?Transaction $currentTransaction = null;
 
+    /**
+     * SentryInstrumentation constructor.
+     *
+     * @param ClientInterface $client The Sentry client
+     */
     public function __construct(
         ClientInterface $client,
     ) {
-        \Sentry\SentrySdk::getCurrentHub()->bindClient($client);
+        SentrySdk::getCurrentHub()->bindClient($client);
     }
 
     public function getCurrentTransaction(): mixed
@@ -23,18 +37,15 @@ class SentryInstrumentation implements Instrumentation
     public function startTransaction(string $op, string $name): mixed
     {
         // Setup context for the full transaction
-        //
-        $transactionContext = new \Sentry\Tracing\TransactionContext();
+        $transactionContext = new TransactionContext();
         $transactionContext->setOp($op);
         $transactionContext->setName($name);
 
         // Start the transaction
-        //
         $this->currentTransaction = \Sentry\startTransaction($transactionContext);
 
-        // Set the current transaction as the current span so we can retrieve >
-        //
-        \Sentry\SentrySdk::getCurrentHub()->setSpan($this->currentTransaction);
+        // Set the current transaction as the current span so we can retrieve it later
+        SentrySdk::getCurrentHub()->setSpan($this->currentTransaction);
 
         return $this->currentTransaction;
     }
@@ -54,21 +65,19 @@ class SentryInstrumentation implements Instrumentation
         $parent = null;
         $span = null;
 
-        $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
+        $parent = SentrySdk::getCurrentHub()->getSpan();
         $span = null;
 
-        // Check if we have a parent span (this is the case if we started a tr>
-        //
+        // Check if we have a parent span (this is the case if we started a transaction)
         if ($parent !== null)
         {
-            $context = new \Sentry\Tracing\SpanContext();
+            $context = new SpanContext();
             $context->setOp($op);
             $context->setDescription($description);
             $span = $parent->startChild($context);
 
             // Set the current span to the span we just started
-            //
-            \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
+            SentrySdk::getCurrentHub()->setSpan($span);
         }
 
         return [
@@ -85,11 +94,9 @@ class SentryInstrumentation implements Instrumentation
         }
 
         // We only have a span if we started a span earlier
-        //
         $span['span']->finish();
 
         // Restore the current span back to the parent span
-        //
-        \Sentry\SentrySdk::getCurrentHub()->setSpan($span['parent']);
+        SentrySdk::getCurrentHub()->setSpan($span['parent']);
     }
 }

@@ -5,6 +5,11 @@ namespace WebFramework\Core;
 use Psr\Container\ContainerInterface as Container;
 use WebFramework\SanityCheck\SanityCheckModule;
 
+/**
+ * Class SanityCheckRunner.
+ *
+ * Manages and executes sanity checks for the application.
+ */
 class SanityCheckRunner
 {
     /** @var array<array{class: string, config: array<mixed>}> */
@@ -14,18 +19,25 @@ class SanityCheckRunner
     private bool $fixing = false;
 
     /**
-     * @param array<string, mixed> $buildInfo
+     * SanityCheckRunner constructor.
+     *
+     * @param Container            $container       The dependency injection container
+     * @param Instrumentation      $instrumentation The instrumentation service
+     * @param StoredValues         $storedValues    The stored values service
+     * @param array<string, mixed> $buildInfo       Information about the current build
      */
     public function __construct(
         private Container $container,
         private Instrumentation $instrumentation,
         private StoredValues $storedValues,
         private array $buildInfo,
-    ) {
-    }
+    ) {}
 
     /**
-     * @param array<mixed> $moduleConfig
+     * Add a sanity check module to the runner.
+     *
+     * @param string       $moduleClass  The class name of the sanity check module
+     * @param array<mixed> $moduleConfig Configuration for the module
      */
     public function add(string $moduleClass, array $moduleConfig): void
     {
@@ -35,6 +47,13 @@ class SanityCheckRunner
         ];
     }
 
+    /**
+     * Execute all registered sanity checks.
+     *
+     * @return bool True if all checks pass, false otherwise
+     *
+     * @throws \RuntimeException If a sanity check fails
+     */
     public function execute(): bool
     {
         if (!count($this->modules))
@@ -85,6 +104,13 @@ class SanityCheckRunner
         return true;
     }
 
+    /**
+     * Determine if sanity checks need to be run.
+     *
+     * @param null|string $commit The current commit hash
+     *
+     * @return bool True if checks should be run, false otherwise
+     */
     private function needsRun(?string $commit): bool
     {
         if ($this->forceRun)
@@ -118,6 +144,11 @@ class SanityCheckRunner
         return ($checked === '0');
     }
 
+    /**
+     * Register a successful run of sanity checks.
+     *
+     * @param null|string $commit The current commit hash
+     */
     private function registerRun(?string $commit): void
     {
         // Register successful check of this commit
@@ -128,16 +159,25 @@ class SanityCheckRunner
         }
     }
 
+    /**
+     * Force the sanity checks to run regardless of other conditions.
+     */
     public function forceRun(): void
     {
         $this->forceRun = true;
     }
 
+    /**
+     * Allow fixing of issues during sanity checks.
+     */
     public function allowFixing(): void
     {
         $this->fixing = true;
     }
 
+    /**
+     * Enable verbose output during sanity checks.
+     */
     public function setVerbose(): void
     {
         $this->verbose = true;

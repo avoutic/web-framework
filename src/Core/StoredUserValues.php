@@ -11,17 +11,30 @@ CREATE TABLE IF NOT EXISTS stored_user_values (
      UNIQUE KEY `user_mod_name` (user_id,module,name)
 );
 */
+/**
+ * Class StoredUserValues.
+ *
+ * Manages stored user-specific configuration values in the database.
+ */
 class StoredUserValues
 {
+    /**
+     * StoredUserValues constructor.
+     *
+     * @param Database $database The database interface
+     * @param int      $userId   The ID of the user
+     * @param string   $module   The module name for which values are stored
+     */
     public function __construct(
         private Database $database,
         private int $userId,
         private string $module,
-    ) {
-    }
+    ) {}
 
     /**
-     * @return array<string>
+     * Get all stored values for the current user and module.
+     *
+     * @return array<string> An associative array of stored values
      */
     public function getValues(): array
     {
@@ -41,6 +54,13 @@ class StoredUserValues
         return $info;
     }
 
+    /**
+     * Check if a specific value exists.
+     *
+     * @param string $name The name of the value to check
+     *
+     * @return bool True if the value exists, false otherwise
+     */
     public function valueExists(string $name): bool
     {
         $result = $this->database->query(
@@ -57,6 +77,14 @@ class StoredUserValues
         return true;
     }
 
+    /**
+     * Get a specific stored value.
+     *
+     * @param string $name    The name of the value to retrieve
+     * @param string $default The default value to return if not found
+     *
+     * @return string The stored value or the default value
+     */
     public function getValue(string $name, string $default = ''): string
     {
         $result = $this->database->query(
@@ -78,6 +106,12 @@ class StoredUserValues
         return $result->fields['value'];
     }
 
+    /**
+     * Set a stored value.
+     *
+     * @param string $name  The name of the value to set
+     * @param string $value The value to store
+     */
     public function setValue(string $name, string $value): void
     {
         $this->database->query(
@@ -87,6 +121,11 @@ class StoredUserValues
         );
     }
 
+    /**
+     * Delete a stored value.
+     *
+     * @param string $name The name of the value to delete
+     */
     public function deleteValue(string $name): void
     {
         $this->database->query(

@@ -4,20 +4,41 @@ namespace WebFramework\Core;
 
 use Psr\Container\ContainerInterface as Container;
 
+/**
+ * Class DatabaseManager.
+ *
+ * Manages database operations, including schema changes, version control, and integrity checks.
+ */
 class DatabaseManager
 {
+    /**
+     * DatabaseManager constructor.
+     *
+     * @param Container    $container    The dependency injection container
+     * @param Database     $database     The database interface implementation
+     * @param StoredValues $storedValues The stored values service
+     */
     public function __construct(
         private Container $container,
         private Database $database,
         private StoredValues $storedValues,
-    ) {
-    }
+    ) {}
 
+    /**
+     * Check if the database is initialized.
+     *
+     * @return bool True if the database is initialized, false otherwise
+     */
     public function isInitialized(): bool
     {
         return $this->database->tableExists('config_values');
     }
 
+    /**
+     * Calculate a hash of the current database schema.
+     *
+     * @return string The calculated hash
+     */
     public function calculateHash(): string
     {
         // Get tables
@@ -58,6 +79,11 @@ SQL;
         return sha1($dbDef);
     }
 
+    /**
+     * Verify if the current database schema matches the stored hash.
+     *
+     * @return bool True if the schema matches the stored hash, false otherwise
+     */
     public function verifyHash(): bool
     {
         $storedHash = $this->getStoredHash();
@@ -66,6 +92,11 @@ SQL;
         return $storedHash === $actualHash;
     }
 
+    /**
+     * Get the stored hash of the database schema.
+     *
+     * @return string The stored hash
+     */
     public function getStoredHash(): string
     {
         // Retrieve hash
@@ -73,6 +104,9 @@ SQL;
         return $this->storedValues->getValue('app_db_hash', '');
     }
 
+    /**
+     * Update the stored hash with the current database schema hash.
+     */
     public function updateStoredHash(): void
     {
         $actualHash = $this->calculateHash();
@@ -81,7 +115,13 @@ SQL;
     }
 
     /**
-     * @param array{target_version: int, actions: array<array<mixed>>} $data
+     * Execute a set of database actions.
+     *
+     * @param array{target_version: int, actions: array<array<mixed>>} $data          The actions to execute
+     * @param bool                                                     $ignoreVersion Whether to ignore version checks
+     *
+     * @throws \InvalidArgumentException If the input data is invalid
+     * @throws \RuntimeException         If an action fails
      */
     public function execute(array $data, bool $ignoreVersion = false): void
     {
@@ -316,11 +356,23 @@ SQL;
         $this->database->commitTransaction();
     }
 
+    /**
+     * Get the current database version.
+     *
+     * @return int The current database version
+     */
     public function getCurrentVersion(): int
     {
         return (int) $this->storedValues->getValue('app_db_version', '0');
     }
 
+    /**
+     * Check if the current database version matches the expected version.
+     *
+     * @param int $appDbVersion The expected database version
+     *
+     * @throws \RuntimeException If the versions don't match
+     */
     private function checkVersion(int $appDbVersion): void
     {
         $currentVersion = $this->getCurrentVersion();
@@ -331,6 +383,11 @@ SQL;
         }
     }
 
+    /**
+     * Set the database version.
+     *
+     * @param int $to The new version number
+     */
     private function setVersion(int $to): void
     {
         $this->storedValues->setValue('app_db_version', (string) $to);
@@ -339,9 +396,14 @@ SQL;
     }
 
     /**
-     * @param array<string> $info
-     * @param array<string> $fieldLines
-     * @param array<string> $constraintLines
+     * Generate field statements for table creation or alteration.
+     *
+     * @param string               $tableName       The name of the table
+     * @param array<string, mixed> $info            The field information
+     * @param array<string>        $fieldLines      Reference to the array of field lines
+     * @param array<string>        $constraintLines Reference to the array of constraint lines
+     *
+     * @throws \InvalidArgumentException If the field information is invalid
      */
     private function getFieldStatements(string $tableName, array $info, array &$fieldLines, array &$constraintLines): void
     {
@@ -417,8 +479,14 @@ SQL;
     }
 
     /**
-     * @param array<mixed>  $info
-     * @param array<string> $constraintLines
+     * Generate constraint statements for table creation or alteration.
+     *
+     * @param string               $tableName       The name of the table
+     * @param array<string, mixed> $info            The constraint information
+     * @param array<string>        $constraintLines Reference to the array of constraint lines
+     *
+     * @throws \InvalidArgumentException If the constraint information is invalid
+     * @throws \RuntimeException         If an unknown constraint type is encountered
      */
     private function getConstraintStatements(string $tableName, array $info, array &$constraintLines): void
     {
@@ -451,10 +519,13 @@ SQL;
     }
 
     /**
-     * @param array<array<string>> $fields
-     * @param array<array<string>> $constraints
+     * Generate a CREATE TABLE query.
      *
-     * @return array{query: string, params: array<string>}
+     * @param string               $tableName   The name of the table to create
+     * @param array<array<string>> $fields      The fields to add to the table
+     * @param array<array<string>> $constraints The constraints to add to the table
+     *
+     * @return array{query: string, params: array<string>} The generated query and its parameters
      */
     private function createTable(string $tableName, array $fields, array $constraints): array
     {
@@ -494,9 +565,14 @@ SQL;
     }
 
     /**
-     * @param array<string> $info
+     * Generate a CREATE TRIGGER query.
      *
-     * @return array{query: string, params: array<string>}
+     * @param string                $tableName The name of the table for the trigger
+     * @param array<string, string> $info      The trigger information
+     *
+     * @return array{query: string, params: array<string>} The generated query and its parameters
+     *
+     * @throws \InvalidArgumentException If the trigger information is invalid
      */
     private function createTrigger(string $tableName, array $info): array
     {
@@ -534,9 +610,12 @@ SQL;
     }
 
     /**
-     * @param array<string> $info
+     * Generate an ALTER TABLE ADD COLUMN query.
      *
-     * @return array{query: string, params: array<string>}
+     * @param string               $tableName The name of the table to alter
+     * @param array<string, mixed> $info      The column information
+     *
+     * @return array{query: string, params: array<string>} The generated query and its parameters
      */
     private function addColumn(string $tableName, array $info): array
     {
@@ -562,9 +641,12 @@ SQL;
     }
 
     /**
-     * @param array<string> $info
+     * Generate an ALTER TABLE ADD CONSTRAINT query.
      *
-     * @return array{query: string, params: array<string>}
+     * @param string               $tableName The name of the table to alter
+     * @param array<string, mixed> $info      The constraint information
+     *
+     * @return array{query: string, params: array<string>} The generated query and its parameters
      */
     private function addConstraint(string $tableName, array $info): array
     {
@@ -590,9 +672,12 @@ SQL;
     }
 
     /**
-     * @param array<string, null|string> $values
+     * Generate an INSERT query.
      *
-     * @return array{query: string, params: array<string>}
+     * @param string                     $tableName The name of the table to insert into
+     * @param array<string, null|string> $values    The values to insert
+     *
+     * @return array{query: string, params: array<string>} The generated query and its parameters
      */
     private function insertRow(string $tableName, array $values): array
     {
@@ -634,9 +719,12 @@ SQL;
     }
 
     /**
-     * @param array<string> $params
+     * Generate a raw SQL query.
      *
-     * @return array{query: string, params: array<string>}
+     * @param string        $query  The raw SQL query
+     * @param array<string> $params The query parameters
+     *
+     * @return array{query: string, params: array<string>} The query and its parameters
      */
     private function rawQuery(string $query, array $params): array
     {
@@ -647,9 +735,12 @@ SQL;
     }
 
     /**
-     * @param array<string> $info
+     * Generate an ALTER TABLE MODIFY COLUMN query.
      *
-     * @return array{query: string, params: array<string>}
+     * @param string               $tableName The name of the table to alter
+     * @param array<string, mixed> $info      The column information
+     *
+     * @return array{query: string, params: array<string>} The generated query and its parameters
      */
     private function modifyColumnType(string $tableName, array $info): array
     {
@@ -675,7 +766,13 @@ SQL;
     }
 
     /**
-     * @return array{query: string, params: array<string>}
+     * Generate an ALTER TABLE RENAME COLUMN query.
+     *
+     * @param string $tableName   The name of the table to alter
+     * @param string $currentName The current name of the column
+     * @param string $newName     The new name for the column
+     *
+     * @return array{query: string, params: array<string>} The generated query and its parameters
      */
     private function renameColumn(string $tableName, string $currentName, string $newName): array
     {
@@ -693,7 +790,12 @@ SQL;
     }
 
     /**
-     * @return array{query: string, params: array<string>}
+     * Generate an ALTER TABLE RENAME TO query.
+     *
+     * @param string $tableName The current name of the table
+     * @param string $newName   The new name for the table
+     *
+     * @return array{query: string, params: array<string>} The generated query and its parameters
      */
     private function renameTable(string $tableName, string $newName): array
     {

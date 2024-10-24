@@ -2,17 +2,28 @@
 
 namespace WebFramework\Core;
 
+/**
+ * Class BuildInfoService.
+ *
+ * Provides information about the current build of the application.
+ */
 class BuildInfoService
 {
+    /**
+     * BuildInfoService constructor.
+     *
+     * @param RuntimeEnvironment $runtimeEnvironment The runtime environment service
+     */
     public function __construct(
         private RuntimeEnvironment $runtimeEnvironment,
-    ) {
-    }
+    ) {}
 
     /**
-     * Get build info.
+     * Get build information.
      *
-     * @return array{commit: null|string, timestamp: string}
+     * @return array{commit: null|string, timestamp: string} An array containing the commit hash and build timestamp
+     *
+     * @throws \RuntimeException If unable to read build information files
      */
     public function getInfo(): array
     {

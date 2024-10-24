@@ -7,20 +7,36 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Psr7\Factory\ResponseFactory;
 
+/**
+ * Class ResponseEmitter.
+ *
+ * Handles the emission of HTTP responses and various error responses.
+ */
 class ResponseEmitter
 {
+    /**
+     * ResponseEmitter constructor.
+     *
+     * @param Container       $container       The dependency injection container
+     * @param ConfigService   $configService   The configuration service
+     * @param ResponseFactory $responseFactory The PSR-7 response factory
+     * @param UrlBuilder      $urlBuilder      The URL builder service
+     */
     public function __construct(
         private Container $container,
         private ConfigService $configService,
         private ResponseFactory $responseFactory,
         private UrlBuilder $urlBuilder,
-    ) {
-    }
+    ) {}
 
+    /**
+     * Emit the response to the client.
+     *
+     * @param Response $response The response to emit
+     */
     public function emit(Response $response): void
     {
         // Emit status line
-        //
         header(sprintf(
             'HTTP/%s %s %s',
             $response->getProtocolVersion(),
@@ -29,7 +45,6 @@ class ResponseEmitter
         ), true, $response->getStatusCode());
 
         // Emit headers
-        //
         foreach ($response->getHeaders() as $name => $values)
         {
             foreach ($values as $value)
@@ -39,12 +54,18 @@ class ResponseEmitter
         }
 
         // Emit body
-        //
         echo $response->getBody();
 
         exit();
     }
 
+    /**
+     * Generate a blacklisted response.
+     *
+     * @param Request $request The current request
+     *
+     * @return Response The blacklisted response
+     */
     public function blacklisted(Request $request): Response
     {
         $contentType = $request->getHeaderLine('Content-Type');
@@ -72,6 +93,17 @@ class ResponseEmitter
         return $errorHandler($request, $response);
     }
 
+    /**
+     * Generate an error response.
+     *
+     * @param Request $request      The current request
+     * @param string  $title        The error title
+     * @param string  $details      The error details
+     * @param int     $httpCode     The HTTP status code
+     * @param string  $reasonPhrase The reason phrase for the status code
+     *
+     * @return Response The error response
+     */
     public function error(Request $request, string $title, string $details = '', int $httpCode = 500, string $reasonPhrase = 'Internal error'): Response
     {
         $contentType = $request->getHeaderLine('Content-Type');
@@ -83,13 +115,11 @@ class ResponseEmitter
         {
             $response = $response->withHeader('Content-type', 'application/json');
 
-            $data = json_encode(
-                [
-                    'success' => false,
-                    'title' => $title,
-                    'details' => $details,
-                ]
-            );
+            $data = json_encode([
+                'success' => false,
+                'title' => $title,
+                'details' => $details,
+            ]);
 
             $response->getBody()->write($data ?: '');
 
@@ -103,6 +133,13 @@ class ResponseEmitter
         return $errorHandler($request, $response);
     }
 
+    /**
+     * Generate a forbidden response.
+     *
+     * @param Request $request The current request
+     *
+     * @return Response The forbidden response
+     */
     public function forbidden(Request $request): Response
     {
         $contentType = $request->getHeaderLine('Content-Type');
@@ -122,6 +159,13 @@ class ResponseEmitter
         return $errorHandler($request, $response);
     }
 
+    /**
+     * Generate a not found response.
+     *
+     * @param Request $request The current request
+     *
+     * @return Response The not found response
+     */
     public function notFound(Request $request): Response
     {
         $contentType = $request->getHeaderLine('Content-Type');
@@ -141,6 +185,14 @@ class ResponseEmitter
         return $errorHandler($request, $response);
     }
 
+    /**
+     * Generate a redirect response.
+     *
+     * @param string $url          The URL to redirect to
+     * @param int    $redirectType The HTTP redirect status code
+     *
+     * @return Response The redirect response
+     */
     public function redirect(string $url, int $redirectType = 302): Response
     {
         $response = $this->responseFactory->createResponse($redirectType);
@@ -149,7 +201,15 @@ class ResponseEmitter
     }
 
     /**
-     * @param array<string, int|string> $values
+     * Build and generate a redirect response using a URL template.
+     *
+     * @param string                    $template     The URL template
+     * @param array<string, int|string> $values       The values to fill in the template
+     * @param null|string               $messageType  The type of message to include in the URL
+     * @param null|string               $message      The message to include in the URL
+     * @param null|string               $extraMessage An extra message to include in the URL
+     *
+     * @return Response The redirect response
      */
     public function buildRedirect(string $template, array $values = [], ?string $messageType = null, ?string $message = null, ?string $extraMessage = null): Response
     {
@@ -159,8 +219,16 @@ class ResponseEmitter
     }
 
     /**
-     * @param array<string, int|string>                           $values
-     * @param array<int|string, array<int|string, string>|string> $queryParameters
+     * Build and generate a redirect response using a URL template and query parameters.
+     *
+     * @param string                                              $template        The URL template
+     * @param array<string, int|string>                           $values          The values to fill in the template
+     * @param array<int|string, array<int|string, string>|string> $queryParameters The query parameters to include in the URL
+     * @param null|string                                         $messageType     The type of message to include in the URL
+     * @param null|string                                         $message         The message to include in the URL
+     * @param null|string                                         $extraMessage    An extra message to include in the URL
+     *
+     * @return Response The redirect response
      */
     public function buildQueryRedirect(string $template, array $values = [], array $queryParameters = [], ?string $messageType = null, ?string $message = null, ?string $extraMessage = null): Response
     {
@@ -169,6 +237,13 @@ class ResponseEmitter
         return $this->redirect($url);
     }
 
+    /**
+     * Generate an unauthorized response.
+     *
+     * @param Request $request The current request
+     *
+     * @return Response The unauthorized response
+     */
     public function unauthorized(Request $request): Response
     {
         $contentType = $request->getHeaderLine('Content-Type');

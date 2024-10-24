@@ -3,16 +3,32 @@
 namespace WebFramework\Core;
 
 /**
+ * Class DatabaseResultWrapper.
+ *
+ * Wraps the result of a database query, providing an iterator interface
+ * to access the result rows.
+ *
  * @implements \Iterator<int, array<string, mixed>>
  */
 class DatabaseResultWrapper implements \Iterator
 {
+    /** @var \mysqli_result|true The underlying mysqli result object */
     private \mysqli_result|true $result;
+
+    /** @var bool Whether the current position is valid */
     private bool $valid = false;
+
+    /** @var int The current row number */
     private int $currentRow = 0;
 
+    /** @var array<string, mixed> The current row data */
     public mixed $fields = [];
 
+    /**
+     * DatabaseResultWrapper constructor.
+     *
+     * @param \mysqli_result|true $result The mysqli result object to wrap
+     */
     public function __construct(\mysqli_result|true $result)
     {
         $this->result = $result;
@@ -23,6 +39,11 @@ class DatabaseResultWrapper implements \Iterator
         }
     }
 
+    /**
+     * Get the number of rows in the result set.
+     *
+     * @return int|string The number of rows
+     */
     public function RecordCount(): int|string
     {
         if ($this->result === true)
@@ -33,6 +54,9 @@ class DatabaseResultWrapper implements \Iterator
         return $this->result->num_rows;
     }
 
+    /**
+     * Rewind the Iterator to the first element.
+     */
     public function rewind(): void
     {
         if ($this->result === true)
@@ -42,16 +66,18 @@ class DatabaseResultWrapper implements \Iterator
 
         $this->result->data_seek(0);
         $this->currentRow = 0;
-        $this->fields = $this->result->fetch_assoc();
-        $this->valid = ($this->fields !== null);
+
+        $this->fetchData();
     }
 
     /**
-     * @return array<string, mixed>
+     * Return the current element.
+     *
+     * @return array<string, mixed> The current row data
      */
     public function current(): array
     {
-        if ($this->fields === true)
+        if (!$this->valid)
         {
             return [];
         }
@@ -59,11 +85,19 @@ class DatabaseResultWrapper implements \Iterator
         return $this->fields;
     }
 
+    /**
+     * Return the key of the current element.
+     *
+     * @return int The current row number
+     */
     public function key(): int
     {
         return $this->currentRow;
     }
 
+    /**
+     * Move forward to next element.
+     */
     public function next(): void
     {
         if ($this->result === true)
@@ -71,13 +105,43 @@ class DatabaseResultWrapper implements \Iterator
             return;
         }
 
-        $this->fields = $this->result->fetch_assoc();
-        $this->valid = ($this->fields !== null);
+        $this->fetchData();
         $this->currentRow++;
     }
 
+    /**
+     * Checks if current position is valid.
+     *
+     * @return bool Whether the current position is valid
+     */
     public function valid(): bool
     {
         return $this->valid;
+    }
+
+    /**
+     * Fetch data from the underlying mysqli result set.
+     */
+    private function fetchData(): void
+    {
+        if ($this->result === true)
+        {
+            $this->valid = false;
+
+            return;
+        }
+
+        $element = $this->result->fetch_assoc();
+
+        if ($element === null)
+        {
+            $this->fields = [];
+            $this->valid = false;
+        }
+        else
+        {
+            $this->fields = $element;
+            $this->valid = true;
+        }
     }
 }

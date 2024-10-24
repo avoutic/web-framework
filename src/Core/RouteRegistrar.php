@@ -5,16 +5,28 @@ namespace WebFramework\Core;
 use Psr\Container\ContainerInterface as Container;
 use Slim\App;
 
+/**
+ * Class RouteRegistrar.
+ *
+ * Responsible for registering routes from multiple RouteSet instances.
+ */
 class RouteRegistrar
 {
+    /**
+     * RouteRegistrar constructor.
+     *
+     * @param App       $app       The Slim application instance
+     * @param Container $container The dependency injection container
+     */
     public function __construct(
         private App $app,
         private Container $container,
-    ) {
-    }
+    ) {}
 
     /**
-     * @param array<string> $routeSets
+     * Register routes from multiple RouteSet instances.
+     *
+     * @param array<string> $routeSets An array of fully qualified class names of RouteSet implementations
      */
     public function register(array $routeSets): void
     {
