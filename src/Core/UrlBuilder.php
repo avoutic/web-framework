@@ -57,8 +57,13 @@ class UrlBuilder
             }
         }
 
-        $url = preg_replace_callback('/\{(\w+)\}/', function ($matches) use ($values) {
-            return $values[$matches[1]] ?? $matches[0];
+        $url = preg_replace_callback('/\{(\w+)\}/', function (array $matches) use ($values): string {
+            if (!array_key_exists($matches[1], $values))
+            {
+                throw new \InvalidArgumentException("Missing value for URL placeholder: {$matches[1]}");
+            }
+
+            return (string)$values[$matches[1]];
         }, $template);
 
         if ($url === null)

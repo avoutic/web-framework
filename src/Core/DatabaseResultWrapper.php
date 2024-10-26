@@ -142,7 +142,7 @@ class DatabaseResultWrapper implements \Iterator
 
         $element = $this->result->fetch_assoc();
 
-        if ($element === null)
+        if ($element === null || $element === false)
         {
             $this->fields = [];
             $this->valid = false;

@@ -165,7 +165,8 @@ class Browserless
         }
 
         $result = $this->getPdfResult($targetUrl, $tmpFile);
-        $tmpPath = stream_get_meta_data($tmpFile)['uri'];
+        $metaData = stream_get_meta_data($tmpFile);
+        $tmpPath = $metaData['uri'] ?? throw new \RuntimeException('Failed to get temporary stream');
         if (!$this->isPdf($tmpPath))
         {
             throw new \RuntimeException('Failed to generate PDF: '.file_get_contents($tmpPath));

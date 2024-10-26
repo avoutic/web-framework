@@ -221,7 +221,7 @@ class Image
 
             if ($size[0] / $size[1] > $ratio)
             {
-                $size[0] = $size[1] * $ratio;
+                $size[0] = (int) ($size[1] * $ratio);
             }
             else
             {
@@ -241,6 +241,10 @@ class Image
         imagealphablending($imageP, false);
         imagesavealpha($imageP, true);
         $transparent = imagecolorallocatealpha($imageP, 255, 255, 255, 127);
+        if ($transparent === false)
+        {
+            return false;
+        }
         imagefilledrectangle($imageP, 0, 0, $width, $height, $transparent);
 
         // Copy resized image, destroy original

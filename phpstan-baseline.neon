@@ -61,11 +61,6 @@ parameters:
 			path: src/Core/Image.php
 
 		-
-			message: "#^Parameter \\#6 \\$color of function imagefilledrectangle expects int, int\\|false given\\.$#"
-			count: 1
-			path: src/Core/Image.php
-
-		-
 			message: "#^Method WebFramework\\\\Security\\\\UserCodeService\\:\\:verify\\(\\) should return array\\{user_id\\: int, action\\: string, params\\: array, timestamp\\: int\\} but returns array\\.$#"
 			count: 1
 			path: src/Security/UserCodeService.php
