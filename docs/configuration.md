@@ -10,11 +10,13 @@ The WebFramework uses a layered approach to configuration, allowing multiple con
 
 The `TaskRunner` class specifies a default set of configuration files that are used to build the configuration. These files are:
 
-- `/config/base_config.php`
+- `/vendor/avoutic/web-framework/config/base_config.php`
 - `/config/config.php`
 - `?/config/config_local.php`
 
 The `?` before a file path indicates that the file is optional. If it exists, it will be included; otherwise, it will be ignored.
+
+Meaning that if will load the base configuration file from the WebFramework, then the application configuration file, and finally the local configuration file if it exists.
 
 ### Setting Another Set of Files
 

@@ -8,9 +8,18 @@ Dependency injection in WebFramework is managed using PHP-DI, a powerful depende
 
 The `BootstrapService` and `SlimAppTask` classes are responsible for setting up the dependency injection container and registering services. They use the configured definition files to do this.
 
-## Adding Your Own Definition Files
+## Default Definition Files
 
-To add your own definition files, you need to specify them in the `base_config.php` file under the `definition_files` key. These files contain PHP-DI definitions that configure how services and classes are instantiated.
+The base configuration specifies a default set of definition files that are used for dependency injection. These files are:
+
+- `/vendor/avoutic/web-framework/definitions/web_framework_definitions.php`
+- `/definitions/app_definitions.php`
+
+Meaning that if will load the base definition file from the WebFramework, then the application definition file.
+
+### Setting Another Set of Files
+
+To set your own definition files, you need to specify them in the `base_config.php` file under the `definition_files` key. These files contain PHP-DI definitions that configure how services and classes are instantiated.
 
 ### Example Configuration
 
@@ -19,13 +28,13 @@ return [
     // Other configuration settings...
 
     'definition_files' => [
-        'web_framework_definitions.php',
-        'app_definitions.php', // Your custom definitions
+        '/vendor/avoutic/web-framework/definitions/web_framework_definitions.php',
+        '/definitions/my_definitions.php', // Your custom definitions
     ],
 ];
 ~~~
 
-In this example, `app_definitions.php` is a custom definition file that you can use to define your own services and override existing ones.
+In this example, `my_definitions.php` is a custom definition file that you can use to define your own services and override existing ones.
 
 ## Overriding Classes
 
