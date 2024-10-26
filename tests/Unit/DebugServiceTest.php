@@ -293,7 +293,6 @@ final class DebugServiceTest extends Unit
                 'function' => 'function2',
                 'extra' => [
                     'database' => 'scrubbed',
-                    'databases' => 'scrubbed',
                     'config' => 'scrubbed',
                     'regular' => 'normal',
                 ],
@@ -312,7 +311,6 @@ final class DebugServiceTest extends Unit
                 'extra' => 'extra1',
                 'extra' => [
                     'database' => 'scrubbed',
-                    'databases' => 'scrubbed',
                     'config' => 'scrubbed',
                     'regular' => 'normal',
                 ],

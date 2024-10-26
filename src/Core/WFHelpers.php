@@ -119,12 +119,6 @@ class WFHelpers
 
                 continue;
             }
-            if ($key === 'databases')
-            {
-                $item[$key] = 'scrubbed';
-
-                continue;
-            }
             if ($key === 'config')
             {
                 $item[$key] = 'scrubbed';
