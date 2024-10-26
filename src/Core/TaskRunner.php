@@ -35,7 +35,7 @@ class TaskRunner
 
     /** @var array<string> Default configuration files */
     private array $configFiles = [
-        '/config/base_config.php',
+        '/vendor/avoutic/web-framework/config/base_config.php',
         '/config/config.php',
         '?/config/config_local.php',
     ];

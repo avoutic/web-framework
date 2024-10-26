@@ -87,8 +87,8 @@ return [
         ],
     ],
     'definition_files' => [
-        'web_framework_definitions.php',
-        'app_definitions.php',
+        '/vendor/avoutic/web-framework/definitions/web_framework_definitions.php',
+        '/definitions/app_definitions.php',
     ],
     'middlewares' => [
         'pre_routing' => [],
