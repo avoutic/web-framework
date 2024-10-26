@@ -8,7 +8,7 @@ use WebFramework\Entity\User;
 //
 return [
     'debug' => false,
-    'preload' => false,                 /* true to load preload.inc.php, or name of file to
+    'preload' => false,                 /* true to load src/Preload.php during bootstrap, or name of file to
                                          * load relative to appDir */
     'timezone' => 'UTC',
     'database_enabled' => false,
