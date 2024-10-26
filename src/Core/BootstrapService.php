@@ -119,17 +119,17 @@ class BootstrapService
 
         if ($preload === true)
         {
-            if (file_exists("{$this->runtimeEnvironment->getAppDir()}/src/preload.inc.php"))
+            if (file_exists("{$this->runtimeEnvironment->getAppDir()}/src/Preload.php"))
             {
-                $filename = 'src/preload.inc.php';
+                $filename = 'src/Preload.php';
             }
-            elseif (file_exists("{$this->runtimeEnvironment->getAppDir()}/includes/preload.inc.php"))
+            elseif (file_exists("{$this->runtimeEnvironment->getAppDir()}/includes/Preload.php"))
             {
-                $filename = 'includes/preload.inc.php';
+                $filename = 'includes/Preload.php';
             }
             else
             {
-                throw new \InvalidArgumentException("'preload.inc.php' does not exist in either src/ or includes/");
+                throw new \InvalidArgumentException("'Preload.php' does not exist in either src/ or includes/");
             }
         }
         elseif (is_string($preload) && strlen($preload))
