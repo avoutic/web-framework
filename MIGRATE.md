@@ -1,5 +1,25 @@
 # v8 release
 
+## v8.4
+
+### Light changes
+
+* Added PHPDoc
+* Added documentation
+* Better error handling in case of non-defined error handlers
+
+## v8.3
+
+### Light changes
+
+* Expanded color configuration options of input helpers
+
+## v8.2
+
+### Light changes
+
+* Cache authenticated user in DatabaseAuthenticationService
+
 ## v8.1
 
 ### Light changes
