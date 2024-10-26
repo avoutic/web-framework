@@ -12,10 +12,6 @@ return [
                                          * load relative to appDir */
     'timezone' => 'UTC',
     'database_enabled' => false,
-    'database_config' => 'main',        // main database tag.
-    'databases' => [],                  /* list of extra database tags to load.
-                                         * files will be retrieved from 'includes/db_config.{TAG}.php'
-                                         */
     'versions' => [
         'supported_framework' => -1,    /* Default is always -1. App should set supported semantic
                                          * version of this framework it supports in own config.
