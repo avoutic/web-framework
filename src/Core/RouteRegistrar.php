@@ -24,8 +24,8 @@ class RouteRegistrar
     /**
      * RouteRegistrar constructor.
      *
-     * @param App       $app       The Slim application instance
-     * @param Container $container The dependency injection container
+     * @param App<Container> $app       The Slim application instance
+     * @param Container       $container The dependency injection container
      */
     public function __construct(
         private App $app,

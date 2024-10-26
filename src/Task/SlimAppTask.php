@@ -57,8 +57,7 @@ class SlimAppTask implements TaskInterface
     {
         // Create and start Slim framework
         //
-        AppFactory::setContainer($this->container);
-        $app = AppFactory::create();
+        $app = AppFactory::create(container: $this->container);
 
         // Start instrumentation transaction
         //

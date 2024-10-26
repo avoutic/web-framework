@@ -11,6 +11,7 @@
 
 namespace WebFramework\Core;
 
+use Psr\Container\ContainerInterface as Container;
 use Slim\App;
 
 /**
@@ -23,7 +24,7 @@ class MiddlewareRegistrar
     /**
      * MiddlewareRegistrar constructor.
      *
-     * @param App $app The Slim application instance
+     * @param App<Container> $app The Slim application instance
      */
     public function __construct(
         private App $app,
