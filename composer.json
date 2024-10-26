@@ -6,7 +6,7 @@
         "framework",
         "security"
     ],
-    "homepage": "https://avoutic.github.io/web-framework/",
+    "homepage": "https://web-framework.com",
     "license": "MIT",
     "authors": [
         {
@@ -17,7 +17,7 @@
     "support": {
         "issues": "https://github.com/avoutic/web-framework/issues",
         "source": "https://github.com/avoutic/web-framework",
-        "docs": "https://avoutic.github.io/web-framework/"
+        "docs": "https://web-framework.com"
     },
     "require": {
         "php": "^8.2",

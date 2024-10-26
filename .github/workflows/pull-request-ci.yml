@@ -1,0 +1,66 @@
+name: Pull Request CI
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  coding-standard:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP with tools
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: gd zip soap
+          tools: php-cs-fixer
+
+      - name: Install packages
+        run: composer install --no-progress --optimize-autoloader
+
+      - name: Run PHP-CS-Fixer
+        run: php-cs-fixer --dry-run --config=.php-cs-fixer.dist.php --verbose fix
+
+  static-analysis:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP with tools
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: gd zip soap
+          tools: phpstan
+
+      - name: Install packages
+        run: composer install --no-progress --optimize-autoloader
+
+      - name: Static analysis with PHPStan
+        run: phpstan analyse --no-progress
+
+  unit-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP with tools
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: gd zip soap
+          tools: codeception
+
+      - name: Install packages
+        run: composer install --no-progress --optimize-autoloader
+
+      - name: Run Codeception Unit tests
+        run: vendor/bin/codecept run tests/Unit
