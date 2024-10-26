@@ -96,10 +96,18 @@ class ResponseEmitter
         }
 
         $class = $this->configService->get('error_handlers.blacklisted');
+        if ($class && $this->container->has($class))
+        {
+            $errorHandler = $this->container->get($class);
 
-        $errorHandler = $this->container->get($class);
+            return $errorHandler($request, $response);
+        }
+        else
+        {
+            $response->getBody()->write('Blacklisted');
+        }
 
-        return $errorHandler($request, $response);
+        return $response;
     }
 
     /**
@@ -136,10 +144,18 @@ class ResponseEmitter
         }
 
         $class = $this->configService->get('error_handlers.500');
+        if ($class && $this->container->has($class))
+        {
+            $errorHandler = $this->container->get($class);
 
-        $errorHandler = $this->container->get($class);
+            return $errorHandler($request, $response);
+        }
+        else
+        {
+            $response->getBody()->write($title.': '.$details);
+        }
 
-        return $errorHandler($request, $response);
+        return $response;
     }
 
     /**
@@ -162,10 +178,18 @@ class ResponseEmitter
         }
 
         $class = $this->configService->get('error_handlers.403');
+        if ($class && $this->container->has($class))
+        {
+            $errorHandler = $this->container->get($class);
 
-        $errorHandler = $this->container->get($class);
+            return $errorHandler($request, $response);
+        }
+        else
+        {
+            $response->getBody()->write('Forbidden');
+        }
 
-        return $errorHandler($request, $response);
+        return $response;
     }
 
     /**
@@ -188,10 +212,18 @@ class ResponseEmitter
         }
 
         $class = $this->configService->get('error_handlers.404');
+        if ($class && $this->container->has($class))
+        {
+            $errorHandler = $this->container->get($class);
 
-        $errorHandler = $this->container->get($class);
+            return $errorHandler($request, $response);
+        }
+        else
+        {
+            $response->getBody()->write('Not Found');
+        }
 
-        return $errorHandler($request, $response);
+        return $response;
     }
 
     /**

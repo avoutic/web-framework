@@ -58,6 +58,7 @@ return [
         '403' => '',
         '404' => '',
         '500' => '',
+        'blacklisted' => '',
     ],
     'actions' => [
         'default_frame_file' => 'default_frame.inc.php',
