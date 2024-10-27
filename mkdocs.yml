@@ -1,9 +1,28 @@
 site_name: WebFramework
 site_url: https://web-framework.com
+site_author: Avoutic
+site_description: >-
+  Quickly build PHP applications with Slim Framework and PHP-DI, without a
+  framework like Laravel of Symfony.
+
+repo_name: avoutic/web-framework
+repo_url: https://github.com/avoutic/web-framework
+
+copyright: Copyright &copy; 2024 Avoutic
+
 theme:
   name: material
   features:
     - navigation.expand
+    - navigation.footer
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/avoutic/web-framework
+    - icon: fontawesome/brands/php
+      link: https://packagist.org/packages/avoutic/web-framework
+
 markdown_extensions:
   - pymdownx.highlight:
       anchor_linenums: true
@@ -12,6 +31,7 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
+
 nav:
   - Home: index.md
   - Core Concepts:
@@ -34,4 +54,3 @@ nav:
     - translations.md
     - sanity-checks.md
     - tasks.md
-
