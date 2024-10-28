@@ -12,6 +12,7 @@ copyright: Copyright &copy; 2024 Avoutic
 
 theme:
   name: material
+  custom_dir: overrides
   features:
     - navigation.expand
     - navigation.footer
