@@ -21,6 +21,8 @@ extra:
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/avoutic/web-framework
+    - icon: fontawesome/brands/mastodon
+      link: https://phpc.social/@avoutic
     - icon: fontawesome/brands/php
       link: https://packagist.org/packages/avoutic/web-framework
 
