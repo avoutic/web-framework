@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  * This file is part of WebFramework.
  *
  * (c) Avoutic <avoutic@gmail.com>
@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-//
+// Defined versions
 define('FRAMEWORK_VERSION', 8);
 define('FRAMEWORK_DB_VERSION', 2);
 

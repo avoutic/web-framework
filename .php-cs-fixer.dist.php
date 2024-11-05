@@ -1,14 +1,5 @@
 <?php
 
-$header = <<<'EOF'
-This file is part of WebFramework.
-
-(c) Avoutic <avoutic@gmail.com>
-
-For the full copyright and license information, please view the LICENSE
-file that was distributed with this source code.
-EOF;
-
 $mainFinder = PhpCsFixer\Finder::create()
     ->in(__DIR__.'/actions')
     ->in(__DIR__.'/config')
@@ -19,12 +10,6 @@ $mainFinder = PhpCsFixer\Finder::create()
     ->in(__DIR__.'/templates')
     ->in(__DIR__.'/tests/Unit')
 ;
-
-$headerFinder = PhpCsFixer\Finder::create()
-    ->in(__DIR__.'/actions')
-    ->in(__DIR__.'/src')
-    ->in(__DIR__.'/scripts')
-;;
 
 $config = new PhpCsFixer\Config();
 return $config->setRules([
@@ -53,9 +38,4 @@ return $config->setRules([
     ])
     ->setFinder($mainFinder)
     ->setRiskyAllowed(true)
-    ->setRules([
-        // Copyright header
-        'header_comment' => [ 'header' => $header, 'comment_type' => 'PHPDoc' ],
-    ])
-    ->setFinder($headerFinder)
 ;

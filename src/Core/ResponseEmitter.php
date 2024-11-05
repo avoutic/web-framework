@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  * This file is part of WebFramework.
  *
  * (c) Avoutic <avoutic@gmail.com>
@@ -102,10 +102,8 @@ class ResponseEmitter
 
             return $errorHandler($request, $response);
         }
-        else
-        {
-            $response->getBody()->write('Blacklisted');
-        }
+
+        $response->getBody()->write('Blacklisted');
 
         return $response;
     }
@@ -150,10 +148,8 @@ class ResponseEmitter
 
             return $errorHandler($request, $response);
         }
-        else
-        {
-            $response->getBody()->write($title.': '.$details);
-        }
+
+        $response->getBody()->write($title.': '.$details);
 
         return $response;
     }
@@ -184,10 +180,8 @@ class ResponseEmitter
 
             return $errorHandler($request, $response);
         }
-        else
-        {
-            $response->getBody()->write('Forbidden');
-        }
+
+        $response->getBody()->write('Forbidden');
 
         return $response;
     }
@@ -218,10 +212,8 @@ class ResponseEmitter
 
             return $errorHandler($request, $response);
         }
-        else
-        {
-            $response->getBody()->write('Not Found');
-        }
+
+        $response->getBody()->write('Not Found');
 
         return $response;
     }

@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  * This file is part of WebFramework.
  *
  * (c) Avoutic <avoutic@gmail.com>

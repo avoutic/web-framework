@@ -11,6 +11,10 @@ grumphp:
             max_subject_width: 80
         phpcsfixer:
             config: .php-cs-fixer.dist.php
+        phpcsfixer_copyright:
+            config: .php-cs-fixer.copyright.php
+            metadata:
+              task: phpcsfixer
         phpstan:
             configuration: phpstan.neon
             memory_limit: 256M

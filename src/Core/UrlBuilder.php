@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  * This file is part of WebFramework.
  *
  * (c) Avoutic <avoutic@gmail.com>
@@ -63,7 +63,7 @@ class UrlBuilder
                 throw new \InvalidArgumentException("Missing value for URL placeholder: {$matches[1]}");
             }
 
-            return (string)$values[$matches[1]];
+            return (string) $values[$matches[1]];
         }, $template);
 
         if ($url === null)
