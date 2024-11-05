@@ -445,36 +445,61 @@ SQL;
 
             $dbType = 'INT(11)';
         }
-        elseif ($info['type'] == 'varchar')
+        elseif (in_array($info['type'], ['varchar', 'char', 'binary', 'varbinary']))
         {
             if (!isset($info['size']))
             {
-                throw new \InvalidArgumentException('No varchar size set');
+                throw new \InvalidArgumentException("No {$info['type']} size set");
             }
 
-            $dbType = "VARCHAR({$info['size']})";
+            $dbType = strtoupper($info['type'])."({$info['size']})";
         }
-        elseif ($info['type'] == 'char')
+        elseif (in_array($info['type'], ['int', 'tinyint', 'smallint', 'mediumint', 'bigint', 'decimal', 'numeric']))
         {
-            if (!isset($info['size']))
-            {
-                throw new \InvalidArgumentException('No char size set');
-            }
-
-            $dbType = "CHAR({$info['size']})";
+            $size = isset($info['size']) ? "({$info['size']})" : '';
+            $dbType = strtoupper($info['type']).$size;
+        }
+        else
+        {
+            $dbType = strtoupper($info['type']);
         }
 
         $nullFmt = $null ? 'NULL' : 'NOT NULL';
-        $defaultFmt = (isset($info['default'])) ? "DEFAULT {$info['default']}" : '';
+        $defaultFmt = '';
         $afterFmt = (isset($info['after'])) ? "AFTER {$info['after']}" : '';
 
-        // Special changes to standard flow
-        //
-        if ($info['type'] == 'varchar' || $info['type'] == 'char' || $info['type'] == 'text' || $info['type'] == 'tinytext')
+        if (isset($info['default']))
         {
-            if (isset($info['default']))
+            if (is_array($info['default']) && isset($info['default']['function']))
             {
-                $defaultFmt = "DEFAULT '{$info['default']}'";
+                $defaultFmt = "DEFAULT {$info['default']['function']}";
+            }
+            else
+            {
+                $needsQuotes = in_array($info['type'], [
+                    'varchar',
+                    'char',
+                    'text',
+                    'tinytext',
+                    'mediumtext',
+                    'longtext',
+                    'date',
+                    'time',
+                    'timestamp',
+                    'datetime',
+                    'enum',
+                    'set',
+                    'binary',
+                    'varbinary',
+                    'json',
+                    'longblob',
+                    'mediumblob',
+                    'blob',
+                    'tinyblob',
+                ]);
+                $defaultFmt = $needsQuotes
+                    ? "DEFAULT '{$info['default']}'"
+                    : "DEFAULT {$info['default']}";
             }
         }
 

@@ -15,24 +15,50 @@ Creates a new table in the database.
 ### Field Definition
 Each field definition is an associative array that can include the following keys:
 - `name` (required): The name of the field
-- `type` (required): The data type of the field (e.g., 'varchar', 'int', 'datetime', 'text')
-- `size` (optional): The size or length of the field (for types that support it, like varchar)
-- `null` (optional): Boolean indicating whether the field can be null (default is false)
-- `default` (optional): The default value for the field
-- `after` (optional): The name of the field after which this field should be added
-- `foreign_table` (required for foreign keys): The name of the table this foreign key references
-- `foreign_field` (required for foreign keys): The name of the field in the foreign table this key references
-- `on_delete` (optional for foreign keys): The action to take when the referenced row is deleted
-- `on_update` (optional for foreign keys): The action to take when the referenced row is updated
+- `type` (required): The data type of the field. Common types include:
+  - String types (require quotes for default values):
+    - `varchar`: Variable-length string (requires size)
+    - `char`: Fixed-length string (requires size)
+    - `text`: Text field
+    - `tinytext`: Small text field
+    - `mediumtext`: Medium text field
+    - `longtext`: Large text field
+    - `enum`: Enumerated values
+    - `set`: Set of values
+    - `json`: JSON data
+  - Binary types (require quotes for default values):
+    - `binary`: Fixed-length binary (requires size)
+    - `varbinary`: Variable-length binary (requires size)
+    - `blob`: Binary large object
+    - `tinyblob`: Small binary large object
+    - `mediumblob`: Medium binary large object
+    - `longblob`: Large binary large object
+  - Date/Time types (require quotes for default values unless using functions):
+    - `datetime`: Date and time
+    - `timestamp`: Timestamp
+    - `date`: Date
+    - `time`: Time
+  - Numeric types (no quotes for default values):
+    - `int`: Integer (optional size)
+    - `tinyint`: Small integer (optional size)
+    - `smallint`: Small integer (optional size)
+    - `mediumint`: Medium integer (optional size)
+    - `bigint`: Large integer (optional size)
+    - `decimal`: Decimal number (optional size)
+    - `numeric`: Numeric value (optional size)
+    - `float`: Floating point number
+    - `double`: Double precision number
+  - Special types:
+    - `foreign_key`: Foreign key reference
+- `size` (required/optional): The size or length of the field:
+  - Required for: varchar, char, binary, varbinary
+  - Optional for: int, tinyint, smallint, mediumint, bigint, decimal, numeric
+  - Not used for: text, datetime, timestamp, date, time, json
+- `default` (optional): The default value for the field. Can be either:
+  - A string or number value: Will be quoted automatically based on the field type
+  - An array with a 'function' key: The value will be used as-is without quotes as a SQL function
 
-Note that you don't need to include a field for the `id` column in the `actions` array, as it will be added automatically.
-
-### Constraint Definition
-Each constraint definition is an associative array that can include the following keys:
-- `type` (required): The type of constraint (e.g., 'unique')
-- `values` (required for 'unique' type): An array of field names that should be unique together
-
-### Example
+### Example with Various Types and Defaults
 
 ~~~php
 <?php
@@ -42,43 +68,47 @@ return [
     'actions' => [
         [
             'type' => 'create_table',
-            'table_name' => 'users',
+            'table_name' => 'items',
             'fields' => [
                 [
-                    'name' => 'username',
+                    'name' => 'name',
                     'type' => 'varchar',
                     'size' => 255,
-                    'null' => false,
-                ],
-                [
-                    'name' => 'email',
-                    'type' => 'varchar',
-                    'size' => 255,
-                    'null' => false,
+                    'default' => 'Unnamed Item',  // Will be: DEFAULT 'Unnamed Item'
                 ],
                 [
                     'name' => 'created_at',
                     'type' => 'datetime',
-                    'null' => false,
-                    'default' => 'CURRENT_TIMESTAMP',
+                    'default' => ['function' => 'CURRENT_TIMESTAMP'],  // Will be: DEFAULT CURRENT_TIMESTAMP
                 ],
                 [
-                    'name' => 'role_id',
+                    'name' => 'status',
+                    'type' => 'enum',
+                    'default' => 'pending',  // Will be: DEFAULT 'pending'
+                ],
+                [
+                    'name' => 'count',
+                    'type' => 'int',
+                    'default' => 0,  // Will be: DEFAULT 0
+                ],
+                [
+                    'name' => 'metadata',
+                    'type' => 'json',
+                    'default' => '{}',  // Will be: DEFAULT '{}'
+                ],
+                [
+                    'name' => 'type_id',
                     'type' => 'foreign_key',
-                    'foreign_table' => 'roles',
+                    'foreign_table' => 'item_types',
                     'foreign_field' => 'id',
-                    'on_delete' => 'CASCADE',
-                    'on_update' => 'RESTRICT',
+                    'on_delete' => 'SET NULL',
+                    'on_update' => 'CASCADE',
                 ],
             ],
             'constraints' => [
                 [
                     'type' => 'unique',
-                    'values' => ['username'],
-                ],
-                [
-                    'type' => 'unique',
-                    'values' => ['email'],
+                    'values' => ['name'],
                 ],
             ],
         ],
