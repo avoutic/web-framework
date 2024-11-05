@@ -454,6 +454,15 @@ SQL;
 
             $dbType = "VARCHAR({$info['size']})";
         }
+        elseif ($info['type'] == 'char')
+        {
+            if (!isset($info['size']))
+            {
+                throw new \InvalidArgumentException('No char size set');
+            }
+
+            $dbType = "CHAR({$info['size']})";
+        }
 
         $nullFmt = $null ? 'NULL' : 'NOT NULL';
         $defaultFmt = (isset($info['default'])) ? "DEFAULT {$info['default']}" : '';
@@ -461,7 +470,7 @@ SQL;
 
         // Special changes to standard flow
         //
-        if ($info['type'] == 'varchar' || $info['type'] == 'text' || $info['type'] == 'tinytext')
+        if ($info['type'] == 'varchar' || $info['type'] == 'char' || $info['type'] == 'text' || $info['type'] == 'tinytext')
         {
             if (isset($info['default']))
             {
