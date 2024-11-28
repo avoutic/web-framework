@@ -159,22 +159,21 @@ class Image
      */
     public function resize(string $newLocation, array $size = [100, 100]): bool
     {
-        if (file_exists($newLocation))
+        if (file_exists($newLocation) && !is_writable($newLocation))
         {
-            if (!is_writable($newLocation))
-            {
-                throw new \RuntimeException('Not writable');
-            }
+            throw new \RuntimeException('Not writable');
         }
-        else
+        if (!is_writable(dirname($newLocation)))
         {
-            if (!is_writable(dirname($newLocation)))
-            {
-                throw new \RuntimeException('Not writable');
-            }
+            throw new \RuntimeException('Not writable');
         }
 
         $image = $this->createFrom($this->location);
+        if ($image === false)
+        {
+            return false;
+        }
+
         $this->resizeImage($image, $size);
 
         // Save
@@ -218,14 +217,13 @@ class Image
         {
             // Resize with the same ratio
             $ratio = $width / $height;
-
             if ($size[0] / $size[1] > $ratio)
             {
-                $size[0] = (int) ($size[1] * $ratio);
+                $size[0] = max(1, (int) ($size[1] * $ratio));
             }
             else
             {
-                $size[1] = (int) ($size[0] / $ratio);
+                $size[1] = max(1, (int) ($size[0] / $ratio));
             }
         }
 
@@ -320,6 +318,12 @@ class Image
 
         imageantialias($image, true);
         $rotate = imagerotate($image, $degrees, $backgroundColor);
+
+        if ($rotate === false)
+        {
+            return false;
+        }
+
         imagedestroy($image);
         $image = $rotate;
 
