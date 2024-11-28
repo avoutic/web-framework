@@ -1,5 +1,12 @@
 # v8 release
 
+## v8.5
+
+### Light changes
+
+* Changed CSRF validation middleware to no longer require 'do' parameter
+  and only check for state-changing methods
+
 ## v8.4
 
 ### Light changes

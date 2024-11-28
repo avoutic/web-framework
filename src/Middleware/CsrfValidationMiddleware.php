@@ -46,23 +46,18 @@ class CsrfValidationMiddleware implements MiddlewareInterface
      */
     public function process(Request $request, RequestHandlerInterface $handler): Response
     {
-        $params = $this->validatorService->getFilteredParams(
-            $request,
-            [
-                'token' => '.*',
-                'do' => 'yes|preview',
-            ]
-        );
-
-        $inputs = $request->getAttribute('inputs', []);
-        $inputs['do'] = $params['do'];
-
-        if (strlen($params['do']))
+        // Only check CSRF for state-changing methods
+        if (in_array($request->getMethod(), ['POST', 'PUT', 'DELETE', 'PATCH']))
         {
+            $params = $this->validatorService->getFilteredParams(
+                $request,
+                [
+                    'token' => '.*',
+                ]
+            );
+
             if (!$this->csrfService->validateToken($params['token']))
             {
-                $inputs['do'] = '';
-
                 $ip = $request->getAttribute('ip');
                 $userId = $request->getAttribute('user_id');
 
@@ -74,8 +69,6 @@ class CsrfValidationMiddleware implements MiddlewareInterface
                 $request = $request->withAttribute('passed_csrf', true);
             }
         }
-
-        $request = $request->withAttribute('inputs', $inputs);
 
         return $handler->handle($request);
     }
