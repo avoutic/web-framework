@@ -15,4 +15,4 @@ parameters:
         - htdocs
     excludePaths:
         analyse:
-            - ../vendor
+            - vendor
