@@ -1,21 +1,6 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Function convert\\(\\) should return string but returns string\\|null\\.$#"
-			count: 1
-			path: scripts/CaseConvertor.php
-
-		-
-			message: "#^Parameter \\#1 \\$str of function convert expects string, string\\|false given\\.$#"
-			count: 1
-			path: scripts/CaseConvertor.php
-
-		-
-			message: "#^Parameter \\#3 \\$subject of function preg_replace_callback expects array\\|string, string\\|null given\\.$#"
-			count: 1
-			path: scripts/CaseConvertor.php
-
-		-
 			message: "#^Parameter \\#3 \\$subject of function preg_replace expects array\\|string, string\\|null given\\.$#"
 			count: 1
 			path: scripts/RouteConvertor.php

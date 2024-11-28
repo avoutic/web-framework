@@ -34,12 +34,16 @@ function convert(string $str): string
     ];
     foreach ($snakeRegexps as $regexp)
     {
-        $str = preg_replace_callback($regexp, function ($matches) {
-            // print_r($matches);
+        $result = preg_replace_callback($regexp, function ($matches) {
             $camel = snakeToCamel($matches[1]);
 
             return str_replace($matches[1], $camel, $matches[0]);
         }, $str);
+
+        if (is_string($result))
+        {
+            $str = $result;
+        }
     }
 
     return $str;
@@ -54,6 +58,11 @@ foreach ($Iterator as $file)
         continue;
     }
     echo($file);
-    $out = convert(file_get_contents($file));
+    $contents = file_get_contents($file);
+    if (!is_string($contents))
+    {
+        continue;
+    }
+    $out = convert($contents);
     file_put_contents($file, $out);
 }
