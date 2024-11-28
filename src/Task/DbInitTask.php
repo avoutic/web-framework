@@ -58,20 +58,7 @@ class DbInitTask implements TaskInterface
         }
 
         $schemeFile = "{$appDir}/vendor/avoutic/web-framework/bootstrap/InitialScheme.php";
-
-        if (!file_exists($schemeFile))
-        {
-            echo " - Scheme file {$schemeFile} not found".PHP_EOL;
-
-            return;
-        }
-
-        $changeSet = require $schemeFile;
-        if (!is_array($changeSet))
-        {
-            throw new \RuntimeException('No change set array found');
-        }
-
+        $changeSet = $this->databaseManager->loadSchemaFile($schemeFile);
         $this->databaseManager->execute($changeSet, true);
     }
 }

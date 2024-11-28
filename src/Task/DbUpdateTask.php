@@ -79,12 +79,7 @@ class DbUpdateTask implements TaskInterface
                 }
             }
 
-            $changeSet = require $versionFile;
-            if (!is_array($changeSet))
-            {
-                throw new \RuntimeException('No change set array found');
-            }
-
+            $changeSet = $this->databaseManager->loadSchemaFile($versionFile);
             $this->databaseManager->execute($changeSet);
             $currentVersion = $this->databaseManager->getCurrentVersion();
             $nextVersion = $currentVersion + 1;

@@ -126,8 +126,8 @@ SQL;
     /**
      * Execute a set of database actions.
      *
-     * @param array{target_version: int, actions: array<array<mixed>>} $data          The actions to execute
-     * @param bool                                                     $ignoreVersion Whether to ignore version checks
+     * @param array<mixed, mixed> $data          The actions to execute
+     * @param bool                $ignoreVersion Whether to ignore version checks
      *
      * @throws \InvalidArgumentException If the input data is invalid
      * @throws \RuntimeException         If an action fails
@@ -853,5 +853,41 @@ SQL;
             'query' => $query,
             'params' => $params,
         ];
+    }
+
+    /**
+     * Load and validate a schema file.
+     *
+     * @param string $schemaFile Path to the schema file
+     *
+     * @return array{target_version: int, actions: array<array<mixed>>}
+     *
+     * @throws \InvalidArgumentException If the schema file is invalid
+     */
+    public function loadSchemaFile(string $schemaFile): array
+    {
+        if (!file_exists($schemaFile))
+        {
+            throw new \InvalidArgumentException("Schema file {$schemaFile} not found");
+        }
+
+        $schema = require $schemaFile;
+
+        if (!is_array($schema))
+        {
+            throw new \InvalidArgumentException('Schema file must return an array');
+        }
+
+        if (!isset($schema['actions']) || !is_array($schema['actions']))
+        {
+            throw new \InvalidArgumentException('Schema must contain an actions array');
+        }
+
+        if (!isset($schema['target_version']) || !is_int($schema['target_version']))
+        {
+            throw new \InvalidArgumentException('Schema must contain an integer target_version');
+        }
+
+        return $schema;
     }
 }
