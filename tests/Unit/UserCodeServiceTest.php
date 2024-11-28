@@ -140,6 +140,7 @@ final class UserCodeServiceTest extends Unit
     {
         $data = [
             'action' => 'thisAction',
+            'user_id' => 1,
             'timestamp' => time() - 1,
             'params' => [],
             'other' => 'than',

@@ -67,22 +67,26 @@ class UserCodeService
             throw new CodeVerificationException();
         }
 
-        // Check correctness of data received
-        //
         $data = $this->protectService->unpackArray($packedCode);
-        if (!is_array($data))
+        if (!is_array($data)
+            || !isset($data['user_id'])
+            || !isset($data['action'])
+            || !isset($data['params'])
+            || !isset($data['timestamp'])
+            || !is_int($data['user_id'])
+            || !is_string($data['action'])
+            || !is_array($data['params'])
+            || !is_int($data['timestamp'])
+        ) {
+            throw new CodeVerificationException();
+        }
+
+        if ($data['action'] !== $action)
         {
             throw new CodeVerificationException();
         }
 
-        if (!isset($data['action']) || $data['action'] !== $action)
-        {
-            throw new CodeVerificationException();
-        }
-
-        // Check if expired
-        //
-        if (!isset($data['timestamp']) || $data['timestamp'] + $validity < time())
+        if ($data['timestamp'] + $validity < time())
         {
             throw new CodeVerificationException();
         }
