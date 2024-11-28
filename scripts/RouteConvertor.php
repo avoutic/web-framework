@@ -41,7 +41,11 @@ class RouteConvertor
         {
             $pattern = '/\(([^)]+)\)/'; // matches anything inside parenthesis
             $replacement = '{'.$variable.':$1}';
-            $path = preg_replace($pattern, $replacement, $path, 1);
+            $result = preg_replace($pattern, $replacement, $path, 1);
+            if (is_string($result))
+            {
+                $path = $result;
+            }
         }
 
         // Create the line to be outputted
