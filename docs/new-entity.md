@@ -166,6 +166,8 @@ SQL;
 
 Define a new database table `cars` that matches the structure of the `Car` entity. This is typically done through a database migration. The `DatabaseManager` class is used to manage database schema changes.
 
+Check out the [Database Migrations](./database-migrations.md) documentation for more information on how to create and apply database migrations.
+
 The `target_version` is used to track the version of the database schema. The `actions` array contains the actual schema changes to be applied. The actual version number is important and should be incremented with each change to the database schema. You also need to update the `versions.required_app_db` field in your config.php file to reflect the new version number.
 
 You don't need to include a field for the `id` column in the `actions` array, as it will be added automatically.

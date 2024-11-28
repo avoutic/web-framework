@@ -1,6 +1,44 @@
 # Database Migrations
 
-This document lists all the actions supported by the DatabaseManager class in WebFramework. For each action, you'll find a description, required and optional fields, and an example db_scheme migration file.
+This document describes how to manage database migrations in WebFramework, including file organization, versioning, and the actions supported by the DatabaseManager class.
+
+## Migration File Organization
+
+Database migration files should be placed in the `db_scheme` directory of your application. Each migration file should be numbered incrementally and have a `.php` extension. For example:
+
+~~~
+db_scheme/
+├── 1.php  # Initial schema
+├── 2.php  # Add user roles
+├── 3.php  # Add email verification
+└── 4.php  # Add user preferences
+~~~
+
+### File Naming
+
+- Files should be numbered incrementally (1.php, 2.php, 3.php, etc.)
+- Each number represents a database version
+- Files must be applied in order
+- No gaps in numbering are allowed
+
+### Version Management
+
+After adding a new migration file, you must update the required database version in your `config/config.php`:
+
+~~~php
+return [
+    // Other configuration settings...
+    'versions' => [
+        'required_app_db' => 4,  // Should match your latest migration file number
+    ],
+];
+~~~
+
+This ensures that the application knows which database version it requires to function correctly.
+
+## Migration Actions
+
+The DatabaseManager supports various actions for modifying the database schema. Here are all the supported actions:
 
 ## Create Table
 
