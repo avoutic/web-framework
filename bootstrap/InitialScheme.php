@@ -1,4 +1,5 @@
 <?php
+
 return [
     'target_version' => 1,
     'actions' => [
@@ -105,7 +106,7 @@ return [
             'constraints' => [
                 [
                     'type' => 'unique',
-                    'values' => [ 'username' ],
+                    'values' => ['username'],
                 ],
             ],
         ],
@@ -133,7 +134,7 @@ return [
             'constraints' => [
                 [
                     'type' => 'unique',
-                    'values' => [ 'user_id', 'right_id' ],
+                    'values' => ['user_id', 'right_id'],
                 ],
             ],
         ],
@@ -157,7 +158,7 @@ return [
                 [
                     'name' => 'start',
                     'type' => 'datetime',
-                    'default' => 'CURRENT_TIMESTAMP',
+                    'default' => ['function' => 'CURRENT_TIMESTAMP'],
                 ],
                 [
                     'name' => 'last_active',
@@ -190,7 +191,7 @@ return [
             'constraints' => [
                 [
                     'type' => 'unique',
-                    'values' => [ 'module', 'name' ],
+                    'values' => ['module', 'name'],
                 ],
             ],
         ],
@@ -225,7 +226,7 @@ return [
             'constraints' => [
                 [
                     'type' => 'unique',
-                    'values' => [ 'user_id', 'module', 'name' ],
+                    'values' => ['user_id', 'module', 'name'],
                 ],
             ],
         ],
