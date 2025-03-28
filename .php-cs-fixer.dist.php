@@ -27,6 +27,7 @@ return $config->setRules([
         'no_multiple_statements_per_line' => true,
         'no_unneeded_control_parentheses' => false,
         'octal_notation' => true,
+        'operator_linebreak' => false,
         'phpdoc_param_order' => true,
         'random_api_migration' => true,
         'static_lambda' => false, // Does not work well with Slim routing groups and closures
