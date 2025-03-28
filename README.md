@@ -44,3 +44,14 @@ To get started with WebFramework, follow the [Installation Guide](INSTALL.md) to
 For any questions or further assistance, please refer to the documentation or reach out to the WebFramework community.
 
 Happy coding!
+
+## Modules
+
+Opinionated choices are provided with external modules:
+
+- **avoutic/web-framework/browserless**: Browserless module
+- **avoutic/web-framework-mysql**: MySql database module
+- **avoutic/web-framework-postmark**: Postmark mail module
+- **avoutic/web-framework-redis**: Redis caching module
+- **avoutic/web-framework-sentry**: Sentry.io instrumentation module
+- **avoutic/web-framework-stripe**: Stripe wrapper

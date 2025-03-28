@@ -2,7 +2,6 @@
 
 namespace WebFramework;
 
-use Cache\Adapter\Redis\RedisCachePool;
 use Composer\Autoload\ClassLoader;
 use DI;
 use GuzzleHttp\Client;
@@ -11,37 +10,9 @@ use Odan\Session\PhpSession;
 use Odan\Session\SessionInterface;
 use Odan\Session\SessionManagerInterface;
 use Psr\Container\ContainerInterface;
-use Sentry\ClientInterface;
 use Slim\Psr7\Factory\ResponseFactory;
-use Stripe\Stripe;
-use Stripe\StripeClient;
-use WebFramework\Core\SentryClientFactory;
 
 return [
-    RedisCachePool::class => function (ContainerInterface $c) {
-        $secureConfigService = $c->get(Security\ConfigService::class);
-
-        $cacheConfig = $secureConfigService->getAuthConfig('redis');
-
-        $redisClient = new \Redis();
-
-        $result = $redisClient->pconnect(
-            $cacheConfig['hostname'],
-            $cacheConfig['port'],
-            1,
-            'wf',
-            0,
-            0,
-            ['auth' => $cacheConfig['password']]
-        );
-
-        if ($result !== true)
-        {
-            throw new \RuntimeException('Redis Cache connection failed');
-        }
-
-        return new RedisCachePool($redisClient);
-    },
     Engine::class => DI\create(),
     SessionManagerInterface::class => function (ContainerInterface $container) {
         return $container->get(SessionInterface::class);
@@ -58,22 +29,7 @@ return [
 
         return new PhpSession($options);
     },
-    ClientInterface::class => function (ContainerInterface $container) {
-        $factory = $container->get(SentryClientFactory::class);
-        $options = $container->get('sentry_options');
-
-        return $factory->get($options);
-    },
     ResponseFactory::class => DI\create(),
-    StripeClient::class => function (ContainerInterface $c) {
-        $secureConfigService = $c->get(Security\ConfigService::class);
-
-        $stripeConfig = $secureConfigService->getAuthConfig('stripe');
-
-        Stripe::setApiKey($stripeConfig['api_key']);
-
-        return new StripeClient($stripeConfig['api_key']);
-    },
 
     'app_dir' => function (ContainerInterface $c) {
         // Determine app dir
@@ -98,47 +54,9 @@ return [
     'SanityCheckStoredValues' => DI\autowire(Core\StoredValues::class)
         ->constructorParameter('module', 'sanity_check'),
 
-    Core\Browserless::class => function (ContainerInterface $c) {
-        $secureConfigService = $c->get(Security\ConfigService::class);
-
-        $config = $secureConfigService->getAuthConfig('browserless');
-
-        return new Core\Browserless(
-            $c->get(Security\ProtectService::class),
-            $config['local_server'],
-            $config['pdf_endpoint'],
-            $config['token'],
-        );
-    },
     Core\Cache::class => DI\autowire(Core\NullCache::class),
     Core\ConfigService::class => DI\autowire()
         ->constructorParameter('config', DI\get('config_tree')),
-    Core\Database::class => function (ContainerInterface $c) {
-        $secureConfigService = $c->get(Security\ConfigService::class);
-
-        $dbConfig = $secureConfigService->getAuthConfig('db_config.main');
-
-        $mysql = new \mysqli(
-            $dbConfig['database_host'],
-            $dbConfig['database_user'],
-            $dbConfig['database_password'],
-            $dbConfig['database_database']
-        );
-
-        if ($mysql->connect_error)
-        {
-            throw new \RuntimeException('Mysqli Database connection failed');
-        }
-
-        $database = new Core\MysqliDatabase(
-            $mysql,
-            $c->get(Core\Instrumentation::class),
-        );
-
-        $c->get(Core\DatabaseProvider::class)->set($database);
-
-        return $database;
-    },
     Core\DatabaseManager::class => DI\autowire()
         ->constructorParameter('storedValues', DI\get('DbStoredValues')),
     Core\Instrumentation::class => DI\autowire(Core\NullInstrumentation::class),
@@ -148,15 +66,6 @@ return [
     Core\MailReportFunction::class => DI\autowire()
         ->constructorParameter('assertRecipient', DI\get('sender_core.assert_recipient')),
     Core\MailService::class => DI\autowire(Core\NullMailService::class),
-    Core\PostmarkClientFactory::class => DI\factory(function (ContainerInterface $c) {
-        $secureConfigService = $c->get(Security\ConfigService::class);
-
-        $apiKey = $secureConfigService->getAuthConfig('postmark');
-
-        return new Core\PostmarkClientFactory($apiKey);
-    }),
-    Core\PostmarkMailService::class => DI\autowire()
-        ->constructorParameter('defaultSender', DI\get('sender_core.default_sender')),
     Core\Recaptcha::class => DI\Factory(function (ContainerInterface $c) {
         return new Core\Recaptcha(
             $c->get(Client::class),
@@ -177,17 +86,6 @@ return [
     Core\SanityCheckRunner::class => DI\autowire()
         ->constructorParameter('storedValues', DI\get('SanityCheckStoredValues'))
         ->constructorParameter('buildInfo', DI\get('build_info')),
-    Core\StripeFactory::class => DI\factory(function (ContainerInterface $c) {
-        $secureConfigService = $c->get(Security\ConfigService::class);
-
-        $config = $secureConfigService->getAuthConfig('stripe');
-
-        return new Core\StripeFactory(
-            $c->get(Core\RuntimeEnvironment::class),
-            $c->get(StripeClient::class),
-            $config['endpoint_secret'],
-        );
-    }),
     Core\UserMailer::class => function (ContainerInterface $c) {
         $configService = $c->get(Core\ConfigService::class);
         $templateOverrides = $configService->get('user_mailer.template_overrides');
