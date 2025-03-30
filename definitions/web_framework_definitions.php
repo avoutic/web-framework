@@ -57,6 +57,7 @@ return [
     Core\Cache::class => DI\autowire(Core\NullCache::class),
     Core\ConfigService::class => DI\autowire()
         ->constructorParameter('config', DI\get('config_tree')),
+    Core\Database::class => DI\autowire(Core\NullDatabase::class),
     Core\DatabaseManager::class => DI\autowire()
         ->constructorParameter('storedValues', DI\get('DbStoredValues')),
     Core\Instrumentation::class => DI\autowire(Core\NullInstrumentation::class),
