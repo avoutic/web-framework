@@ -29,6 +29,7 @@ class DatabaseManager
      */
     public function __construct(
         private Container $container,
+        private ConfigService $configService,
         private Database $database,
         private StoredValues $storedValues,
     ) {}
@@ -150,7 +151,7 @@ SQL;
 
             echo " - Checking current version to match {$startVersion}".PHP_EOL;
 
-            $this->checkVersion($startVersion);
+            $this->checkAppVersion($startVersion);
         }
 
         echo ' - Preparing all statements'.PHP_EOL;
@@ -366,25 +367,35 @@ SQL;
     }
 
     /**
-     * Get the current database version.
+     * Get the current database version for the application.
      *
-     * @return int The current database version
+     * @return int The current database version for the application
      */
-    public function getCurrentVersion(): int
+    public function getCurrentAppVersion(): int
     {
         return (int) $this->storedValues->getValue('app_db_version', '0');
     }
 
     /**
-     * Check if the current database version matches the expected version.
+     * Get the required database version for the application based on the configuration.
+     *
+     * @return int The required database version for the application
+     */
+    public function getRequiredAppVersion(): int
+    {
+        return (int) $this->configService->get('versions.required_app_db');
+    }
+
+    /**
+     * Check if the current database version for the application matches the expected version.
      *
      * @param int $appDbVersion The expected database version
      *
      * @throws \RuntimeException If the versions don't match
      */
-    private function checkVersion(int $appDbVersion): void
+    private function checkAppVersion(int $appDbVersion): void
     {
-        $currentVersion = $this->getCurrentVersion();
+        $currentVersion = $this->getCurrentAppVersion();
 
         if ($currentVersion !== $appDbVersion)
         {
@@ -402,6 +413,26 @@ SQL;
         $this->storedValues->setValue('app_db_version', (string) $to);
 
         $this->updateStoredHash();
+    }
+
+    /**
+     * Get the current database version for WebFramework.
+     *
+     * @return int The current database version for WebFramework
+     */
+    public function getCurrentFrameworkVersion(): int
+    {
+        return (int) $this->storedValues->getValue('wf_db_version', '0');
+    }
+
+    /**
+     * Get the required database version for WebFramework.
+     *
+     * @return int The required database version WebFramework
+     */
+    public function getRequiredFrameworkVersion(): int
+    {
+        return FRAMEWORK_DB_VERSION;
     }
 
     /**

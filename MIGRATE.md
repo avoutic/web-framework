@@ -1,3 +1,9 @@
+## Untagged
+
+### Internal changes
+
+* Renamed getCurrentVersion() to getCurrentAppVersion() in DatabaseManager
+
 # v8 release
 
 ## v8.5
