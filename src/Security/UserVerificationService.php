@@ -15,6 +15,8 @@ use WebFramework\Core\ConfigService;
 use WebFramework\Core\UrlBuilder;
 use WebFramework\Core\UserMailer;
 use WebFramework\Entity\User;
+use WebFramework\Event\EventService;
+use WebFramework\Event\UserVerified;
 use WebFramework\Exception\CodeVerificationException;
 use WebFramework\Repository\UserRepository;
 
@@ -27,6 +29,7 @@ class UserVerificationService
      * UserVerificationService constructor.
      *
      * @param ConfigService   $configService   The configuration service
+     * @param EventService    $eventService    The event service
      * @param UrlBuilder      $urlBuilder      The URL builder service
      * @param UserCodeService $userCodeService The user code service
      * @param UserMailer      $userMailer      The user mailer service
@@ -34,6 +37,7 @@ class UserVerificationService
      */
     public function __construct(
         private ConfigService $configService,
+        private EventService $eventService,
         private UrlBuilder $urlBuilder,
         private UserCodeService $userCodeService,
         private UserMailer $userMailer,
@@ -123,6 +127,8 @@ class UserVerificationService
         {
             $user->setVerified();
             $this->userRepository->save($user);
+
+            $this->eventService->dispatch(new UserVerified($user));
         }
     }
 }

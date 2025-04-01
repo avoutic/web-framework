@@ -14,6 +14,8 @@ namespace WebFramework\Security;
 use Slim\Http\ServerRequest as Request;
 use WebFramework\Core\ConfigService;
 use WebFramework\Entity\User;
+use WebFramework\Event\EventService;
+use WebFramework\Event\UserLoggedIn;
 use WebFramework\Exception\CaptchaRequiredException;
 use WebFramework\Exception\InvalidPasswordException;
 use WebFramework\Exception\UserVerificationRequiredException;
@@ -33,6 +35,7 @@ class LoginService
      * @param BlacklistService      $blacklistService      The blacklist service
      * @param ConfigService         $configService         The configuration service
      * @param CheckPasswordService  $checkPasswordService  The password checking service
+     * @param EventService          $eventService          The event service
      * @param UserRepository        $userRepository        The user repository
      */
     public function __construct(
@@ -40,6 +43,7 @@ class LoginService
         private BlacklistService $blacklistService,
         private ConfigService $configService,
         private CheckPasswordService $checkPasswordService,
+        private EventService $eventService,
         private UserRepository $userRepository,
     ) {}
 
@@ -109,6 +113,8 @@ class LoginService
         }
 
         $this->authenticationService->authenticate($user);
+
+        $this->eventService->dispatch(new UserLoggedIn($user));
     }
 
     /**

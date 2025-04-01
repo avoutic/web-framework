@@ -7,6 +7,7 @@ use Codeception\Test\Unit;
 use Slim\Http\ServerRequest as Request;
 use WebFramework\Core\ConfigService;
 use WebFramework\Entity\User;
+use WebFramework\Event\EventService;
 use WebFramework\Exception\CaptchaRequiredException;
 use WebFramework\Exception\InvalidPasswordException;
 use WebFramework\Exception\UserVerificationRequiredException;
@@ -230,6 +231,12 @@ final class LoginServiceTest extends Unit
                     NullAuthenticationService::class,
                     [
                         'authenticate' => Expected::once(),
+                    ],
+                ),
+                'eventService' => $this->makeEmpty(
+                    EventService::class,
+                    [
+                        'dispatch' => Expected::once(),
                     ],
                 ),
             ],

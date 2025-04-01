@@ -15,6 +15,8 @@ use WebFramework\Core\ConfigService;
 use WebFramework\Core\UrlBuilder;
 use WebFramework\Core\UserMailer;
 use WebFramework\Entity\User;
+use WebFramework\Event\EventService;
+use WebFramework\Event\UserEmailChanged;
 use WebFramework\Exception\CodeVerificationException;
 use WebFramework\Exception\DuplicateEmailException;
 use WebFramework\Exception\WrongAccountException;
@@ -32,6 +34,7 @@ class ChangeEmailService
      *
      * @param AuthenticationService   $authenticationService   The authentication service
      * @param ConfigService           $configService           The configuration service
+     * @param EventService            $eventService            The event service
      * @param SecurityIteratorService $securityIteratorService The security iterator service
      * @param UrlBuilder              $urlBuilder              The URL builder service
      * @param UserCodeService         $userCodeService         The user code service
@@ -41,6 +44,7 @@ class ChangeEmailService
     public function __construct(
         private AuthenticationService $authenticationService,
         private ConfigService $configService,
+        private EventService $eventService,
         private SecurityIteratorService $securityIteratorService,
         private UrlBuilder $urlBuilder,
         private UserCodeService $userCodeService,
@@ -79,6 +83,8 @@ class ChangeEmailService
         }
 
         $this->userRepository->save($user);
+
+        $this->eventService->dispatch(new UserEmailChanged($user));
     }
 
     /**

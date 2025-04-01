@@ -12,6 +12,8 @@
 namespace WebFramework\Security;
 
 use WebFramework\Entity\User;
+use WebFramework\Event\EventService;
+use WebFramework\Event\UserPasswordChanged;
 use WebFramework\Exception\InvalidPasswordException;
 use WebFramework\Exception\PasswordMismatchException;
 use WebFramework\Exception\WeakPasswordException;
@@ -28,12 +30,14 @@ class ChangePasswordService
      * ChangePasswordService constructor.
      *
      * @param AuthenticationService   $authenticationService   The authentication service
+     * @param EventService            $eventService            The event service
      * @param PasswordHashService     $passwordHashService     The password hash service
      * @param UserRepository          $userRepository          The user repository
      * @param SecurityIteratorService $securityIteratorService The security iterator service
      */
     public function __construct(
         private AuthenticationService $authenticationService,
+        private EventService $eventService,
         private PasswordHashService $passwordHashService,
         private UserRepository $userRepository,
         private SecurityIteratorService $securityIteratorService,
@@ -101,6 +105,8 @@ class ChangePasswordService
 
         $user->setSolidPassword($newHash);
         $this->userRepository->save($user);
+
+        $this->eventService->dispatch(new UserPasswordChanged($user));
 
         $this->securityIteratorService->incrementFor($user);
 
