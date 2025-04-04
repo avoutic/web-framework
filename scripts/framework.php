@@ -11,6 +11,7 @@
  */
 
 use WebFramework\Core\TaskRunner;
+use WebFramework\Exception\ArgumentParserException;
 use WebFramework\Task\TaskRunnerTask;
 
 // Get the project root directory
@@ -32,7 +33,19 @@ require_once $projectRoot.'/vendor/autoload.php';
 // Get command from command line
 $scriptName = basename($argv[0]);
 $command = $argv[1] ?? null;
-if (!$command || $command === 'help')
+$arguments = array_slice($argv, 2);
+
+// Map supported commands
+//
+$commands = [
+    'db:init' => 'WebFramework\Task\DbInitTask',
+    'db:update' => 'WebFramework\Task\DbUpdateTask',
+    'db:version' => 'WebFramework\Task\DbVersionTask',
+    'sanity:check' => 'WebFramework\Task\SanityCheckTask',
+    'task:run' => 'WebFramework\Task\TaskRunnerTask',
+];
+
+function showUsage(string $scriptName): void
 {
     echo 'Usage: '.$scriptName.' <command> [options]'.PHP_EOL.PHP_EOL;
     echo 'Available commands:'.PHP_EOL;
@@ -40,6 +53,7 @@ if (!$command || $command === 'help')
     echo PHP_EOL;
     echo '  db:init      Initialize the database'.PHP_EOL;
     echo '  db:update    Update the database to latest version'.PHP_EOL;
+    echo '               --dry-run    Dry run the task (no changes will be made)'.PHP_EOL;
     echo '  db:version   Show current database version'.PHP_EOL;
     echo PHP_EOL;
     echo '  sanity:check Run sanity checks'.PHP_EOL;
@@ -50,6 +64,11 @@ if (!$command || $command === 'help')
     exit();
 }
 
+if (!$command || !isset($commands[$command]))
+{
+    showUsage($scriptName);
+}
+
 $taskRunner = new TaskRunner($projectRoot);
 $taskRunner->build();
 
@@ -57,36 +76,21 @@ try
 {
     if ($command === 'task:run')
     {
-        $taskClass = $argv[2] ?? null;
-        if (!$taskClass)
-        {
-            echo 'Usage: '.$scriptName.' task:run <TaskClass>'.PHP_EOL;
-
-            exit(1);
-        }
-
-        $task = new TaskRunnerTask($taskRunner, $taskClass);
-        $taskRunner->executeTaskObject($task);
-
-        exit();
+        $task = new TaskRunnerTask($taskRunner);
+        $taskRunner->executeTaskObject($task, $arguments);
     }
-
-    // Map commands to task classes
-    $commands = [
-        'db:init' => 'WebFramework\Task\DbInitTask',
-        'db:update' => 'WebFramework\Task\DbUpdateTask',
-        'db:version' => 'WebFramework\Task\DbVersionTask',
-        'sanity:check' => 'WebFramework\Task\SanityCheckTask',
-    ];
-
-    if (!isset($commands[$command]))
+    else
     {
-        echo "Command '{$command}' does not exist.".PHP_EOL;
-
-        exit(1);
+        $taskRunner->execute($commands[$command], $arguments);
     }
+}
+catch (ArgumentParserException $e)
+{
+    echo $e->getMessage().PHP_EOL.PHP_EOL;
 
-    $taskRunner->execute($commands[$command]);
+    showUsage($scriptName);
+
+    exit(1);
 }
 catch (Throwable $e)
 {

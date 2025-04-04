@@ -14,6 +14,7 @@ namespace WebFramework\Core;
 use Carbon\Carbon;
 use DI\Container;
 use DI\ContainerBuilder;
+use WebFramework\Exception\ArgumentParserException;
 
 /**
  * Class TaskRunner.
@@ -149,13 +150,119 @@ class TaskRunner
     }
 
     /**
+     * Apply arguments to a task.
+     *
+     * @param ConsoleTask   $task                 The task to apply arguments to
+     * @param array<string> $commandLineArguments The arguments to apply
+     *
+     * @throws ArgumentParserException If the arguments are invalid
+     */
+    private function applyArguments(ConsoleTask $task, array $commandLineArguments): void
+    {
+        $options = $task->getOptions();
+
+        $arguments = $task->getArguments();
+        $argumentIndex = 0;
+
+        $i = 0;
+        $argCount = count($commandLineArguments);
+        while ($i < $argCount)
+        {
+            $arg = $commandLineArguments[$i];
+
+            if (str_starts_with($arg, '--'))
+            {
+                $searchKey = 'long';
+                $searchValue = substr($arg, 2);
+
+                $result = array_filter($options, function ($item) use ($searchKey, $searchValue) {
+                    return $item[$searchKey] === $searchValue;
+                });
+
+                $data = reset($result);
+
+                if (!$data)
+                {
+                    throw new ArgumentParserException("Unknown option: {$arg}");
+                }
+
+                if ($data['has_value'])
+                {
+                    if ($i + 1 >= $argCount)
+                    {
+                        throw new ArgumentParserException("Option {$arg} requires a value");
+                    }
+
+                    $data['setter']($commandLineArguments[$i + 1]);
+                    $i++;
+                }
+                else
+                {
+                    $data['setter']();
+                }
+            }
+            elseif (str_starts_with($arg, '-'))
+            {
+                $searchKey = 'short';
+                $searchValue = substr($arg, 1);
+
+                $result = array_filter($options, function ($item) use ($searchKey, $searchValue) {
+                    return isset($item[$searchKey]) && $item[$searchKey] === $searchValue;
+                });
+
+                $data = reset($result);
+
+                if (!$data)
+                {
+                    throw new ArgumentParserException("Unknown option: {$arg}");
+                }
+
+                if ($data['has_value'])
+                {
+                    if ($i + 1 >= $argCount)
+                    {
+                        throw new ArgumentParserException("Option {$arg} requires a value");
+                    }
+
+                    $data['setter']($commandLineArguments[$i + 1]);
+                    $i++;
+                }
+                else
+                {
+                    $data['setter']();
+                }
+            }
+            else
+            {
+                if ($argumentIndex >= count($arguments))
+                {
+                    throw new ArgumentParserException('Too many arguments');
+                }
+
+                $data = $arguments[$argumentIndex];
+                $data['setter']($arg);
+                $argumentIndex++;
+            }
+
+            $i++;
+        }
+
+        if ($argumentIndex < count($arguments))
+        {
+            throw new ArgumentParserException('Missing arguments');
+        }
+    }
+
+    /**
      * Execute a task.
      *
-     * @param string $taskClass The fully qualified class name of the task to execute
+     * @param string        $taskClass The fully qualified class name of the task to execute
+     * @param array<string> $arguments The arguments to pass to the task
      *
-     * @throws \RuntimeException If the task does not implement TaskInterface
+     * @throws \RuntimeException       If the task does not implement TaskInterface
+     * @throws ArgumentParserException If the arguments are invalid
      */
-    public function execute(string $taskClass): void
+    public function execute(string $taskClass, array $arguments = []): void
     {
         $task = $this->get($taskClass);
 
@@ -164,18 +271,25 @@ class TaskRunner
             throw new \RuntimeException("Task {$taskClass} does not implement TaskInterface");
         }
 
-        $this->executeTaskObject($task);
+        $this->executeTaskObject($task, $arguments);
     }
 
     /**
      * Execute a task object.
      *
-     * @param TaskInterface $task The task object to execute
+     * @param TaskInterface $task      The task object to execute
+     * @param array<string> $arguments The arguments to pass to the task
      *
-     * @throws \RuntimeException If the task does not implement TaskInterface
+     * @throws \RuntimeException       If the task does not implement TaskInterface
+     * @throws ArgumentParserException If the arguments are invalid
      */
-    public function executeTaskObject(TaskInterface $task): void
+    public function executeTaskObject(TaskInterface $task, array $arguments = []): void
     {
+        if ($task instanceof ConsoleTask)
+        {
+            $this->applyArguments($task, $arguments);
+        }
+
         if ($this->isContinuous)
         {
             $start = Carbon::now();
@@ -186,7 +300,7 @@ class TaskRunner
 
                 if ($this->maxRuntimeInSecs)
                 {
-                    if (Carbon::now()->diffInSeconds($start) > $this->maxRuntimeInSecs)
+                    if ($start->diffInSeconds() > $this->maxRuntimeInSecs)
                     {
                         break;
                     }

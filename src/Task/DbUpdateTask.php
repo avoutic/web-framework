@@ -13,14 +13,16 @@ namespace WebFramework\Task;
 
 use Psr\Container\ContainerInterface as Container;
 use WebFramework\Core\BootstrapService;
+use WebFramework\Core\ConsoleTask;
 use WebFramework\Core\DatabaseManager;
-use WebFramework\Core\TaskInterface;
 
 /**
  * Task for updating the database schema.
  */
-class DbUpdateTask implements TaskInterface
+class DbUpdateTask extends ConsoleTask
 {
+    private bool $dryRun = false;
+
     /**
      * DbUpdateTask constructor.
      *
@@ -33,6 +35,39 @@ class DbUpdateTask implements TaskInterface
         private BootstrapService $bootstrapService,
         private DatabaseManager $databaseManager,
     ) {}
+
+    public function getCommand(): string
+    {
+        return 'db:update';
+    }
+
+    public function getDescription(): string
+    {
+        return 'Update the database to the latest version';
+    }
+
+    /**
+     * Get the options for the task.
+     *
+     * @return array<array{long: string, short?: string, description: string, has_value: bool, setter: callable}> The options for the task
+     */
+    public function getOptions(): array
+    {
+        return [
+            [
+                'long' => 'dry-run',
+                'short' => 'd',
+                'description' => 'Dry run the task (no changes will be made)',
+                'has_value' => false,
+                'setter' => [$this, 'setDryRun'],
+            ],
+        ];
+    }
+
+    public function setDryRun(bool $dryRun = true): void
+    {
+        $this->dryRun = $dryRun;
+    }
 
     /**
      * Execute the database update task.
@@ -77,9 +112,20 @@ class DbUpdateTask implements TaskInterface
             }
 
             $changeSet = $this->databaseManager->loadSchemaFile($versionFile);
-            $this->databaseManager->execute($changeSet);
-            $currentVersion = $this->databaseManager->getCurrentAppVersion();
-            $nextVersion = $currentVersion + 1;
+            $this->databaseManager->execute(
+                data: $changeSet,
+                dryRun: $this->dryRun,
+            );
+
+            if (!$this->dryRun)
+            {
+                $currentVersion = $this->databaseManager->getCurrentAppVersion();
+                $nextVersion = $currentVersion + 1;
+            }
+            else
+            {
+                $nextVersion++;
+            }
         }
     }
 }
