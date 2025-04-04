@@ -51,13 +51,11 @@ class MailReportFunction implements ReportFunction
         {
             $cached = [
                 'count' => 1,
-                'last_timestamp' => time(),
             ];
         }
         else
         {
             $cached['count']++;
-            $cached['last_timestamp'] = time();
         }
 
         $this->cache->set($cacheId, $cached, time() + 10 * 60);
