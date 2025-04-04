@@ -11,6 +11,7 @@
 
 namespace WebFramework\Core;
 
+use Carbon\Carbon;
 use WebFramework\Entity\User;
 use WebFramework\Repository\UserRepository;
 use WebFramework\Security\PasswordHashService;
@@ -54,7 +55,7 @@ class UserService
             'solid_password' => $solidPassword,
             'email' => $email,
             'terms_accepted' => $termsAccepted,
-            'registered' => time(),
+            'registered' => Carbon::now()->getTimestamp(),
         ]);
     }
 

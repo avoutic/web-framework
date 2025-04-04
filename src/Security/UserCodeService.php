@@ -11,6 +11,7 @@
 
 namespace WebFramework\Security;
 
+use Carbon\Carbon;
 use WebFramework\Entity\User;
 use WebFramework\Exception\CodeVerificationException;
 
@@ -43,7 +44,7 @@ class UserCodeService
             'user_id' => $user->getId(),
             'action' => $action,
             'params' => $params,
-            'timestamp' => time(),
+            'timestamp' => Carbon::now()->getTimestamp(),
         ];
 
         return $this->protectService->packArray($msg);
@@ -86,7 +87,8 @@ class UserCodeService
             throw new CodeVerificationException();
         }
 
-        if ($data['timestamp'] + $validity < time())
+        $timestamp = new Carbon($data['timestamp']);
+        if ($timestamp->addSeconds($validity)->lt(Carbon::now()))
         {
             throw new CodeVerificationException();
         }

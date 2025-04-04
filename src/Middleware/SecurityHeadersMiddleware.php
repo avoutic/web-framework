@@ -11,6 +11,7 @@
 
 namespace WebFramework\Middleware;
 
+use Carbon\Carbon;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Server\MiddlewareInterface;
@@ -33,7 +34,7 @@ class SecurityHeadersMiddleware implements MiddlewareInterface
 
         // Add random header (against BREACH like attacks)
         //
-        $response = $response->withHeader('X-Random', substr(sha1((string) time()), 0, mt_rand(1, 40)));
+        $response = $response->withHeader('X-Random', substr(sha1(Carbon::now()), 0, mt_rand(1, 40)));
 
         // Add Clickjack prevention header
         //

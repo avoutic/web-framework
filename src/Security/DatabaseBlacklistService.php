@@ -11,6 +11,7 @@
 
 namespace WebFramework\Security;
 
+use Carbon\Carbon;
 use WebFramework\Core\Database;
 use WebFramework\Repository\BlacklistEntryRepository;
 
@@ -48,7 +49,7 @@ class DatabaseBlacklistService implements BlacklistService
         WHERE timestamp < ?
 SQL;
 
-        $cutoff = time() - $this->storePeriod;
+        $cutoff = Carbon::now()->subSeconds($this->storePeriod)->getTimestamp();
 
         $result = $this->database->query($query, [$cutoff], 'Failed to clean up blacklist entries');
     }
@@ -70,7 +71,7 @@ SQL;
             'user_id' => $userId,
             'severity' => $severity,
             'reason' => $fullReason,
-            'timestamp' => time(),
+            'timestamp' => Carbon::now()->getTimestamp(),
         ]);
     }
 
@@ -84,7 +85,7 @@ SQL;
      */
     public function isBlacklisted(string $ip, ?int $userId): bool
     {
-        $cutoff = time() - $this->triggerPeriod;
+        $cutoff = Carbon::now()->subSeconds($this->triggerPeriod)->getTimestamp();
         $params = [$cutoff, $ip];
         $userFmt = '';
 

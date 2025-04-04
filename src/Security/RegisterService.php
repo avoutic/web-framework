@@ -11,6 +11,7 @@
 
 namespace WebFramework\Security;
 
+use Carbon\Carbon;
 use WebFramework\Core\UserService;
 use WebFramework\Entity\User;
 use WebFramework\Exception\InvalidCaptchaException;
@@ -83,7 +84,7 @@ class RegisterService
      */
     public function register(string $username, string $email, string $password, array $afterVerifyParams = []): User
     {
-        $user = $this->userService->createUser($username, $password, $email, time());
+        $user = $this->userService->createUser($username, $password, $email, Carbon::now()->getTimestamp());
 
         $this->userVerificationService->sendVerifyMail($user, $afterVerifyParams);
 

@@ -11,6 +11,7 @@
 
 namespace WebFramework\Security;
 
+use Carbon\Carbon;
 use WebFramework\Entity\User;
 use WebFramework\Repository\UserRepository;
 
@@ -63,7 +64,7 @@ class CheckPasswordService
             $user->setSolidPassword($newHash);
         }
 
-        $user->setLastLogin(time());
+        $user->setLastLogin(Carbon::now()->getTimestamp());
         $this->userRepository->save($user);
 
         return true;

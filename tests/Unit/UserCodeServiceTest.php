@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use Carbon\Carbon;
 use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
 use WebFramework\Exception\CodeVerificationException;
@@ -114,16 +115,23 @@ final class UserCodeServiceTest extends Unit
 
     public function testVerifyExpiredTimestamp()
     {
+        Carbon::setTestNow('2025-01-01 00:00:00');
+
+        $data = [
+            'action' => 'thisAction',
+            'user_id' => 1,
+            'timestamp' => Carbon::now()->subSeconds(1)->getTimestamp(),
+            'params' => [],
+            'other' => 'than',
+        ];
+
         $instance = $this->make(
             UserCodeService::class,
             [
                 'protectService' => $this->makeEmpty(
                     ProtectService::class,
                     [
-                        'unpackArray' => Expected::once([
-                            'action' => 'thisAction',
-                            'timestamp' => time() - 1,
-                        ]),
+                        'unpackArray' => Expected::once($data),
                     ],
                 ),
             ],
@@ -138,10 +146,12 @@ final class UserCodeServiceTest extends Unit
 
     public function testVerifySuccess()
     {
+        Carbon::setTestNow('2025-01-01 00:00:00');
+
         $data = [
             'action' => 'thisAction',
             'user_id' => 1,
-            'timestamp' => time() - 1,
+            'timestamp' => Carbon::now()->subSeconds(1)->getTimestamp(),
             'params' => [],
             'other' => 'than',
         ];

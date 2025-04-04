@@ -11,6 +11,7 @@
 
 namespace WebFramework\Core;
 
+use Carbon\Carbon;
 use Psr\Container\ContainerInterface as Container;
 use WebFramework\SanityCheck\SanityCheckModule;
 
@@ -133,14 +134,14 @@ class SanityCheckRunner
             // Prevent flooding. Only start check once per
             // five seconds.
             //
-            $lastTimestamp = (int) $this->storedValues->getValue('last_check', '0');
+            $lastTimestamp = new Carbon($this->storedValues->getValue('last_check', '0'));
 
-            if (time() - $lastTimestamp < 5)
+            if (Carbon::now()->diffInSeconds($lastTimestamp) < 5)
             {
                 return false;
             }
 
-            $this->storedValues->setValue('last_check', (string) time());
+            $this->storedValues->setValue('last_check', (string) Carbon::now());
 
             return true;
         }

@@ -11,6 +11,7 @@
 
 namespace WebFramework\Security;
 
+use Carbon\Carbon;
 use Odan\Session\SessionInterface;
 use Odan\Session\SessionManagerInterface;
 use WebFramework\Core\Database;
@@ -54,7 +55,7 @@ class DatabaseAuthenticationService implements AuthenticationService
      */
     public function cleanup(): void
     {
-        $timestamp = date('Y-m-d H:i:s');
+        $timestamp = Carbon::now();
 
         $query = <<<'SQL'
         DELETE FROM sessions
@@ -76,7 +77,7 @@ SQL;
      */
     private function registerSession(int $userId, string $sessionId): Session
     {
-        $timestamp = date('Y-m-d H:i:s');
+        $timestamp = Carbon::now();
 
         return $this->sessionRepository->create([
             'user_id' => $userId,
@@ -196,7 +197,7 @@ SQL;
     {
         // Check for session timeout
         //
-        $current = time();
+        $current = Carbon::now()->getTimestamp();
         $lastActiveTimestamp = Helpers::mysqlDatetimeToTimestamp($session->getLastActive());
 
         return ($current - $lastActiveTimestamp <= $this->sessionTimeout);
@@ -209,23 +210,23 @@ SQL;
      */
     public function extendDatabaseSession(Session $session): void
     {
-        $current = time();
-        $lastActiveTimestamp = Helpers::mysqlDatetimeToTimestamp($session->getLastActive());
+        $current = Carbon::now();
+        $lastActiveTimestamp = new Carbon($session->getLastActive());
 
         // Update timestamp only once every 5 minutes
         //
-        if ($current - $lastActiveTimestamp < 60 * 5)
+        if ($current->diffInMinutes($lastActiveTimestamp) < 5)
         {
             return;
         }
 
-        $timestamp = date('Y-m-d H:i:s');
+        $timestamp = Carbon::now();
         $session->setLastActive($timestamp);
 
         // Restart session every 4 hours
         //
-        $startTimestamp = Helpers::mysqlDatetimeToTimestamp($session->getStart());
-        if ($current - $startTimestamp > 4 * 60 * 60)
+        $startTimestamp = new Carbon($session->getStart());
+        if ($current->diffInHours($startTimestamp) > 4)
         {
             $this->browserSessionManager->regenerateId();
 

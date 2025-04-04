@@ -11,6 +11,8 @@
 
 namespace WebFramework\Core;
 
+use Carbon\Carbon;
+
 /**
  * Class MailReportFunction.
  *
@@ -58,7 +60,7 @@ class MailReportFunction implements ReportFunction
             $cached['count']++;
         }
 
-        $this->cache->set($cacheId, $cached, time() + 10 * 60);
+        $this->cache->set($cacheId, $cached, Carbon::now()->addMinutes(10)->getTimestamp());
 
         // If more than 3 occurred in the last 10 minutes, only send out mail sporadically
         if ($cached['count'] > 1000 && $cached['count'] % 1000 !== 0)

@@ -48,7 +48,7 @@ final class MailReportFunctionTest extends Unit
                 $this->makeEmpty(
                     NullCache::class,
                     [
-                        'get' => Expected::once(['count' => 2, 'last_timestamp' => 1]),
+                        'get' => Expected::once(['count' => 2]),
                         'set' => Expected::once(),
                     ]
                 ),
@@ -73,7 +73,7 @@ final class MailReportFunctionTest extends Unit
                 $this->makeEmpty(
                     NullCache::class,
                     [
-                        'get' => Expected::once(['count' => 3, 'last_timestamp' => 1]),
+                        'get' => Expected::once(['count' => 3]),
                         'set' => Expected::once(),
                     ]
                 ),
@@ -98,7 +98,7 @@ final class MailReportFunctionTest extends Unit
                 $this->makeEmpty(
                     NullCache::class,
                     [
-                        'get' => Expected::once(['count' => 24, 'last_timestamp' => 1]),
+                        'get' => Expected::once(['count' => 24]),
                         'set' => Expected::once(),
                     ]
                 ),
@@ -123,7 +123,7 @@ final class MailReportFunctionTest extends Unit
                 $this->makeEmpty(
                     NullCache::class,
                     [
-                        'get' => Expected::once(['count' => 25, 'last_timestamp' => 1]),
+                        'get' => Expected::once(['count' => 25]),
                         'set' => Expected::once(),
                     ]
                 ),

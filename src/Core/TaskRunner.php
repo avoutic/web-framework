@@ -11,6 +11,7 @@
 
 namespace WebFramework\Core;
 
+use Carbon\Carbon;
 use DI\Container;
 use DI\ContainerBuilder;
 
@@ -177,7 +178,7 @@ class TaskRunner
     {
         if ($this->isContinuous)
         {
-            $start = time();
+            $start = Carbon::now();
 
             while (true)
             {
@@ -185,7 +186,7 @@ class TaskRunner
 
                 if ($this->maxRuntimeInSecs)
                 {
-                    if (time() > $start + $this->maxRuntimeInSecs)
+                    if (Carbon::now()->diffInSeconds($start) > $this->maxRuntimeInSecs)
                     {
                         break;
                     }
