@@ -157,11 +157,24 @@ class TaskRunner
     public function execute(string $taskClass): void
     {
         $task = $this->get($taskClass);
+
         if (!$task instanceof TaskInterface)
         {
             throw new \RuntimeException("Task {$taskClass} does not implement TaskInterface");
         }
 
+        $this->executeTaskObject($task);
+    }
+
+    /**
+     * Execute a task object.
+     *
+     * @param TaskInterface $task The task object to execute
+     *
+     * @throws \RuntimeException If the task does not implement TaskInterface
+     */
+    public function executeTaskObject(TaskInterface $task): void
+    {
         if ($this->isContinuous)
         {
             $start = time();
