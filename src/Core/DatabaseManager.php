@@ -129,11 +129,12 @@ SQL;
      *
      * @param array<mixed, mixed> $data          The actions to execute
      * @param bool                $ignoreVersion Whether to ignore version checks
+     * @param bool                $dryRun        Whether to dry run the task
      *
      * @throws \InvalidArgumentException If the input data is invalid
      * @throws \RuntimeException         If an action fails
      */
-    public function execute(array $data, bool $ignoreVersion = false): void
+    public function execute(array $data, bool $ignoreVersion = false, bool $dryRun = false): void
     {
         if (!is_array($data['actions']))
         {
@@ -318,6 +319,29 @@ SQL;
             {
                 throw new \RuntimeException("Unknown action type '{$action['type']}'");
             }
+        }
+
+        if ($dryRun)
+        {
+            echo ' - Dry run'.PHP_EOL;
+
+            foreach ($steps as $step)
+            {
+                if ($step['type'] === 'query')
+                {
+                    $info = $step['data'];
+                    echo '   - Would execute:'.PHP_EOL.$info['query'].PHP_EOL;
+                }
+                elseif ($step['type'] === 'task')
+                {
+                    $task = $step['data'];
+                    echo '   - Would execute task:'.PHP_EOL.get_class($task).PHP_EOL;
+                }
+            }
+
+            echo " - Would update version to {$data['target_version']}".PHP_EOL;
+
+            return;
         }
 
         echo ' - Executing steps'.PHP_EOL;
