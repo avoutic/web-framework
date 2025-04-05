@@ -22,15 +22,18 @@ use Carbon\Carbon;
  */
 class MemoryQueue implements Queue
 {
-    private Carbon $lastMaintenance = Carbon::now();
+    private Carbon $lastMaintenance;
 
-    /** @var array<Job> */
+    /** @var array<string> */
     private array $now = [];
 
-    /** @var array<array{timestamp: Carbon, job: Job}> */
+    /** @var array<array{timestamp: Carbon, job: string}> */
     private array $delayed = [];
 
-    public function __construct(private string $name) {}
+    public function __construct(private string $name)
+    {
+        $this->lastMaintenance = Carbon::now();
+    }
 
     public function dispatch(Job $job, int $delay = 0): void
     {
@@ -38,12 +41,12 @@ class MemoryQueue implements Queue
         {
             array_unshift($this->delayed, [
                 'timestamp' => Carbon::now()->addSeconds($delay),
-                'job' => $job,
+                'job' => serialize($job),
             ]);
         }
         else
         {
-            array_unshift($this->now, $job);
+            array_unshift($this->now, serialize($job));
         }
     }
 
@@ -58,6 +61,11 @@ class MemoryQueue implements Queue
 
         if ($now > $this->lastMaintenance && count($this->delayed))
         {
+            // Sort delayed jobs by timestamp from lowest to highest
+            usort($this->delayed, function ($a, $b) {
+                return (int) $b['timestamp']->diffInSeconds($a['timestamp']);
+            });
+
             foreach ($this->delayed as $key => $delayed)
             {
                 if ($delayed['timestamp']->lessThanOrEqualTo($now))
@@ -71,7 +79,9 @@ class MemoryQueue implements Queue
             $this->lastMaintenance = $now;
         }
 
-        return array_pop($this->now);
+        $job = array_pop($this->now);
+
+        return $job ? unserialize($job) : null;
     }
 
     public function clear(): void
