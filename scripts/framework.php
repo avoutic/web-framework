@@ -41,6 +41,8 @@ $commands = [
     'db:init' => 'WebFramework\Task\DbInitTask',
     'db:update' => 'WebFramework\Task\DbUpdateTask',
     'db:version' => 'WebFramework\Task\DbVersionTask',
+    'queue:list' => 'WebFramework\Task\QueueList',
+    'queue:worker' => 'WebFramework\Task\QueueWorker',
     'sanity:check' => 'WebFramework\Task\SanityCheckTask',
     'task:run' => 'WebFramework\Task\TaskRunnerTask',
 ];
@@ -55,6 +57,12 @@ function showUsage(string $scriptName): void
     echo '  db:update    Update the database to latest version'.PHP_EOL;
     echo '               --dry-run    Dry run the task (no changes will be made)'.PHP_EOL;
     echo '  db:version   Show current database version'.PHP_EOL;
+    echo PHP_EOL;
+    echo '  queue:list   List all queues'.PHP_EOL;
+    echo '  queue:worker Run a queue worker'.PHP_EOL;
+    echo '               Usage: '.$scriptName.' queue:worker <QueueName>'.PHP_EOL;
+    echo '               --max-jobs   The maximum number of jobs to process'.PHP_EOL;
+    echo '               --max-runtime The maximum runtime of the worker'.PHP_EOL;
     echo PHP_EOL;
     echo '  sanity:check Run sanity checks'.PHP_EOL;
     echo PHP_EOL;
