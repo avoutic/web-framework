@@ -11,10 +11,12 @@
 
 namespace WebFramework\Queue;
 
-interface Job
-{
-    /**
-     * Indicate if the job was properly handled and can be removed from the queue.
-     */
-    public function handle(): bool;
-}
+/**
+ * Empty interface that can be extended to create a job.
+ *
+ * Jobs are supposed to only contain data, not logic.
+ *
+ * The logic should be implemented in a JobHandler class that is
+ * registered in the Queue
+ */
+interface Job {}

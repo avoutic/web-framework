@@ -17,12 +17,12 @@ use WebFramework\Queue\QueueService;
 
 class QueueWorker extends ConsoleTask
 {
-    private ?string $queueName = null;
     private ?int $maxJobs = null;
     private ?int $maxRuntime = null;
 
     public function __construct(
         private QueueService $queueService,
+        private ?string $queueName = null,
     ) {}
 
     public function getCommand(): string
@@ -105,7 +105,8 @@ class QueueWorker extends ConsoleTask
                 continue;
             }
 
-            $job->handle();
+            $jobHandler = $this->queueService->getJobHandler($job);
+            $jobHandler->handle($job);
 
             $jobsProcessed++;
 

@@ -11,12 +11,21 @@
 
 namespace WebFramework\Queue;
 
+use Psr\Container\ContainerInterface as Container;
+
 class QueueService
 {
     /** @var array<string, Queue> */
     private array $queues = [];
 
     private ?Queue $defaultQueue = null;
+
+    /** @var array<string, string> */
+    private array $jobHandlers = [];
+
+    public function __construct(
+        private Container $container,
+    ) {}
 
     /**
      * Register a new queue with the service.
@@ -127,5 +136,47 @@ class QueueService
         {
             $queue->clear();
         }
+    }
+
+    /**
+     * Register a job handler for a job.
+     *
+     * @param class-string<Job>             $jobClass
+     * @param class-string<JobHandler<Job>> $jobHandlerClass
+     */
+    public function registerJobHandler(string $jobClass, string $jobHandlerClass): void
+    {
+        if (isset($this->jobHandlers[$jobClass]))
+        {
+            throw new \RuntimeException("Handler for '{$jobClass}' is already registered");
+        }
+
+        $this->jobHandlers[$jobClass] = $jobHandlerClass;
+    }
+
+    /**
+     * Get a job handler for a job.
+     *
+     * @return JobHandler<Job>
+     */
+    public function getJobHandler(Job $job): JobHandler
+    {
+        $jobClass = get_class($job);
+
+        if (!isset($this->jobHandlers[$jobClass]))
+        {
+            throw new \RuntimeException("No handler registered for '{$jobClass}'");
+        }
+
+        $jobHandlerClass = $this->jobHandlers[$jobClass];
+
+        $jobHandler = $this->container->get($jobHandlerClass);
+
+        if (!$jobHandler instanceof JobHandler)
+        {
+            throw new \RuntimeException("Handler for '{$jobClass}' is not a valid job handler");
+        }
+
+        return $jobHandler;
     }
 }
