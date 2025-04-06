@@ -100,7 +100,7 @@ class QueueWorker extends ConsoleTask
 
             if ($job === null)
             {
-                sleep(1);
+                Carbon::sleep(1);
 
                 continue;
             }

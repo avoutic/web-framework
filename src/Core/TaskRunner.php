@@ -306,7 +306,7 @@ class TaskRunner
                     }
                 }
 
-                sleep($this->delayBetweenRunsInSecs);
+                Carbon::sleep($this->delayBetweenRunsInSecs);
             }
         }
         else
