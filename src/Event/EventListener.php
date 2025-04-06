@@ -11,10 +11,13 @@
 
 namespace WebFramework\Event;
 
+/**
+ * @template T of Event
+ */
 interface EventListener
 {
     /**
-     * @param Event $event The event to handle
+     * @param T $event The event to handle
      *
      * @return bool wether to continue with other listeners
      */

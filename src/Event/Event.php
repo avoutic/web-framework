@@ -11,4 +11,12 @@
 
 namespace WebFramework\Event;
 
+/**
+ * Empty interface that can be extended to create an event.
+ *
+ * Events are supposed to only contain data, not logic.
+ *
+ * The logic should be implemented in a EventListener class that is
+ * registered in the EventService
+ */
 interface Event {}

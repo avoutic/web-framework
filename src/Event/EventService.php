@@ -11,14 +11,23 @@
 
 namespace WebFramework\Event;
 
+use Psr\Container\ContainerInterface as Container;
+use WebFramework\Job\EventJob;
+use WebFramework\Queue\QueueService;
+
 class EventService
 {
     /** @var array<string, EventData> */
     private array $registry = [];
 
+    public function __construct(
+        private Container $container,
+        private QueueService $queueService,
+    ) {}
+
     /**
-     * @param Event                         $event     Event to register
-     * @param array<callable|EventListener> $listeners Listeners for this event
+     * @param Event                                $event     Event to register
+     * @param array<callable|EventListener<Event>> $listeners Listeners for this event
      */
     public function registerEvent(
         Event $event,
@@ -56,7 +65,12 @@ class EventService
 
         foreach ($eventData->listeners as $listener)
         {
-            if ($listener instanceof EventListener)
+            if ($listener instanceof QueuedEventListener)
+            {
+                $job = new EventJob(get_class($listener), $event);
+                $this->queueService->dispatch($job, $listener->getQueueName());
+            }
+            elseif ($listener instanceof EventListener)
             {
                 $listener->handle($event);
             }
@@ -72,8 +86,8 @@ class EventService
     }
 
     /**
-     * @param Event                  $event    Event to register
-     * @param callable|EventListener $listener Listener to add
+     * @param Event                         $event    Event to register
+     * @param callable|EventListener<Event> $listener Listener to add
      */
     public function addListener(Event $event, callable|EventListener $listener): void
     {
@@ -90,8 +104,8 @@ class EventService
     }
 
     /**
-     * @param Event                         $event     Event to register
-     * @param array<callable|EventListener> $listeners Listeners for this event
+     * @param Event                                $event     Event to register
+     * @param array<callable|EventListener<Event>> $listeners Listeners for this event
      */
     public function setListeners(Event $event, array $listeners): void
     {
@@ -105,5 +119,25 @@ class EventService
         $eventData->listeners = $listeners;
 
         $this->setEventData($event, $eventData);
+    }
+
+    /**
+     * @return EventListener<Event>
+     */
+    public function getListenerByClass(string $listenerClass): EventListener
+    {
+        $listener = $this->container->get($listenerClass);
+
+        if (!$listener)
+        {
+            throw new \RuntimeException('Listener '.$listenerClass.' not found');
+        }
+
+        if (!$listener instanceof EventListener)
+        {
+            throw new \RuntimeException('Listener '.$listenerClass.' is not an EventListener');
+        }
+
+        return $listener;
     }
 }
