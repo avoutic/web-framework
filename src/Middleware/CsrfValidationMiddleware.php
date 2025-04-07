@@ -18,7 +18,6 @@ use Psr\Http\Server\RequestHandlerInterface;
 use WebFramework\Core\MessageService;
 use WebFramework\Security\BlacklistService;
 use WebFramework\Security\CsrfService;
-use WebFramework\Support\ValidatorService;
 
 /**
  * Middleware to validate CSRF tokens.
@@ -29,13 +28,11 @@ class CsrfValidationMiddleware implements MiddlewareInterface
      * @param BlacklistService $blacklistService The blacklist service
      * @param CsrfService      $csrfService      The CSRF service
      * @param MessageService   $messageService   The message service
-     * @param ValidatorService $validatorService The validator service
      */
     public function __construct(
         private BlacklistService $blacklistService,
         private CsrfService $csrfService,
         private MessageService $messageService,
-        private ValidatorService $validatorService,
     ) {}
 
     /**
@@ -49,14 +46,10 @@ class CsrfValidationMiddleware implements MiddlewareInterface
         // Only check CSRF for state-changing methods
         if (in_array($request->getMethod(), ['POST', 'PUT', 'DELETE', 'PATCH']))
         {
-            $params = $this->validatorService->getFilteredParams(
-                $request,
-                [
-                    'token' => '.*',
-                ]
-            );
+            $params = $request->getQueryParams();
+            $token = $params['token'] ?? '';
 
-            if (!$this->csrfService->validateToken($params['token']))
+            if (!$this->csrfService->validateToken($token))
             {
                 $ip = $request->getAttribute('ip');
                 $userId = $request->getAttribute('user_id');

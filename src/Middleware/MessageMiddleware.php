@@ -16,7 +16,6 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use WebFramework\Core\MessageService;
-use WebFramework\Support\ValidatorService;
 
 /**
  * Middleware to handle messages passed via URL parameters.
@@ -24,12 +23,10 @@ use WebFramework\Support\ValidatorService;
 class MessageMiddleware implements MiddlewareInterface
 {
     /**
-     * @param MessageService   $messageService   The message service
-     * @param ValidatorService $validatorService The validator service
+     * @param MessageService $messageService The message service
      */
     public function __construct(
         private MessageService $messageService,
-        private ValidatorService $validatorService,
     ) {}
 
     /**
@@ -40,16 +37,12 @@ class MessageMiddleware implements MiddlewareInterface
      */
     public function process(Request $request, RequestHandlerInterface $handler): Response
     {
-        $params = $this->validatorService->getFilteredParams(
-            $request,
-            [
-                'msg' => '.*',
-            ]
-        );
+        $queryParams = $request->getQueryParams();
+        $msg = $queryParams['msg'] ?? '';
 
-        if (strlen($params['msg']))
+        if (strlen($msg))
         {
-            $this->messageService->addFromUrl($params['msg']);
+            $this->messageService->addFromUrl($msg);
         }
 
         return $handler->handle($request);

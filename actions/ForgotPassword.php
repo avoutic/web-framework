@@ -21,7 +21,6 @@ use WebFramework\Core\ResponseEmitter;
 use WebFramework\Exception\ValidationException;
 use WebFramework\Repository\UserRepository;
 use WebFramework\Security\ResetPasswordService;
-use WebFramework\Support\ValidatorService;
 use WebFramework\Validation\EmailValidator;
 use WebFramework\Validation\InputValidationService;
 use WebFramework\Validation\UsernameValidator;
@@ -43,7 +42,6 @@ class ForgotPassword
      * @param ResponseEmitter        $responseEmitter        The response emitter
      * @param ResetPasswordService   $resetPasswordService   The reset password service
      * @param UserRepository         $userRepository         The user repository
-     * @param ValidatorService       $validatorService       The validator service
      */
     public function __construct(
         protected ConfigService $configService,
@@ -53,7 +51,6 @@ class ForgotPassword
         protected ResponseEmitter $responseEmitter,
         protected ResetPasswordService $resetPasswordService,
         protected UserRepository $userRepository,
-        protected ValidatorService $validatorService,
     ) {}
 
     /**
