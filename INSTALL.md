@@ -13,31 +13,13 @@ composer require avoutic/web-framework
 You can also start with a base project:
 
 ```
+composer create-project avoutic/web-framework-skeleton
+```
+
+Or with a simple example project:
+
+```
 composer create-project avoutic/web-framework-example
-```
-
-### Postmark
-
-If you also want to support Postmark for assert handling and transactional mail, you should add:
-
-```
-composer require wildbit/postmark-php:^64.0
-```
-
-### Redis caching
-
-To support the WebFramework\Core\RedisCache, you should make sure `ext-redis` is available and tsadd:
-
-```
-composer require cache/redis-adapter:^1.1
-```
-
-### Stripe
-
-If you want first class support for Stripe interfacing:
-
-```
-composer require stripe/stripe-php:^7.128
 ```
 
 ## Apache

@@ -24,19 +24,11 @@ You then probably want to add something like the following to your `composer.jso
     "scripts": {
         "post-install-cmd": [
             "php -r \"copy('vendor/avoutic/web-framework/htdocs/index.php', 'htdocs/index.php');\"",
-            "mkdir -p scripts",
-            "php -r \"copy('vendor/avoutic/web-framework/scripts/db_init.php', 'scripts/db_init.php');\"",
-            "php -r \"copy('vendor/avoutic/web-framework/scripts/db_update.php', 'scripts/db_update.php');\"",
-            "php -r \"copy('vendor/avoutic/web-framework/scripts/db_version.php', 'scripts/db_version.php');\"",
-            "php -r \"copy('vendor/avoutic/web-framework/scripts/sanity_check.php', 'scripts/sanity_check.php');\""
+            "php -r \"copy('vendor/avoutic/web-framework/scripts/framework.php', 'framework');\""
         ],
         "post-update-cmd": [
             "php -r \"copy('vendor/avoutic/web-framework/htdocs/index.php', 'htdocs/index.php');\"",
-            "mkdir -p scripts",
-            "php -r \"copy('vendor/avoutic/web-framework/scripts/db_init.php', 'scripts/db_init.php');\"",
-            "php -r \"copy('vendor/avoutic/web-framework/scripts/db_update.php', 'scripts/db_update.php');\"",
-            "php -r \"copy('vendor/avoutic/web-framework/scripts/db_version.php', 'scripts/db_version.php');\"",
-            "php -r \"copy('vendor/avoutic/web-framework/scripts/sanity_check.php', 'scripts/sanity_check.php');\""
+            "php -r \"copy('vendor/avoutic/web-framework/scripts/framework.php', 'framework');\""
         ]
     },
 ```
@@ -94,6 +86,8 @@ This documentation is organized into several sections, each focusing on a specif
 - **[Translations](./translations.md)**: How to deploy and configure multi-lingual support in your application.
 - **[Emitting Responses](./emitting-responses.md)**: How to generate responses in actions using the ResponseEmitter or via exceptions.
 - **[Caching](./caching.md)**: How to use caching to store and retrieve data efficiently.
+- **[Queueing](./queueing.md)**: How to queue Jobs and handle them asynchronously.
+- **[Event Handling](./events.md)**: How to trigger and handle Events with EventListeners.
 
 ## Getting Started
 

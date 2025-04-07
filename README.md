@@ -36,6 +36,8 @@ This documentation is organized into several sections, each focusing on a specif
 - **[Translations](docs/translations.md)**: How to deploy and configure multi-lingual support in your application.
 - **[Emitting Responses](docs/emitting-responses.md)**: How to generate responses in actions using the ResponseEmitter or via exceptions.
 - **[Caching](docs/caching.md)**: How to use caching to store and retrieve data efficiently.
+- **[Queueing](docs/queueing.md)**: How to queue Jobs and handle them asynchronously.
+- **[Event Handling](docs/events.md)**: How to trigger and handle Events with EventListeners.
 
 ## Getting Started
 
@@ -52,6 +54,6 @@ Opinionated choices are provided with external modules:
 - **avoutic/web-framework/browserless**: Browserless module
 - **avoutic/web-framework-mysql**: MySql database module
 - **avoutic/web-framework-postmark**: Postmark mail module
-- **avoutic/web-framework-redis**: Redis caching module
+- **avoutic/web-framework-redis**: Redis caching and queueing module
 - **avoutic/web-framework-sentry**: Sentry.io instrumentation module
 - **avoutic/web-framework-stripe**: Stripe wrapper
