@@ -18,7 +18,7 @@ use Psr\Container\ContainerInterface as Container;
  *
  * Provides a base implementation for repository classes in the WebFramework.
  *
- * @template T of EntityInterface
+ * @template T of Entity
  */
 abstract class RepositoryCore
 {
@@ -80,7 +80,7 @@ abstract class RepositoryCore
      *
      * @throws \InvalidArgumentException If the provided entity is not of the correct type
      */
-    public function getEntityFields(EntityInterface $entity, bool $includeId = true): array
+    public function getEntityFields(Entity $entity, bool $includeId = true): array
     {
         $providedClass = get_class($entity);
         $staticClass = static::$entityClass;
@@ -173,7 +173,7 @@ SQL;
      *
      * @return array<string, mixed> The changed fields
      */
-    public function getChangedFields(EntityInterface $entity): array
+    public function getChangedFields(Entity $entity): array
     {
         $currentData = $this->getEntityFields($entity, false);
         $originalData = $entity->getOriginalValues();
@@ -188,7 +188,7 @@ SQL;
      *
      * @throws \RuntimeException If there's an error during the save operation
      */
-    public function save(EntityInterface $entity): void
+    public function save(Entity $entity): void
     {
         $reflection = new \ReflectionClass($entity);
 
@@ -241,7 +241,7 @@ SQL;
      *
      * @param T $entity The entity to delete
      */
-    public function delete(EntityInterface $entity): void
+    public function delete(Entity $entity): void
     {
         $query = <<<SQL
         DELETE FROM {$this->tableName}
@@ -262,7 +262,7 @@ SQL;
      *
      * @throws \RuntimeException If there's an error during the creation
      */
-    public function create(array $data): EntityInterface
+    public function create(array $data): Entity
     {
         $query = '';
         $params = [];
@@ -335,7 +335,7 @@ SQL;
     /**
      * @return ?T
      */
-    public function getObjectById(int $id): ?EntityInterface
+    public function getObjectById(int $id): ?Entity
     {
         $data = $this->getFieldsFromDb($id);
         if ($data === null)
@@ -351,7 +351,7 @@ SQL;
      *
      * @return T
      */
-    public function instantiateEntityFromData(array $data): EntityInterface
+    public function instantiateEntityFromData(array $data): Entity
     {
         $entity = new static::$entityClass();
         $reflection = new \ReflectionClass($entity);
@@ -382,7 +382,7 @@ SQL;
      *
      * @return ?T
      */
-    public function getObject(array $filter = []): ?EntityInterface
+    public function getObject(array $filter = []): ?Entity
     {
         $fieldsFmt = implode('`, `', $this->baseFields);
         $params = [];

@@ -16,7 +16,7 @@ namespace WebFramework\Core;
  *
  * Provides a base implementation for entity objects in the WebFramework.
  */
-abstract class EntityCore implements EntityInterface
+abstract class EntityCore implements Entity
 {
     /** @var string The name of the database table associated with this entity */
     protected static string $tableName = '';

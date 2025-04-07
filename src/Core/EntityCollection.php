@@ -16,7 +16,7 @@ namespace WebFramework\Core;
  *
  * Represents a collection of entities that can be iterated over.
  *
- * @template T of EntityInterface
+ * @template T of Entity
  *
  * @implements \Iterator<int, T>
  */

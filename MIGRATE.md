@@ -2,6 +2,7 @@
 
 ### Breaking changes
 
+* Renamed EntityInterface to Entity
 * Renamed TaskInterface to Task
 
 ### Internal changes

@@ -12,11 +12,11 @@
 namespace WebFramework\Core;
 
 /**
- * Interface EntityInterface.
+ * Interface Entity.
  *
  * Defines the contract for entity objects in the WebFramework.
  */
-interface EntityInterface
+interface Entity
 {
     /**
      * Get the name of the database table associated with this entity.
