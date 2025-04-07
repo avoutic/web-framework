@@ -15,14 +15,14 @@ use Psr\Container\ContainerInterface as Container;
 use WebFramework\Core\BootstrapService;
 use WebFramework\Core\Database;
 use WebFramework\Core\DatabaseManager;
-use WebFramework\Core\TaskInterface;
+use WebFramework\Core\Task;
 
 /**
  * Class DbVersionTask.
  *
  * This task is responsible for verifying the database scheme hash.
  */
-class DbVersionTask implements TaskInterface
+class DbVersionTask implements Task
 {
     /**
      * DbVersionTask constructor.

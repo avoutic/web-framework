@@ -12,11 +12,11 @@
 namespace WebFramework\Core;
 
 /**
- * Interface TaskInterface.
+ * Interface Task.
  *
  * Defines the contract for executable tasks in the WebFramework.
  */
-interface TaskInterface
+interface Task
 {
     /**
      * Execute the task.

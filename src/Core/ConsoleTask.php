@@ -11,7 +11,7 @@
 
 namespace WebFramework\Core;
 
-abstract class ConsoleTask implements TaskInterface
+abstract class ConsoleTask implements Task
 {
     abstract public function getCommand(): string;
 

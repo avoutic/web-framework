@@ -4,11 +4,11 @@ This document provides a guide for developers on how to create and run tasks in 
 
 ## Overview
 
-Tasks in WebFramework implement the `TaskInterface`, which defines a single method, `execute()`. This method contains the logic for the task. Tasks are executed using the `TaskRunner`, which sets up the application environment and runs the specified task.
+Tasks in WebFramework implement the `Task`, which defines a single method, `execute()`. This method contains the logic for the task. Tasks are executed using the `TaskRunner`, which sets up the application environment and runs the specified task.
 
 ## Creating Custom Tasks
 
-To create a custom task, you need to implement the `TaskInterface` and define the `execute()` method. This method should contain the logic for your task.
+To create a custom task, you need to implement the `Task` and define the `execute()` method. This method should contain the logic for your task.
 
 ### Example: Custom Task
 
@@ -17,9 +17,9 @@ To create a custom task, you need to implement the `TaskInterface` and define th
 
 namespace App\Task;
 
-use WebFramework\Core\TaskInterface;
+use WebFramework\Core\Task;
 
-class CustomTask implements TaskInterface
+class CustomTask implements Task
 {
     public function execute(): void
     {
@@ -29,7 +29,7 @@ class CustomTask implements TaskInterface
 }
 ~~~
 
-In this example, the `CustomTask` class implements the `TaskInterface` and defines the `execute()` method, which contains the task logic.
+In this example, the `CustomTask` class implements the `Task` and defines the `execute()` method, which contains the task logic.
 
 ## Running Tasks from the Command Line
 

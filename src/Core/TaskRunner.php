@@ -259,16 +259,16 @@ class TaskRunner
      * @param string        $taskClass The fully qualified class name of the task to execute
      * @param array<string> $arguments The arguments to pass to the task
      *
-     * @throws \RuntimeException       If the task does not implement TaskInterface
+     * @throws \RuntimeException       If the task does not implement Task
      * @throws ArgumentParserException If the arguments are invalid
      */
     public function execute(string $taskClass, array $arguments = []): void
     {
         $task = $this->get($taskClass);
 
-        if (!$task instanceof TaskInterface)
+        if (!$task instanceof Task)
         {
-            throw new \RuntimeException("Task {$taskClass} does not implement TaskInterface");
+            throw new \RuntimeException("Task {$taskClass} does not implement Task");
         }
 
         $this->executeTaskObject($task, $arguments);
@@ -277,13 +277,13 @@ class TaskRunner
     /**
      * Execute a task object.
      *
-     * @param TaskInterface $task      The task object to execute
+     * @param Task          $task      The task object to execute
      * @param array<string> $arguments The arguments to pass to the task
      *
-     * @throws \RuntimeException       If the task does not implement TaskInterface
+     * @throws \RuntimeException       If the task does not implement Task
      * @throws ArgumentParserException If the arguments are invalid
      */
-    public function executeTaskObject(TaskInterface $task, array $arguments = []): void
+    public function executeTaskObject(Task $task, array $arguments = []): void
     {
         if ($task instanceof ConsoleTask)
         {

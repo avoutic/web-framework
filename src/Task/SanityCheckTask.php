@@ -12,14 +12,14 @@
 namespace WebFramework\Task;
 
 use WebFramework\Core\BootstrapService;
-use WebFramework\Core\TaskInterface;
+use WebFramework\Core\Task;
 
 /**
  * Class SanityCheckTask.
  *
  * This task is responsible for running sanity checks on the application.
  */
-class SanityCheckTask implements TaskInterface
+class SanityCheckTask implements Task
 {
     /**
      * SanityCheckTask constructor.

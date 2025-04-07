@@ -14,14 +14,14 @@ namespace WebFramework\Task;
 use Psr\Container\ContainerInterface as Container;
 use WebFramework\Core\BootstrapService;
 use WebFramework\Core\DatabaseManager;
-use WebFramework\Core\TaskInterface;
+use WebFramework\Core\Task;
 
 /**
  * Class DbInitTask.
  *
  * Task for initializing the database schema.
  */
-class DbInitTask implements TaskInterface
+class DbInitTask implements Task
 {
     /**
      * DbInitTask constructor.

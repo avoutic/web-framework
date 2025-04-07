@@ -19,14 +19,14 @@ use WebFramework\Core\ConfigService;
 use WebFramework\Core\Instrumentation;
 use WebFramework\Core\MiddlewareRegistrar;
 use WebFramework\Core\RouteRegistrar;
-use WebFramework\Core\TaskInterface;
+use WebFramework\Core\Task;
 
 /**
  * Class SlimAppTask.
  *
  * This task is responsible for setting up and running the Slim application.
  */
-class SlimAppTask implements TaskInterface
+class SlimAppTask implements Task
 {
     /**
      * SlimAppTask constructor.

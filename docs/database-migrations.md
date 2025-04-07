@@ -413,4 +413,4 @@ return [
 ];
 ~~~
 
-Note: The custom task class must implement the `TaskInterface` and be registered in the dependency injection container.
+Note: The custom task class must implement the `Task` and be registered in the dependency injection container.

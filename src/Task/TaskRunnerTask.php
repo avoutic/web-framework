@@ -12,7 +12,7 @@
 namespace WebFramework\Task;
 
 use WebFramework\Core\ConsoleTask;
-use WebFramework\Core\TaskInterface;
+use WebFramework\Core\Task;
 use WebFramework\Core\TaskRunner;
 
 class TaskRunnerTask extends ConsoleTask
@@ -63,9 +63,9 @@ class TaskRunnerTask extends ConsoleTask
         }
 
         $task = $this->taskRunner->get($this->taskClass);
-        if (!$task instanceof TaskInterface)
+        if (!$task instanceof Task)
         {
-            throw new \RuntimeException("Task {$this->taskClass} does not implement TaskInterface");
+            throw new \RuntimeException("Task {$this->taskClass} does not implement Task");
         }
 
         $task->execute();

@@ -305,9 +305,9 @@ SQL;
                 }
 
                 $task = $this->container->get($action['task']);
-                if (!$task instanceof TaskInterface)
+                if (!$task instanceof Task)
                 {
-                    throw new \RuntimeException("Task {$action['task']} does not implement TaskInterface");
+                    throw new \RuntimeException("Task {$action['task']} does not implement Task");
                 }
 
                 $steps[] = [

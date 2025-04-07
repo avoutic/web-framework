@@ -1,4 +1,8 @@
-## Untagged
+## Untagged v9
+
+### Breaking changes
+
+* Renamed TaskInterface to Task
 
 ### Internal changes
 
@@ -62,7 +66,7 @@
 
 * Database query functions throw on error
 * check() added to InputValidationService
-* Convert scripts and index.php to TaskInterface
+* Convert scripts and index.php to Task
 * DatabaseManager supports Task as action
 * Add init() to Register, Login, ChangePassword and ChangeEmail
 
