@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-use WebFramework\Core\ContainerWrapper;
+use WebFramework\Support\ContainerWrapper;
 use WebFramework\Translation\TranslationService;
 
 /**

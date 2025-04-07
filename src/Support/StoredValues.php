@@ -9,7 +9,9 @@
  * file that was distributed with this source code.
  */
 
-namespace WebFramework\Core;
+namespace WebFramework\Support;
+
+use WebFramework\Core\Database;
 
 /*
 CREATE TABLE IF NOT EXISTS config_values (

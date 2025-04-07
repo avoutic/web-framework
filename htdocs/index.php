@@ -3,8 +3,8 @@
 use Slim\Psr7\Factory\ServerRequestFactory;
 use WebFramework\Core\DebugService;
 use WebFramework\Core\ReportFunction;
-use WebFramework\Core\TaskRunner;
 use WebFramework\Task\SlimAppTask;
+use WebFramework\Task\TaskRunner;
 
 if (!file_exists(__DIR__.'/../vendor/autoload.php'))
 {

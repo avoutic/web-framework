@@ -13,7 +13,6 @@ namespace WebFramework\Task;
 
 use Psr\Container\ContainerInterface as Container;
 use WebFramework\Core\BootstrapService;
-use WebFramework\Core\ConsoleTask;
 use WebFramework\Core\DatabaseManager;
 
 /**

@@ -2,6 +2,7 @@
 
 ### Breaking changes
 
+* Move multiple Core classes to other WebFramework namespaces
 * Renamed EntityInterface to Entity
 * Renamed TaskInterface to Task
 

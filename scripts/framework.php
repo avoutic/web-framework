@@ -10,8 +10,8 @@
  * file that was distributed with this source code.
  */
 
-use WebFramework\Core\TaskRunner;
 use WebFramework\Exception\ArgumentParserException;
+use WebFramework\Task\TaskRunner;
 use WebFramework\Task\TaskRunnerTask;
 
 // Get the project root directory

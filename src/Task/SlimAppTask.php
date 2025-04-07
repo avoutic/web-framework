@@ -19,7 +19,6 @@ use WebFramework\Core\ConfigService;
 use WebFramework\Core\Instrumentation;
 use WebFramework\Core\MiddlewareRegistrar;
 use WebFramework\Core\RouteRegistrar;
-use WebFramework\Core\Task;
 
 /**
  * Class SlimAppTask.

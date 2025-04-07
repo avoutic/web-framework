@@ -12,11 +12,11 @@
 namespace WebFramework\Security;
 
 use WebFramework\Core\ConfigService;
-use WebFramework\Core\UrlBuilder;
 use WebFramework\Core\UserMailer;
 use WebFramework\Entity\User;
 use WebFramework\Exception\CodeVerificationException;
 use WebFramework\Repository\UserRepository;
+use WebFramework\Support\UrlBuilder;
 
 /**
  * Handles password reset operations.

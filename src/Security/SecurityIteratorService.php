@@ -11,8 +11,8 @@
 
 namespace WebFramework\Security;
 
-use WebFramework\Core\StoredUserValuesFactory;
 use WebFramework\Entity\User;
+use WebFramework\Support\StoredUserValuesFactory;
 
 /**
  * Manages security iterators for users.

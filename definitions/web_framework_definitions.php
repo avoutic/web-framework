@@ -49,9 +49,9 @@ return [
     'offline_mode' => false,
     'server_name' => $_SERVER['SERVER_NAME'] ?? 'app',
 
-    'DbStoredValues' => DI\autowire(Core\StoredValues::class)
+    'DbStoredValues' => DI\autowire(Support\StoredValues::class)
         ->constructorParameter('module', 'db'),
-    'SanityCheckStoredValues' => DI\autowire(Core\StoredValues::class)
+    'SanityCheckStoredValues' => DI\autowire(Support\StoredValues::class)
         ->constructorParameter('module', 'sanity_check'),
 
     Core\Cache::class => DI\autowire(Core\NullCache::class),
@@ -84,9 +84,6 @@ return [
         ->constructorParameter('offlineMode', DI\get('offline_mode'))
         ->constructorParameter('production', DI\get('production'))
         ->constructorParameter('serverName', DI\get('server_name')),
-    Core\SanityCheckRunner::class => DI\autowire()
-        ->constructorParameter('storedValues', DI\get('SanityCheckStoredValues'))
-        ->constructorParameter('buildInfo', DI\get('build_info')),
     Core\UserMailer::class => function (ContainerInterface $c) {
         $configService = $c->get(Core\ConfigService::class);
         $templateOverrides = $configService->get('user_mailer.template_overrides');
@@ -97,6 +94,10 @@ return [
             templateOverrides: $templateOverrides,
         );
     },
+
+    SanityCheck\SanityCheckRunner::class => DI\autowire()
+        ->constructorParameter('storedValues', DI\get('SanityCheckStoredValues'))
+        ->constructorParameter('buildInfo', DI\get('build_info')),
 
     Security\AuthenticationService::class => DI\autowire(Security\NullAuthenticationService::class),
     Security\BlacklistService::class => DI\autowire(Security\NullBlacklistService::class),

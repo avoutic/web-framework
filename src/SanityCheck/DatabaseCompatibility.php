@@ -13,7 +13,7 @@ namespace WebFramework\SanityCheck;
 
 use WebFramework\Core\ConfigService;
 use WebFramework\Core\Database;
-use WebFramework\Core\StoredValues;
+use WebFramework\Support\StoredValues;
 
 /**
  * Class DatabaseCompatibility.

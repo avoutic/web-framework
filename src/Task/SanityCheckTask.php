@@ -12,7 +12,6 @@
 namespace WebFramework\Task;
 
 use WebFramework\Core\BootstrapService;
-use WebFramework\Core\Task;
 
 /**
  * Class SanityCheckTask.

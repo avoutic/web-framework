@@ -14,6 +14,7 @@ namespace WebFramework\Core;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Routing\RouteContext;
 use WebFramework\Security\AuthenticationService;
+use WebFramework\Support\Helpers;
 
 /**
  * Class DebugService.
@@ -184,7 +185,7 @@ An error occurred.
 
 TXT;
 
-        $errorType = WFHelpers::getErrorTypeString($errorType);
+        $errorType = Helpers::getErrorTypeString($errorType);
         $condensedStack = $this->condenseStack($filteredStack);
 
         $dbError = $this->getDatabaseError($this->databaseProvider->get());
@@ -264,7 +265,7 @@ TXT;
             {
                 if (isset($entry['args']))
                 {
-                    WFHelpers::scrubState($entry['args']);
+                    Helpers::scrubState($entry['args']);
                 }
             }
 

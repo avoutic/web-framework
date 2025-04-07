@@ -9,11 +9,12 @@
  * file that was distributed with this source code.
  */
 
-namespace WebFramework\Core;
+namespace WebFramework\Task;
 
 use Carbon\Carbon;
 use DI\Container;
 use DI\ContainerBuilder;
+use WebFramework\Core\ConfigBuilder;
 use WebFramework\Exception\ArgumentParserException;
 
 /**

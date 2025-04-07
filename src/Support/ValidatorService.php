@@ -9,14 +9,17 @@
  * file that was distributed with this source code.
  */
 
-namespace WebFramework\Core;
+namespace WebFramework\Support;
 
 use Psr\Http\Message\ServerRequestInterface as Request;
 
 /**
  * Class ValidatorService.
  *
- * Provides validation and filtering services for request data.
+ * Provides validation and filtering services for request data via regex filters.
+ *
+ * WebFramework now provides a Validator based system via
+ * WebFramework\Validation\InputValidationService instead of this older service.
  */
 class ValidatorService
 {

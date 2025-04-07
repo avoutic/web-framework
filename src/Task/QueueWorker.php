@@ -12,7 +12,6 @@
 namespace WebFramework\Task;
 
 use Carbon\Carbon;
-use WebFramework\Core\ConsoleTask;
 use WebFramework\Queue\QueueService;
 
 class QueueWorker extends ConsoleTask

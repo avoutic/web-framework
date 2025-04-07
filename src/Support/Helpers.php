@@ -9,14 +9,16 @@
  * file that was distributed with this source code.
  */
 
-namespace WebFramework\Core;
+namespace WebFramework\Support;
+
+use WebFramework\Core\EntityCore;
 
 /**
- * Class WFHelpers.
+ * Class Helpers.
  *
  * Provides various helper functions for the WebFramework.
  */
-class WFHelpers
+class Helpers
 {
     /**
      * Get a string representation of an error type.

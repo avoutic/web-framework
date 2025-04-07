@@ -12,13 +12,13 @@
 namespace WebFramework\Security;
 
 use WebFramework\Core\ConfigService;
-use WebFramework\Core\UrlBuilder;
 use WebFramework\Core\UserMailer;
 use WebFramework\Entity\User;
 use WebFramework\Event\EventService;
 use WebFramework\Event\UserVerified;
 use WebFramework\Exception\CodeVerificationException;
 use WebFramework\Repository\UserRepository;
+use WebFramework\Support\UrlBuilder;
 
 /**
  * Handles user verification processes.

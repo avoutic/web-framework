@@ -3,7 +3,7 @@
 namespace Tests\Unit;
 
 use Codeception\Test\Unit;
-use WebFramework\Core\ValidatorService;
+use WebFramework\Support\ValidatorService;
 
 /**
  * @internal

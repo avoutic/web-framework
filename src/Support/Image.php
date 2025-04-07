@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace WebFramework\Core;
+namespace WebFramework\Support;
 
 /**
  * Image class with support for GIF, JPEG and PNG images.

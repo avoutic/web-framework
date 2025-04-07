@@ -16,7 +16,7 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use WebFramework\Core\MessageService;
-use WebFramework\Core\ValidatorService;
+use WebFramework\Support\ValidatorService;
 
 /**
  * Middleware to handle messages passed via URL parameters.

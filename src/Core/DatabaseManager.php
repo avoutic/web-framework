@@ -12,6 +12,8 @@
 namespace WebFramework\Core;
 
 use Psr\Container\ContainerInterface as Container;
+use WebFramework\Support\StoredValues;
+use WebFramework\Task\Task;
 
 /**
  * Class DatabaseManager.

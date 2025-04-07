@@ -9,7 +9,10 @@
  * file that was distributed with this source code.
  */
 
-namespace WebFramework\Core;
+namespace WebFramework\Support;
+
+use WebFramework\Core\MessageService;
+use WebFramework\Core\RuntimeEnvironment;
 
 /**
  * Class UrlBuilder.

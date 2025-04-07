@@ -12,7 +12,6 @@
 namespace WebFramework\Security;
 
 use WebFramework\Core\ConfigService;
-use WebFramework\Core\UrlBuilder;
 use WebFramework\Core\UserMailer;
 use WebFramework\Entity\User;
 use WebFramework\Event\EventService;
@@ -21,6 +20,7 @@ use WebFramework\Exception\CodeVerificationException;
 use WebFramework\Exception\DuplicateEmailException;
 use WebFramework\Exception\WrongAccountException;
 use WebFramework\Repository\UserRepository;
+use WebFramework\Support\UrlBuilder;
 
 /**
  * Class ChangeEmailService.

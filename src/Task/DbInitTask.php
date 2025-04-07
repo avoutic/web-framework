@@ -14,7 +14,6 @@ namespace WebFramework\Task;
 use Psr\Container\ContainerInterface as Container;
 use WebFramework\Core\BootstrapService;
 use WebFramework\Core\DatabaseManager;
-use WebFramework\Core\Task;
 
 /**
  * Class DbInitTask.

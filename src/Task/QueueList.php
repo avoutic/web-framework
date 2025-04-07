@@ -11,7 +11,6 @@
 
 namespace WebFramework\Task;
 
-use WebFramework\Core\ConsoleTask;
 use WebFramework\Queue\QueueService;
 
 class QueueList extends ConsoleTask

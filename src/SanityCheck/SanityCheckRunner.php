@@ -9,11 +9,12 @@
  * file that was distributed with this source code.
  */
 
-namespace WebFramework\Core;
+namespace WebFramework\SanityCheck;
 
 use Carbon\Carbon;
 use Psr\Container\ContainerInterface as Container;
-use WebFramework\SanityCheck\SanityCheckModule;
+use WebFramework\Core\Instrumentation;
+use WebFramework\Support\StoredValues;
 
 /**
  * Class SanityCheckRunner.
