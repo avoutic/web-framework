@@ -15,7 +15,6 @@ use Carbon\Carbon;
 use Odan\Session\SessionInterface;
 use Odan\Session\SessionManagerInterface;
 use WebFramework\Core\Database;
-use WebFramework\Core\Helpers;
 use WebFramework\Entity\Session;
 use WebFramework\Entity\User;
 use WebFramework\Repository\SessionRepository;
@@ -197,10 +196,13 @@ SQL;
     {
         // Check for session timeout
         //
-        $current = Carbon::now()->getTimestamp();
-        $lastActiveTimestamp = Helpers::mysqlDatetimeToTimestamp($session->getLastActive());
+        $lastActiveTimestamp = Carbon::createFromFormat('Y-m-d H:i:s', $session->getLastActive());
+        if ($lastActiveTimestamp === null)
+        {
+            throw new \RuntimeException('Session last active timestamp is not parseable');
+        }
 
-        return ($current - $lastActiveTimestamp <= $this->sessionTimeout);
+        return ($lastActiveTimestamp->diffInSeconds() <= $this->sessionTimeout);
     }
 
     /**
