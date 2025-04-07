@@ -13,6 +13,6 @@ namespace WebFramework\Event;
 
 class EventData
 {
-    /** @var array<callable|EventListener<Event>> */
+    /** @var array<class-string<EventListener<Event>>> */
     public array $listeners = [];
 }

@@ -26,99 +26,112 @@ class EventService
     ) {}
 
     /**
-     * @param Event                                $event     Event to register
-     * @param array<callable|EventListener<Event>> $listeners Listeners for this event
+     * @param class-string<Event>                       $eventClass Event to register
+     * @param array<class-string<EventListener<Event>>> $listeners  Listeners for this event
      */
     public function registerEvent(
-        Event $event,
+        string $eventClass,
         array $listeners,
     ): void {
+        if (isset($this->registry[$eventClass]))
+        {
+            throw new \RuntimeException('Event '.$eventClass.' already registered');
+        }
+
         $eventData = new EventData();
 
         $eventData->listeners = $listeners;
 
-        $this->setEventData($event, $eventData);
+        $this->setEventData($eventClass, $eventData);
     }
 
-    private function getEventData(Event $event): ?EventData
+    /**
+     * @param class-string<Event> $eventClass
+     */
+    private function getEventData(string $eventClass): ?EventData
     {
-        $className = $event::class;
-
-        return $this->registry[$className] ?? null;
+        return $this->registry[$eventClass] ?? null;
     }
 
-    private function setEventData(Event $event, EventData $eventData): void
+    /**
+     * @param class-string<Event> $eventClass
+     */
+    private function setEventData(string $eventClass, EventData $eventData): void
     {
-        $className = $event::class;
-
-        $this->registry[$className] = $eventData;
+        $this->registry[$eventClass] = $eventData;
     }
 
     public function dispatch(Event $event): void
     {
-        $eventData = $this->getEventData($event);
+        $eventData = $this->getEventData(get_class($event));
 
         if (!$eventData)
         {
             return;
         }
 
-        foreach ($eventData->listeners as $listener)
+        foreach ($eventData->listeners as $listenerClass)
         {
+            $listener = $this->getListenerByClass($listenerClass);
+
             if ($listener instanceof QueuedEventListener)
             {
                 $job = new EventJob(get_class($listener), $event);
                 $this->queueService->dispatch($job, $listener->getQueueName());
             }
-            elseif ($listener instanceof EventListener)
+            else
             {
                 $listener->handle($event);
             }
-            elseif (is_callable($listener))
-            {
-                $listener($event);
-            }
-            else
-            {
-                throw new \RuntimeException('Unknown listener type');
-            }
         }
     }
 
     /**
-     * @param Event                         $event    Event to register
-     * @param callable|EventListener<Event> $listener Listener to add
+     * @param class-string<Event>                $eventClass    Event to register
+     * @param class-string<EventListener<Event>> $listenerClass Listener to add
      */
-    public function addListener(Event $event, callable|EventListener $listener): void
+    public function addListener(string $eventClass, string $listenerClass): void
     {
-        $eventData = $this->getEventData($event);
+        $eventData = $this->getEventData($eventClass);
 
         if (!$eventData)
         {
-            throw new \RuntimeException('Event '.$event::class.' not found');
+            throw new \RuntimeException('Event '.$eventClass.' not found');
         }
 
-        $eventData->listeners[] = $listener;
+        $eventData->listeners[] = $listenerClass;
 
-        $this->setEventData($event, $eventData);
+        $this->setEventData($eventClass, $eventData);
     }
 
     /**
-     * @param Event                                $event     Event to register
-     * @param array<callable|EventListener<Event>> $listeners Listeners for this event
+     * @param class-string<Event>                       $eventClass Event to register
+     * @param array<class-string<EventListener<Event>>> $listeners  Listeners for this event
      */
-    public function setListeners(Event $event, array $listeners): void
+    public function setListeners(string $eventClass, array $listeners): void
     {
-        $eventData = $this->getEventData($event);
+        $eventData = $this->getEventData($eventClass);
 
         if (!$eventData)
         {
-            throw new \RuntimeException('Event '.$event::class.' not found');
+            throw new \RuntimeException('Event '.$eventClass.' not found');
         }
 
         $eventData->listeners = $listeners;
 
-        $this->setEventData($event, $eventData);
+        $this->setEventData($eventClass, $eventData);
+    }
+
+    /**
+     * @param class-string<Event> $eventClass
+     *
+     * @return array<class-string<EventListener<Event>>>
+     */
+    public function getListeners(string $eventClass): array
+    {
+        $eventData = $this->getEventData($eventClass);
+
+        return $eventData->listeners ?? [];
     }
 
     /**
