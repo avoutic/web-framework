@@ -18,6 +18,8 @@ use Psr\Http\Server\RequestHandlerInterface;
 
 /**
  * Middleware to parse JSON request bodies.
+ *
+ * Adds the 'is_json' and 'json_data' attributes to the request.
  */
 class JsonParserMiddleware implements MiddlewareInterface
 {

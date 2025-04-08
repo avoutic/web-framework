@@ -18,7 +18,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 use WebFramework\Core\MessageService;
 
 /**
- * Middleware to handle messages passed via URL parameters.
+ * Middleware to handle flash messages passed via URL parameters.
  */
 class MessageMiddleware implements MiddlewareInterface
 {

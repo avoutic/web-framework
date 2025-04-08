@@ -27,6 +27,8 @@ use WebFramework\Exception\RedirectException;
 
 /**
  * Middleware to handle errors and exceptions.
+ *
+ * Adds the 'error_report' attribute to the request in case of an error.
  */
 class ErrorRedirectMiddleware implements MiddlewareInterface
 {

@@ -21,6 +21,10 @@ use WebFramework\Security\CsrfService;
 
 /**
  * Middleware to validate CSRF tokens.
+ *
+ * Requires the IpMiddleware and AuthenticationMiddleware to run first.
+ *
+ * Adds the 'passed_csrf' attribute to the request.
  */
 class CsrfValidationMiddleware implements MiddlewareInterface
 {
@@ -43,6 +47,8 @@ class CsrfValidationMiddleware implements MiddlewareInterface
      */
     public function process(Request $request, RequestHandlerInterface $handler): Response
     {
+        $passedCsrf = false;
+
         // Only check CSRF for state-changing methods
         if (in_array($request->getMethod(), ['POST', 'PUT', 'DELETE', 'PATCH']))
         {
@@ -52,16 +58,31 @@ class CsrfValidationMiddleware implements MiddlewareInterface
             if (!$this->csrfService->validateToken($token))
             {
                 $ip = $request->getAttribute('ip');
-                $userId = $request->getAttribute('user_id');
 
-                $this->blacklistService->addEntry($ip, $userId, 'missing-csrf');
+                if ($ip === null)
+                {
+                    throw new \RuntimeException('IpMiddleware must run first');
+                }
+
+                $isAuthenticated = $request->getAttribute('is_authenticated');
+
+                if ($isAuthenticated === null)
+                {
+                    throw new \RuntimeException('AuthenticationMiddleware must run first');
+                }
+
+                $authenticatedUserId = $request->getAttribute('authenticated_user_id');
+
+                $this->blacklistService->addEntry($ip, $authenticatedUserId, 'missing-csrf');
                 $this->messageService->add('error', 'generic.csrf_missing');
             }
             else
             {
-                $request = $request->withAttribute('passed_csrf', true);
+                $passedCsrf = true;
             }
         }
+
+        $request = $request->withAttribute('passed_csrf', $passedCsrf);
 
         return $handler->handle($request);
     }

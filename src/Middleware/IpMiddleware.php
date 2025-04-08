@@ -17,7 +17,9 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
 /**
- * Middleware to add the client IP address to the request attributes.
+ * Middleware to determine the client IP address and add it to the request attributes.
+ *
+ * Adds the 'ip' attribute to the request.
  */
 class IpMiddleware implements MiddlewareInterface
 {

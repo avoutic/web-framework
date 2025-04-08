@@ -20,6 +20,8 @@ use WebFramework\Security\BlacklistService;
 
 /**
  * Middleware to check if a request is blacklisted.
+ *
+ * Requires the IpMiddleware and AuthenticationMiddleware to run first.
  */
 class BlacklistMiddleware implements MiddlewareInterface
 {
@@ -40,10 +42,21 @@ class BlacklistMiddleware implements MiddlewareInterface
      */
     public function process(Request $request, RequestHandlerInterface $handler): Response
     {
-        if ($this->blacklistService->isBlacklisted(
-            $request->getAttribute('ip'),
-            $request->getAttribute('user_id'),
-        ))
+        $ip = $request->getAttribute('ip');
+        $isAuthenticated = $request->getAttribute('is_authenticated');
+        $authenticatedUserId = $request->getAttribute('authenticated_user_id');
+
+        if ($ip === null)
+        {
+            throw new \RuntimeException('IpMiddleware must run first');
+        }
+
+        if ($isAuthenticated === null)
+        {
+            throw new \RuntimeException('AuthenticationMiddleware must run first');
+        }
+
+        if ($this->blacklistService->isBlacklisted($ip, $authenticatedUserId))
         {
             throw new BlacklistException($request, 'Blacklisted for suspicious behaviour');
         }
