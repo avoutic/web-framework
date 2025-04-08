@@ -14,6 +14,8 @@ Middleware is defined in the configuration file under the `middlewares` key. The
 
 Middleware is executed in the order it is defined in the configuration file. The first middleware in the list is the last to be executed (end of the stack), and the last middleware in the list is the first to be executed (start of the stack). This means that middleware is entered and exited in a Last-In-First-Out (LIFO) order.
 
+During routing route-specific middleware, such as LoggedInMiddleware or AdminUserMiddleware can be added on top of the post_routing list.
+
 ### Example Configuration
 
 Most applications will use the following configuration:
@@ -26,11 +28,13 @@ Most applications will use the following configuration:
 ],
 'post_routing' => [
     // End of stack
+    RequestServiceMiddleware::class,
     SecurityHeadersMiddleware::class,
     MessageMiddleware::class,
     JsonParserMiddleware::class,
     BlacklistMiddleware::class,
     CsrfValidationMiddleware::class,
+    AuthenticationMiddleware::class,
     IpMiddleware::class,
     SessionStartMiddleware::class,
     // Start of stack
@@ -50,6 +54,10 @@ Here is a description of the purpose of each standard middleware implementation:
 ### ErrorRedirectMiddleware
 
 - **Purpose**: Handles errors and exceptions by redirecting to appropriate error pages or handling exceptions gracefully.
+
+### AuthenticationMiddleware
+
+- **Purpose**: Determines if there is an authenticated user and adds the info the the request attributes.
 
 ### TransactionMiddleware
 
@@ -82,3 +90,15 @@ Here is a description of the purpose of each standard middleware implementation:
 ### SessionStartMiddleware
 
 - **Purpose**: Starts a session for the request, allowing session data to be accessed and modified during the request lifecycle.
+
+### LoggedInMiddleware
+
+- **Purpose**: Checks if there is an authenticated user or throw an exception if not.
+
+### AdminUserMiddleware
+
+- **Purpose**: Checks is there is an authenticated admin user or throw an exception if not.
+
+### RequestServiceMiddleware
+
+- **Purpose**: Store the current request in the RequestService for use in the application.
