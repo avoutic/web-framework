@@ -12,7 +12,7 @@
 namespace WebFramework\Security;
 
 use WebFramework\Entity\User;
-use WebFramework\Support\StoredUserValuesFactory;
+use WebFramework\Support\StoredUserValuesService;
 
 /**
  * Manages security iterators for users.
@@ -22,10 +22,10 @@ class SecurityIteratorService
     /**
      * SecurityIteratorService constructor.
      *
-     * @param StoredUserValuesFactory $storedUserValuesFactory The stored user values factory
+     * @param StoredUserValuesService $storedUserValuesService The stored user values service
      */
     public function __construct(
-        private StoredUserValuesFactory $storedUserValuesFactory,
+        private StoredUserValuesService $storedUserValuesService,
     ) {}
 
     /**
@@ -37,11 +37,21 @@ class SecurityIteratorService
      */
     public function incrementFor(User $user): int
     {
-        $storedValues = $this->storedUserValuesFactory->get($user->getId(), 'account');
+        $securityIterator = (int) $this->storedUserValuesService->getValue(
+            'security_iterator',
+            '0',
+            $user->getId(),
+            'account',
+        );
 
-        $securityIterator = (int) $storedValues->getValue('security_iterator', '0');
         $securityIterator++;
-        $storedValues->setValue('security_iterator', (string) $securityIterator);
+
+        $this->storedUserValuesService->setValue(
+            'security_iterator',
+            (string) $securityIterator,
+            $user->getId(),
+            'account',
+        );
 
         return $securityIterator;
     }
@@ -55,8 +65,11 @@ class SecurityIteratorService
      */
     public function getFor(User $user): int
     {
-        $storedValues = $this->storedUserValuesFactory->get($user->getId(), 'account');
-
-        return (int) $storedValues->getValue('security_iterator', '0');
+        return (int) $this->storedUserValuesService->getValue(
+            'security_iterator',
+            '0',
+            $user->getId(),
+            'account',
+        );
     }
 }
