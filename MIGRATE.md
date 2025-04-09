@@ -5,6 +5,7 @@
 * Move multiple Core classes to other WebFramework namespaces
 * Renamed EntityInterface to Entity
 * Renamed TaskInterface to Task
+* StoredValues replaced with StoredValuesService
 
 ### Internal changes
 

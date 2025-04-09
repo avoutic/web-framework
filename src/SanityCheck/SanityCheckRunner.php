@@ -14,7 +14,7 @@ namespace WebFramework\SanityCheck;
 use Carbon\Carbon;
 use Psr\Container\ContainerInterface as Container;
 use WebFramework\Core\Instrumentation;
-use WebFramework\Support\StoredValues;
+use WebFramework\Support\StoredValuesService;
 
 /**
  * Class SanityCheckRunner.
@@ -32,15 +32,15 @@ class SanityCheckRunner
     /**
      * SanityCheckRunner constructor.
      *
-     * @param Container            $container       The dependency injection container
-     * @param Instrumentation      $instrumentation The instrumentation service
-     * @param StoredValues         $storedValues    The stored values service
-     * @param array<string, mixed> $buildInfo       Information about the current build
+     * @param Container            $container           The dependency injection container
+     * @param Instrumentation      $instrumentation     The instrumentation service
+     * @param StoredValuesService  $storedValuesService The stored values service
+     * @param array<string, mixed> $buildInfo           Information about the current build
      */
     public function __construct(
         private Container $container,
         private Instrumentation $instrumentation,
-        private StoredValues $storedValues,
+        private StoredValuesService $storedValuesService,
         private array $buildInfo,
     ) {}
 
@@ -135,14 +135,14 @@ class SanityCheckRunner
             // Prevent flooding. Only start check once per
             // five seconds.
             //
-            $lastTimestamp = new Carbon($this->storedValues->getValue('last_check', '0'));
+            $lastTimestamp = new Carbon($this->storedValuesService->getValue('last_check', '0'));
 
             if (Carbon::now()->diffInSeconds($lastTimestamp) < 5)
             {
                 return false;
             }
 
-            $this->storedValues->setValue('last_check', (string) Carbon::now());
+            $this->storedValuesService->setValue('last_check', (string) Carbon::now());
 
             return true;
         }
@@ -150,7 +150,7 @@ class SanityCheckRunner
         // We are in an image
         // Only check if this commit was not yet successfully checked
         //
-        $checked = $this->storedValues->getValue('checked_'.$commit, '0');
+        $checked = $this->storedValuesService->getValue('checked_'.$commit, '0');
 
         return ($checked === '0');
     }
@@ -166,7 +166,7 @@ class SanityCheckRunner
         //
         if ($commit !== null)
         {
-            $this->storedValues->setValue('checked_'.$commit, '1');
+            $this->storedValuesService->setValue('checked_'.$commit, '1');
         }
     }
 

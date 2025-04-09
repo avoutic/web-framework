@@ -49,9 +49,9 @@ return [
     'offline_mode' => false,
     'server_name' => $_SERVER['SERVER_NAME'] ?? 'app',
 
-    'DbStoredValues' => DI\autowire(Support\StoredValues::class)
+    'DbStoredValues' => DI\autowire(Support\StoredValuesService::class)
         ->constructorParameter('module', 'db'),
-    'SanityCheckStoredValues' => DI\autowire(Support\StoredValues::class)
+    'SanityCheckStoredValues' => DI\autowire(Support\StoredValuesService::class)
         ->constructorParameter('module', 'sanity_check'),
 
     Core\Cache::class => DI\autowire(Core\NullCache::class),

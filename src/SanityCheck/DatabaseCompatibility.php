@@ -13,7 +13,7 @@ namespace WebFramework\SanityCheck;
 
 use WebFramework\Core\ConfigService;
 use WebFramework\Core\Database;
-use WebFramework\Support\StoredValues;
+use WebFramework\Support\StoredValuesService;
 
 /**
  * Class DatabaseCompatibility.
@@ -34,6 +34,7 @@ class DatabaseCompatibility extends Base
     public function __construct(
         private Database $database,
         private ConfigService $configService,
+        private StoredValuesService $storedValuesService,
         private bool $checkDb = true,
         private bool $checkWfDbVersion = true,
         private bool $checkAppDbVersion = true,
@@ -105,9 +106,8 @@ class DatabaseCompatibility extends Base
 
         $this->addOutput('  Pass'.PHP_EOL.PHP_EOL);
 
-        $storedValues = new StoredValues($this->database, 'db');
-        $currentWfDbVersion = $storedValues->getValue('wf_db_version', '0');
-        $currentAppDbVersion = $storedValues->getValue('app_db_version', '1');
+        $currentWfDbVersion = $this->storedValuesService->getValue('wf_db_version', '0');
+        $currentAppDbVersion = $this->storedValuesService->getValue('app_db_version', '1');
 
         $this->addOutput('Checking for compatible Framework Database verion:'.PHP_EOL);
 

@@ -12,7 +12,7 @@
 namespace WebFramework\Core;
 
 use Psr\Container\ContainerInterface as Container;
-use WebFramework\Support\StoredValues;
+use WebFramework\Support\StoredValuesService;
 use WebFramework\Task\Task;
 
 /**
@@ -25,15 +25,15 @@ class DatabaseManager
     /**
      * DatabaseManager constructor.
      *
-     * @param Container    $container    The dependency injection container
-     * @param Database     $database     The database interface implementation
-     * @param StoredValues $storedValues The stored values service
+     * @param Container           $container           The dependency injection container
+     * @param Database            $database            The database interface implementation
+     * @param StoredValuesService $storedValuesService The stored values service
      */
     public function __construct(
         private Container $container,
         private ConfigService $configService,
         private Database $database,
-        private StoredValues $storedValues,
+        private StoredValuesService $storedValuesService,
     ) {}
 
     /**
@@ -113,7 +113,7 @@ SQL;
     {
         // Retrieve hash
         //
-        return $this->storedValues->getValue('app_db_hash', '');
+        return $this->storedValuesService->getValue('app_db_hash', '');
     }
 
     /**
@@ -123,7 +123,7 @@ SQL;
     {
         $actualHash = $this->calculateHash();
 
-        $this->storedValues->setValue('app_db_hash', $actualHash);
+        $this->storedValuesService->setValue('app_db_hash', $actualHash);
     }
 
     /**
@@ -399,7 +399,7 @@ SQL;
      */
     public function getCurrentAppVersion(): int
     {
-        return (int) $this->storedValues->getValue('app_db_version', '0');
+        return (int) $this->storedValuesService->getValue('app_db_version', '0');
     }
 
     /**
@@ -436,7 +436,7 @@ SQL;
      */
     private function setVersion(int $to): void
     {
-        $this->storedValues->setValue('app_db_version', (string) $to);
+        $this->storedValuesService->setValue('app_db_version', (string) $to);
 
         $this->updateStoredHash();
     }
@@ -448,7 +448,7 @@ SQL;
      */
     public function getCurrentFrameworkVersion(): int
     {
-        return (int) $this->storedValues->getValue('wf_db_version', '0');
+        return (int) $this->storedValuesService->getValue('wf_db_version', '0');
     }
 
     /**
