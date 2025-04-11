@@ -28,12 +28,24 @@ class DbInitTask implements Task
      * @param Container        $container        The dependency injection container
      * @param BootstrapService $bootstrapService The bootstrap service
      * @param DatabaseManager  $databaseManager  The database manager service
+     * @param resource         $outputStream     The output stream
      */
     public function __construct(
         private Container $container,
         private BootstrapService $bootstrapService,
         private DatabaseManager $databaseManager,
+        private $outputStream = STDOUT
     ) {}
+
+    /**
+     * Write a message to the output stream.
+     *
+     * @param string $message The message to write
+     */
+    private function write(string $message): void
+    {
+        fwrite($this->outputStream, $message);
+    }
 
     /**
      * Execute the database initialization task.
@@ -51,7 +63,7 @@ class DbInitTask implements Task
 
         if ($this->databaseManager->isInitialized())
         {
-            echo ' - Already initialized. Exiting.'.PHP_EOL;
+            $this->write(' - Already initialized. Exiting.'.PHP_EOL);
 
             return;
         }

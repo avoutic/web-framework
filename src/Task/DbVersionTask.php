@@ -29,12 +29,24 @@ class DbVersionTask implements Task
      * @param Container        $container        The dependency injection container
      * @param BootstrapService $bootstrapService The bootstrap service
      * @param DatabaseManager  $databaseManager  The database manager
+     * @param resource         $outputStream     The output stream
      */
     public function __construct(
         private Container $container,
         private BootstrapService $bootstrapService,
         private DatabaseManager $databaseManager,
+        private $outputStream = STDOUT
     ) {}
+
+    /**
+     * Write a message to the output stream.
+     *
+     * @param string $message The message to write
+     */
+    private function write(string $message): void
+    {
+        fwrite($this->outputStream, $message);
+    }
 
     /**
      * Execute the database version verification task.
@@ -54,10 +66,10 @@ class DbVersionTask implements Task
         $currentWfDbVersion = $this->databaseManager->getCurrentFrameworkVersion();
         $currentAppDbVersion = $this->databaseManager->getCurrentAppVersion();
 
-        echo 'Required WebFramework DB Version: '.$requiredWfDbVersion.PHP_EOL;
-        echo ' Current WebFramework DB Version: '.$currentWfDbVersion.PHP_EOL;
+        $this->write('Required WebFramework DB Version: '.$requiredWfDbVersion.PHP_EOL);
+        $this->write(' Current WebFramework DB Version: '.$currentWfDbVersion.PHP_EOL);
 
-        echo 'Required App DB Version: '.$requiredAppDbVersion.PHP_EOL;
-        echo ' Current App DB Version: '.$currentAppDbVersion.PHP_EOL;
+        $this->write('Required App DB Version: '.$requiredAppDbVersion.PHP_EOL);
+        $this->write(' Current App DB Version: '.$currentAppDbVersion.PHP_EOL);
     }
 }

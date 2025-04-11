@@ -15,15 +15,42 @@ use WebFramework\Queue\QueueService;
 
 class QueueList extends ConsoleTask
 {
+    /**
+     * QueueList constructor.
+     *
+     * @param QueueService $queueService The queue service
+     * @param resource     $outputStream The output stream
+     */
     public function __construct(
         private QueueService $queueService,
+        private $outputStream = STDOUT
     ) {}
 
+    /**
+     * Write a message to the output stream.
+     *
+     * @param string $message The message to write
+     */
+    private function write(string $message): void
+    {
+        fwrite($this->outputStream, $message);
+    }
+
+    /**
+     * Get the command for the task.
+     *
+     * @return string The command for the task
+     */
     public function getCommand(): string
     {
         return 'queue:list';
     }
 
+    /**
+     * Get the description for the task.
+     *
+     * @return string The description for the task
+     */
     public function getDescription(): string
     {
         return 'List all queues';
@@ -35,16 +62,16 @@ class QueueList extends ConsoleTask
 
         if (empty($queues))
         {
-            echo 'No queues found'.PHP_EOL;
+            $this->write('No queues found'.PHP_EOL);
 
             return;
         }
 
-        echo 'Available queues:'.PHP_EOL;
+        $this->write('Available queues:'.PHP_EOL);
 
         foreach ($queues as $queue)
         {
-            echo $queue.PHP_EOL;
+            $this->write($queue.PHP_EOL);
         }
     }
 }

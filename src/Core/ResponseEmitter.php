@@ -31,13 +31,25 @@ class ResponseEmitter
      * @param ConfigService   $configService   The configuration service
      * @param ResponseFactory $responseFactory The PSR-7 response factory
      * @param UrlBuilder      $urlBuilder      The URL builder service
+     * @param resource        $outputStream    The output stream to write to
      */
     public function __construct(
         private Container $container,
         private ConfigService $configService,
         private ResponseFactory $responseFactory,
         private UrlBuilder $urlBuilder,
+        private $outputStream = STDOUT
     ) {}
+
+    /**
+     * Write a message to the output stream.
+     *
+     * @param string $message The message to write
+     */
+    private function write(string $message): void
+    {
+        fwrite($this->outputStream, $message);
+    }
 
     /**
      * Emit the response to the client.
@@ -64,7 +76,7 @@ class ResponseEmitter
         }
 
         // Emit body
-        echo $response->getBody();
+        $this->write($response->getBody());
 
         exit();
     }

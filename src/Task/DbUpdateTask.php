@@ -28,13 +28,30 @@ class DbUpdateTask extends ConsoleTask
      * @param Container        $container        The dependency injection container
      * @param BootstrapService $bootstrapService The bootstrap service
      * @param DatabaseManager  $databaseManager  The database manager service
+     * @param resource         $outputStream     The output stream
      */
     public function __construct(
         private Container $container,
         private BootstrapService $bootstrapService,
         private DatabaseManager $databaseManager,
+        private $outputStream = STDOUT
     ) {}
 
+    /**
+     * Write a message to the output stream.
+     *
+     * @param string $message The message to write
+     */
+    private function write(string $message): void
+    {
+        fwrite($this->outputStream, $message);
+    }
+
+    /**
+     * Get the command for the task.
+     *
+     * @return string The command for the task
+     */
     public function getCommand(): string
     {
         return 'db:update';
@@ -85,7 +102,7 @@ class DbUpdateTask extends ConsoleTask
 
         if ($requiredVersion <= $currentVersion)
         {
-            echo 'Nothing to be done'.PHP_EOL;
+            $this->write('Nothing to be done'.PHP_EOL);
 
             return;
         }
@@ -104,7 +121,7 @@ class DbUpdateTask extends ConsoleTask
 
                 if (!file_exists($versionFile))
                 {
-                    echo " - No changeset for {$nextVersion} available".PHP_EOL;
+                    $this->write(" - No changeset for {$nextVersion} available".PHP_EOL);
 
                     return;
                 }

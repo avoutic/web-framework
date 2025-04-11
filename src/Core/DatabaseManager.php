@@ -28,13 +28,25 @@ class DatabaseManager
      * @param Container           $container           The dependency injection container
      * @param Database            $database            The database interface implementation
      * @param StoredValuesService $storedValuesService The stored values service
+     * @param resource            $outputStream        The output stream to write to
      */
     public function __construct(
         private Container $container,
         private ConfigService $configService,
         private Database $database,
         private StoredValuesService $storedValuesService,
+        private $outputStream = STDOUT
     ) {}
+
+    /**
+     * Write a message to the output stream.
+     *
+     * @param string $message The message to write
+     */
+    private function write(string $message): void
+    {
+        fwrite($this->outputStream, $message);
+    }
 
     /**
      * Check if the database is initialized.
@@ -152,12 +164,12 @@ SQL;
 
             $startVersion = $data['target_version'] - 1;
 
-            echo " - Checking current version to match {$startVersion}".PHP_EOL;
+            $this->write(" - Checking current version to match {$startVersion}".PHP_EOL);
 
             $this->checkAppVersion($startVersion);
         }
 
-        echo ' - Preparing all statements'.PHP_EOL;
+        $this->write(' - Preparing all statements'.PHP_EOL);
         $steps = [];
 
         foreach ($data['actions'] as $action)
@@ -325,28 +337,28 @@ SQL;
 
         if ($dryRun)
         {
-            echo ' - Dry run'.PHP_EOL;
+            $this->write(' - Dry run'.PHP_EOL);
 
             foreach ($steps as $step)
             {
                 if ($step['type'] === 'query')
                 {
                     $info = $step['data'];
-                    echo '   - Would execute:'.PHP_EOL.$info['query'].PHP_EOL;
+                    $this->write('   - Would execute:'.PHP_EOL.$info['query'].PHP_EOL);
                 }
                 elseif ($step['type'] === 'task')
                 {
                     $task = $step['data'];
-                    echo '   - Would execute task:'.PHP_EOL.get_class($task).PHP_EOL;
+                    $this->write('   - Would execute task:'.PHP_EOL.get_class($task).PHP_EOL);
                 }
             }
 
-            echo " - Would update version to {$data['target_version']}".PHP_EOL;
+            $this->write(" - Would update version to {$data['target_version']}".PHP_EOL);
 
             return;
         }
 
-        echo ' - Executing steps'.PHP_EOL;
+        $this->write(' - Executing steps'.PHP_EOL);
 
         $this->database->startTransaction();
 
@@ -355,7 +367,7 @@ SQL;
             if ($step['type'] === 'query')
             {
                 $info = $step['data'];
-                echo '   - Executing:'.PHP_EOL.$info['query'].PHP_EOL;
+                $this->write('   - Executing:'.PHP_EOL.$info['query'].PHP_EOL);
 
                 try
                 {
@@ -363,8 +375,8 @@ SQL;
                 }
                 catch (\RuntimeException $e)
                 {
-                    echo '   Failed: ';
-                    echo $this->database->getLastError().PHP_EOL;
+                    $this->write('   Failed: ');
+                    $this->write($this->database->getLastError().PHP_EOL);
 
                     exit();
                 }
@@ -385,7 +397,7 @@ SQL;
             return;
         }
 
-        echo " - Updating version to {$data['target_version']}".PHP_EOL;
+        $this->write(" - Updating version to {$data['target_version']}".PHP_EOL);
 
         $this->setVersion($data['target_version']);
 

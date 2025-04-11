@@ -27,6 +27,9 @@ abstract class Base implements SanityCheckModule
     /** @var array<mixed> Configuration for the sanity check */
     protected array $config = [];
 
+    /** @var resource The output stream */
+    protected $outputStream = STDOUT;
+
     /**
      * Perform the sanity checks.
      *
@@ -61,6 +64,16 @@ abstract class Base implements SanityCheckModule
     }
 
     /**
+     * Set the output stream.
+     *
+     * @param resource $outputStream The output stream
+     */
+    public function setOutputStream($outputStream): void
+    {
+        $this->outputStream = $outputStream;
+    }
+
+    /**
      * Add output if verbose mode is enabled.
      *
      * @param string $str The string to output
@@ -69,7 +82,7 @@ abstract class Base implements SanityCheckModule
     {
         if ($this->verbose)
         {
-            echo $str;
+            fwrite($this->outputStream, $str);
         }
     }
 }
