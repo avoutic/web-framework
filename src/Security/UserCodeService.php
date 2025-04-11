@@ -12,6 +12,7 @@
 namespace WebFramework\Security;
 
 use Carbon\Carbon;
+use Psr\Log\LoggerInterface;
 use WebFramework\Entity\User;
 use WebFramework\Exception\CodeVerificationException;
 
@@ -23,9 +24,11 @@ class UserCodeService
     /**
      * UserCodeService constructor.
      *
-     * @param ProtectService $protectService The protect service
+     * @param LoggerInterface $logger         The logger service
+     * @param ProtectService  $protectService The protect service
      */
     public function __construct(
+        private LoggerInterface $logger,
         private ProtectService $protectService,
     ) {}
 
@@ -65,6 +68,8 @@ class UserCodeService
     {
         if (!strlen($packedCode))
         {
+            $this->logger->debug('Empty code received');
+
             throw new CodeVerificationException();
         }
 
@@ -79,17 +84,23 @@ class UserCodeService
             || !is_array($data['params'])
             || !is_int($data['timestamp'])
         ) {
+            $this->logger->debug('Invalid code received', ['packed_code' => $packedCode]);
+
             throw new CodeVerificationException();
         }
 
         if ($data['action'] !== $action)
         {
+            $this->logger->error('Invalid action received in packed code', ['user_id' => $data['user_id'], 'action' => $action]);
+
             throw new CodeVerificationException();
         }
 
         $timestamp = new Carbon($data['timestamp']);
         if ($timestamp->addSeconds($validity)->lt(Carbon::now()))
         {
+            $this->logger->debug('Received expired code', ['user_id' => $data['user_id'], 'timestamp' => $data['timestamp'], 'validity' => $validity]);
+
             throw new CodeVerificationException();
         }
 

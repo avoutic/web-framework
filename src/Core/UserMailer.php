@@ -11,6 +11,8 @@
 
 namespace WebFramework\Core;
 
+use Psr\Log\LoggerInterface;
+
 /**
  * Class UserMailer.
  *
@@ -21,11 +23,13 @@ class UserMailer
     /**
      * UserMailer constructor.
      *
+     * @param LoggerInterface       $logger            The logger
      * @param MailService           $mailService       The mail service for sending emails
      * @param string                $senderEmail       The default sender email address
      * @param array<string, string> $templateOverrides Template overrides for different email types
      */
     public function __construct(
+        private LoggerInterface $logger,
         private MailService $mailService,
         private string $senderEmail,
         private array $templateOverrides,
@@ -41,6 +45,8 @@ class UserMailer
      */
     public function emailVerificationLink(string $to, array $params): bool|string
     {
+        $this->logger->debug('Sending email verification link', ['to' => $to]);
+
         $templateId = $this->templateOverrides['email-verification-link'] ?? 'email-verification-link';
         $verifyUrl = $params['verify_url'];
         $username = $params['user']['username'];
@@ -63,6 +69,8 @@ class UserMailer
      */
     public function changeEmailVerificationLink(string $to, array $params): bool|string
     {
+        $this->logger->debug('Sending change email verification link', ['to' => $to]);
+
         $templateId = $this->templateOverrides['change-email-verification-link'] ?? 'change-email-verification-link';
         $verifyUrl = $params['verify_url'];
         $username = $params['user']['username'];
@@ -85,6 +93,8 @@ class UserMailer
      */
     public function passwordReset(string $to, array $params): bool|string
     {
+        $this->logger->debug('Sending password reset email', ['to' => $to]);
+
         $templateId = $this->templateOverrides['password-reset'] ?? 'password-reset';
         $resetUrl = $params['reset_url'];
         $username = $params['user']['username'];
@@ -107,6 +117,8 @@ class UserMailer
      */
     public function newPassword(string $to, array $params): bool|string
     {
+        $this->logger->debug('Sending new password email', ['to' => $to]);
+
         $templateId = $this->templateOverrides['new-password'] ?? 'new-password';
         $username = $params['user']['username'];
 

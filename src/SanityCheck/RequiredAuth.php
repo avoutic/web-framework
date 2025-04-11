@@ -11,6 +11,7 @@
 
 namespace WebFramework\SanityCheck;
 
+use Psr\Log\LoggerInterface;
 use WebFramework\Core\RuntimeEnvironment;
 
 /**
@@ -23,9 +24,11 @@ class RequiredAuth extends Base
     /**
      * RequiredAuth constructor.
      *
+     * @param LoggerInterface    $logger             The logger
      * @param RuntimeEnvironment $runtimeEnvironment The runtime environment service
      */
     public function __construct(
+        private LoggerInterface $logger,
         private RuntimeEnvironment $runtimeEnvironment,
     ) {}
 
@@ -54,6 +57,8 @@ class RequiredAuth extends Base
 
                 continue;
             }
+
+            $this->logger->emergency('Required auth file not present', ['filename' => $filename]);
 
             $this->addOutput(" - {$filename} not present. Not fixing.".PHP_EOL);
             $error = true;

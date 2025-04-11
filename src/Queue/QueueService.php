@@ -12,6 +12,7 @@
 namespace WebFramework\Queue;
 
 use Psr\Container\ContainerInterface as Container;
+use Psr\Log\LoggerInterface;
 
 class QueueService
 {
@@ -25,6 +26,7 @@ class QueueService
 
     public function __construct(
         private Container $container,
+        private LoggerInterface $logger,
     ) {}
 
     /**
@@ -32,6 +34,8 @@ class QueueService
      */
     public function register(string $name, Queue $queue, bool $isDefault = false): void
     {
+        $this->logger->debug('Registering queue', ['queue' => $name, 'isDefault' => $isDefault]);
+
         if (isset($this->queues[$name]))
         {
             throw new \RuntimeException("Queue '{$name}' is already registered");
@@ -146,6 +150,8 @@ class QueueService
      */
     public function registerJobHandler(string $jobClass, string $jobHandlerClass): void
     {
+        $this->logger->debug('Registering job handler', ['jobClass' => $jobClass, 'jobHandlerClass' => $jobHandlerClass]);
+
         if (isset($this->jobHandlers[$jobClass]))
         {
             throw new \RuntimeException("Handler for '{$jobClass}' is already registered");

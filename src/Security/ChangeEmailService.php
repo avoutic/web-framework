@@ -11,6 +11,7 @@
 
 namespace WebFramework\Security;
 
+use Psr\Log\LoggerInterface;
 use WebFramework\Core\ConfigService;
 use WebFramework\Core\UserMailer;
 use WebFramework\Entity\User;
@@ -35,6 +36,7 @@ class ChangeEmailService
      * @param AuthenticationService   $authenticationService   The authentication service
      * @param ConfigService           $configService           The configuration service
      * @param EventService            $eventService            The event service
+     * @param LoggerInterface         $logger                  The logger service
      * @param SecurityIteratorService $securityIteratorService The security iterator service
      * @param UrlBuilder              $urlBuilder              The URL builder service
      * @param UserCodeService         $userCodeService         The user code service
@@ -45,6 +47,7 @@ class ChangeEmailService
         private AuthenticationService $authenticationService,
         private ConfigService $configService,
         private EventService $eventService,
+        private LoggerInterface $logger,
         private SecurityIteratorService $securityIteratorService,
         private UrlBuilder $urlBuilder,
         private UserCodeService $userCodeService,
@@ -69,9 +72,13 @@ class ChangeEmailService
 
             if ($count > 0)
             {
+                $this->logger->debug('E-mail address already exists', ['email' => $email]);
+
                 throw new DuplicateEmailException('E-mail address already exists');
             }
         }
+
+        $this->logger->info('Changing email address', ['user_id' => $user->getId(), 'email' => $email]);
 
         // Update account
         //
@@ -79,6 +86,8 @@ class ChangeEmailService
 
         if ($this->configService->get('authenticator.unique_identifier') == 'email')
         {
+            $this->logger->info('Setting username to email', ['user_id' => $user->getId(), 'email' => $email]);
+
             $user->setUsername($email);
         }
 
@@ -104,6 +113,8 @@ class ChangeEmailService
 
             if ($count > 0)
             {
+                $this->logger->debug('E-mail address already exists', ['email' => $email]);
+
                 throw new DuplicateEmailException('E-mail address already exists');
             }
         }
@@ -119,6 +130,8 @@ class ChangeEmailService
                 [],
                 ['code' => $code],
             );
+
+        $this->logger->debug('Sending change email verification link', ['user_id' => $user->getId(), 'email' => $email]);
 
         $this->userMailer->changeEmailVerificationLink(
             $email,
@@ -160,6 +173,8 @@ class ChangeEmailService
         //
         if ($codeUser->getId() !== $user->getId())
         {
+            $this->logger->debug('Received change email verify for wrong account', ['user_id' => $user->getId(), 'code_user_id' => $codeUser->getId()]);
+
             $this->authenticationService->deauthenticate();
 
             throw new WrongAccountException();
@@ -169,6 +184,8 @@ class ChangeEmailService
         //
         if ($user->getEmail() === $email)
         {
+            $this->logger->debug('Already changed email address', ['user_id' => $user->getId(), 'email' => $email]);
+
             return;
         }
 
@@ -178,6 +195,8 @@ class ChangeEmailService
 
         if (!isset($verifyParams['iterator']) || $securityIterator != $verifyParams['iterator'])
         {
+            $this->logger->debug('Change email verification has old iterator', ['user_id' => $user->getId(), 'email' => $email]);
+
             throw new CodeVerificationException();
         }
 

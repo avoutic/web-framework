@@ -12,6 +12,7 @@
 namespace WebFramework\Core;
 
 use Carbon\Carbon;
+use Psr\Log\LoggerInterface;
 
 /**
  * Class MailReportFunction.
@@ -23,12 +24,14 @@ class MailReportFunction implements ReportFunction
     /**
      * MailReportFunction constructor.
      *
-     * @param Cache       $cache           The cache service for storing error occurrence information
-     * @param MailService $mailService     The mail service for sending error reports
-     * @param string      $assertRecipient The email address to send error reports to
+     * @param Cache           $cache           The cache service for storing error occurrence information
+     * @param LoggerInterface $logger          The logger
+     * @param MailService     $mailService     The mail service for sending error reports
+     * @param string          $assertRecipient The email address to send error reports to
      */
     public function __construct(
         private Cache $cache,
+        private LoggerInterface $logger,
         private MailService $mailService,
         private string $assertRecipient,
     ) {}
@@ -65,16 +68,22 @@ class MailReportFunction implements ReportFunction
         // If more than 3 occurred in the last 10 minutes, only send out mail sporadically
         if ($cached['count'] > 1000 && $cached['count'] % 1000 !== 0)
         {
+            $this->logger->warning('Skipping error report due to rate limiting', ['count' => $cached['count']]);
+
             return;
         }
 
         if ($cached['count'] > 100 && $cached['count'] % 100 !== 0)
         {
+            $this->logger->warning('Skipping error report due to rate limiting', ['count' => $cached['count']]);
+
             return;
         }
 
         if ($cached['count'] > 3 && $cached['count'] % 25 !== 0)
         {
+            $this->logger->warning('Skipping error report due to rate limiting', ['count' => $cached['count']]);
+
             return;
         }
 
@@ -83,6 +92,8 @@ class MailReportFunction implements ReportFunction
         {
             $title = "[{$cached['count']} times]: {$title}";
         }
+
+        $this->logger->error('Sending error report', ['title' => $title, 'message' => $debugInfo['message']]);
 
         $this->mailService->sendRawMail(
             null,

@@ -12,6 +12,7 @@
 namespace WebFramework\Core;
 
 use GuzzleHttp\Client;
+use Psr\Log\LoggerInterface;
 
 /**
  * Class Recaptcha.
@@ -28,10 +29,12 @@ class Recaptcha
     /**
      * Recaptcha constructor.
      *
-     * @param Client $client    The HTTP client for making API requests
-     * @param string $secretKey The reCAPTCHA secret key
+     * @param LoggerInterface $logger    The logger
+     * @param Client          $client    The HTTP client for making API requests
+     * @param string          $secretKey The reCAPTCHA secret key
      */
     public function __construct(
+        private LoggerInterface $logger,
         private Client $client,
         private string $secretKey,
     ) {}
@@ -89,6 +92,8 @@ class Recaptcha
 
         if (isset($body['error-codes']))
         {
+            $this->logger->debug('Recaptcha error', ['error_codes' => $body['error-codes']]);
+
             $this->errorCodes = $body['error-codes'];
 
             if (in_array('invalid-input-secret', $body['error-codes']))

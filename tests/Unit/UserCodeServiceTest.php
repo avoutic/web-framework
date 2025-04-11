@@ -5,6 +5,7 @@ namespace Tests\Unit;
 use Carbon\Carbon;
 use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
+use Psr\Log\LoggerInterface;
 use WebFramework\Exception\CodeVerificationException;
 use WebFramework\Security\ProtectService;
 use WebFramework\Security\UserCodeService;
@@ -20,6 +21,9 @@ final class UserCodeServiceTest extends Unit
     {
         $instance = $this->make(
             UserCodeService::class,
+            [
+                'logger' => $this->makeEmpty(LoggerInterface::class),
+            ],
         );
 
         verify(function () use ($instance) {
@@ -34,6 +38,7 @@ final class UserCodeServiceTest extends Unit
         $instance = $this->make(
             UserCodeService::class,
             [
+                'logger' => $this->makeEmpty(LoggerInterface::class),
                 'protectService' => $this->makeEmpty(
                     ProtectService::class,
                     [
@@ -55,6 +60,7 @@ final class UserCodeServiceTest extends Unit
         $instance = $this->make(
             UserCodeService::class,
             [
+                'logger' => $this->makeEmpty(LoggerInterface::class),
                 'protectService' => $this->makeEmpty(
                     ProtectService::class,
                     [
@@ -76,6 +82,7 @@ final class UserCodeServiceTest extends Unit
         $instance = $this->make(
             UserCodeService::class,
             [
+                'logger' => $this->makeEmpty(LoggerInterface::class),
                 'protectService' => $this->makeEmpty(
                     ProtectService::class,
                     [
@@ -97,6 +104,7 @@ final class UserCodeServiceTest extends Unit
         $instance = $this->make(
             UserCodeService::class,
             [
+                'logger' => $this->makeEmpty(LoggerInterface::class),
                 'protectService' => $this->makeEmpty(
                     ProtectService::class,
                     [
@@ -128,6 +136,7 @@ final class UserCodeServiceTest extends Unit
         $instance = $this->make(
             UserCodeService::class,
             [
+                'logger' => $this->makeEmpty(LoggerInterface::class),
                 'protectService' => $this->makeEmpty(
                     ProtectService::class,
                     [

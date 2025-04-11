@@ -11,6 +11,7 @@
 
 namespace WebFramework\Security;
 
+use Psr\Log\LoggerInterface;
 use WebFramework\Core\Database;
 use WebFramework\Entity\User;
 use WebFramework\Repository\RightRepository;
@@ -25,11 +26,13 @@ class UserRightService
      * UserRightService constructor.
      *
      * @param Database            $database            The database service
+     * @param LoggerInterface     $logger              The logger service
      * @param RightRepository     $rightRepository     The right repository
      * @param UserRightRepository $userRightRepository The user right repository
      */
     public function __construct(
         private Database $database,
+        private LoggerInterface $logger,
         private RightRepository $rightRepository,
         private UserRightRepository $userRightRepository,
     ) {}
@@ -44,10 +47,14 @@ class UserRightService
      */
     public function addRight(User $user, string $shortName): void
     {
+        $this->logger->info('Adding right to user', ['user_id' => $user->getId(), 'short_name' => $shortName]);
+
         $right = $this->rightRepository->getRightByShortName($shortName);
 
         if ($right === null)
         {
+            $this->logger->error('Cannot add unknown right to user', ['user_id' => $user->getId(), 'short_name' => $shortName]);
+
             throw new \InvalidArgumentException('Right unknown');
         }
 
@@ -77,10 +84,14 @@ class UserRightService
      */
     public function deleteRight(User $user, string $shortName): void
     {
+        $this->logger->info('Deleting right from user', ['user_id' => $user->getId(), 'short_name' => $shortName]);
+
         $right = $this->rightRepository->getRightByShortName($shortName);
 
         if ($right === null)
         {
+            $this->logger->error('Cannot delete unknown right from user', ['user_id' => $user->getId(), 'short_name' => $shortName]);
+
             throw new \InvalidArgumentException('Right unknown');
         }
 

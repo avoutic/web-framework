@@ -12,6 +12,7 @@
 namespace WebFramework\Queue;
 
 use Carbon\Carbon;
+use Psr\Log\LoggerInterface;
 
 /**
  * The MemoryQueue is a simple queue implementation that uses an array to store the jobs.
@@ -30,8 +31,10 @@ class MemoryQueue implements Queue
     /** @var array<array{timestamp: Carbon, job: string}> */
     private array $delayed = [];
 
-    public function __construct(private string $name)
-    {
+    public function __construct(
+        private LoggerInterface $logger,
+        private string $name,
+    ) {
         $this->lastMaintenance = Carbon::now();
     }
 
@@ -39,6 +42,8 @@ class MemoryQueue implements Queue
     {
         if ($delay > 0)
         {
+            $this->logger->debug('Dispatching delayed job', ['queue' => $this->name, 'job' => get_class($job), 'delay' => $delay]);
+
             array_unshift($this->delayed, [
                 'timestamp' => Carbon::now()->addSeconds($delay),
                 'job' => serialize($job),
@@ -46,6 +51,8 @@ class MemoryQueue implements Queue
         }
         else
         {
+            $this->logger->debug('Dispatching job', ['queue' => $this->name, 'job' => get_class($job)]);
+
             array_unshift($this->now, serialize($job));
         }
     }
@@ -86,6 +93,7 @@ class MemoryQueue implements Queue
 
     public function clear(): void
     {
+        $this->logger->debug('Clearing queue', ['queue' => $this->name]);
         $this->now = [];
         $this->delayed = [];
     }

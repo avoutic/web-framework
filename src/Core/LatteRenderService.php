@@ -15,6 +15,7 @@ use Latte\Engine;
 use Latte\Loaders\FileLoader;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use Psr\Log\LoggerInterface;
 
 /**
  * Class LatteRenderService.
@@ -28,12 +29,14 @@ class LatteRenderService implements RenderService
      *
      * @param Instrumentation $instrumentation The instrumentation service for performance tracking
      * @param Engine          $latteEngine     The Latte templating engine
+     * @param LoggerInterface $logger          The logger
      * @param string          $templateDir     The directory containing the template files
      * @param string          $tmpDir          The directory for storing compiled templates
      */
     public function __construct(
         private Instrumentation $instrumentation,
         private Engine $latteEngine,
+        private LoggerInterface $logger,
         private string $templateDir,
         private string $tmpDir,
     ) {}
@@ -68,6 +71,8 @@ class LatteRenderService implements RenderService
      */
     public function renderToString(Request $request, string $templateFile, array $params): string
     {
+        $this->logger->debug('Rendering template', ['template_file' => $templateFile]);
+
         $this->latteEngine->setTempDirectory($this->tmpDir);
         $this->latteEngine->setLoader(new FileLoader($this->templateDir));
 

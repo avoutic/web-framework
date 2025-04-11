@@ -11,6 +11,7 @@
 
 namespace WebFramework\Security;
 
+use Psr\Log\LoggerInterface;
 use Slim\Http\ServerRequest as Request;
 use WebFramework\Core\ConfigService;
 use WebFramework\Entity\User;
@@ -36,6 +37,7 @@ class LoginService
      * @param ConfigService         $configService         The configuration service
      * @param CheckPasswordService  $checkPasswordService  The password checking service
      * @param EventService          $eventService          The event service
+     * @param LoggerInterface       $logger                The logger service
      * @param UserRepository        $userRepository        The user repository
      */
     public function __construct(
@@ -44,6 +46,7 @@ class LoginService
         private ConfigService $configService,
         private CheckPasswordService $checkPasswordService,
         private EventService $eventService,
+        private LoggerInterface $logger,
         private UserRepository $userRepository,
     ) {}
 
@@ -66,6 +69,8 @@ class LoginService
         $user = $this->userRepository->getUserByUsername($username);
         if ($user === null)
         {
+            $this->logger->debug('Unknown username', ['username' => $username]);
+
             $this->blacklistService->addEntry($request->getAttribute('ip'), null, 'unknown-username');
 
             throw new InvalidPasswordException();
@@ -73,11 +78,15 @@ class LoginService
 
         if (!$validCaptcha && $this->captchaRequired($user))
         {
+            $this->logger->debug('CAPTCHA required but not provided', ['user_id' => $user->getId()]);
+
             throw new CaptchaRequiredException();
         }
 
         if (!$this->checkPasswordService->checkPassword($user, $password))
         {
+            $this->logger->debug('Wrong password', ['user_id' => $user->getId()]);
+
             $this->blacklistService->addEntry($request->getAttribute('ip'), null, 'wrong-password');
 
             throw new InvalidPasswordException();
@@ -85,6 +94,8 @@ class LoginService
 
         if (!$user->isVerified())
         {
+            $this->logger->debug('User not verified', ['user_id' => $user->getId()]);
+
             throw new UserVerificationRequiredException($user);
         }
 
@@ -104,11 +115,15 @@ class LoginService
     {
         if (!$this->checkPasswordService->checkPassword($user, $password))
         {
+            $this->logger->debug('Invalid password', ['user_id' => $user->getId()]);
+
             throw new InvalidPasswordException();
         }
 
         if (!$user->isVerified())
         {
+            $this->logger->debug('User not verified', ['user_id' => $user->getId()]);
+
             throw new UserVerificationRequiredException($user);
         }
 
@@ -130,6 +145,8 @@ class LoginService
 
         if ($user->getFailedLogin() > 5 && $bruteforceProtection)
         {
+            $this->logger->debug('CAPTCHA required', ['user_id' => $user->getId(), 'failed_logins' => $user->getFailedLogin()]);
+
             return true;
         }
 

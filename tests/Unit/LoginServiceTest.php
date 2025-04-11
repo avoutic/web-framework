@@ -4,6 +4,7 @@ namespace Tests\Unit;
 
 use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
+use Psr\Log\LoggerInterface;
 use Slim\Http\ServerRequest as Request;
 use WebFramework\Core\ConfigService;
 use WebFramework\Entity\User;
@@ -30,6 +31,7 @@ final class LoginServiceTest extends Unit
             LoginService::class,
             [
                 'blacklistService' => $this->makeEmpty(NullBlacklistService::class),
+                'logger' => $this->makeEmpty(LoggerInterface::class),
                 'userRepository' => $this->makeEmpty(
                     UserRepository::class,
                     [
@@ -54,6 +56,7 @@ final class LoginServiceTest extends Unit
             LoginService::class,
             [
                 'blacklistService' => $this->makeEmpty(NullBlacklistService::class),
+                'logger' => $this->makeEmpty(LoggerInterface::class),
                 'checkPasswordService' => $this->makeEmpty(
                     CheckPasswordService::class,
                     [
@@ -83,6 +86,7 @@ final class LoginServiceTest extends Unit
         $instance = $this->make(
             LoginService::class,
             [
+                'logger' => $this->makeEmpty(LoggerInterface::class),
                 'userRepository' => $this->makeEmpty(
                     UserRepository::class,
                     [
@@ -108,6 +112,7 @@ final class LoginServiceTest extends Unit
             LoginService::class,
             [
                 'blacklistService' => $this->makeEmpty(NullBlacklistService::class),
+                'logger' => $this->makeEmpty(LoggerInterface::class),
                 'checkPasswordService' => $this->makeEmpty(
                     CheckPasswordService::class,
                     [
@@ -146,6 +151,7 @@ final class LoginServiceTest extends Unit
             LoginService::class,
             [
                 'blacklistService' => $this->makeEmpty(NullBlacklistService::class),
+                'logger' => $this->makeEmpty(LoggerInterface::class),
                 'checkPasswordService' => $this->makeEmpty(
                     CheckPasswordService::class,
                     [
@@ -179,6 +185,7 @@ final class LoginServiceTest extends Unit
                         'checkPassword' => Expected::once(false),
                     ],
                 ),
+                'logger' => $this->makeEmpty(LoggerInterface::class),
             ],
         );
 
@@ -204,6 +211,7 @@ final class LoginServiceTest extends Unit
                         'checkPassword' => Expected::once(true),
                     ],
                 ),
+                'logger' => $this->makeEmpty(LoggerInterface::class),
             ],
         );
 
@@ -268,7 +276,7 @@ final class LoginServiceTest extends Unit
 
     public function testCaptchaRequired()
     {
-        $user = $this->makeEmpty(User::class, ['getFailedLogin' => Expected::once(200)]);
+        $user = $this->makeEmpty(User::class, ['getFailedLogin' => Expected::atLeastOnce(200)]);
 
         $instance = $this->make(
             LoginService::class,
@@ -279,6 +287,7 @@ final class LoginServiceTest extends Unit
                         'get' => Expected::once(true),
                     ],
                 ),
+                'logger' => $this->makeEmpty(LoggerInterface::class),
             ],
         );
 

@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use Codeception\Test\Unit;
+use Psr\Log\LoggerInterface;
 use WebFramework\Core\Database;
 use WebFramework\Core\DatabaseResultWrapper;
 use WebFramework\Repository\BlacklistEntryRepository;
@@ -37,6 +38,7 @@ final class DatabaseBlacklistServiceTest extends Unit
                     BlacklistEntryRepository::class,
                     [],
                 ),
+                $this->makeEmpty(LoggerInterface::class),
                 'storePeriod' => 1000,
                 'triggerPeriod' => 100,
                 'threshold' => 10,
@@ -70,6 +72,7 @@ final class DatabaseBlacklistServiceTest extends Unit
                     BlacklistEntryRepository::class,
                     [],
                 ),
+                $this->makeEmpty(LoggerInterface::class),
                 'storePeriod' => 1000,
                 'triggerPeriod' => 100,
                 'threshold' => 10,

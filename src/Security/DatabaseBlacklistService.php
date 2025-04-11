@@ -12,6 +12,7 @@
 namespace WebFramework\Security;
 
 use Carbon\Carbon;
+use Psr\Log\LoggerInterface;
 use WebFramework\Core\Database;
 use WebFramework\Repository\BlacklistEntryRepository;
 
@@ -27,6 +28,7 @@ class DatabaseBlacklistService implements BlacklistService
      *
      * @param Database                 $database                 The database service
      * @param BlacklistEntryRepository $blacklistEntryRepository The blacklist entry repository
+     * @param LoggerInterface          $logger                   The logger service
      * @param int                      $storePeriod              The period to store blacklist entries (in seconds)
      * @param int                      $threshold                The threshold for blacklisting
      * @param int                      $triggerPeriod            The period to consider for blacklisting (in seconds)
@@ -34,6 +36,7 @@ class DatabaseBlacklistService implements BlacklistService
     public function __construct(
         private Database $database,
         private BlacklistEntryRepository $blacklistEntryRepository,
+        private LoggerInterface $logger,
         private int $storePeriod,
         private int $threshold,
         private int $triggerPeriod,
@@ -44,6 +47,8 @@ class DatabaseBlacklistService implements BlacklistService
      */
     public function cleanup(): void
     {
+        $this->logger->debug('Cleaning up blacklist entries');
+
         $query = <<<'SQL'
         DELETE FROM blacklist_entries
         WHERE timestamp < ?
@@ -64,6 +69,8 @@ SQL;
      */
     public function addEntry(string $ip, ?int $userId, string $reason, int $severity = 1): void
     {
+        $this->logger->info('Adding blacklist entry', ['ip' => $ip, 'user_id' => $userId, 'reason' => $reason, 'severity' => $severity]);
+
         $fullReason = $reason;
 
         $entry = $this->blacklistEntryRepository->create([
@@ -107,6 +114,10 @@ SQL;
 
         $result = $this->database->query($query, $params, 'Failed to sum blacklist entries');
 
-        return $result->fields['total'] > $this->threshold;
+        $isBlacklisted = $result->fields['total'] > $this->threshold;
+
+        $this->logger->debug('Is blacklisted', ['ip' => $ip, 'user_id' => $userId, 'is_blacklisted' => $isBlacklisted, 'total' => $result->fields['total']]);
+
+        return $isBlacklisted;
     }
 }

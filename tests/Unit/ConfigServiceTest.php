@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use Codeception\Test\Unit;
+use Psr\Log\LoggerInterface;
 use WebFramework\Core\RuntimeEnvironment;
 use WebFramework\Security\ConfigService as SecureConfigService;
 
@@ -18,6 +19,7 @@ final class ConfigServiceTest extends Unit
         $instance = $this->construct(
             SecureConfigService::class,
             [
+                $this->makeEmpty(LoggerInterface::class),
                 $this->makeEmpty(RuntimeEnvironment::class, ['getAppDir' => __DIR__]),
                 '/auth',
             ],
@@ -35,6 +37,7 @@ final class ConfigServiceTest extends Unit
         $instance = $this->construct(
             SecureConfigService::class,
             [
+                $this->makeEmpty(LoggerInterface::class),
                 $this->makeEmpty(RuntimeEnvironment::class, ['getAppDir' => __DIR__]),
                 '/auth',
             ],
@@ -50,6 +53,7 @@ final class ConfigServiceTest extends Unit
         $instance = $this->construct(
             SecureConfigService::class,
             [
+                $this->makeEmpty(LoggerInterface::class),
                 $this->makeEmpty(RuntimeEnvironment::class, ['getAppDir' => __DIR__]),
                 '/auth',
             ],

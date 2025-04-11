@@ -11,6 +11,7 @@
 
 namespace WebFramework\Security;
 
+use Psr\Log\LoggerInterface;
 use WebFramework\Core\RuntimeEnvironment;
 
 /**
@@ -23,10 +24,12 @@ class ConfigService
     /**
      * ConfigService constructor.
      *
+     * @param LoggerInterface    $logger             The logger
      * @param RuntimeEnvironment $runtimeEnvironment The runtime environment
      * @param string             $authDir            The directory containing auth configuration files
      */
     public function __construct(
+        private LoggerInterface $logger,
         private RuntimeEnvironment $runtimeEnvironment,
         private string $authDir,
     ) {}
@@ -46,6 +49,8 @@ class ConfigService
 
         if (!is_array($authConfig) && !strlen($authConfig))
         {
+            $this->logger->critical('Auth Config '.$name.' invalid', ['auth_config' => $authConfig]);
+
             throw new \RuntimeException('Auth Config '.$name.' invalid');
         }
 

@@ -12,6 +12,7 @@
 namespace WebFramework\Event;
 
 use Psr\Container\ContainerInterface as Container;
+use Psr\Log\LoggerInterface;
 use WebFramework\Job\EventJob;
 use WebFramework\Queue\QueueService;
 
@@ -22,6 +23,7 @@ class EventService
 
     public function __construct(
         private Container $container,
+        private LoggerInterface $logger,
         private QueueService $queueService,
     ) {}
 
@@ -67,6 +69,8 @@ class EventService
 
         if (!$eventData)
         {
+            $this->logger->debug('Cannot dispatch unregistered event', ['event_class' => get_class($event)]);
+
             return;
         }
 
@@ -76,11 +80,15 @@ class EventService
 
             if ($listener instanceof QueuedEventListener)
             {
+                $this->logger->debug('Dispatching queued event', ['event_class' => get_class($event), 'listener_class' => $listenerClass]);
+
                 $job = new EventJob(get_class($listener), $event);
                 $this->queueService->dispatch($job, $listener->getQueueName());
             }
             else
             {
+                $this->logger->debug('Dispatching non-queued event', ['event_class' => get_class($event), 'listener_class' => $listenerClass]);
+
                 $listener->handle($event);
             }
         }

@@ -12,6 +12,7 @@
 namespace WebFramework\Security;
 
 use Odan\Session\SessionInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * Class CsrfService.
@@ -23,10 +24,12 @@ class CsrfService
     /**
      * CsrfService constructor.
      *
+     * @param LoggerInterface  $logger         The logger service
      * @param RandomProvider   $randomProvider The random provider service
      * @param SessionInterface $browserSession The browser session service
      */
     public function __construct(
+        private LoggerInterface $logger,
         private RandomProvider $randomProvider,
         private SessionInterface $browserSession,
     ) {}
@@ -36,6 +39,8 @@ class CsrfService
      */
     private function storeNewToken(): void
     {
+        $this->logger->debug('Storing new CSRF token in session');
+
         $this->browserSession->set('csrf_token', $this->randomProvider->getRandom(16));
     }
 

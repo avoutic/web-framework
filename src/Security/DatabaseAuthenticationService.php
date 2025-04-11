@@ -14,6 +14,7 @@ namespace WebFramework\Security;
 use Carbon\Carbon;
 use Odan\Session\SessionInterface;
 use Odan\Session\SessionManagerInterface;
+use Psr\Log\LoggerInterface;
 use WebFramework\Core\Database;
 use WebFramework\Entity\Session;
 use WebFramework\Entity\User;
@@ -34,6 +35,7 @@ class DatabaseAuthenticationService implements AuthenticationService
      * DatabaseAuthenticationService constructor.
      *
      * @param Database                $database              The database service
+     * @param LoggerInterface         $logger                The logger service
      * @param SessionInterface        $browserSession        The browser session service
      * @param SessionManagerInterface $browserSessionManager The browser session manager
      * @param SessionRepository       $sessionRepository     The session repository
@@ -42,6 +44,7 @@ class DatabaseAuthenticationService implements AuthenticationService
      */
     public function __construct(
         private Database $database,
+        private LoggerInterface $logger,
         private SessionInterface $browserSession,
         private SessionManagerInterface $browserSessionManager,
         private SessionRepository $sessionRepository,
@@ -54,6 +57,8 @@ class DatabaseAuthenticationService implements AuthenticationService
      */
     public function cleanup(): void
     {
+        $this->logger->debug('Cleaning up expired sessions');
+
         $timestamp = Carbon::now();
 
         $query = <<<'SQL'
@@ -76,6 +81,8 @@ SQL;
      */
     private function registerSession(int $userId, string $sessionId): Session
     {
+        $this->logger->debug('Registering session', ['user_id' => $userId, 'session_id' => $sessionId]);
+
         $timestamp = Carbon::now();
 
         return $this->sessionRepository->create([
@@ -93,6 +100,8 @@ SQL;
      */
     public function invalidateSessions(int $userId): void
     {
+        $this->logger->debug('Invalidating sessions for user', ['user_id' => $userId]);
+
         $this->sessionChecked = false;
 
         $result = $this->database->query('DELETE FROM sessions WHERE user_id = ?', [$userId], 'Failed to delete all sessions for user');
@@ -106,6 +115,8 @@ SQL;
     public function authenticate(User $user): void
     {
         $this->deauthenticate();
+
+        $this->logger->info('Authenticating user', ['user_id' => $user->getId()]);
 
         $session = $this->registerSession($user->getId(), $this->browserSessionManager->getId());
 
@@ -127,6 +138,7 @@ SQL;
             return;
         }
 
+        $this->logger->debug('Validating session');
         // Check browser session
         //
         if (!$this->browserSession->has('logged_in')
@@ -155,6 +167,8 @@ SQL;
         $session = $this->sessionRepository->getObjectById($sessionId);
         if ($session === null)
         {
+            $this->logger->debug('No database session found, logging out');
+
             // If logged in but no database session, clear browser session
             //
             $this->browserSession->set('logged_in', false);
@@ -168,6 +182,8 @@ SQL;
 
         if (!$this->isDatabaseSessionValid($session))
         {
+            $this->logger->debug('Database session not valid, logging out');
+
             // If logged in but database session no longer valid, clear browser session
             //
             $this->browserSession->set('logged_in', false);
@@ -222,6 +238,8 @@ SQL;
             return;
         }
 
+        $this->logger->debug('Extending database session', ['session_id' => $session->getId()]);
+
         $timestamp = Carbon::now();
         $session->setLastActive($timestamp);
 
@@ -230,6 +248,8 @@ SQL;
         $startTimestamp = new Carbon($session->getStart());
         if ($current->diffInHours($startTimestamp) > 4)
         {
+            $this->logger->debug('Regenerating browser session ID');
+
             $this->browserSessionManager->regenerateId();
 
             $session->setSessionId($this->browserSessionManager->getId());
@@ -258,6 +278,8 @@ SQL;
      */
     public function deauthenticate(): void
     {
+        $this->logger->info('Deauthenticating user', ['user_id' => $this->browserSession->get('user_id')]);
+
         $sessionId = $this->browserSession->get('db_session_id');
         if ($sessionId !== null)
         {
@@ -311,12 +333,16 @@ SQL;
             $this->authenticatedUser = $this->userRepository->getObjectById($userId);
             if ($this->authenticatedUser === null)
             {
+                $this->logger->notice('User not present', ['user_id' => $userId]);
+
                 throw new \RuntimeException('User not present');
             }
         }
 
         if ($this->authenticatedUser->getId() !== $userId)
         {
+            $this->logger->notice('Authenticated user changed during run', ['user_id' => $userId]);
+
             throw new \RuntimeException('Authenticated user changed during run');
         }
 

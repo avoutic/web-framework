@@ -4,6 +4,7 @@ namespace Tests\Unit\EventService;
 
 use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
+use Psr\Log\LoggerInterface;
 use Tests\Support\TestEvent;
 use Tests\Support\TestEventListener;
 use Tests\Support\TestEventListener2;
@@ -30,6 +31,7 @@ final class DispatchTest extends Unit
         $eventService = $this->make(
             EventService::class,
             [
+                'logger' => $this->makeEmpty(LoggerInterface::class),
                 'getListenerByClass' => Expected::once($testListener),
             ],
         );
@@ -60,6 +62,7 @@ final class DispatchTest extends Unit
         $eventService = $this->make(
             EventService::class,
             [
+                'logger' => $this->makeEmpty(LoggerInterface::class),
                 'getListenerByClass' => Expected::exactly(
                     2,
                     function ($listenerClass) use ($testListener1, $testListener2) {
@@ -98,6 +101,7 @@ final class DispatchTest extends Unit
         $eventService = $this->make(
             EventService::class,
             [
+                'logger' => $this->makeEmpty(LoggerInterface::class),
                 'queueService' => $this->makeEmpty(
                     QueueService::class,
                     [

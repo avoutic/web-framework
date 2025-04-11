@@ -11,6 +11,7 @@
 
 namespace WebFramework\Security;
 
+use Psr\Log\LoggerInterface;
 use WebFramework\Entity\User;
 use WebFramework\Support\StoredUserValuesService;
 
@@ -22,9 +23,11 @@ class SecurityIteratorService
     /**
      * SecurityIteratorService constructor.
      *
+     * @param LoggerInterface         $logger                  The logger service
      * @param StoredUserValuesService $storedUserValuesService The stored user values service
      */
     public function __construct(
+        private LoggerInterface $logger,
         private StoredUserValuesService $storedUserValuesService,
     ) {}
 
@@ -45,6 +48,8 @@ class SecurityIteratorService
         );
 
         $securityIterator++;
+
+        $this->logger->info('Incrementing security iterator for user', ['user_id' => $user->getId(), 'new_security_iterator' => $securityIterator]);
 
         $this->storedUserValuesService->setValue(
             'security_iterator',

@@ -10,10 +10,13 @@ use Odan\Session\PhpSession;
 use Odan\Session\SessionInterface;
 use Odan\Session\SessionManagerInterface;
 use Psr\Container\ContainerInterface;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use Slim\Psr7\Factory\ResponseFactory;
 
 return [
     Engine::class => DI\create(),
+    LoggerInterface::class => DI\autowire(NullLogger::class),
     SessionManagerInterface::class => function (ContainerInterface $container) {
         return $container->get(SessionInterface::class);
     },
@@ -69,8 +72,9 @@ return [
     Core\MailService::class => DI\autowire(Core\NullMailService::class),
     Core\Recaptcha::class => DI\Factory(function (ContainerInterface $c) {
         return new Core\Recaptcha(
-            $c->get(Client::class),
-            $c->get('security.recaptcha.secret_key'),
+            logger: $c->get(LoggerInterface::class),
+            client: $c->get(Client::class),
+            secretKey: $c->get('security.recaptcha.secret_key'),
         );
     }),
     Core\RecaptchaFactory::class => DI\autowire()
@@ -89,6 +93,7 @@ return [
         $templateOverrides = $configService->get('user_mailer.template_overrides');
 
         return new Core\UserMailer(
+            logger: $c->get(LoggerInterface::class),
             mailService: $c->get(Core\MailService::class),
             senderEmail: $c->get('sender_core.default_sender'),
             templateOverrides: $templateOverrides,

@@ -11,6 +11,7 @@
 
 namespace WebFramework\Security;
 
+use Psr\Log\LoggerInterface;
 use WebFramework\Core\ConfigService;
 use WebFramework\Core\UserMailer;
 use WebFramework\Entity\User;
@@ -30,6 +31,7 @@ class UserVerificationService
      *
      * @param ConfigService   $configService   The configuration service
      * @param EventService    $eventService    The event service
+     * @param LoggerInterface $logger          The logger service
      * @param UrlBuilder      $urlBuilder      The URL builder service
      * @param UserCodeService $userCodeService The user code service
      * @param UserMailer      $userMailer      The user mailer service
@@ -38,6 +40,7 @@ class UserVerificationService
     public function __construct(
         private ConfigService $configService,
         private EventService $eventService,
+        private LoggerInterface $logger,
         private UrlBuilder $urlBuilder,
         private UserCodeService $userCodeService,
         private UserMailer $userMailer,
@@ -53,6 +56,8 @@ class UserVerificationService
      */
     public function handleSendVerify(string $code): void
     {
+        $this->logger->debug('Sending verification mail', ['code' => $code]);
+
         ['user_id' => $codeUserId, 'params' => $verifyParams] = $this->userCodeService->verify(
             $code,
             validity: 24 * 60 * 60,
@@ -64,6 +69,8 @@ class UserVerificationService
         $user = $this->userRepository->getObjectById($codeUserId);
         if ($user === null)
         {
+            $this->logger->debug('User not found', ['code_user_id' => $codeUserId]);
+
             throw new CodeVerificationException();
         }
 
@@ -81,6 +88,8 @@ class UserVerificationService
      */
     public function sendVerifyMail(User $user, array $afterVerifyData = []): void
     {
+        $this->logger->debug('Sending verification mail', ['user_id' => $user->getId()]);
+
         $code = $this->userCodeService->generate($user, 'verify', $afterVerifyData);
 
         $verifyUrl =
@@ -109,6 +118,8 @@ class UserVerificationService
      */
     public function handleVerify(string $code): void
     {
+        $this->logger->debug('Handling code verification', ['code' => $code]);
+
         ['user_id' => $codeUserId, 'params' => $verifyParams] = $this->userCodeService->verify(
             $code,
             validity: 24 * 60 * 60,
@@ -120,11 +131,15 @@ class UserVerificationService
         $user = $this->userRepository->getObjectById($codeUserId);
         if ($user === null)
         {
+            $this->logger->debug('User not found', ['code_user_id' => $codeUserId]);
+
             throw new CodeVerificationException();
         }
 
         if (!$user->isVerified())
         {
+            $this->logger->info('Setting user to verified', ['user_id' => $user->getId()]);
+
             $user->setVerified();
             $this->userRepository->save($user);
 

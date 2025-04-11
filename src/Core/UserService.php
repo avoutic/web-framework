@@ -12,6 +12,7 @@
 namespace WebFramework\Core;
 
 use Carbon\Carbon;
+use Psr\Log\LoggerInterface;
 use WebFramework\Entity\User;
 use WebFramework\Repository\UserRepository;
 use WebFramework\Security\PasswordHashService;
@@ -27,11 +28,13 @@ class UserService
      * UserService constructor.
      *
      * @param ConfigService       $configService       The configuration service
+     * @param LoggerInterface     $logger              The logger
      * @param PasswordHashService $passwordHashService Service for hashing passwords
      * @param UserRepository      $userRepository      Repository for user data operations
      */
     public function __construct(
         private ConfigService $configService,
+        private LoggerInterface $logger,
         private PasswordHashService $passwordHashService,
         private UserRepository $userRepository,
     ) {}
@@ -48,6 +51,8 @@ class UserService
      */
     public function createUser(string $username, string $password, string $email, int $termsAccepted): User
     {
+        $this->logger->info('Creating user', ['username' => $username, 'email' => $email]);
+
         $solidPassword = $this->passwordHashService->generateHash($password);
 
         return $this->userRepository->create([

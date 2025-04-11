@@ -4,6 +4,7 @@ namespace Tests\Unit\Queue;
 
 use Codeception\Test\Unit;
 use Psr\Container\ContainerInterface as Container;
+use Psr\Log\LoggerInterface;
 use Tests\Support\InvalidJobHandler;
 use Tests\Support\StaticArrayJob;
 use Tests\Support\StaticArrayJobHandler;
@@ -34,6 +35,7 @@ final class HandlerTest extends Unit
                         },
                     ],
                 ),
+                $this->makeEmpty(LoggerInterface::class),
             ],
         );
 
@@ -50,6 +52,7 @@ final class HandlerTest extends Unit
             QueueService::class,
             [
                 $this->makeEmpty(Container::class),
+                $this->makeEmpty(LoggerInterface::class),
             ]
         );
 
@@ -68,6 +71,7 @@ final class HandlerTest extends Unit
             QueueService::class,
             [
                 $this->makeEmpty(Container::class),
+                $this->makeEmpty(LoggerInterface::class),
             ]
         );
 
@@ -96,6 +100,7 @@ final class HandlerTest extends Unit
                         },
                     ],
                 ),
+                $this->makeEmpty(LoggerInterface::class),
             ],
         );
 

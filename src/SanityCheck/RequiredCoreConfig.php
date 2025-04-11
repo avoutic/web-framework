@@ -11,6 +11,7 @@
 
 namespace WebFramework\SanityCheck;
 
+use Psr\Log\LoggerInterface;
 use WebFramework\Core\ConfigService;
 
 /**
@@ -27,6 +28,7 @@ class RequiredCoreConfig extends Base
      */
     public function __construct(
         private ConfigService $configService,
+        private LoggerInterface $logger,
     ) {}
 
     /**
@@ -48,6 +50,8 @@ class RequiredCoreConfig extends Base
         }
         else
         {
+            $this->logger->emergency('Required core config option sender_core.default_sender not present');
+
             $error = true;
             $this->addOutput(' - not present. Not fixing.'.PHP_EOL);
         }
@@ -60,6 +64,8 @@ class RequiredCoreConfig extends Base
         }
         else
         {
+            $this->logger->emergency('Required core config option sender_core.assert_recipient not present');
+
             $error = true;
             $this->addOutput(' - not present. Not fixing.'.PHP_EOL);
         }
@@ -72,6 +78,8 @@ class RequiredCoreConfig extends Base
         }
         else
         {
+            $this->logger->emergency('Required core config option security.hmac_key not present');
+
             $error = true;
             $this->addOutput(' - not present. Not fixing.'.PHP_EOL);
         }
@@ -84,6 +92,8 @@ class RequiredCoreConfig extends Base
         }
         else
         {
+            $this->logger->emergency('Required core config option security.crypt_key not present');
+
             $error = true;
             $this->addOutput(' - not present. Not fixing.'.PHP_EOL);
         }

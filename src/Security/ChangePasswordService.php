@@ -11,6 +11,7 @@
 
 namespace WebFramework\Security;
 
+use Psr\Log\LoggerInterface;
 use WebFramework\Entity\User;
 use WebFramework\Event\EventService;
 use WebFramework\Event\UserPasswordChanged;
@@ -31,6 +32,7 @@ class ChangePasswordService
      *
      * @param AuthenticationService   $authenticationService   The authentication service
      * @param EventService            $eventService            The event service
+     * @param LoggerInterface         $logger                  The logger service
      * @param PasswordHashService     $passwordHashService     The password hash service
      * @param UserRepository          $userRepository          The user repository
      * @param SecurityIteratorService $securityIteratorService The security iterator service
@@ -38,6 +40,7 @@ class ChangePasswordService
     public function __construct(
         private AuthenticationService $authenticationService,
         private EventService $eventService,
+        private LoggerInterface $logger,
         private PasswordHashService $passwordHashService,
         private UserRepository $userRepository,
         private SecurityIteratorService $securityIteratorService,
@@ -96,11 +99,15 @@ class ChangePasswordService
         //
         if ($this->passwordHashService->checkPassword($user->getSolidPassword(), $oldPassword) !== true)
         {
+            $this->logger->debug('Invalid current password', ['user_id' => $user->getId()]);
+
             throw new InvalidPasswordException('The old password does not match the current password');
         }
 
         // Change password
         //
+        $this->logger->info('Changing password', ['user_id' => $user->getId()]);
+
         $newHash = $this->passwordHashService->generateHash($newPassword);
 
         $user->setSolidPassword($newHash);

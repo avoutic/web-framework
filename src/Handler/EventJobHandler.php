@@ -11,6 +11,7 @@
 
 namespace WebFramework\Listener;
 
+use Psr\Log\LoggerInterface;
 use WebFramework\Event\EventService;
 use WebFramework\Job\EventJob;
 use WebFramework\Queue\Job;
@@ -23,6 +24,7 @@ class EventJobHandler implements JobHandler
 {
     public function __construct(
         private EventService $eventService,
+        private LoggerInterface $logger,
     ) {}
 
     /**
@@ -30,6 +32,8 @@ class EventJobHandler implements JobHandler
      */
     public function handle(Job $job): bool
     {
+        $this->logger->debug('Handling EventJob', ['job' => $job]);
+
         $listener = $this->eventService->getListenerByClass($job->listenerClass);
 
         $listener->handle($job->event);

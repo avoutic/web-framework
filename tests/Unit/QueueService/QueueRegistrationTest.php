@@ -4,6 +4,7 @@ namespace Tests\Unit\Queue;
 
 use Codeception\Test\Unit;
 use Psr\Container\ContainerInterface as Container;
+use Psr\Log\LoggerInterface;
 use WebFramework\Queue\MemoryQueue;
 use WebFramework\Queue\QueueService;
 
@@ -20,6 +21,7 @@ final class QueueRegistrationTest extends Unit
             QueueService::class,
             [
                 $this->makeEmpty(Container::class),
+                $this->makeEmpty(LoggerInterface::class),
             ]
         );
 
@@ -27,7 +29,7 @@ final class QueueRegistrationTest extends Unit
             ->equals([])
         ;
 
-        $instance->register('testQueue', new MemoryQueue('testQueue'));
+        $instance->register('testQueue', new MemoryQueue($this->makeEmpty(LoggerInterface::class), 'testQueue'));
 
         verify($instance->getQueueNames())
             ->equals(['testQueue'])
@@ -40,13 +42,14 @@ final class QueueRegistrationTest extends Unit
             QueueService::class,
             [
                 $this->makeEmpty(Container::class),
+                $this->makeEmpty(LoggerInterface::class),
             ]
         );
 
-        $instance->register('testQueue', new MemoryQueue('testQueue'));
+        $instance->register('testQueue', new MemoryQueue($this->makeEmpty(LoggerInterface::class), 'testQueue'));
 
         verify(function () use ($instance) {
-            $instance->register('testQueue', new MemoryQueue('testQueue'));
+            $instance->register('testQueue', new MemoryQueue($this->makeEmpty(LoggerInterface::class), 'testQueue'));
         })
             ->callableThrows(\RuntimeException::class, "Queue 'testQueue' is already registered")
         ;
@@ -62,11 +65,12 @@ final class QueueRegistrationTest extends Unit
             QueueService::class,
             [
                 $this->makeEmpty(Container::class),
+                $this->makeEmpty(LoggerInterface::class),
             ]
         );
 
         verify(function () use ($instance) {
-            $instance->register('default', new MemoryQueue('default'));
+            $instance->register('default', new MemoryQueue($this->makeEmpty(LoggerInterface::class), 'default'));
         })
             ->callableThrows(\RuntimeException::class, "Queue 'default' is reserved")
         ;

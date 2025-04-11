@@ -4,6 +4,7 @@ namespace Tests\Unit;
 
 use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
+use Psr\Log\LoggerInterface;
 use WebFramework\Entity\Right;
 use WebFramework\Entity\User;
 use WebFramework\Entity\UserRight;
@@ -23,6 +24,7 @@ final class UserRightServiceTest extends Unit
         $instance = $this->make(
             UserRightService::class,
             [
+                'logger' => $this->makeEmpty(LoggerInterface::class),
                 'rightRepository' => $this->make(
                     RightRepository::class,
                     [
@@ -41,6 +43,9 @@ final class UserRightServiceTest extends Unit
 
         $user = $this->make(
             User::class,
+            [
+                'id' => 1,
+            ],
         );
 
         verify(function () use ($instance, $user) {
@@ -55,6 +60,7 @@ final class UserRightServiceTest extends Unit
         $instance = $this->make(
             UserRightService::class,
             [
+                'logger' => $this->makeEmpty(LoggerInterface::class),
                 'rightRepository' => $this->make(
                     RightRepository::class,
                     [
@@ -93,6 +99,7 @@ final class UserRightServiceTest extends Unit
         $instance = $this->make(
             UserRightService::class,
             [
+                'logger' => $this->makeEmpty(LoggerInterface::class),
                 'rightRepository' => $this->make(
                     RightRepository::class,
                     [
@@ -131,6 +138,7 @@ final class UserRightServiceTest extends Unit
         $instance = $this->make(
             UserRightService::class,
             [
+                'logger' => $this->makeEmpty(LoggerInterface::class),
                 'rightRepository' => $this->make(
                     RightRepository::class,
                     [
@@ -149,6 +157,9 @@ final class UserRightServiceTest extends Unit
 
         $user = $this->make(
             User::class,
+            [
+                'id' => 1,
+            ],
         );
 
         verify(function () use ($instance, $user) {
@@ -163,6 +174,7 @@ final class UserRightServiceTest extends Unit
         $instance = $this->make(
             UserRightService::class,
             [
+                'logger' => $this->makeEmpty(LoggerInterface::class),
                 'rightRepository' => $this->make(
                     RightRepository::class,
                     [
@@ -201,6 +213,7 @@ final class UserRightServiceTest extends Unit
         $instance = $this->make(
             UserRightService::class,
             [
+                'logger' => $this->makeEmpty(LoggerInterface::class),
                 'rightRepository' => $this->make(
                     RightRepository::class,
                     [

@@ -11,6 +11,9 @@
 
 namespace WebFramework\Core;
 
+use Psr\Log\LoggerInterface;
+use WebFramework\Support\GuzzleClientFactory;
+
 /**
  * Class RecaptchaFactory.
  *
@@ -22,10 +25,12 @@ class RecaptchaFactory
      * RecaptchaFactory constructor.
      *
      * @param GuzzleClientFactory $guzzleClientFactory Factory for creating Guzzle HTTP clients
+     * @param LoggerInterface     $logger              The logger
      * @param string              $secretKey           The reCAPTCHA secret key
      */
     public function __construct(
         private GuzzleClientFactory $guzzleClientFactory,
+        private LoggerInterface $logger,
         private string $secretKey,
     ) {}
 
@@ -37,6 +42,7 @@ class RecaptchaFactory
     public function getRecaptcha(): Recaptcha
     {
         return new Recaptcha(
+            $this->logger,
             $this->guzzleClientFactory->getClient(),
             $this->secretKey,
         );

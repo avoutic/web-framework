@@ -12,6 +12,7 @@
 namespace WebFramework\Security;
 
 use Carbon\Carbon;
+use Psr\Log\LoggerInterface;
 use WebFramework\Entity\User;
 use WebFramework\Repository\UserRepository;
 
@@ -25,10 +26,12 @@ class CheckPasswordService
     /**
      * CheckPasswordService constructor.
      *
+     * @param LoggerInterface     $logger              The logger service
      * @param PasswordHashService $passwordHashService The password hash service
      * @param UserRepository      $userRepository      The user repository
      */
     public function __construct(
+        private LoggerInterface $logger,
         private PasswordHashService $passwordHashService,
         private UserRepository $userRepository,
     ) {}
@@ -48,6 +51,8 @@ class CheckPasswordService
         $correct = $this->passwordHashService->checkPassword($storedHash, $password);
         if (!$correct)
         {
+            $this->logger->debug('Incrementing failed login', ['user_id' => $user->getId()]);
+
             $user->incrementFailedLogin();
             $this->userRepository->save($user);
 
@@ -60,6 +65,8 @@ class CheckPasswordService
 
         if ($migratePassword)
         {
+            $this->logger->debug('Migrating password', ['user_id' => $user->getId()]);
+
             $newHash = $this->passwordHashService->generateHash($password);
             $user->setSolidPassword($newHash);
         }

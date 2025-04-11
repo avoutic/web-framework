@@ -11,6 +11,7 @@
 
 namespace WebFramework\Security;
 
+use Psr\Log\LoggerInterface;
 use WebFramework\Core\ConfigService;
 use WebFramework\Core\UserMailer;
 use WebFramework\Entity\User;
@@ -28,6 +29,7 @@ class ResetPasswordService
      *
      * @param AuthenticationService   $authenticationService   The authentication service
      * @param ConfigService           $configService           The configuration service
+     * @param LoggerInterface         $logger                  The logger service
      * @param PasswordHashService     $passwordHashService     The password hash service
      * @param UrlBuilder              $urlBuilder              The URL builder service
      * @param UserCodeService         $userCodeService         The user code service
@@ -38,6 +40,7 @@ class ResetPasswordService
     public function __construct(
         private AuthenticationService $authenticationService,
         private ConfigService $configService,
+        private LoggerInterface $logger,
         private PasswordHashService $passwordHashService,
         private UrlBuilder $urlBuilder,
         private UserCodeService $userCodeService,
@@ -54,6 +57,8 @@ class ResetPasswordService
      */
     public function updatePassword(User $user, string $newPassword): void
     {
+        $this->logger->info('Updating password for user', ['user_id' => $user->getId()]);
+
         // Change password
         //
         $newHash = $this->passwordHashService->generateHash($newPassword);
@@ -73,6 +78,8 @@ class ResetPasswordService
      */
     public function sendPasswordResetMail(User $user): bool|string
     {
+        $this->logger->debug('Sending password reset mail', ['user_id' => $user->getId()]);
+
         $securityIterator = $this->securityIteratorService->incrementFor($user);
 
         $code = $this->userCodeService->generate($user, 'reset_password', ['iterator' => $securityIterator]);
@@ -103,17 +110,23 @@ class ResetPasswordService
      */
     public function handlePasswordReset(string $code): void
     {
+        $this->logger->debug('Handling password reset code');
+
         ['user_id' => $codeUserId, 'params' => $verifyParams] = $this->userCodeService->verify(
             $code,
             validity: 10 * 60,
             action: 'reset_password',
         );
 
+        $this->logger->debug('Password reset code for user', ['code_user_id' => $codeUserId, 'verify_params' => $verifyParams]);
+
         // Check user status
         //
         $user = $this->userRepository->getObjectById($codeUserId);
         if ($user === null)
         {
+            $this->logger->debug('User not found', ['code_user_id' => $codeUserId]);
+
             throw new CodeVerificationException();
         }
 
@@ -121,6 +134,8 @@ class ResetPasswordService
 
         if (!isset($verifyParams['iterator']) || $securityIterator != $verifyParams['iterator'])
         {
+            $this->logger->debug('Invalid iterator', ['code_user_id' => $codeUserId, 'iterator' => $securityIterator, 'verify_iterator' => $verifyParams['iterator']]);
+
             throw new CodeVerificationException();
         }
 
@@ -140,6 +155,8 @@ class ResetPasswordService
      */
     public function sendNewPassword(User $user): bool|string
     {
+        $this->logger->info('Sending new password to user', ['user_id' => $user->getId()]);
+
         // Generate and store password
         //
         $newPw = bin2hex(substr(openssl_random_pseudo_bytes(24), 0, 10));

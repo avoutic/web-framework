@@ -4,6 +4,7 @@ namespace Tests\Unit;
 
 use Codeception\Test\Unit;
 use Odan\Session\MemorySession;
+use Psr\Log\LoggerInterface;
 use WebFramework\Security\CsrfService;
 use WebFramework\Security\OpensslRandomProvider;
 
@@ -26,6 +27,7 @@ final class CsrfServiceTest extends Unit
         $instance = $this->construct(
             CsrfService::class,
             [
+                $this->makeEmpty(LoggerInterface::class),
                 $randomProvider,
                 new MemorySession(),
             ],

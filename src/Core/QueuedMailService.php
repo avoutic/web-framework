@@ -11,6 +11,7 @@
 
 namespace WebFramework\Core;
 
+use Psr\Log\LoggerInterface;
 use WebFramework\Job\RawMailJob;
 use WebFramework\Job\TemplateMailJob;
 use WebFramework\Queue\Queue;
@@ -23,10 +24,12 @@ use WebFramework\Queue\Queue;
 class QueuedMailService implements MailService
 {
     /**
-     * @param Queue $queue The queue service
+     * @param Queue           $queue  The queue service
+     * @param LoggerInterface $logger The logger
      */
     public function __construct(
         private Queue $queue,
+        private LoggerInterface $logger,
     ) {}
 
     /**
@@ -43,6 +46,8 @@ class QueuedMailService implements MailService
     {
         try
         {
+            $this->logger->debug('Sending raw mail job to queue', ['from' => $from, 'recipient' => $recipient, 'title' => $title, 'message' => $message]);
+
             $job = new RawMailJob($from, $recipient, $title, $message);
             $this->queue->dispatch($job);
 
@@ -68,6 +73,8 @@ class QueuedMailService implements MailService
     {
         try
         {
+            $this->logger->debug('Sending template mail job to queue', ['template_id' => $templateId, 'from' => $from, 'recipient' => $recipient]);
+
             $job = new TemplateMailJob($from, $recipient, $templateId, $templateVariables);
             $this->queue->dispatch($job);
 

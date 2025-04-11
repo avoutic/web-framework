@@ -4,6 +4,7 @@ namespace Tests\Unit;
 
 use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
+use Psr\Log\LoggerInterface;
 use WebFramework\Core\MailReportFunction;
 use WebFramework\Core\NullCache;
 use WebFramework\Core\NullMailService;
@@ -27,6 +28,7 @@ final class MailReportFunctionTest extends Unit
                         'set' => Expected::once(),
                     ]
                 ),
+                $this->makeEmpty(LoggerInterface::class),
                 $this->makeEmpty(
                     NullMailService::class,
                     [
@@ -52,6 +54,7 @@ final class MailReportFunctionTest extends Unit
                         'set' => Expected::once(),
                     ]
                 ),
+                $this->makeEmpty(LoggerInterface::class),
                 $this->makeEmpty(
                     NullMailService::class,
                     [
@@ -77,6 +80,7 @@ final class MailReportFunctionTest extends Unit
                         'set' => Expected::once(),
                     ]
                 ),
+                $this->makeEmpty(LoggerInterface::class),
                 $this->makeEmpty(
                     NullMailService::class,
                     [
@@ -102,6 +106,7 @@ final class MailReportFunctionTest extends Unit
                         'set' => Expected::once(),
                     ]
                 ),
+                $this->makeEmpty(LoggerInterface::class),
                 $this->makeEmpty(
                     NullMailService::class,
                     [
@@ -127,6 +132,7 @@ final class MailReportFunctionTest extends Unit
                         'set' => Expected::once(),
                     ]
                 ),
+                $this->makeEmpty(LoggerInterface::class),
                 $this->makeEmpty(
                     NullMailService::class,
                     [
