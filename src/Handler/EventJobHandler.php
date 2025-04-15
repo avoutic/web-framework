@@ -32,7 +32,7 @@ class EventJobHandler implements JobHandler
      */
     public function handle(Job $job): bool
     {
-        $this->logger->debug('Handling EventJob', ['job' => $job]);
+        $this->logger->debug('Handling EventJob', ['jobId' => $job->getJobId(), 'jobName' => $job->getJobName()]);
 
         $listener = $this->eventService->getListenerByClass($job->listenerClass);
 

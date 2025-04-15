@@ -7,6 +7,7 @@ use Psr\Container\ContainerInterface as Container;
 use Psr\Log\LoggerInterface;
 use WebFramework\Queue\MemoryQueue;
 use WebFramework\Queue\QueueService;
+use WebFramework\Support\UuidProvider;
 
 /**
  * @internal
@@ -22,6 +23,7 @@ final class QueueRegistrationTest extends Unit
             [
                 $this->makeEmpty(Container::class),
                 $this->makeEmpty(LoggerInterface::class),
+                $this->makeEmpty(UuidProvider::class),
             ]
         );
 
@@ -43,6 +45,7 @@ final class QueueRegistrationTest extends Unit
             [
                 $this->makeEmpty(Container::class),
                 $this->makeEmpty(LoggerInterface::class),
+                $this->makeEmpty(UuidProvider::class),
             ]
         );
 
@@ -66,6 +69,7 @@ final class QueueRegistrationTest extends Unit
             [
                 $this->makeEmpty(Container::class),
                 $this->makeEmpty(LoggerInterface::class),
+                $this->makeEmpty(UuidProvider::class),
             ]
         );
 

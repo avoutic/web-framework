@@ -13,6 +13,7 @@ namespace WebFramework\Queue;
 
 use Psr\Container\ContainerInterface as Container;
 use Psr\Log\LoggerInterface;
+use WebFramework\Support\UuidProvider;
 
 class QueueService
 {
@@ -27,6 +28,7 @@ class QueueService
     public function __construct(
         private Container $container,
         private LoggerInterface $logger,
+        private UuidProvider $uuidProvider,
     ) {}
 
     /**
@@ -94,6 +96,8 @@ class QueueService
      */
     public function dispatch(Job $job, string $queue = 'default', int $delay = 0): void
     {
+        $job->setJobId($this->uuidProvider->generate());
+
         $this->get($queue)->dispatch($job, $delay);
     }
 

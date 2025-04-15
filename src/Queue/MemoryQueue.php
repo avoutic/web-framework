@@ -42,7 +42,7 @@ class MemoryQueue implements Queue
     {
         if ($delay > 0)
         {
-            $this->logger->debug('Dispatching delayed job', ['queue' => $this->name, 'job' => get_class($job), 'delay' => $delay]);
+            $this->logger->debug('Dispatching delayed job', ['queue' => $this->name, 'jobId' => $job->getJobId(), 'jobName' => $job->getJobName(), 'delay' => $delay]);
 
             array_unshift($this->delayed, [
                 'timestamp' => Carbon::now()->addSeconds($delay),
@@ -51,7 +51,7 @@ class MemoryQueue implements Queue
         }
         else
         {
-            $this->logger->debug('Dispatching job', ['queue' => $this->name, 'job' => get_class($job)]);
+            $this->logger->debug('Dispatching job', ['queue' => $this->name, 'jobId' => $job->getJobId(), 'jobName' => $job->getJobName()]);
 
             array_unshift($this->now, serialize($job));
         }

@@ -9,6 +9,7 @@ use Psr\Log\LoggerInterface;
 use Tests\Support\StaticArrayJob;
 use WebFramework\Queue\MemoryQueue;
 use WebFramework\Queue\QueueService;
+use WebFramework\Support\UuidProvider;
 
 /**
  * @internal
@@ -24,6 +25,7 @@ final class JobPopTest extends Unit
             [
                 $this->makeEmpty(Container::class),
                 $this->makeEmpty(LoggerInterface::class),
+                $this->makeEmpty(UuidProvider::class),
             ]
         );
 
@@ -76,6 +78,7 @@ final class JobPopTest extends Unit
             [
                 $this->makeEmpty(Container::class),
                 $this->makeEmpty(LoggerInterface::class),
+                $this->makeEmpty(UuidProvider::class),
             ]
         );
 
@@ -130,6 +133,7 @@ final class JobPopTest extends Unit
             [
                 $this->makeEmpty(Container::class),
                 $this->makeEmpty(LoggerInterface::class),
+                $this->makeEmpty(UuidProvider::class),
             ]
         );
 

@@ -19,4 +19,26 @@ namespace WebFramework\Queue;
  * The logic should be implemented in a JobHandler class that is
  * registered in the Queue
  */
-interface Job {}
+interface Job
+{
+    /**
+     * Get the unique job ID.
+     *
+     * @return string The job ID
+     */
+    public function getJobId(): string;
+
+    /**
+     * The QueueService will set the job ID.
+     *
+     * @param string $jobId The job ID
+     */
+    public function setJobId(string $jobId): void;
+
+    /**
+     * Get the job name.
+     *
+     * @return string The job name
+     */
+    public function getJobName(): string;
+}

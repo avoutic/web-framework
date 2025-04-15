@@ -16,8 +16,25 @@ use WebFramework\Queue\Job;
 
 class EventJob implements Job
 {
+    private string $jobId;
+
     public function __construct(
         public readonly string $listenerClass,
         public readonly Event $event,
     ) {}
+
+    public function getJobId(): string
+    {
+        return $this->jobId;
+    }
+
+    public function setJobId(string $jobId): void
+    {
+        $this->jobId = $jobId;
+    }
+
+    public function getJobName(): string
+    {
+        return 'event:'.get_class($this->event);
+    }
 }

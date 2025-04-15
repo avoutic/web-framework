@@ -18,6 +18,8 @@ use WebFramework\Queue\Job;
  */
 class RawMailJob implements Job
 {
+    private string $jobId;
+
     /**
      * @param null|string $from      The sender's email address (null to use default)
      * @param string      $recipient The recipient's email address
@@ -30,6 +32,21 @@ class RawMailJob implements Job
         private string $title,
         private string $message,
     ) {}
+
+    public function getJobId(): string
+    {
+        return $this->jobId;
+    }
+
+    public function setJobId(string $jobId): void
+    {
+        $this->jobId = $jobId;
+    }
+
+    public function getJobName(): string
+    {
+        return 'mail:'.$this->recipient.'@'.$this->title;
+    }
 
     /**
      * Get the sender's email address.

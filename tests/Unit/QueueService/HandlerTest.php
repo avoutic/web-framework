@@ -9,6 +9,7 @@ use Tests\Support\InvalidJobHandler;
 use Tests\Support\StaticArrayJob;
 use Tests\Support\StaticArrayJobHandler;
 use WebFramework\Queue\QueueService;
+use WebFramework\Support\UuidProvider;
 
 /**
  * @internal
@@ -36,6 +37,7 @@ final class HandlerTest extends Unit
                     ],
                 ),
                 $this->makeEmpty(LoggerInterface::class),
+                $this->makeEmpty(UuidProvider::class),
             ],
         );
 
@@ -48,11 +50,10 @@ final class HandlerTest extends Unit
 
     public function testOverrideJobHandler()
     {
-        $instance = $this->construct(
+        $instance = $this->make(
             QueueService::class,
             [
-                $this->makeEmpty(Container::class),
-                $this->makeEmpty(LoggerInterface::class),
+                'logger' => $this->makeEmpty(LoggerInterface::class),
             ]
         );
 
@@ -67,11 +68,10 @@ final class HandlerTest extends Unit
 
     public function testGetJobHandlerWithUnknownJob()
     {
-        $instance = $this->construct(
+        $instance = $this->make(
             QueueService::class,
             [
-                $this->makeEmpty(Container::class),
-                $this->makeEmpty(LoggerInterface::class),
+                'logger' => $this->makeEmpty(LoggerInterface::class),
             ]
         );
 
@@ -84,10 +84,10 @@ final class HandlerTest extends Unit
 
     public function testGetJobHandlerWithInvalidHandler()
     {
-        $instance = $this->construct(
+        $instance = $this->make(
             QueueService::class,
             [
-                $this->makeEmpty(
+                'container' => $this->makeEmpty(
                     Container::class,
                     [
                         'get' => function (string $jobHandlerClass) {
@@ -100,7 +100,7 @@ final class HandlerTest extends Unit
                         },
                     ],
                 ),
-                $this->makeEmpty(LoggerInterface::class),
+                'logger' => $this->makeEmpty(LoggerInterface::class),
             ],
         );
 

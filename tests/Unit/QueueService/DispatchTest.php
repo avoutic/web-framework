@@ -8,6 +8,7 @@ use Psr\Log\LoggerInterface;
 use Tests\Support\StaticArrayJob;
 use WebFramework\Queue\MemoryQueue;
 use WebFramework\Queue\QueueService;
+use WebFramework\Support\UuidProvider;
 
 /**
  * @internal
@@ -23,6 +24,7 @@ final class DispatchTest extends Unit
             [
                 $this->makeEmpty(Container::class),
                 $this->makeEmpty(LoggerInterface::class),
+                $this->makeEmpty(UuidProvider::class, ['generate' => 'job-id']),
             ]
         );
 
@@ -38,7 +40,12 @@ final class DispatchTest extends Unit
             ->equals(0)
         ;
 
-        $instance->dispatch(new StaticArrayJob('value-1'), 'testQueue');
+        $job = new StaticArrayJob('value-1');
+        $instance->dispatch($job, 'testQueue');
+
+        verify($job->getJobId())
+            ->equals('job-id')
+        ;
 
         verify($instance->count('testQueue'))
             ->equals(1)
@@ -52,6 +59,7 @@ final class DispatchTest extends Unit
             [
                 $this->makeEmpty(Container::class),
                 $this->makeEmpty(LoggerInterface::class),
+                $this->makeEmpty(UuidProvider::class),
             ]
         );
 
@@ -85,6 +93,7 @@ final class DispatchTest extends Unit
             [
                 $this->makeEmpty(Container::class),
                 $this->makeEmpty(LoggerInterface::class),
+                $this->makeEmpty(UuidProvider::class),
             ]
         );
 
