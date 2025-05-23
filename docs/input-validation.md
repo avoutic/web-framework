@@ -203,6 +203,18 @@ $validators = ['age' => (new CustomNumberValidator('age'))->minValue(18)->maxVal
 $validators = ['user_id' => (new IdValidator('user_id'))->required()];
 ~~~
 
+### UrlValidator
+
+- **Class**: `WebFramework\Validation\Valdidator\UrlValidator`
+- **Purpose**: Validates Url fields.
+- **Usage**: Ensures the input is a valid Url format.
+
+#### Example
+
+~~~php
+$validators = ['url' => (new UrlValidator('url'))->required()];
+~~~
+
 ## Using CustomValidator
 
 The `WebFramework\Validation\Valdidator\CustomValidator` class is a flexible validator that can be extended to create custom validation logic. It provides basic validation functionality and can be configured with various rules.
@@ -270,5 +282,11 @@ The WebFramework includes several implementations of the `ValidationRule` interf
 - **Class**: `WebFramework\Validation\Rule\MinValueRule`
 - **Purpose**: Validates minimum value.
 - **Usage**: Ensures the input meets a specified minimum value.
+
+### UrlRule
+
+- **Class**: `WebFramework\Validation\Rule\UrlRule`
+- **Purpose**: Validates an url structure.
+- **Usage**: Ensures the input is an url.
 
 These rules can be used in conjunction with validators to enforce specific constraints on input data, ensuring that it meets the required criteria before being processed.

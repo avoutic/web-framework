@@ -79,6 +79,7 @@ return [
         'min_value' => '{field_name} should have a minimum value of {min_value}',
         'max_value' => '{field_name} can be a maximum value of {max_value}',
         'required' => '{field_name} is required',
+        'url' => '{field_name} is not a valid url',
     ],
     'verify' => [
         'link_expired' => 'Verification link expired',
