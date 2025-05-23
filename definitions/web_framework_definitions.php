@@ -52,7 +52,7 @@ return [
     'offline_mode' => false,
     'server_name' => $_SERVER['SERVER_NAME'] ?? 'app',
 
-    'DbStoredValues' => DI\autowire(Support\StoredValuesService::class)
+    'DatabaseStoredValues' => DI\autowire(Support\StoredValuesService::class)
         ->constructorParameter('module', 'db'),
     'SanityCheckStoredValues' => DI\autowire(Support\StoredValuesService::class)
         ->constructorParameter('module', 'sanity_check'),
@@ -62,7 +62,7 @@ return [
         ->constructorParameter('config', DI\get('config_tree')),
     Core\Database::class => DI\autowire(Core\NullDatabase::class),
     Core\DatabaseManager::class => DI\autowire()
-        ->constructorParameter('storedValues', DI\get('DbStoredValues')),
+        ->constructorParameter('storedValuesService', DI\get('DatabaseStoredValues')),
     Core\Instrumentation::class => DI\autowire(Core\NullInstrumentation::class),
     Core\LatteRenderService::class => DI\autowire()
         ->constructorParameter('templateDir', DI\string('{app_dir}/templates'))
@@ -100,6 +100,8 @@ return [
         );
     },
 
+    SanityCheck\DatabaseCompatibility::class => DI\autowire()
+        ->constructorParameter('storedValuesService', DI\get('DatabaseStoredValues')),
     SanityCheck\SanityCheckRunner::class => DI\autowire()
         ->constructorParameter('buildInfo', DI\get('build_info'))
         ->constructorParameter('storedValuesService', DI\get('SanityCheckStoredValues')),
