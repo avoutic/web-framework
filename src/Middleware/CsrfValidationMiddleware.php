@@ -52,8 +52,17 @@ class CsrfValidationMiddleware implements MiddlewareInterface
         // Only check CSRF for state-changing methods
         if (in_array($request->getMethod(), ['POST', 'PUT', 'DELETE', 'PATCH']))
         {
-            $params = $request->getQueryParams();
-            $token = $params['token'] ?? '';
+            $params = $request->getParsedBody();
+            $token = '';
+
+            if (is_array($params))
+            {
+                $token = $params['token'] ?? '';
+            }
+            else
+            {
+                $token = $params->token ?? '';
+            }
 
             if (!$this->csrfService->validateToken($token))
             {
