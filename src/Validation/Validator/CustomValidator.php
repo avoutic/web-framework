@@ -11,6 +11,7 @@
 
 namespace WebFramework\Validation\Validator;
 
+use WebFramework\Validation\Rule\EmailRule;
 use WebFramework\Validation\Rule\FilterRule;
 use WebFramework\Validation\Rule\MaxLengthRule;
 use WebFramework\Validation\Rule\MinLengthRule;
@@ -91,6 +92,16 @@ class CustomValidator implements Validator
     public function maxLength(int $length, string $errorMessage = 'validation.max_length', string $errorMessageExtra = ''): self
     {
         $this->addRule(new MaxLengthRule($length, $errorMessage, $errorMessageExtra));
+
+        return $this;
+    }
+
+    /**
+     * Set email validation for this field.
+     */
+    public function email(string $errorMessage = 'validation.email', string $errorMessageExtra = ''): self
+    {
+        $this->addRule(new EmailRule($errorMessage, $errorMessageExtra));
 
         return $this;
     }

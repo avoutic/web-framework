@@ -74,6 +74,7 @@ return [
     ],
     'validation' => [
         'filter' => '{field_name} is not valid',
+        'email' => '{field_name} is not a valid email address',
         'min_length' => '{field_name} should be a minimum of {min_length} characters',
         'max_length' => '{field_name} can be a maximum of {max_length} characters',
         'min_value' => '{field_name} should have a minimum value of {min_value}',
