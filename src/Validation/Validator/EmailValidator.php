@@ -21,7 +21,7 @@ class EmailValidator extends CustomValidator
     /**
      * EmailValidator constructor.
      *
-     * @param string $name The name of the field to validate (default: 'email')
+     * @param string $name The name to use for error messages (default: 'email')
      */
     public function __construct(
         string $name = 'email',

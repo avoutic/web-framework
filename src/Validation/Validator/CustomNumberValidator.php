@@ -28,7 +28,7 @@ class CustomNumberValidator extends CustomValidator
     /**
      * CustomNumberValidator constructor.
      *
-     * @param string $name The name of the field to validate
+     * @param string $name The name to use for error messages
      */
     public function __construct(
         string $name,

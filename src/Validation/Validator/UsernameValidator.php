@@ -21,7 +21,7 @@ class UsernameValidator extends CustomValidator
     /**
      * UsernameValidator constructor.
      *
-     * @param string $name The name of the field to validate (default: 'username')
+     * @param string $name The name to use for error messages (default: 'username')
      */
     public function __construct(
         string $name = 'username',

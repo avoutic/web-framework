@@ -21,7 +21,7 @@ class PasswordValidator extends CustomValidator
     /**
      * PasswordValidator constructor.
      *
-     * @param string $name The name of the field to validate (default: 'password')
+     * @param string $name The name to use for error messages (default: 'password')
      */
     public function __construct(
         string $name = 'password',
