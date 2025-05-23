@@ -38,7 +38,7 @@ class StoredUserValuesService
      *
      * @return array<string> An associative array of stored values
      */
-    public function getValues(?int $userId, ?string $module): array
+    public function getValues(?int $userId = null, ?string $module = null): array
     {
         $userId = $userId ?? $this->userId;
         $module = $module ?? $this->module;
@@ -74,7 +74,7 @@ class StoredUserValuesService
      *
      * @return bool True if the value exists, false otherwise
      */
-    public function valueExists(string $name, ?int $userId, ?string $module): bool
+    public function valueExists(string $name, ?int $userId = null, ?string $module = null): bool
     {
         $userId = $userId ?? $this->userId;
         $module = $module ?? $this->module;

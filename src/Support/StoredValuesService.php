@@ -25,7 +25,7 @@ class StoredValuesService
      */
     public function __construct(
         private StoredValueRepository $repository,
-        private ?string $module = null,
+        private ?string $module,
     ) {}
 
     /**
