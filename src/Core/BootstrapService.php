@@ -98,9 +98,6 @@ class BootstrapService
      */
     private function initializeContainerWrapper(): void
     {
-        // As long as old-style code is in WebFramework we need ContainerWrapper
-        //
-        require_once __DIR__.'/ContainerWrapper.php';
         ContainerWrapper::setContainer($this->container);
     }
 
