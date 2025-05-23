@@ -18,3 +18,8 @@ define('FRAMEWORK_DB_VERSION', 3);
 define('FORMAT_ID', '\d+');
 define('FORMAT_USERNAME', '[\w_\-\.]+');
 define('FORMAT_RETURN_PAGE', '[\/\w\.\-_]+');
+
+if (!defined('STDOUT'))
+{
+    define('STDOUT', fopen('php://stdout', 'w'));
+}
