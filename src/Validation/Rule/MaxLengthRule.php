@@ -27,6 +27,8 @@ class MaxLengthRule implements ValidationRule
      */
     public function __construct(
         private int $maxLength,
+        private string $errorMessage = 'validation.max_length',
+        private string $errorMessageExtra = '',
     ) {}
 
     /**
@@ -48,7 +50,7 @@ class MaxLengthRule implements ValidationRule
      */
     public function getErrorMessage(): string
     {
-        return 'validation.max_length';
+        return $this->errorMessage;
     }
 
     /**
@@ -58,7 +60,7 @@ class MaxLengthRule implements ValidationRule
      */
     public function getErrorExtraMessage(): string
     {
-        return '';
+        return $this->errorMessageExtra;
     }
 
     /**

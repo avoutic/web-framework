@@ -27,6 +27,8 @@ class FilterRule implements ValidationRule
      */
     public function __construct(
         private string $regex,
+        private string $errorMessage = 'validation.filter',
+        private string $errorMessageExtra = '',
     ) {}
 
     /**
@@ -48,7 +50,7 @@ class FilterRule implements ValidationRule
      */
     public function getErrorMessage(): string
     {
-        return 'validation.filter';
+        return $this->errorMessage;
     }
 
     /**
@@ -58,7 +60,7 @@ class FilterRule implements ValidationRule
      */
     public function getErrorExtraMessage(): string
     {
-        return '';
+        return $this->errorMessageExtra;
     }
 
     /**

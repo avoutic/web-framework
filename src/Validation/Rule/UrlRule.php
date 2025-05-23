@@ -23,7 +23,10 @@ class UrlRule implements ValidationRule
     /**
      * UrlRule constructor.
      */
-    public function __construct() {}
+    public function __construct(
+        private string $errorMessage = 'validation.url',
+        private string $errorMessageExtra = '',
+    ) {}
 
     /**
      * Check if the given value is valid according to the url rule.
@@ -44,7 +47,7 @@ class UrlRule implements ValidationRule
      */
     public function getErrorMessage(): string
     {
-        return 'validation.url';
+        return $this->errorMessage;
     }
 
     /**
@@ -54,7 +57,7 @@ class UrlRule implements ValidationRule
      */
     public function getErrorExtraMessage(): string
     {
-        return '';
+        return $this->errorMessageExtra;
     }
 
     /**

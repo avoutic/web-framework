@@ -27,6 +27,8 @@ class MinLengthRule implements ValidationRule
      */
     public function __construct(
         private int $minLength,
+        private string $errorMessage = 'validation.min_length',
+        private string $errorMessageExtra = '',
     ) {}
 
     /**
@@ -48,7 +50,7 @@ class MinLengthRule implements ValidationRule
      */
     public function getErrorMessage(): string
     {
-        return 'validation.min_length';
+        return $this->errorMessage;
     }
 
     /**
@@ -58,7 +60,7 @@ class MinLengthRule implements ValidationRule
      */
     public function getErrorExtraMessage(): string
     {
-        return '';
+        return $this->errorMessageExtra;
     }
 
     /**

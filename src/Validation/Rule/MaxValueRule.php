@@ -27,6 +27,8 @@ class MaxValueRule implements ValidationRule
      */
     public function __construct(
         private int $maxValue,
+        private string $errorMessage = 'validation.max_value',
+        private string $errorMessageExtra = '',
     ) {}
 
     /**
@@ -48,7 +50,7 @@ class MaxValueRule implements ValidationRule
      */
     public function getErrorMessage(): string
     {
-        return 'validation.max_value';
+        return $this->errorMessage;
     }
 
     /**
@@ -58,7 +60,7 @@ class MaxValueRule implements ValidationRule
      */
     public function getErrorExtraMessage(): string
     {
-        return '';
+        return $this->errorMessageExtra;
     }
 
     /**

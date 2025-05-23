@@ -27,6 +27,8 @@ class MinValueRule implements ValidationRule
      */
     public function __construct(
         private int $minValue,
+        private string $errorMessage = 'validation.min_value',
+        private string $errorMessageExtra = '',
     ) {}
 
     /**
@@ -48,7 +50,7 @@ class MinValueRule implements ValidationRule
      */
     public function getErrorMessage(): string
     {
-        return 'validation.min_value';
+        return $this->errorMessage;
     }
 
     /**
@@ -58,7 +60,7 @@ class MinValueRule implements ValidationRule
      */
     public function getErrorExtraMessage(): string
     {
-        return '';
+        return $this->errorMessageExtra;
     }
 
     /**

@@ -44,9 +44,9 @@ class CustomValidator implements Validator
      *
      * @param string $filter The filter regex
      */
-    public function filter(string $filter): self
+    public function filter(string $filter, string $errorMessage = 'validation.filter', string $errorMessageExtra = ''): self
     {
-        $this->addRule(new FilterRule($filter));
+        $this->addRule(new FilterRule($filter, $errorMessage, $errorMessageExtra));
 
         return $this;
     }
@@ -76,9 +76,9 @@ class CustomValidator implements Validator
      *
      * @param int $length The minimum length
      */
-    public function minLength(int $length): self
+    public function minLength(int $length, string $errorMessage = 'validation.min_length', string $errorMessageExtra = ''): self
     {
-        $this->addRule(new MinLengthRule($length));
+        $this->addRule(new MinLengthRule($length, $errorMessage, $errorMessageExtra));
 
         return $this;
     }
@@ -88,9 +88,9 @@ class CustomValidator implements Validator
      *
      * @param int $length The maximum length
      */
-    public function maxLength(int $length): self
+    public function maxLength(int $length, string $errorMessage = 'validation.max_length', string $errorMessageExtra = ''): self
     {
-        $this->addRule(new MaxLengthRule($length));
+        $this->addRule(new MaxLengthRule($length, $errorMessage, $errorMessageExtra));
 
         return $this;
     }

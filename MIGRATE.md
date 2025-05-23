@@ -1,5 +1,9 @@
 ## Untagged v9
 
+### New features
+
+* Ability to configure Validation Rule error message
+
 ### Breaking changes
 
 * Move multiple Core classes to other WebFramework namespaces
