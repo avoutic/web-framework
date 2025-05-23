@@ -9,26 +9,28 @@
  * file that was distributed with this source code.
  */
 
-namespace WebFramework\Validation;
+namespace WebFramework\Validation\Rule;
+
+use WebFramework\Validation\ValidationRule;
 
 /**
- * Class MinLengthRule.
+ * Class MinValueRule.
  *
- * This class implements the ValidationRule interface to provide minimum length validation.
+ * This class implements the ValidationRule interface to provide minimum value validation.
  */
-class MinLengthRule implements ValidationRule
+class MinValueRule implements ValidationRule
 {
     /**
-     * MinLengthRule constructor.
+     * MinValueRule constructor.
      *
-     * @param int $minLength The minimum allowed length
+     * @param int $minValue The minimum allowed value
      */
     public function __construct(
-        private int $minLength,
+        private int $minValue,
     ) {}
 
     /**
-     * Check if the given value is valid according to the minimum length rule.
+     * Check if the given value is valid according to the minimum value rule.
      *
      * @param string $value The value to validate
      *
@@ -36,7 +38,7 @@ class MinLengthRule implements ValidationRule
      */
     public function isValid(string $value): bool
     {
-        return (strlen($value) >= $this->minLength);
+        return is_numeric($value) && $value >= $this->minValue;
     }
 
     /**
@@ -46,7 +48,7 @@ class MinLengthRule implements ValidationRule
      */
     public function getErrorMessage(): string
     {
-        return 'validation.min_length';
+        return 'validation.min_value';
     }
 
     /**
@@ -70,7 +72,7 @@ class MinLengthRule implements ValidationRule
     {
         return [
             'field_name' => $fieldName,
-            'min_length' => (string) $this->minLength,
+            'min_value' => (string) $this->minValue,
         ];
     }
 }

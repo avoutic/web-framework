@@ -9,17 +9,17 @@
  * file that was distributed with this source code.
  */
 
-namespace WebFramework\Validation;
+namespace WebFramework\Validation\Validator;
 
 /**
- * Class IdValidator.
+ * Class CustomBoolValidator.
  *
- * This class extends CustomValidator to provide ID validation functionality.
+ * This class extends CustomValidator to provide boolean validation functionality.
  */
-class IdValidator extends CustomValidator
+class CustomBoolValidator extends CustomValidator
 {
     /**
-     * IdValidator constructor.
+     * CustomBoolValidator constructor.
      *
      * @param string $name The name of the field to validate
      */
@@ -28,23 +28,18 @@ class IdValidator extends CustomValidator
     ) {
         parent::__construct($name);
 
-        $this->filter(FORMAT_ID)->default(null);
+        $this->filter('0|1|true|false');
     }
 
     /**
-     * Convert the validated string value to an integer or null.
+     * Convert the validated string value to a boolean.
      *
      * @param string $value The value to convert
      *
-     * @return null|int The converted integer value or null if empty
+     * @return bool The converted boolean value
      */
     public function getTyped(string $value): mixed
     {
-        if (!strlen($value))
-        {
-            return null;
-        }
-
-        return (int) $value;
+        return ($value === '1' || $value === 'true');
     }
 }

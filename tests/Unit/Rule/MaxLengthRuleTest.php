@@ -3,7 +3,7 @@
 namespace Tests\Unit;
 
 use Codeception\Test\Unit;
-use WebFramework\Validation\MaxLengthRule;
+use WebFramework\Validation\Rule\MaxLengthRule;
 
 /**
  * @internal

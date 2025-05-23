@@ -3,7 +3,7 @@
 namespace Tests\Unit;
 
 use Codeception\Test\Unit;
-use WebFramework\Validation\MinLengthRule;
+use WebFramework\Validation\Rule\MinLengthRule;
 
 /**
  * @internal

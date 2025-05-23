@@ -4,10 +4,10 @@ namespace Tests\Unit;
 
 use Codeception\Test\Unit;
 use WebFramework\Exception\MultiValidationException;
-use WebFramework\Validation\CustomNumberValidator;
-use WebFramework\Validation\CustomValidator;
 use WebFramework\Validation\InputValidationService;
-use WebFramework\Validation\UsernameValidator;
+use WebFramework\Validation\Validator\CustomNumberValidator;
+use WebFramework\Validation\Validator\CustomValidator;
+use WebFramework\Validation\Validator\UsernameValidator;
 
 require_once 'src/Defines.php';
 

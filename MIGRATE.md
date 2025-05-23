@@ -3,6 +3,8 @@
 ### Breaking changes
 
 * Move multiple Core classes to other WebFramework namespaces
+* Move Rule classes to Validation\Rule
+* Move Validator classes to Validation\Validator
 * Renamed EntityInterface to Entity
 * Renamed TaskInterface to Task
 * StoredValues replaced with StoredValuesService

@@ -3,7 +3,7 @@
 namespace Tests\Unit;
 
 use Codeception\Test\Unit;
-use WebFramework\Validation\MaxValueRule;
+use WebFramework\Validation\Rule\MaxValueRule;
 
 /**
  * @internal

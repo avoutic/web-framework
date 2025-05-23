@@ -21,9 +21,9 @@ use WebFramework\Core\ResponseEmitter;
 use WebFramework\Exception\ValidationException;
 use WebFramework\Repository\UserRepository;
 use WebFramework\Security\ResetPasswordService;
-use WebFramework\Validation\EmailValidator;
 use WebFramework\Validation\InputValidationService;
-use WebFramework\Validation\UsernameValidator;
+use WebFramework\Validation\Validator\EmailValidator;
+use WebFramework\Validation\Validator\UsernameValidator;
 
 /**
  * Class ForgotPassword.

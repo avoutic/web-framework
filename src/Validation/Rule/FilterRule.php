@@ -9,26 +9,28 @@
  * file that was distributed with this source code.
  */
 
-namespace WebFramework\Validation;
+namespace WebFramework\Validation\Rule;
+
+use WebFramework\Validation\ValidationRule;
 
 /**
- * Class MaxLengthRule.
+ * Class FilterRule.
  *
- * This class implements the ValidationRule interface to provide maximum length validation.
+ * This class implements the ValidationRule interface to provide regex-based filtering.
  */
-class MaxLengthRule implements ValidationRule
+class FilterRule implements ValidationRule
 {
     /**
-     * MaxLengthRule constructor.
+     * FilterRule constructor.
      *
-     * @param int $maxLength The maximum allowed length
+     * @param string $regex The regular expression to use for filtering
      */
     public function __construct(
-        private int $maxLength,
+        private string $regex,
     ) {}
 
     /**
-     * Check if the given value is valid according to the maximum length rule.
+     * Check if the given value is valid according to the filter regex.
      *
      * @param string $value The value to validate
      *
@@ -36,7 +38,7 @@ class MaxLengthRule implements ValidationRule
      */
     public function isValid(string $value): bool
     {
-        return (strlen($value) <= $this->maxLength);
+        return (preg_match("/^\\s*{$this->regex}\\s*$/m", $value) == 1);
     }
 
     /**
@@ -46,7 +48,7 @@ class MaxLengthRule implements ValidationRule
      */
     public function getErrorMessage(): string
     {
-        return 'validation.max_length';
+        return 'validation.filter';
     }
 
     /**
@@ -70,7 +72,6 @@ class MaxLengthRule implements ValidationRule
     {
         return [
             'field_name' => $fieldName,
-            'max_length' => (string) $this->maxLength,
         ];
     }
 }

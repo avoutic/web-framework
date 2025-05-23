@@ -9,7 +9,13 @@
  * file that was distributed with this source code.
  */
 
-namespace WebFramework\Validation;
+namespace WebFramework\Validation\Validator;
+
+use WebFramework\Validation\Rule\FilterRule;
+use WebFramework\Validation\Rule\MaxLengthRule;
+use WebFramework\Validation\Rule\MinLengthRule;
+use WebFramework\Validation\ValidationRule;
+use WebFramework\Validation\Validator;
 
 /**
  * Class CustomValidator.

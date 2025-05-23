@@ -27,11 +27,11 @@ use WebFramework\Exception\UsernameUnavailableException;
 use WebFramework\Exception\WeakPasswordException;
 use WebFramework\Security\AuthenticationService;
 use WebFramework\Security\RegisterService;
-use WebFramework\Validation\CustomBoolValidator;
-use WebFramework\Validation\EmailValidator;
 use WebFramework\Validation\InputValidationService;
-use WebFramework\Validation\PasswordValidator;
-use WebFramework\Validation\UsernameValidator;
+use WebFramework\Validation\Validator\CustomBoolValidator;
+use WebFramework\Validation\Validator\EmailValidator;
+use WebFramework\Validation\Validator\PasswordValidator;
+use WebFramework\Validation\Validator\UsernameValidator;
 
 /**
  * Class Register.

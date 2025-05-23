@@ -3,7 +3,7 @@
 namespace Tests\Unit;
 
 use Codeception\Test\Unit;
-use WebFramework\Validation\FilterRule;
+use WebFramework\Validation\Rule\FilterRule;
 
 /**
  * @internal

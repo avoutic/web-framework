@@ -23,8 +23,8 @@ use WebFramework\Exception\DuplicateEmailException;
 use WebFramework\Exception\ValidationException;
 use WebFramework\Security\AuthenticationService;
 use WebFramework\Security\ChangeEmailService;
-use WebFramework\Validation\EmailValidator;
 use WebFramework\Validation\InputValidationService;
+use WebFramework\Validation\Validator\EmailValidator;
 
 /**
  * Class ChangeEmail.

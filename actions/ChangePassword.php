@@ -26,7 +26,7 @@ use WebFramework\Exception\WeakPasswordException;
 use WebFramework\Security\AuthenticationService;
 use WebFramework\Security\ChangePasswordService;
 use WebFramework\Validation\InputValidationService;
-use WebFramework\Validation\PasswordValidator;
+use WebFramework\Validation\Validator\PasswordValidator;
 
 /**
  * Class ChangePassword.

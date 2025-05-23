@@ -9,26 +9,28 @@
  * file that was distributed with this source code.
  */
 
-namespace WebFramework\Validation;
+namespace WebFramework\Validation\Rule;
+
+use WebFramework\Validation\ValidationRule;
 
 /**
- * Class MinValueRule.
+ * Class MaxValueRule.
  *
- * This class implements the ValidationRule interface to provide minimum value validation.
+ * This class implements the ValidationRule interface to provide maximum value validation.
  */
-class MinValueRule implements ValidationRule
+class MaxValueRule implements ValidationRule
 {
     /**
-     * MinValueRule constructor.
+     * MaxValueRule constructor.
      *
-     * @param int $minValue The minimum allowed value
+     * @param int $maxValue The maximum allowed value
      */
     public function __construct(
-        private int $minValue,
+        private int $maxValue,
     ) {}
 
     /**
-     * Check if the given value is valid according to the minimum value rule.
+     * Check if the given value is valid according to the maximum value rule.
      *
      * @param string $value The value to validate
      *
@@ -36,7 +38,7 @@ class MinValueRule implements ValidationRule
      */
     public function isValid(string $value): bool
     {
-        return is_numeric($value) && $value >= $this->minValue;
+        return is_numeric($value) && $value <= $this->maxValue;
     }
 
     /**
@@ -46,7 +48,7 @@ class MinValueRule implements ValidationRule
      */
     public function getErrorMessage(): string
     {
-        return 'validation.min_value';
+        return 'validation.max_value';
     }
 
     /**
@@ -70,7 +72,7 @@ class MinValueRule implements ValidationRule
     {
         return [
             'field_name' => $fieldName,
-            'min_value' => (string) $this->minValue,
+            'max_value' => (string) $this->maxValue,
         ];
     }
 }

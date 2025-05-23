@@ -9,7 +9,11 @@
  * file that was distributed with this source code.
  */
 
-namespace WebFramework\Validation;
+namespace WebFramework\Validation\Validator;
+
+use WebFramework\Validation\Rule\MaxValueRule;
+use WebFramework\Validation\Rule\MinValueRule;
+use WebFramework\Validation\ValidationRule;
 
 /**
  * Class CustomNumberValidator.

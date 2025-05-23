@@ -29,10 +29,10 @@ use WebFramework\Exception\ValidationException;
 use WebFramework\Security\AuthenticationService;
 use WebFramework\Security\LoginService;
 use WebFramework\Security\UserVerificationService;
-use WebFramework\Validation\EmailValidator;
 use WebFramework\Validation\InputValidationService;
-use WebFramework\Validation\PasswordValidator;
-use WebFramework\Validation\UsernameValidator;
+use WebFramework\Validation\Validator\EmailValidator;
+use WebFramework\Validation\Validator\PasswordValidator;
+use WebFramework\Validation\Validator\UsernameValidator;
 
 /**
  * Class Login.

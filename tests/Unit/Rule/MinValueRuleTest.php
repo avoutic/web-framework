@@ -3,7 +3,7 @@
 namespace Tests\Unit;
 
 use Codeception\Test\Unit;
-use WebFramework\Validation\MinValueRule;
+use WebFramework\Validation\Rule\MinValueRule;
 
 /**
  * @internal
