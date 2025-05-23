@@ -24,16 +24,16 @@ use WebFramework\Validation\Validator;
  */
 class CustomValidator implements Validator
 {
-    private ?string $filter = null;
     private bool $required = false;
-    private ?int $minLength = null;
-    private ?int $maxLength = null;
     private mixed $default = '';
+
+    /** @var array<ValidationRule> */
+    private array $rules = [];
 
     /**
      * CustomValidator constructor.
      *
-     * @param string $name The name of the field to validate
+     * @param string $name The name to use for error messages
      */
     public function __construct(
         private string $name,
@@ -46,7 +46,7 @@ class CustomValidator implements Validator
      */
     public function filter(string $filter): self
     {
-        $this->filter = $filter;
+        $this->addRule(new FilterRule($filter));
 
         return $this;
     }
@@ -78,7 +78,7 @@ class CustomValidator implements Validator
      */
     public function minLength(int $length): self
     {
-        $this->minLength = $length;
+        $this->addRule(new MinLengthRule($length));
 
         return $this;
     }
@@ -90,7 +90,7 @@ class CustomValidator implements Validator
      */
     public function maxLength(int $length): self
     {
-        $this->maxLength = $length;
+        $this->addRule(new MaxLengthRule($length));
 
         return $this;
     }
@@ -103,6 +103,16 @@ class CustomValidator implements Validator
     public function default(mixed $default): self
     {
         $this->default = $default;
+
+        return $this;
+    }
+
+    /**
+     * Add a validation rule to this validator.
+     */
+    public function addRule(ValidationRule $rule): self
+    {
+        $this->rules[] = $rule;
 
         return $this;
     }
@@ -124,24 +134,7 @@ class CustomValidator implements Validator
      */
     public function getRules(): array
     {
-        $rules = [];
-
-        if ($this->filter !== null)
-        {
-            $rules[] = new FilterRule($this->filter);
-        }
-
-        if ($this->minLength !== null)
-        {
-            $rules[] = new MinLengthRule($this->minLength);
-        }
-
-        if ($this->maxLength !== null)
-        {
-            $rules[] = new MaxLengthRule($this->maxLength);
-        }
-
-        return $rules;
+        return $this->rules;
     }
 
     /**
