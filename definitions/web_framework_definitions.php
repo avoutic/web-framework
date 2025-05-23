@@ -10,13 +10,19 @@ use Odan\Session\PhpSession;
 use Odan\Session\SessionInterface;
 use Odan\Session\SessionManagerInterface;
 use Psr\Container\ContainerInterface;
+use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+use Slim\Http\Factory\DecoratedResponseFactory;
 use Slim\Psr7\Factory\ResponseFactory;
+use Slim\Psr7\Factory\StreamFactory;
 
 return [
     Engine::class => DI\create(),
     LoggerInterface::class => DI\autowire(NullLogger::class),
+    ResponseFactoryInterface::class => DI\autowire(DecoratedResponseFactory::class)
+        ->constructorParameter('responseFactory', DI\get(ResponseFactory::class))
+        ->constructorParameter('streamFactory', DI\get(StreamFactory::class)),
     SessionManagerInterface::class => function (ContainerInterface $container) {
         return $container->get(SessionInterface::class);
     },
@@ -32,7 +38,6 @@ return [
 
         return new PhpSession($options);
     },
-    ResponseFactory::class => DI\create(),
 
     'app_dir' => function (ContainerInterface $c) {
         // Determine app dir
@@ -80,6 +85,8 @@ return [
     Core\RecaptchaFactory::class => DI\autowire()
         ->constructorParameter('secretKey', DI\get('security.recaptcha.secret_key')),
     Core\ReportFunction::class => DI\autowire(Core\NullReportFunction::class),
+    Core\ResponseEmitter::class => DI\autowire()
+        ->constructorParameter('responseFactory', DI\get(ResponseFactoryInterface::class)),
     Core\RuntimeEnvironment::class => DI\autowire()
         ->constructorParameter('appDir', DI\get('app_dir'))
         ->constructorParameter('baseUrl', DI\get('base_url'))
