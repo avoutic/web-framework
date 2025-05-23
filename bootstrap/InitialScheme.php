@@ -170,7 +170,7 @@ return [
         ],
         [
             'type' => 'create_table',
-            'table_name' => 'config_values',
+            'table_name' => 'stored_values',
             'fields' => [
                 [
                     'name' => 'module',
@@ -197,7 +197,7 @@ return [
         ],
         [
             'type' => 'create_table',
-            'table_name' => 'user_config_values',
+            'table_name' => 'stored_user_values',
             'fields' => [
                 [
                     'name' => 'user_id',
@@ -232,16 +232,16 @@ return [
         ],
         [
             'type' => 'insert_row',
-            'table_name' => 'config_values',
+            'table_name' => 'stored_values',
             'values' => [
                 'module' => 'db',
                 'name' => 'wf_db_version',
-                'value' => '2',
+                'value' => '3',
             ],
         ],
         [
             'type' => 'insert_row',
-            'table_name' => 'config_values',
+            'table_name' => 'stored_values',
             'values' => [
                 'module' => 'db',
                 'name' => 'app_db_version',

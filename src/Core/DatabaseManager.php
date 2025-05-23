@@ -55,7 +55,7 @@ class DatabaseManager
      */
     public function isInitialized(): bool
     {
-        return $this->database->tableExists('config_values');
+        return $this->database->tableExists('stored_values');
     }
 
     /**

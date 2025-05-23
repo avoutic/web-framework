@@ -11,7 +11,7 @@
 
 // Defined versions
 define('FRAMEWORK_VERSION', 9);
-define('FRAMEWORK_DB_VERSION', 2);
+define('FRAMEWORK_DB_VERSION', 3);
 
 // Format defines for verifying input
 //

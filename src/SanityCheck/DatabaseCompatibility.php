@@ -100,14 +100,14 @@ class DatabaseCompatibility extends Base
 
         // Check if base table is present
         //
-        $this->addOutput('Checking for config_values table:'.PHP_EOL);
+        $this->addOutput('Checking for stored_values table:'.PHP_EOL);
 
-        if (!$this->database->tableExists('config_values'))
+        if (!$this->database->tableExists('stored_values'))
         {
-            $this->logger->emergency('Database missing config_values table');
+            $this->logger->emergency('Database missing stored_values table');
 
             $this->addOutput(
-                '   Database missing config_values table'.PHP_EOL.
+                '   Database missing stored_values table'.PHP_EOL.
                 '   Please make sure that the core Framework database scheme has been applied. (by running db:init task)'.PHP_EOL
             );
 
