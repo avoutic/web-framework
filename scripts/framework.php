@@ -10,6 +10,7 @@
  * file that was distributed with this source code.
  */
 
+use WebFramework\Core\DebugService;
 use WebFramework\Exception\ArgumentParserException;
 use WebFramework\Task\TaskRunner;
 use WebFramework\Task\TaskRunnerTask;
@@ -102,6 +103,18 @@ catch (ArgumentParserException $e)
 }
 catch (Throwable $e)
 {
+    $debug = $taskRunner->get('debug');
+
+    if ($debug)
+    {
+        $debugService = $taskRunner->get(DebugService::class);
+        $errorReport = $debugService->getThrowableReport($e);
+
+        echo $errorReport['message'].PHP_EOL;
+
+        exit(1);
+    }
+
     echo 'Error: '.PHP_EOL;
     echo $e->getMessage().PHP_EOL;
 
