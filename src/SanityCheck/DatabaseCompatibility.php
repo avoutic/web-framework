@@ -108,7 +108,7 @@ class DatabaseCompatibility extends Base
 
             $this->addOutput(
                 '   Database missing config_values table'.PHP_EOL.
-                '   Please make sure that the core Framework database scheme has been applied. (by running db_init script)'.PHP_EOL
+                '   Please make sure that the core Framework database scheme has been applied. (by running db:init task)'.PHP_EOL
             );
 
             return false;
