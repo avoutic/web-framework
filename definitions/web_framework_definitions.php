@@ -101,8 +101,8 @@ return [
     },
 
     SanityCheck\SanityCheckRunner::class => DI\autowire()
-        ->constructorParameter('storedValues', DI\get('SanityCheckStoredValues'))
-        ->constructorParameter('buildInfo', DI\get('build_info')),
+        ->constructorParameter('buildInfo', DI\get('build_info'))
+        ->constructorParameter('storedValuesService', DI\get('SanityCheckStoredValues')),
 
     Security\AuthenticationService::class => DI\autowire(Security\NullAuthenticationService::class),
     Security\BlacklistService::class => DI\autowire(Security\NullBlacklistService::class),
