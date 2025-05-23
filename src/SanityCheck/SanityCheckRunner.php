@@ -135,7 +135,7 @@ class SanityCheckRunner
             // Prevent flooding. Only start check once per
             // five seconds.
             //
-            $lastTimestamp = new Carbon($this->storedValuesService->getValue('last_check', '0'));
+            $lastTimestamp = new Carbon((int) $this->storedValuesService->getValue('last_check', '0'));
 
             if (Carbon::now()->diffInSeconds($lastTimestamp) < 5)
             {
