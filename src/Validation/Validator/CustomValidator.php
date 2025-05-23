@@ -15,6 +15,7 @@ use WebFramework\Validation\Rule\EmailRule;
 use WebFramework\Validation\Rule\FilterRule;
 use WebFramework\Validation\Rule\MaxLengthRule;
 use WebFramework\Validation\Rule\MinLengthRule;
+use WebFramework\Validation\Rule\UrlRule;
 use WebFramework\Validation\ValidationRule;
 use WebFramework\Validation\Validator;
 
@@ -102,6 +103,16 @@ class CustomValidator implements Validator
     public function email(string $errorMessage = 'validation.email', string $errorMessageExtra = ''): self
     {
         $this->addRule(new EmailRule($errorMessage, $errorMessageExtra));
+
+        return $this;
+    }
+
+    /**
+     * Set url validation for this field.
+     */
+    public function url(string $errorMessage = 'validation.url', string $errorMessageExtra = ''): self
+    {
+        $this->addRule(new UrlRule($errorMessage, $errorMessageExtra));
 
         return $this;
     }
