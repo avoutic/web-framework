@@ -24,6 +24,7 @@ use WebFramework\Entity\User;
 use WebFramework\Exception\InvalidCaptchaException;
 use WebFramework\Exception\PasswordMismatchException;
 use WebFramework\Exception\UsernameUnavailableException;
+use WebFramework\Exception\ValidationException;
 use WebFramework\Exception\WeakPasswordException;
 use WebFramework\Security\AuthenticationService;
 use WebFramework\Security\RegisterService;
@@ -244,6 +245,13 @@ class Register
             $message = ($uniqueIdentifier == 'email') ? 'register.mail_exists' : 'register.username_exists';
 
             $this->messageService->add('error', $message);
+        }
+        catch (ValidationException $e)
+        {
+            $this->messageService->addErrors($e->getErrors());
+            $all = $this->inputValidationService->getAll();
+
+            $params = array_merge($params, $all);
         }
 
         return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
