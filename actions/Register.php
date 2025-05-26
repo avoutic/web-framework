@@ -217,6 +217,8 @@ class Register
 
                 $user = $this->registerService->register($username, $filtered['email'], $filtered['password'], $afterVerifyParams);
 
+                $this->customFinalizeCreate($request, $user);
+
                 return $this->responseEmitter->buildRedirect(
                     $this->configService->get('actions.send_verify.after_verify_page'),
                     [],
