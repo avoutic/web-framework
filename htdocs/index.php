@@ -3,6 +3,7 @@
 use Slim\Psr7\Factory\ServerRequestFactory;
 use WebFramework\Core\DebugService;
 use WebFramework\Core\ReportFunction;
+use WebFramework\Exception\SanityCheckException;
 use WebFramework\Task\SlimAppTask;
 use WebFramework\Task\TaskRunner;
 
@@ -19,6 +20,11 @@ $taskRunner->build();
 try
 {
     $taskRunner->execute(SlimAppTask::class);
+}
+catch (SanityCheckException $e)
+{
+    header('Content-type: text/plain');
+    echo 'Sanity check failed';
 }
 catch (Throwable $e)
 {

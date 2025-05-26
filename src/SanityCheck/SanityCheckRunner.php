@@ -14,6 +14,7 @@ namespace WebFramework\SanityCheck;
 use Carbon\Carbon;
 use Psr\Container\ContainerInterface as Container;
 use WebFramework\Core\Instrumentation;
+use WebFramework\Exception\SanityCheckException;
 use WebFramework\Support\StoredValuesService;
 
 /**
@@ -106,7 +107,7 @@ class SanityCheckRunner
 
             if ($result === false)
             {
-                throw new \RuntimeException('Sanity check failed');
+                throw new SanityCheckException('Sanity check failed');
             }
         }
 
