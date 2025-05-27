@@ -30,18 +30,34 @@ catch (SanityCheckException $e)
 catch (Throwable $e)
 {
     $request = ServerRequestFactory::createFromGlobals();
-
     $logger = $taskRunner->get(LoggerInterface::class);
-    $logger->error('Unhandled exception: '.$e->getMessage(), ['exception' => $e]);
-
-    $debugService = $taskRunner->get(DebugService::class);
-    $errorReport = $debugService->getThrowableReport($e, $request);
-
-    $reportFunction = $taskRunner->get(ReportFunction::class);
-    $reportFunction->report($e->getMessage(), 'unhandled_exception', $errorReport);
-
-    $message = ($taskRunner->get('debug')) ? $errorReport['message'] : $errorReport['low_info_message'];
 
     header('Content-type: text/plain');
+
+    try
+    {
+        // Try to get a full error report
+        //
+        $debugService = $taskRunner->get(DebugService::class);
+        $errorReport = $debugService->getThrowableReport($e, $request);
+        $logger->error('Unhandled exception: '.$e->getMessage(), ['error_report' => $errorReport]);
+
+        $reportFunction = $taskRunner->get(ReportFunction::class);
+        $reportFunction->report($e->getMessage(), 'unhandled_exception', $errorReport);
+    }
+    catch (Throwable $innerException)
+    {
+        $errorReport = [
+            'message' => $e->getMessage(),
+            'low_info_message' => 'An error occurred.',
+        ];
+
+        $logger->error('Unhandled exception (without error report): '.$e->getMessage(), [
+            'exception' => $e,
+            'inner_exception' => $innerException->getMessage(),
+        ]);
+    }
+
+    $message = ($taskRunner->get('debug')) ? $errorReport['message'] : $errorReport['low_info_message'];
     echo $message;
 }
