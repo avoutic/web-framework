@@ -16,6 +16,7 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Psr\Log\LoggerInterface;
 use Slim\Exception\HttpForbiddenException;
 use Slim\Exception\HttpNotFoundException;
 use Slim\Exception\HttpUnauthorizedException;
@@ -41,6 +42,7 @@ class ErrorRedirectMiddleware implements MiddlewareInterface
     public function __construct(
         private Container $container,
         private DebugService $debugService,
+        private LoggerInterface $logger,
         private ReportFunction $reportFunction,
         private ResponseEmitter $responseEmitter,
     ) {}
@@ -82,6 +84,8 @@ class ErrorRedirectMiddleware implements MiddlewareInterface
             $errorReport = $this->debugService->getThrowableReport($e, $request);
 
             $request = $request->withAttribute('error_report', $errorReport);
+
+            $this->logger->error('Unhandled exception: '.$errorReport['message'], ['error_report' => $errorReport]);
 
             try
             {

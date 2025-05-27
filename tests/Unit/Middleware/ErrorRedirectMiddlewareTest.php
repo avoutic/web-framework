@@ -8,6 +8,7 @@ use GuzzleHttp\Psr7\ServerRequest as Request;
 use Psr\Container\ContainerInterface as Container;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Server\RequestHandlerInterface;
+use Psr\Log\LoggerInterface;
 use Slim\Exception\HttpForbiddenException;
 use Slim\Exception\HttpNotFoundException;
 use Slim\Exception\HttpUnauthorizedException;
@@ -208,6 +209,12 @@ final class ErrorRedirectMiddlewareTest extends Unit
                         'getThrowableReport' => Expected::once($errorReport),
                     ]
                 ),
+                'logger' => $this->makeEmpty(
+                    LoggerInterface::class,
+                    [
+                        'error' => Expected::once(),
+                    ]
+                ),
                 'reportFunction' => $this->makeEmpty(
                     ReportFunction::class,
                     [
@@ -255,6 +262,12 @@ final class ErrorRedirectMiddlewareTest extends Unit
                     DebugService::class,
                     [
                         'getThrowableReport' => Expected::once($errorReport),
+                    ]
+                ),
+                'logger' => $this->makeEmpty(
+                    LoggerInterface::class,
+                    [
+                        'error' => Expected::once(),
                     ]
                 ),
                 'reportFunction' => $this->makeEmpty(

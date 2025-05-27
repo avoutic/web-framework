@@ -1,5 +1,6 @@
 <?php
 
+use Psr\Log\LoggerInterface;
 use Slim\Psr7\Factory\ServerRequestFactory;
 use WebFramework\Core\DebugService;
 use WebFramework\Core\ReportFunction;
@@ -29,6 +30,9 @@ catch (SanityCheckException $e)
 catch (Throwable $e)
 {
     $request = ServerRequestFactory::createFromGlobals();
+
+    $logger = $taskRunner->get(LoggerInterface::class);
+    $logger->error('Unhandled exception: '.$e->getMessage(), ['exception' => $e]);
 
     $debugService = $taskRunner->get(DebugService::class);
     $errorReport = $debugService->getThrowableReport($e, $request);
