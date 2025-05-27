@@ -45,23 +45,18 @@ class DatabaseCompatibility extends Base
     ) {}
 
     /**
-     * Perform database compatibility checks.
+     * Check if the supported framework version is configured and the framework version matches the required version.
      *
-     * @return bool True if all checks pass, false otherwise
+     * @return bool True if check passes, false otherwise
      */
-    public function performChecks(): bool
+    private function checkFrameworkVersion(): bool
     {
-        // Verify all versions for compatibility
-        //
         $requiredWfVersion = FRAMEWORK_VERSION;
         $supportedWfVersion = $this->configService->get('versions.supported_framework');
-
-        $this->addOutput('Checking WF version presence:'.PHP_EOL);
 
         if ($supportedWfVersion == -1)
         {
             $this->logger->emergency('No supported Framework version configured', ['required_wf_version' => $requiredWfVersion, 'supported_wf_version' => $supportedWfVersion]);
-
             $this->addOutput(
                 '   No supported Framework version configured'.PHP_EOL.
                 '   There is no supported framework version provided in "versions.supported_framework".'.PHP_EOL.
@@ -71,14 +66,9 @@ class DatabaseCompatibility extends Base
             return false;
         }
 
-        $this->addOutput('  Pass'.PHP_EOL.PHP_EOL);
-
-        $this->addOutput('Checking WF version match:'.PHP_EOL);
-
         if ($requiredWfVersion != $supportedWfVersion)
         {
             $this->logger->emergency('Framework version mismatch', ['required_wf_version' => $requiredWfVersion, 'supported_wf_version' => $supportedWfVersion]);
-
             $this->addOutput(
                 '   Framework version mismatch'.PHP_EOL.
                 '   Please make sure that this app is upgraded to support version '.PHP_EOL.
@@ -88,24 +78,19 @@ class DatabaseCompatibility extends Base
             return false;
         }
 
-        $this->addOutput('  Pass'.PHP_EOL.PHP_EOL);
+        return true;
+    }
 
-        if ($this->configService->get('database_enabled') != true || !$this->checkDb)
-        {
-            return true;
-        }
-
-        $requiredWfDbVersion = FRAMEWORK_DB_VERSION;
-        $requiredAppDbVersion = $this->configService->get('versions.required_app_db');
-
-        // Check if base table is present
-        //
-        $this->addOutput('Checking for stored_values table:'.PHP_EOL);
-
+    /**
+     * Check if the stored_values table exists.
+     *
+     * @return bool True if check passes, false otherwise
+     */
+    private function checkStoredValuesTable(): bool
+    {
         if (!$this->database->tableExists('stored_values'))
         {
             $this->logger->emergency('Database missing stored_values table');
-
             $this->addOutput(
                 '   Database missing stored_values table'.PHP_EOL.
                 '   Please make sure that the core Framework database scheme has been applied. (by running db:init task)'.PHP_EOL
@@ -114,17 +99,27 @@ class DatabaseCompatibility extends Base
             return false;
         }
 
-        $this->addOutput('  Pass'.PHP_EOL.PHP_EOL);
+        return true;
+    }
 
+    /**
+     * Check if the framework database version is compatible.
+     *
+     * @return bool True if check passes, false otherwise
+     */
+    private function checkFrameworkDbVersion(): bool
+    {
+        if (!$this->checkWfDbVersion)
+        {
+            return true;
+        }
+
+        $requiredWfDbVersion = FRAMEWORK_DB_VERSION;
         $currentWfDbVersion = $this->storedValuesService->getValue('wf_db_version', '0');
-        $currentAppDbVersion = $this->storedValuesService->getValue('app_db_version', '1');
 
-        $this->addOutput('Checking for compatible Framework Database verion:'.PHP_EOL);
-
-        if ($this->checkWfDbVersion && $requiredWfDbVersion != $currentWfDbVersion)
+        if ($requiredWfDbVersion != $currentWfDbVersion)
         {
             $this->logger->emergency('Framework Database version mismatch', ['required_wf_db_version' => $requiredWfDbVersion, 'current_wf_db_version' => $currentWfDbVersion]);
-
             $this->addOutput(
                 '   Framework Database version mismatch'.PHP_EOL.
                 '   Please make sure that the latest Framework database changes for version '.PHP_EOL.
@@ -134,14 +129,27 @@ class DatabaseCompatibility extends Base
             return false;
         }
 
-        $this->addOutput('  Pass'.PHP_EOL);
+        return true;
+    }
 
-        $this->addOutput('Checking for compatible App Database verion:'.PHP_EOL);
+    /**
+     * Check if the application database version is compatible.
+     *
+     * @return bool True if check passes, false otherwise
+     */
+    private function checkAppDbVersion(): bool
+    {
+        if (!$this->checkAppDbVersion)
+        {
+            return true;
+        }
 
-        if ($this->checkAppDbVersion && $requiredAppDbVersion > 0 && $currentAppDbVersion == 0)
+        $requiredAppDbVersion = $this->configService->get('versions.required_app_db');
+        $currentAppDbVersion = $this->storedValuesService->getValue('app_db_version', '1');
+
+        if ($requiredAppDbVersion > 0 && $currentAppDbVersion == 0)
         {
             $this->logger->emergency('No app DB present', ['required_app_db_version' => $requiredAppDbVersion, 'current_app_db_version' => $currentAppDbVersion]);
-
             $this->addOutput(
                 '   No app DB present'.PHP_EOL.
                 '   Config (versions.required_app_db) indicates an App DB should be present. None found.'.PHP_EOL
@@ -150,10 +158,9 @@ class DatabaseCompatibility extends Base
             return false;
         }
 
-        if ($this->checkAppDbVersion && $requiredAppDbVersion > $currentAppDbVersion)
+        if ($requiredAppDbVersion > $currentAppDbVersion)
         {
             $this->logger->emergency('Outdated version of the app DB', ['required_app_db_version' => $requiredAppDbVersion, 'current_app_db_version' => $currentAppDbVersion]);
-
             $this->addOutput(
                 '   Outdated version of the app DB'.PHP_EOL.
                 "   Please make sure that the app DB scheme is at least {$requiredAppDbVersion}. (Current: {$currentAppDbVersion})".PHP_EOL
@@ -162,6 +169,47 @@ class DatabaseCompatibility extends Base
             return false;
         }
 
+        return true;
+    }
+
+    /**
+     * Perform database compatibility checks.
+     *
+     * @return bool True if all checks pass, false otherwise
+     */
+    public function performChecks(): bool
+    {
+        $this->addOutput('Checking WF version:'.PHP_EOL);
+        if (!$this->checkFrameworkVersion())
+        {
+            return false;
+        }
+        $this->addOutput('  Pass'.PHP_EOL.PHP_EOL);
+
+        if ($this->configService->get('database_enabled') != true || !$this->checkDb)
+        {
+            return true;
+        }
+
+        $this->addOutput('Checking for stored_values table:'.PHP_EOL);
+        if (!$this->checkStoredValuesTable())
+        {
+            return false;
+        }
+        $this->addOutput('  Pass'.PHP_EOL.PHP_EOL);
+
+        $this->addOutput('Checking for compatible Framework Database verion:'.PHP_EOL);
+        if (!$this->checkFrameworkDbVersion())
+        {
+            return false;
+        }
+        $this->addOutput('  Pass'.PHP_EOL);
+
+        $this->addOutput('Checking for compatible App Database verion:'.PHP_EOL);
+        if (!$this->checkAppDbVersion())
+        {
+            return false;
+        }
         $this->addOutput('  Pass'.PHP_EOL.PHP_EOL);
 
         return true;
