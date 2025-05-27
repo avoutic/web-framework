@@ -242,7 +242,7 @@ class Register
         }
         catch (UsernameUnavailableException $e)
         {
-            $message = ($uniqueIdentifier == 'email') ? 'register.mail_exists' : 'register.username_exists';
+            $message = ($uniqueIdentifier == 'email') ? 'register.email_exists' : 'register.username_exists';
 
             $this->messageService->add('error', $message);
         }
