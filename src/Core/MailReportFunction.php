@@ -93,7 +93,7 @@ class MailReportFunction implements ReportFunction
             $title = "[{$cached['count']} times]: {$title}";
         }
 
-        $this->logger->error('Sending error report', ['title' => $title, 'message' => $debugInfo['message']]);
+        $this->logger->info('Sending error report', ['title' => $title]);
 
         $this->mailService->sendRawMail(
             null,
