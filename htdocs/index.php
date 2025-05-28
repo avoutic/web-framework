@@ -40,7 +40,11 @@ catch (Throwable $e)
         //
         $debugService = $taskRunner->get(DebugService::class);
         $errorReport = $debugService->getThrowableReport($e, $request);
-        $logger->error('Unhandled exception: '.$e->getMessage(), ['error_report' => $errorReport]);
+        $logger->error('Unhandled exception: '.$errorReport['title'], [
+            'message' => $errorReport['message'],
+            'low_info_message' => $errorReport['low_info_message'],
+            'hash' => $errorReport['hash'],
+        ]);
 
         $reportFunction = $taskRunner->get(ReportFunction::class);
         $reportFunction->report($e->getMessage(), 'unhandled_exception', $errorReport);

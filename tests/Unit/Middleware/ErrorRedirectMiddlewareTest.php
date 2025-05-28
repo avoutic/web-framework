@@ -192,7 +192,12 @@ final class ErrorRedirectMiddlewareTest extends Unit
 
     public function testGenericExceptionWithDebugEnabled()
     {
-        $errorReport = ['message' => 'Test error'];
+        $errorReport = [
+            'title' => 'Test error',
+            'low_info_message' => '',
+            'message' => '',
+            'hash' => '',
+        ];
 
         $middleware = $this->make(
             ErrorRedirectMiddleware::class,
@@ -247,7 +252,12 @@ final class ErrorRedirectMiddlewareTest extends Unit
 
     public function testGenericExceptionWithDebugDisabled()
     {
-        $errorReport = ['message' => 'Test error'];
+        $errorReport = [
+            'title' => 'Test error',
+            'low_info_message' => '',
+            'message' => '',
+            'hash' => '',
+        ];
 
         $middleware = $this->make(
             ErrorRedirectMiddleware::class,
