@@ -85,10 +85,9 @@ class ErrorRedirectMiddleware implements MiddlewareInterface
 
             $request = $request->withAttribute('error_report', $errorReport);
 
-            $this->logger->error('Unhandled exception: '.$errorReport['title'], [
-                'message' => $errorReport['message'],
-                'low_info_message' => $errorReport['low_info_message'],
-                'hash' => $errorReport['hash'],
+            $this->logger->error('Unhandled exception: '.$errorReport->getTitle(), [
+                'error_report' => $errorReport,
+                'hash' => $errorReport->getHash(),
             ]);
 
             try
@@ -101,7 +100,7 @@ class ErrorRedirectMiddleware implements MiddlewareInterface
                 //
             }
 
-            $message = ($this->container->get('debug')) ? $errorReport['message'] : '';
+            $message = ($this->container->get('debug')) ? $errorReport->toString() : '';
 
             return $this->responseEmitter->error($request, 'Error', $message);
         }

@@ -18,6 +18,7 @@ use WebFramework\Core\ResponseEmitter;
 use WebFramework\Exception\BlacklistException;
 use WebFramework\Exception\RedirectException;
 use WebFramework\Middleware\ErrorRedirectMiddleware;
+use WebFramework\Support\ErrorReport;
 
 /**
  * @internal
@@ -192,12 +193,7 @@ final class ErrorRedirectMiddlewareTest extends Unit
 
     public function testGenericExceptionWithDebugEnabled()
     {
-        $errorReport = [
-            'title' => 'Test error',
-            'low_info_message' => '',
-            'message' => '',
-            'hash' => '',
-        ];
+        $errorReport = $this->makeEmpty(ErrorReport::class);
 
         $middleware = $this->make(
             ErrorRedirectMiddleware::class,
@@ -252,12 +248,7 @@ final class ErrorRedirectMiddlewareTest extends Unit
 
     public function testGenericExceptionWithDebugDisabled()
     {
-        $errorReport = [
-            'title' => 'Test error',
-            'low_info_message' => '',
-            'message' => '',
-            'hash' => '',
-        ];
+        $errorReport = $this->makeEmpty(ErrorReport::class);
 
         $middleware = $this->make(
             ErrorRedirectMiddleware::class,

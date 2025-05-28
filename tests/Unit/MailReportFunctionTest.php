@@ -8,6 +8,7 @@ use Psr\Log\LoggerInterface;
 use WebFramework\Core\MailReportFunction;
 use WebFramework\Core\NullCache;
 use WebFramework\Core\NullMailService;
+use WebFramework\Support\ErrorReport;
 
 /**
  * @internal
@@ -39,7 +40,12 @@ final class MailReportFunctionTest extends Unit
             ],
         );
 
-        verify($instance->report('TestMessage', 'TestError', ['title' => 'TestTitle', 'message' => 'TestDebug', 'low_info_message' => 'TestLowInfo', 'hash' => 'my_hash']));
+        $report = $this->make(ErrorReport::class, [
+            'toString' => 'my_report',
+            'getHash' => 'my_hash',
+        ]);
+
+        verify($instance->report('TestMessage', 'TestError', $report));
     }
 
     public function testMailDebugInfoCached2()
@@ -65,7 +71,12 @@ final class MailReportFunctionTest extends Unit
             ],
         );
 
-        verify($instance->report('TestMessage', 'TestError', ['title' => 'TestTitle', 'message' => 'TestDebug', 'low_info_message' => 'TestLowInfo', 'hash' => 'my_hash']));
+        $report = $this->make(ErrorReport::class, [
+            'toString' => 'my_report',
+            'getHash' => 'my_hash',
+        ]);
+
+        verify($instance->report('TestMessage', 'TestError', $report));
     }
 
     public function testMailDebugInfoCached3Skip()
@@ -91,7 +102,12 @@ final class MailReportFunctionTest extends Unit
             ],
         );
 
-        verify($instance->report('TestMessage', 'TestError', ['title' => 'TestTitle', 'message' => 'TestDebug', 'low_info_message' => 'TestLowInfo', 'hash' => 'my_hash']));
+        $report = $this->make(ErrorReport::class, [
+            'toString' => 'my_report',
+            'getHash' => 'my_hash',
+        ]);
+
+        verify($instance->report('TestMessage', 'TestError', $report));
     }
 
     public function testMailDebugInfoCached24()
@@ -117,7 +133,12 @@ final class MailReportFunctionTest extends Unit
             ],
         );
 
-        verify($instance->report('TestMessage', 'TestError', ['title' => 'TestTitle', 'message' => 'TestDebug', 'low_info_message' => 'TestLowInfo', 'hash' => 'my_hash']));
+        $report = $this->make(ErrorReport::class, [
+            'toString' => 'my_report',
+            'getHash' => 'my_hash',
+        ]);
+
+        verify($instance->report('TestMessage', 'TestError', $report));
     }
 
     public function testMailDebugInfoCached25Skip()
@@ -143,6 +164,11 @@ final class MailReportFunctionTest extends Unit
             ],
         );
 
-        verify($instance->report('TestMessage', 'TestError', ['title' => 'TestTitle', 'message' => 'TestDebug', 'low_info_message' => 'TestLowInfo', 'hash' => 'my_hash']));
+        $report = $this->make(ErrorReport::class, [
+            'toString' => 'my_report',
+            'getHash' => 'my_hash',
+        ]);
+
+        verify($instance->report('TestMessage', 'TestError', $report));
     }
 }

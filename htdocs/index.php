@@ -40,28 +40,23 @@ catch (Throwable $e)
         //
         $debugService = $taskRunner->get(DebugService::class);
         $errorReport = $debugService->getThrowableReport($e, $request);
-        $logger->error('Unhandled exception: '.$errorReport['title'], [
-            'message' => $errorReport['message'],
-            'low_info_message' => $errorReport['low_info_message'],
-            'hash' => $errorReport['hash'],
+        $logger->error('Unhandled exception: '.$errorReport->getTitle(), [
+            'error_report' => $errorReport,
+            'hash' => $errorReport->getHash(),
         ]);
 
         $reportFunction = $taskRunner->get(ReportFunction::class);
         $reportFunction->report($e->getMessage(), 'unhandled_exception', $errorReport);
+
+        echo ($taskRunner->get('debug')) ? $errorReport->toString() : 'An error occurred.';
     }
     catch (Throwable $innerException)
     {
-        $errorReport = [
-            'message' => $e->getMessage(),
-            'low_info_message' => 'An error occurred.',
-        ];
-
         $logger->error('Unhandled exception (without error report): '.$e->getMessage(), [
             'exception' => $e,
             'inner_exception' => $innerException->getMessage(),
         ]);
-    }
 
-    $message = ($taskRunner->get('debug')) ? $errorReport['message'] : $errorReport['low_info_message'];
-    echo $message;
+        echo ($taskRunner->get('debug')) ? 'Unhandled exception (without error report): '.$e->getMessage() : 'An error occurred.';
+    }
 }

@@ -6,6 +6,7 @@
 
 ### Breaking changes
 
+* Introduction of ErrorReport that is passed around instead of error array
 * Move multiple Core classes to other WebFramework namespaces
 * Move Rule classes to Validation\Rule
 * Move Validator classes to Validation\Validator

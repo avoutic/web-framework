@@ -14,6 +14,7 @@ namespace WebFramework\Core;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Routing\RouteContext;
 use WebFramework\Security\AuthenticationService;
+use WebFramework\Support\ErrorReport;
 use WebFramework\Support\Helpers;
 
 /**
@@ -39,24 +40,6 @@ class DebugService
     ) {}
 
     /**
-     * Generate a hash for caching error reports.
-     *
-     * @param string $serverName    The server name
-     * @param string $requestSource The source of the request
-     * @param string $file          The file where the error occurred
-     * @param int    $line          The line number where the error occurred
-     * @param string $message       The error message
-     *
-     * @return string The generated hash
-     */
-    public function generateHash(string $serverName, string $requestSource, string $file, int $line, string $message): string
-    {
-        $key = "{$serverName}:{$requestSource}:{$file}:{$line}:{$message}";
-
-        return sha1($key);
-    }
-
-    /**
      * Report an error.
      *
      * @param string       $message   The error message
@@ -66,9 +49,9 @@ class DebugService
      */
     public function reportError(string $message, array $stack = [], ?Request $request = null, string $errorType = 'report_error'): void
     {
-        $debugInfo = $this->getErrorReport($stack, $request, $errorType, $message);
+        $errorReport = $this->getErrorReport($stack, $request, $errorType, $message);
 
-        $this->reportFunction->report($message, $errorType, $debugInfo);
+        $this->reportFunction->report($message, $errorType, $errorReport);
     }
 
     /**
@@ -77,9 +60,9 @@ class DebugService
      * @param \Throwable   $e       The Throwable object
      * @param null|Request $request The request object, if available
      *
-     * @return array{title: string, low_info_message: string, message: string, hash: string} The error report
+     * @return ErrorReport The error report
      */
-    public function getThrowableReport(\Throwable $e, ?Request $request = null): array
+    public function getThrowableReport(\Throwable $e, ?Request $request = null): ErrorReport
     {
         $stack = $this->filterTrace($e->getTrace());
 
@@ -99,9 +82,9 @@ class DebugService
      * @param string       $errorType The type of error
      * @param string       $message   The error message
      *
-     * @return array{title: string, low_info_message: string, message: string, hash: string} The error report
+     * @return ErrorReport The error report
      */
-    public function getErrorReport(array $trace, ?Request $request, string $errorType, string $message): array
+    public function getErrorReport(array $trace, ?Request $request, string $errorType, string $message): ErrorReport
     {
         $stack = $this->filterTrace($trace);
         $stackTop = reset($stack);
@@ -122,20 +105,16 @@ class DebugService
      * @param string       $errorType     The type of error
      * @param string       $message       The error message
      *
-     * @return array{title: string, low_info_message: string, message: string, hash: string} The detailed error report
+     * @return ErrorReport The detailed error report
      */
-    private function getReport(string $file, int $line, array $filteredStack, ?Request $request, string $errorType, string $message): array
+    private function getReport(string $file, int $line, array $filteredStack, ?Request $request, string $errorType, string $message): ErrorReport
     {
-        $info = [
-            'title' => "{$this->runtimeEnvironment->getServerName()} - {$errorType}: {$message}",
-            'low_info_message' => '',
-            'message' => '',
-            'hash' => '',
-        ];
+        $report = new ErrorReport();
+
+        $report->message = $message;
 
         // Retrieve request
         //
-        $requestSource = 'unknown';
         if ($request !== null)
         {
             try
@@ -149,7 +128,7 @@ class DebugService
                 {
                     $requestMethod = $request->getMethod();
 
-                    $requestSource = $requestMethod.' '.$route->getPattern();
+                    $report->requestSource = $requestMethod.' '.$route->getPattern();
                 }
             }
             catch (\RuntimeException $e)
@@ -158,78 +137,36 @@ class DebugService
 
             // Fallback to direct method
             //
-            if ($requestSource === 'unknown')
+            if ($report->requestSource === 'unknown')
             {
                 $requestMethod = $request->getMethod();
 
                 $uri = $request->getUri();
 
-                $requestSource = $requestMethod.' '.$uri->getPath();
+                $report->requestSource = $requestMethod.' '.$uri->getPath();
             }
         }
 
-        // Cache hash
-        //
-        $info['hash'] = $this->generateHash(
-            $this->runtimeEnvironment->getServerName(),
-            $requestSource,
-            $file,
-            $line,
-            $message,
-        );
+        $report->serverName = $this->runtimeEnvironment->getServerName();
+        $report->file = $file;
+        $report->line = $line;
 
-        // Construct base message
-        //
-        $info['low_info_message'] = <<<'TXT'
-An error occurred.
-
-TXT;
-
-        $errorType = Helpers::getErrorTypeString($errorType);
-        $condensedStack = $this->condenseStack($filteredStack);
-
-        $dbError = $this->getDatabaseError($this->databaseProvider->get());
-
-        $inputReport = "No request\n";
-        $headersFmt = "No request\n";
-        $serverFmt = "No request\n";
+        $report->errorType = Helpers::getErrorTypeString($errorType);
+        $report->stack = $this->condenseStack($filteredStack);
+        $report->dbError = $this->getDatabaseError($this->databaseProvider->get());
+        $report->auth = $this->getAuthenticationStatus();
 
         if ($request !== null)
         {
-            $inputReport = $this->getInputsReport($request);
+            $report->inputs = $this->getInputsReport($request);
+
             $headers = $request->getHeaders();
-            $headers = $this->scrubRequestHeaders($headers);
-            $headersFmt = print_r($headers, true);
-            $serverFmt = print_r($request->getServerParams(), true);
+            $report->headers = $this->scrubRequestHeaders($headers);
+
+            $report->serverParams = $request->getServerParams();
         }
 
-        $authData = $this->getAuthenticationStatus();
-
-        $info['message'] .= <<<TXT
-File: {$file}
-Line: {$line}
-ErrorType: {$errorType}
-Message: {$message}
-
-Server: {$this->runtimeEnvironment->getServerName()}
-Request: {$requestSource}
-
-Condensed backtrace:
-{$condensedStack}
-Last Database error:
-{$dbError}
-
-Inputs:
-{$inputReport}
-Auth:
-{$authData}
-Headers:
-{$headersFmt}
-Server:
-{$serverFmt}
-TXT;
-
-        return $info;
+        return $report;
     }
 
     /**
@@ -337,25 +274,22 @@ TXT;
     /**
      * Get the current authentication status.
      *
-     * @return string A string representation of the authentication status
+     * @return null|array{user_id: int, username: string, email: string} The authentication status
      */
-    public function getAuthenticationStatus(): string
+    public function getAuthenticationStatus(): ?array
     {
-        $authData = "Not authenticated\n";
-
-        if ($this->authenticationService->isAuthenticated())
+        if (!$this->authenticationService->isAuthenticated())
         {
-            $user = $this->authenticationService->getAuthenticatedUser();
-            $authArray = [
-                'user_id' => $user->getId(),
-                'username' => $user->getUsername(),
-                'email' => $user->getEmail(),
-            ];
-
-            $authData = print_r($authArray, true);
+            return null;
         }
 
-        return $authData;
+        $user = $this->authenticationService->getAuthenticatedUser();
+
+        return [
+            'user_id' => $user->getId(),
+            'username' => $user->getUsername(),
+            'email' => $user->getEmail(),
+        ];
     }
 
     /**
@@ -363,11 +297,11 @@ TXT;
      *
      * @param Request $request The request object
      *
-     * @return string A string representation of the request inputs
+     * @return array<string, mixed>
      */
-    public function getInputsReport(Request $request): string
+    public function getInputsReport(Request $request): array
     {
-        $inputsFmt = '';
+        $inputs = [];
 
         // Get the GET parameters
         //
@@ -375,13 +309,7 @@ TXT;
 
         if (count($getParams))
         {
-            $getFmt = print_r($getParams, true);
-
-            $inputsFmt .= <<<TXT
-GET:
-{$getFmt}
-
-TXT;
+            $inputs['get'] = $getParams;
         }
 
         // Check if the Content-Type header indicates JSON data
@@ -401,23 +329,11 @@ TXT;
 
             if ($jsonData === null && json_last_error() !== JSON_ERROR_NONE)
             {
-                // Error parsing
-                //
-                $inputsFmt .= <<<TXT
-JSON parsing failed:
-{$body}
-
-TXT;
+                $inputs['json_parsing_failed'] = $body;
             }
             else
             {
-                $jsonFmt = print_r($jsonData, true);
-
-                $inputsFmt .= <<<TXT
-JSON data:
-{$jsonFmt}
-
-TXT;
+                $inputs['json_data'] = $jsonData;
             }
         }
 
@@ -426,16 +342,10 @@ TXT;
         $postParams = $request->getParsedBody();
         if ($postParams !== null)
         {
-            $postFmt = print_r($postParams, true);
-
-            $inputsFmt .= <<<TXT
-POST:
-{$postFmt}
-
-TXT;
+            $inputs['post'] = $postParams;
         }
 
-        return strlen($inputsFmt) ? $inputsFmt : "No inputs\n";
+        return $inputs;
     }
 
     /**

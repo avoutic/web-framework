@@ -15,6 +15,7 @@ use WebFramework\Core\NullReportFunction;
 use WebFramework\Core\RuntimeEnvironment;
 use WebFramework\Entity\User;
 use WebFramework\Security\NullAuthenticationService;
+use WebFramework\Support\ErrorReport;
 
 /**
  * @internal
@@ -25,55 +26,17 @@ final class DebugServiceTest extends Unit
 {
     public function testGenerateHash()
     {
-        $instance = $this->makeEmptyExcept(DebugService::class, 'generateHash');
+        $errorReport = $this->make(ErrorReport::class, [
+            'serverName' => 'ServerName',
+            'requestSource' => 'RequestSource',
+            'file' => 'File',
+            'line' => 1,
+            'message' => 'Message',
+            'errorType' => 'ErrorType',
+        ]);
 
-        verify($instance->generateHash('ServerName', 'RequestSource', 'File', 1, 'Message'))
-            ->equals('5bd8c554bf94a90d97e9f31c63b69fde17ac4bb9')
-        ;
-    }
-
-    public function testGenerateHashNoServerName()
-    {
-        $instance = $this->makeEmptyExcept(DebugService::class, 'generateHash');
-
-        verify($instance->generateHash('', 'RequestSource', 'File', 1, 'Message'))
-            ->equals('bf0a0f18bf3c2e20ea0fe62092376caccefcbb7a')
-        ;
-    }
-
-    public function testGenerateHashNoRequestSource()
-    {
-        $instance = $this->makeEmptyExcept(DebugService::class, 'generateHash');
-
-        verify($instance->generateHash('ServerName', '', 'File', 1, 'Message'))
-            ->equals('bf0f9b3a2f36e3e1a8359c289494a41a3c673c45')
-        ;
-    }
-
-    public function testGenerateHashNoFile()
-    {
-        $instance = $this->makeEmptyExcept(DebugService::class, 'generateHash');
-
-        verify($instance->generateHash('ServerName', 'RequestSource', 'unknown', 1, 'Message'))
-            ->equals('8bdac8c96d84253c28d5981d096550747be0d2f8')
-        ;
-    }
-
-    public function testGenerateHasNoLine()
-    {
-        $instance = $this->makeEmptyExcept(DebugService::class, 'generateHash');
-
-        verify($instance->generateHash('ServerName', 'RequestSource', 'File', 0, 'Message'))
-            ->equals('72a2066e2671474739c142d668a25da79b8184a0')
-        ;
-    }
-
-    public function testGenerateHashNoMessage()
-    {
-        $instance = $this->makeEmptyExcept(DebugService::class, 'generateHash');
-
-        verify($instance->generateHash('ServerName', 'RequestSource', 'File', 1, ''))
-            ->equals('2d63a5522289108ab2091fd5b99f0ba0499bff76')
+        verify($errorReport->getHash())
+            ->equals('04f41ef755efe7ddef652fa8d5d95cb26b872ead')
         ;
     }
 
@@ -121,7 +84,7 @@ final class DebugServiceTest extends Unit
         );
 
         verify($instance->getAuthenticationStatus())
-            ->equals("Not authenticated\n")
+            ->equals(null)
         ;
     }
 
@@ -147,7 +110,11 @@ final class DebugServiceTest extends Unit
         );
 
         verify($instance->getAuthenticationStatus())
-            ->equals(print_r($authData, true))
+            ->equals([
+                'user_id' => 1,
+                'username' => 'TestUser',
+                'email' => 'TestEmail',
+            ])
         ;
     }
 
@@ -448,7 +415,7 @@ TXT;
         ]);
 
         verify($instance->getInputsReport($request))
-            ->equals("No inputs\n")
+            ->equals([])
         ;
     }
 
@@ -465,15 +432,10 @@ TXT;
             ->withQueryParams($queryParams)
         ;
 
-        $getFmt = print_r($queryParams, true);
-
-        $inputsFmt = <<<TXT
-GET:
-{$getFmt}
-
-TXT;
         verify($instance->getInputsReport($request))
-            ->equals($inputsFmt)
+            ->equals([
+                'get' => $queryParams,
+            ])
         ;
     }
 
@@ -490,15 +452,10 @@ TXT;
             ->withParsedBody($postParams)
         ;
 
-        $postFmt = print_r($postParams, true);
-
-        $inputsFmt = <<<TXT
-POST:
-{$postFmt}
-
-TXT;
         verify($instance->getInputsReport($request))
-            ->equals($inputsFmt)
+            ->equals([
+                'post' => $postParams,
+            ])
         ;
     }
 
@@ -519,15 +476,10 @@ TXT;
             ->withBody($stream)
         ;
 
-        $jsonFmt = print_r($postParams, true);
-
-        $inputsFmt = <<<TXT
-JSON data:
-{$jsonFmt}
-
-TXT;
         verify($instance->getInputsReport($request))
-            ->equals($inputsFmt)
+            ->equals([
+                'json_data' => $postParams,
+            ])
         ;
     }
 
@@ -548,48 +500,28 @@ TXT;
             ->withBody($stream)
         ;
 
-        $inputsFmt = <<<TXT
-JSON parsing failed:
-{$badJson}
-
-TXT;
         verify($instance->getInputsReport($request))
-            ->equals($inputsFmt)
+            ->equals([
+                'json_parsing_failed' => $badJson,
+            ])
         ;
     }
 
     public function testErrorReportEmpty()
     {
-        $instance = $this->construct(
-            DebugService::class,
+        $instance = $this->make(
+            ErrorReport::class,
             [
-                'authenticationService' => $this->makeEmpty(NullAuthenticationService::class),
-                'databaseProvider' => $this->makeEmpty(DatabaseProvider::class),
-                'reportFunction' => $this->makeEmpty(NullReportFunction::class),
-                'runtimeEnvironment' => $this->makeEmpty(
-                    RuntimeEnvironment::class,
-                    [
-                        'getServerName' => 'TestServer',
-                    ]
-                ),
-            ],
-            [
-                'generateHash' => 'my_hash',
             ]
         );
-
-        $lowInfoReportFmt = <<<'TXT'
-An error occurred.
-
-TXT;
 
         $reportFmt = <<<'TXT'
 File: unknown
 Line: 0
-ErrorType: test
-Message: TestMessage
+ErrorType: unknown
+Message: unknown
 
-Server: TestServer
+Server: unknown
 Request: unknown
 
 Condensed backtrace:
@@ -598,27 +530,27 @@ Last Database error:
 Not initialized yet
 
 Inputs:
-No request
+Array
+(
+)
 
 Auth:
 Not authenticated
 
 Headers:
-No request
+Array
+(
+)
 
 Server:
-No request
+Array
+(
+)
 
 TXT;
-        $report = $instance->getErrorReport([], null, 'test', 'TestMessage');
+        $report = $instance->toString();
 
-        verify($report['hash'])
-            ->equals('my_hash')
-        ;
-        verify($report['low_info_message'])
-            ->equals($lowInfoReportFmt)
-        ;
-        verify($report['message'])
+        verify($report)
             ->equals($reportFmt)
         ;
     }
@@ -653,9 +585,6 @@ TXT;
                     ]
                 ),
             ],
-            [
-                'generateHash' => 'my_hash',
-            ]
         );
 
         $database = $this->makeEmpty(Database::class, ['getLastError' => 'DB ERROR']);
@@ -694,11 +623,6 @@ TXT;
             ],
         ];
 
-        $lowInfoReportFmt = <<<'TXT'
-An error occurred.
-
-TXT;
-
         $reportFmt = <<<'TXT'
 File: Object2.php
 Line: 3
@@ -726,7 +650,9 @@ Last Database error:
 DB ERROR
 
 Inputs:
-No inputs
+Array
+(
+)
 
 Auth:
 Array
@@ -754,13 +680,7 @@ Array
 TXT;
         $report = $instance->getErrorReport($trace, $request, 'test', 'TestMessage');
 
-        verify($report['hash'])
-            ->equals('my_hash')
-        ;
-        verify($report['low_info_message'])
-            ->equals($lowInfoReportFmt)
-        ;
-        verify($report['message'])
+        verify($report->toString())
             ->equals($reportFmt)
         ;
     }
@@ -786,7 +706,9 @@ TXT;
                 ),
             ],
             [
-                'getErrorReport' => ['my_report'],
+                'getErrorReport' => $this->make(ErrorReport::class, [
+                    'toString' => 'my_report',
+                ]),
             ]
         );
 
