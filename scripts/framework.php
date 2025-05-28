@@ -110,7 +110,7 @@ catch (Throwable $e)
         $debugService = $taskRunner->get(DebugService::class);
         $errorReport = $debugService->getThrowableReport($e);
 
-        echo $errorReport['message'].PHP_EOL;
+        echo $errorReport->message.PHP_EOL;
 
         exit(1);
     }

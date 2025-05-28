@@ -13,6 +13,7 @@ namespace WebFramework\Core;
 
 use Carbon\Carbon;
 use Psr\Log\LoggerInterface;
+use WebFramework\Support\ErrorReport;
 
 /**
  * Class MailReportFunction.
@@ -42,14 +43,14 @@ class MailReportFunction implements ReportFunction
      * This method implements the report method from the ReportFunction interface.
      * It sends error reports via email, with rate limiting to prevent excessive emails for the same error.
      *
-     * @param string                                                                       $message   The error message
-     * @param string                                                                       $errorType The type of error
-     * @param array{title: string, low_info_message: string, message: string, hash:string} $debugInfo Additional debug information
+     * @param string      $message     The error message
+     * @param string      $errorType   The type of error
+     * @param ErrorReport $errorReport The error report
      */
-    public function report(string $message, string $errorType, array $debugInfo): void
+    public function report(string $message, string $errorType, ErrorReport $errorReport): void
     {
         // Make sure we are not spamming the same error en masse
-        $cacheId = "errors[{$debugInfo['hash']}]";
+        $cacheId = "errors[{$errorReport->getHash()}]";
         $cached = $this->cache->get($cacheId);
 
         if ($cached === false)
@@ -87,7 +88,7 @@ class MailReportFunction implements ReportFunction
             return;
         }
 
-        $title = $debugInfo['title'];
+        $title = $errorReport->getTitle();
         if ($cached['count'] > 3)
         {
             $title = "[{$cached['count']} times]: {$title}";
@@ -99,7 +100,7 @@ class MailReportFunction implements ReportFunction
             null,
             $this->assertRecipient,
             $title,
-            $debugInfo['message']
+            $errorReport->toString(),
         );
     }
 }
