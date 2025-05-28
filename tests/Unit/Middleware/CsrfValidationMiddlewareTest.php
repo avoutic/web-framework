@@ -33,9 +33,10 @@ final class CsrfValidationMiddlewareTest extends Unit
             [
                 'GET',
                 'http://example.com',
-                [
+                [],
+                json_encode([
                     'token' => '1234567890',
-                ],
+                ]),
             ]
         );
 
@@ -61,7 +62,11 @@ final class CsrfValidationMiddlewareTest extends Unit
                 'csrfService' => $this->makeEmpty(
                     CsrfService::class,
                     [
-                        'validateToken' => Expected::once(true),
+                        'validateToken' => Expected::once(function (string $token) {
+                            verify($token)->equals('1234567890');
+
+                            return true;
+                        }),
                     ]
                 ),
             ]
@@ -72,11 +77,12 @@ final class CsrfValidationMiddlewareTest extends Unit
             [
                 'POST',
                 'http://example.com',
-                [
-                    'token' => '1234567890',
-                ],
+                ['Content-Type' => 'application/json'],
+                json_encode(['token' => '1234567890']),
             ]
         );
+
+        $request = $request->withParsedBody(['token' => '1234567890']);
 
         $handler = $this->makeEmpty(
             RequestHandlerInterface::class,
@@ -106,7 +112,11 @@ final class CsrfValidationMiddlewareTest extends Unit
                 'csrfService' => $this->makeEmpty(
                     CsrfService::class,
                     [
-                        'validateToken' => Expected::once(false),
+                        'validateToken' => Expected::once(function (string $token) {
+                            verify($token)->equals('1234567890');
+
+                            return false;
+                        }),
                     ]
                 ),
                 'messageService' => $this->makeEmpty(
@@ -123,15 +133,114 @@ final class CsrfValidationMiddlewareTest extends Unit
             [
                 'POST',
                 'http://example.com',
-                [
-                    'token' => '1234567890',
-                ],
+                ['Content-Type' => 'application/json'],
+                json_encode(['token' => '1234567890']),
             ]
         );
 
+        $request = $request->withParsedBody(['token' => '1234567890']);
         $request = $request->withAttribute('ip', '127.0.0.1');
         $request = $request->withAttribute('is_authenticated', true);
         $request = $request->withAttribute('authenticated_user_id', 1);
+
+        $handler = $this->makeEmpty(
+            RequestHandlerInterface::class,
+            [
+                'handle' => Expected::once(function (Request $request) {
+                    verify($request->getAttribute('passed_csrf'))->equals(false);
+
+                    return $this->makeEmpty(Response::class);
+                }),
+            ]
+        );
+
+        $response = $middleware->process($request, $handler);
+    }
+
+    public function testPostWithEmptyToken()
+    {
+        $middleware = $this->make(
+            CsrfValidationMiddleware::class,
+            [
+                'blacklistService' => $this->makeEmpty(
+                    BlacklistService::class,
+                    [
+                        'addEntry' => Expected::once(),
+                    ]
+                ),
+                'csrfService' => $this->makeEmpty(
+                    CsrfService::class,
+                    [
+                        'validateToken' => Expected::once(function (string $token) {
+                            verify($token)->equals('');
+
+                            return false;
+                        }),
+                    ]
+                ),
+                'messageService' => $this->makeEmpty(
+                    MessageService::class,
+                    [
+                        'add' => Expected::once(),
+                    ]
+                ),
+            ]
+        );
+
+        $request = $this->construct(
+            Request::class,
+            [
+                'POST',
+                'http://example.com',
+                ['Content-Type' => 'application/json'],
+                json_encode(['token' => '']),
+            ]
+        );
+
+        $request = $request->withParsedBody(['token' => '']);
+        $request = $request->withAttribute('ip', '127.0.0.1');
+        $request = $request->withAttribute('is_authenticated', true);
+        $request = $request->withAttribute('authenticated_user_id', 1);
+
+        $handler = $this->makeEmpty(
+            RequestHandlerInterface::class,
+            [
+                'handle' => Expected::once(function (Request $request) {
+                    verify($request->getAttribute('passed_csrf'))->equals(false);
+
+                    return $this->makeEmpty(Response::class);
+                }),
+            ]
+        );
+
+        $response = $middleware->process($request, $handler);
+    }
+
+    public function testPostWithoutToken()
+    {
+        $middleware = $this->make(
+            CsrfValidationMiddleware::class,
+            [
+                'csrfService' => $this->makeEmpty(
+                    CsrfService::class,
+                    [
+                        'validateToken' => Expected::never(),
+                    ]
+                ),
+            ]
+        );
+
+        $request = $this->construct(
+            Request::class,
+            [
+                'POST',
+                'http://example.com',
+                ['Content-Type' => 'application/json'],
+                json_encode([]),
+            ]
+        );
+
+        $request = $request->withParsedBody([]);
 
         $handler = $this->makeEmpty(
             RequestHandlerInterface::class,

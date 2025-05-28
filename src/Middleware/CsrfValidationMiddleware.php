@@ -53,41 +53,44 @@ class CsrfValidationMiddleware implements MiddlewareInterface
         if (in_array($request->getMethod(), ['POST', 'PUT', 'DELETE', 'PATCH']))
         {
             $params = $request->getParsedBody();
-            $token = '';
+            $token = null;
 
             if (is_array($params))
             {
-                $token = $params['token'] ?? '';
+                $token = $params['token'] ?? null;
             }
             else
             {
-                $token = $params->token ?? '';
+                $token = $params->token ?? null;
             }
 
-            if (!$this->csrfService->validateToken($token))
+            if ($token !== null)
             {
-                $ip = $request->getAttribute('ip');
-
-                if ($ip === null)
+                if (!$this->csrfService->validateToken($token))
                 {
-                    throw new \RuntimeException('IpMiddleware must run first');
+                    $ip = $request->getAttribute('ip');
+
+                    if ($ip === null)
+                    {
+                        throw new \RuntimeException('IpMiddleware must run first');
+                    }
+
+                    $isAuthenticated = $request->getAttribute('is_authenticated');
+
+                    if ($isAuthenticated === null)
+                    {
+                        throw new \RuntimeException('AuthenticationMiddleware must run first');
+                    }
+
+                    $authenticatedUserId = $request->getAttribute('authenticated_user_id');
+
+                    $this->blacklistService->addEntry($ip, $authenticatedUserId, 'missing-csrf');
+                    $this->messageService->add('error', 'generic.csrf_missing');
                 }
-
-                $isAuthenticated = $request->getAttribute('is_authenticated');
-
-                if ($isAuthenticated === null)
+                else
                 {
-                    throw new \RuntimeException('AuthenticationMiddleware must run first');
+                    $passedCsrf = true;
                 }
-
-                $authenticatedUserId = $request->getAttribute('authenticated_user_id');
-
-                $this->blacklistService->addEntry($ip, $authenticatedUserId, 'missing-csrf');
-                $this->messageService->add('error', 'generic.csrf_missing');
-            }
-            else
-            {
-                $passedCsrf = true;
             }
         }
 
