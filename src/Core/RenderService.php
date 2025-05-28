@@ -32,7 +32,7 @@ interface RenderService
      *
      * @return Response The modified response object with the rendered content
      */
-    public function render(Request $request, Response $response, string $templateFile, array $params): Response;
+    public function render(Request $request, Response $response, string $templateFile, array $params = []): Response;
 
     /**
      * Render a template and return the output as a string.
@@ -43,5 +43,5 @@ interface RenderService
      *
      * @return string The rendered content as a string
      */
-    public function renderToString(Request $request, string $templateFile, array $params): string;
+    public function renderToString(Request $request, string $templateFile, array $params = []): string;
 }

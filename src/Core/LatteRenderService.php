@@ -51,7 +51,7 @@ class LatteRenderService implements RenderService
      *
      * @return Response The modified response object with the rendered content
      */
-    public function render(Request $request, Response $response, string $templateFile, array $params): Response
+    public function render(Request $request, Response $response, string $templateFile, array $params = []): Response
     {
         $response->getBody()->write($this->renderToString($request, $templateFile, $params));
 
@@ -69,7 +69,7 @@ class LatteRenderService implements RenderService
      *
      * @throws \InvalidArgumentException If the requested template file does not exist
      */
-    public function renderToString(Request $request, string $templateFile, array $params): string
+    public function renderToString(Request $request, string $templateFile, array $params = []): string
     {
         $this->logger->debug('Rendering template', ['template_file' => $templateFile]);
 
