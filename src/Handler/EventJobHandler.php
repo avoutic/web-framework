@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace WebFramework\Listener;
+namespace WebFramework\Handler;
 
 use Psr\Log\LoggerInterface;
 use WebFramework\Event\EventService;
