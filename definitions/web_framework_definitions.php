@@ -57,17 +57,10 @@ return [
     'offline_mode' => false,
     'server_name' => $_SERVER['SERVER_NAME'] ?? 'app',
 
-    'DatabaseStoredValues' => DI\autowire(Support\StoredValuesService::class)
-        ->constructorParameter('module', 'db'),
-    'SanityCheckStoredValues' => DI\autowire(Support\StoredValuesService::class)
-        ->constructorParameter('module', 'sanity_check'),
-
     Core\Cache::class => DI\autowire(Core\NullCache::class),
     Core\ConfigService::class => DI\autowire()
         ->constructorParameter('config', DI\get('config_tree')),
     Core\Database::class => DI\autowire(Core\NullDatabase::class),
-    Core\DatabaseManager::class => DI\autowire()
-        ->constructorParameter('storedValuesService', DI\get('DatabaseStoredValues')),
     Core\Instrumentation::class => DI\autowire(Core\NullInstrumentation::class),
     Core\LatteRenderService::class => DI\autowire()
         ->constructorParameter('templateDir', DI\string('{app_dir}/templates'))
@@ -111,11 +104,8 @@ return [
     Queue\Queue::class => DI\autowire(Queue\MemoryQueue::class)
         ->constructorParameter('name', 'default'),
 
-    SanityCheck\DatabaseCompatibility::class => DI\autowire()
-        ->constructorParameter('storedValuesService', DI\get('DatabaseStoredValues')),
     SanityCheck\SanityCheckRunner::class => DI\autowire()
-        ->constructorParameter('buildInfo', DI\get('build_info'))
-        ->constructorParameter('storedValuesService', DI\get('SanityCheckStoredValues')),
+        ->constructorParameter('buildInfo', DI\get('build_info')),
 
     Security\AuthenticationService::class => DI\autowire(Security\NullAuthenticationService::class),
     Security\BlacklistService::class => DI\autowire(Security\NullBlacklistService::class),

@@ -125,7 +125,7 @@ SQL;
     {
         // Retrieve hash
         //
-        return $this->storedValuesService->getValue('app_db_hash', '');
+        return $this->storedValuesService->getValue('db.app_db_hash', '');
     }
 
     /**
@@ -135,7 +135,7 @@ SQL;
     {
         $actualHash = $this->calculateHash();
 
-        $this->storedValuesService->setValue('app_db_hash', $actualHash);
+        $this->storedValuesService->setValue('db.app_db_hash', $actualHash);
     }
 
     /**
@@ -411,7 +411,7 @@ SQL;
      */
     public function getCurrentAppVersion(): int
     {
-        return (int) $this->storedValuesService->getValue('app_db_version', '0');
+        return (int) $this->storedValuesService->getValue('db.app_db_version', '0');
     }
 
     /**
@@ -448,7 +448,7 @@ SQL;
      */
     private function setVersion(int $to): void
     {
-        $this->storedValuesService->setValue('app_db_version', (string) $to);
+        $this->storedValuesService->setValue('db.app_db_version', (string) $to);
 
         $this->updateStoredHash();
     }
@@ -460,7 +460,7 @@ SQL;
      */
     public function getCurrentFrameworkVersion(): int
     {
-        return (int) $this->storedValuesService->getValue('wf_db_version', '0');
+        return (int) $this->storedValuesService->getValue('db.wf_db_version', '0');
     }
 
     /**

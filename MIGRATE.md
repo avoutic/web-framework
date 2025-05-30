@@ -12,7 +12,7 @@
 * Move Validator classes to Validation\Validator
 * Renamed EntityInterface to Entity
 * Renamed TaskInterface to Task
-* StoredValues replaced with StoredValuesService
+* StoredValues replaced with StoredValuesService with new interface
 * StoredUserValues and StoredUserValuesFactory replaced with StoredUserValuesService with new interface
 
 ### Internal changes
