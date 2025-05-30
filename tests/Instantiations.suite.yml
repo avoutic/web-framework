@@ -1,0 +1,5 @@
+actor: InstantiationTester
+suite_namespace: Tests\Instantiations
+modules:
+    # enable helpers as array
+    enabled: []

@@ -8,6 +8,7 @@ $mainFinder = PhpCsFixer\Finder::create()
     ->in(__DIR__.'/src')
     ->in(__DIR__.'/scripts')
     ->in(__DIR__.'/templates')
+    ->in(__DIR__.'/tests/Instantiations')
     ->in(__DIR__.'/tests/Unit')
 ;
 
