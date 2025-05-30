@@ -6,6 +6,7 @@ namespace WebFramework\Core;
 //
 return [
     'debug' => false,
+    'production' => false,
     'preload' => false,                 /* true to load src/Preload.php during bootstrap, or name of file to
                                          * load relative to appDir */
     'timezone' => 'UTC',
