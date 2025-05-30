@@ -21,29 +21,39 @@ class StoredValuesService
 {
     /**
      * @param StoredValueRepository $repository The StoredValue repository
-     * @param null|string           $module     The module name for which values are stored
      */
     public function __construct(
         private StoredValueRepository $repository,
-        private ?string $module,
     ) {}
+
+    /**
+     * Split a name into module and name.
+     *
+     * @param string $name The name to split
+     *
+     * @return array<string> The module and name
+     */
+    private function splitName(string $name): array
+    {
+        $parts = explode('.', $name);
+
+        if (count($parts) !== 2)
+        {
+            throw new \InvalidArgumentException('Invalid prefixed name: '.$name);
+        }
+
+        return $parts;
+    }
 
     /**
      * Get all stored values for the current module.
      *
-     * @param null|string $module The module name for which values are stored
+     * @param string $module The module name for which values are stored
      *
      * @return array<string> An associative array of stored values
      */
-    public function getValues(?string $module = null): array
+    public function getValues(string $module): array
     {
-        $module = $module ?? $this->module;
-
-        if ($module === null)
-        {
-            throw new \InvalidArgumentException('module cannot be null');
-        }
-
         $values = $this->repository->getValuesByModule($module);
 
         $info = [];
@@ -59,22 +69,16 @@ class StoredValuesService
     /**
      * Get a specific stored value.
      *
-     * @param string      $name    The name of the value to retrieve
-     * @param string      $default The default value to return if not found
-     * @param null|string $module  The module name for which values are stored
+     * @param string $name    The name of the value to retrieve (with module prefix)
+     * @param string $default The default value to return if not found
      *
      * @return string The stored value or the default value
      */
-    public function getValue(string $name, string $default = '', ?string $module = null): string
+    public function getValue(string $name, string $default = ''): string
     {
-        $module = $module ?? $this->module;
+        [$module, $key] = $this->splitName($name);
 
-        if ($module === null)
-        {
-            throw new \InvalidArgumentException('module cannot be null');
-        }
-
-        $storedValue = $this->repository->getValue($module, $name);
+        $storedValue = $this->repository->getValue($module, $key);
 
         if ($storedValue === null)
         {
@@ -87,26 +91,20 @@ class StoredValuesService
     /**
      * Set a stored value.
      *
-     * @param string      $name   The name of the value to set
-     * @param string      $value  The value to store
-     * @param null|string $module The module name for which values are stored
+     * @param string $name  The name of the value to set (with module prefix)
+     * @param string $value The value to store
      */
-    public function setValue(string $name, string $value, ?string $module = null): void
+    public function setValue(string $name, string $value): void
     {
-        $module = $module ?? $this->module;
+        [$module, $key] = $this->splitName($name);
 
-        if ($module === null)
-        {
-            throw new \InvalidArgumentException('module cannot be null');
-        }
-
-        $storedValue = $this->repository->getValue($module, $name);
+        $storedValue = $this->repository->getValue($module, $key);
 
         if ($storedValue === null)
         {
             $storedValue = new StoredValue();
             $storedValue->setModule($module);
-            $storedValue->setName($name);
+            $storedValue->setName($key);
         }
 
         $storedValue->setValue($value);
@@ -116,19 +114,14 @@ class StoredValuesService
     /**
      * Delete a stored value.
      *
-     * @param string      $name   The name of the value to delete
-     * @param null|string $module The module name for which values are stored
+     * @param string $name The name of the value to delete (with module prefix)
      */
-    public function deleteValue(string $name, ?string $module = null): void
+    public function deleteValue(string $name): void
     {
-        $module = $module ?? $this->module;
+        [$module, $key] = $this->splitName($name);
 
-        if ($module === null)
-        {
-            throw new \InvalidArgumentException('module cannot be null');
-        }
+        $storedValue = $this->repository->getValue($module, $key);
 
-        $storedValue = $this->repository->getValue($module, $name);
         if ($storedValue !== null)
         {
             $this->repository->delete($storedValue);

@@ -115,7 +115,7 @@ class DatabaseCompatibility extends Base
         }
 
         $requiredWfDbVersion = FRAMEWORK_DB_VERSION;
-        $currentWfDbVersion = $this->storedValuesService->getValue('wf_db_version', '0');
+        $currentWfDbVersion = $this->storedValuesService->getValue('db.wf_db_version', '0');
 
         if ($requiredWfDbVersion != $currentWfDbVersion)
         {
@@ -145,7 +145,7 @@ class DatabaseCompatibility extends Base
         }
 
         $requiredAppDbVersion = $this->configService->get('versions.required_app_db');
-        $currentAppDbVersion = $this->storedValuesService->getValue('app_db_version', '1');
+        $currentAppDbVersion = $this->storedValuesService->getValue('db.app_db_version', '1');
 
         if ($requiredAppDbVersion > 0 && $currentAppDbVersion == 0)
         {

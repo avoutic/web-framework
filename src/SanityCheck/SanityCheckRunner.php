@@ -136,14 +136,14 @@ class SanityCheckRunner
             // Prevent flooding. Only start check once per
             // five seconds.
             //
-            $lastTimestamp = new Carbon((int) $this->storedValuesService->getValue('last_check', '0'));
+            $lastTimestamp = new Carbon((int) $this->storedValuesService->getValue('sanity_check.last_check', '0'));
 
             if (Carbon::now()->diffInSeconds($lastTimestamp) < 5)
             {
                 return false;
             }
 
-            $this->storedValuesService->setValue('last_check', (string) Carbon::now());
+            $this->storedValuesService->setValue('sanity_check.last_check', (string) Carbon::now());
 
             return true;
         }
@@ -151,7 +151,7 @@ class SanityCheckRunner
         // We are in an image
         // Only check if this commit was not yet successfully checked
         //
-        $checked = $this->storedValuesService->getValue('checked_'.$commit, '0');
+        $checked = $this->storedValuesService->getValue('sanity_check.checked_'.$commit, '0');
 
         return ($checked === '0');
     }
@@ -167,7 +167,7 @@ class SanityCheckRunner
         //
         if ($commit !== null)
         {
-            $this->storedValuesService->setValue('checked_'.$commit, '1');
+            $this->storedValuesService->setValue('sanity_check.checked_'.$commit, '1');
         }
     }
 
