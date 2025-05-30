@@ -26,8 +26,8 @@ class StoredUserValuesService
      */
     public function __construct(
         private StoredUserValueRepository $repository,
-        private ?int $userId,
-        private ?string $module,
+        private ?int $userId = null,
+        private ?string $module = null,
     ) {}
 
     /**
