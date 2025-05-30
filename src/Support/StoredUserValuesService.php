@@ -21,38 +21,40 @@ class StoredUserValuesService
 {
     /**
      * @param StoredUserValueRepository $repository The StoredUserValue repository
-     * @param null|int                  $userId     The ID of the user
-     * @param null|string               $module     The module name for which values are stored
      */
     public function __construct(
         private StoredUserValueRepository $repository,
-        private ?int $userId = null,
-        private ?string $module = null,
     ) {}
+
+    /**
+     * Split a name into module and name.
+     *
+     * @param string $name The name to split
+     *
+     * @return array<string> The module and name
+     */
+    private function splitName(string $name): array
+    {
+        $parts = explode('.', $name);
+
+        if (count($parts) !== 2)
+        {
+            throw new \InvalidArgumentException('Invalid prefixed name: '.$name);
+        }
+
+        return $parts;
+    }
 
     /**
      * Get all stored values for the current user and module.
      *
-     * @param null|int    $userId The user ID
-     * @param null|string $module The module name
+     * @param int    $userId The user ID
+     * @param string $module The module name
      *
      * @return array<string> An associative array of stored values
      */
-    public function getValues(?int $userId = null, ?string $module = null): array
+    public function getValues(int $userId, string $module): array
     {
-        $userId = $userId ?? $this->userId;
-        $module = $module ?? $this->module;
-
-        if ($userId === null)
-        {
-            throw new \InvalidArgumentException('userId cannot be null');
-        }
-
-        if ($module === null)
-        {
-            throw new \InvalidArgumentException('module cannot be null');
-        }
-
         $values = $this->repository->getValuesByUserAndModule($userId, $module);
 
         $info = [];
@@ -68,56 +70,32 @@ class StoredUserValuesService
     /**
      * Check if a specific value exists.
      *
-     * @param string      $name   The name of the value to check
-     * @param null|int    $userId The user ID
-     * @param null|string $module The module name
+     * @param int    $userId The user ID
+     * @param string $name   The name of the value to check (with module prefix)
      *
      * @return bool True if the value exists, false otherwise
      */
-    public function valueExists(string $name, ?int $userId = null, ?string $module = null): bool
+    public function valueExists(int $userId, string $name): bool
     {
-        $userId = $userId ?? $this->userId;
-        $module = $module ?? $this->module;
+        [$module, $key] = $this->splitName($name);
 
-        if ($userId === null)
-        {
-            throw new \InvalidArgumentException('userId cannot be null');
-        }
-
-        if ($module === null)
-        {
-            throw new \InvalidArgumentException('module cannot be null');
-        }
-
-        return $this->repository->getValue($userId, $module, $name) !== null;
+        return $this->repository->getValue($userId, $module, $key) !== null;
     }
 
     /**
      * Get a specific stored value.
      *
-     * @param string      $name    The name of the value to retrieve
-     * @param string      $default The default value to return if not found
-     * @param null|int    $userId  The user ID
-     * @param null|string $module  The module name
+     * @param int    $userId  The user ID
+     * @param string $name    The name of the value to retrieve (with module prefix)
+     * @param string $default The default value to return if not found
      *
      * @return string The stored value or the default value
      */
-    public function getValue(string $name, string $default = '', ?int $userId = null, ?string $module = null): string
+    public function getValue(int $userId, string $name, string $default = ''): string
     {
-        $userId = $userId ?? $this->userId;
-        $module = $module ?? $this->module;
+        [$module, $key] = $this->splitName($name);
 
-        if ($userId === null)
-        {
-            throw new \InvalidArgumentException('userId cannot be null');
-        }
-
-        if ($module === null)
-        {
-            throw new \InvalidArgumentException('module cannot be null');
-        }
-
-        $storedValue = $this->repository->getValue($userId, $module, $name);
+        $storedValue = $this->repository->getValue($userId, $module, $key);
 
         if ($storedValue === null)
         {
@@ -130,34 +108,22 @@ class StoredUserValuesService
     /**
      * Set a stored value.
      *
-     * @param string      $name   The name of the value to set
-     * @param string      $value  The value to store
-     * @param null|int    $userId The user ID
-     * @param null|string $module The module name
+     * @param int    $userId The user ID
+     * @param string $name   The name of the value to set (with module prefix)
+     * @param string $value  The value to store
      */
-    public function setValue(string $name, string $value, ?int $userId, ?string $module): void
+    public function setValue(int $userId, string $name, string $value): void
     {
-        $userId = $userId ?? $this->userId;
-        $module = $module ?? $this->module;
+        [$module, $key] = $this->splitName($name);
 
-        if ($userId === null)
-        {
-            throw new \InvalidArgumentException('userId cannot be null');
-        }
-
-        if ($module === null)
-        {
-            throw new \InvalidArgumentException('module cannot be null');
-        }
-
-        $storedValue = $this->repository->getValue($userId, $module, $name);
+        $storedValue = $this->repository->getValue($userId, $module, $key);
 
         if ($storedValue === null)
         {
             $storedValue = new StoredUserValue();
             $storedValue->setUserId($userId);
             $storedValue->setModule($module);
-            $storedValue->setName($name);
+            $storedValue->setName($key);
         }
 
         $storedValue->setValue($value);
@@ -167,26 +133,14 @@ class StoredUserValuesService
     /**
      * Delete a stored value.
      *
-     * @param string      $name   The name of the value to delete
-     * @param null|int    $userId The user ID
-     * @param null|string $module The module name
+     * @param int    $userId The user ID
+     * @param string $name   The name of the value to delete (with module prefix)
      */
-    public function deleteValue(string $name, ?int $userId, ?string $module): void
+    public function deleteValue(int $userId, string $name): void
     {
-        $userId = $userId ?? $this->userId;
-        $module = $module ?? $this->module;
+        [$module, $key] = $this->splitName($name);
 
-        if ($userId === null)
-        {
-            throw new \InvalidArgumentException('userId cannot be null');
-        }
-
-        if ($module === null)
-        {
-            throw new \InvalidArgumentException('module cannot be null');
-        }
-
-        $storedValue = $this->repository->getValue($userId, $module, $name);
+        $storedValue = $this->repository->getValue($userId, $module, $key);
 
         if ($storedValue !== null)
         {

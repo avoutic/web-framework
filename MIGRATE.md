@@ -13,7 +13,7 @@
 * Renamed EntityInterface to Entity
 * Renamed TaskInterface to Task
 * StoredValues replaced with StoredValuesService
-* StoredUserValues and StoredUserValuesFactory replaced with StoredUserValuesService
+* StoredUserValues and StoredUserValuesFactory replaced with StoredUserValuesService with new interface
 
 ### Internal changes
 
