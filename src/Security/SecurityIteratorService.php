@@ -41,10 +41,9 @@ class SecurityIteratorService
     public function incrementFor(User $user): int
     {
         $securityIterator = (int) $this->storedUserValuesService->getValue(
-            'security_iterator',
-            '0',
             $user->getId(),
-            'account',
+            'account.security_iterator',
+            '0',
         );
 
         $securityIterator++;
@@ -52,10 +51,9 @@ class SecurityIteratorService
         $this->logger->info('Incrementing security iterator for user', ['user_id' => $user->getId(), 'new_security_iterator' => $securityIterator]);
 
         $this->storedUserValuesService->setValue(
-            'security_iterator',
-            (string) $securityIterator,
             $user->getId(),
-            'account',
+            'account.security_iterator',
+            (string) $securityIterator,
         );
 
         return $securityIterator;
@@ -71,10 +69,9 @@ class SecurityIteratorService
     public function getFor(User $user): int
     {
         return (int) $this->storedUserValuesService->getValue(
-            'security_iterator',
-            '0',
             $user->getId(),
-            'account',
+            'account.security_iterator',
+            '0',
         );
     }
 }
