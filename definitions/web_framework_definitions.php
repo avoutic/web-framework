@@ -61,6 +61,8 @@ return [
         ->constructorParameter('module', 'db'),
     'SanityCheckStoredValues' => DI\autowire(Support\StoredValuesService::class)
         ->constructorParameter('module', 'sanity_check'),
+    'AccountStoredUserValues' => DI\autowire(Support\StoredUserValuesService::class)
+        ->constructorParameter('module', 'account'),
 
     Core\Cache::class => DI\autowire(Core\NullCache::class),
     Core\ConfigService::class => DI\autowire()
@@ -84,6 +86,7 @@ return [
     }),
     Core\RecaptchaFactory::class => DI\autowire()
         ->constructorParameter('secretKey', DI\get('security.recaptcha.secret_key')),
+    Core\RenderService::class => DI\get(Core\LatteRenderService::class),
     Core\ReportFunction::class => DI\autowire(Core\NullReportFunction::class),
     Core\ResponseEmitter::class => DI\autowire()
         ->constructorParameter('responseFactory', DI\get(ResponseFactoryInterface::class)),
@@ -106,6 +109,9 @@ return [
             templateOverrides: $templateOverrides,
         );
     },
+
+    Queue\Queue::class => DI\autowire(Queue\MemoryQueue::class)
+        ->constructorParameter('name', 'default'),
 
     SanityCheck\DatabaseCompatibility::class => DI\autowire()
         ->constructorParameter('storedValuesService', DI\get('DatabaseStoredValues')),
@@ -130,6 +136,8 @@ return [
             'hmac_key' => DI\get('security.hmac_key'),
         ]),
     Security\RandomProvider::class => DI\get(Security\OpensslRandomProvider::class),
+    Security\SecurityIteratorService::class => DI\autowire()
+        ->constructorParameter('storedUserValuesService', DI\get('AccountStoredUserValues')),
 
     Translation\TranslationLoader::class => DI\get(Translation\FileTranslationLoader::class),
     Translation\FileTranslationLoader::class => function (ContainerInterface $c) {
