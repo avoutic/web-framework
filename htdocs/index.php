@@ -32,7 +32,7 @@ catch (Throwable $e)
     $request = ServerRequestFactory::createFromGlobals();
     $logger = $taskRunner->get(LoggerInterface::class);
 
-    header('Content-type: text/plain');
+    header('Content-type: text/html');
 
     try
     {
@@ -48,7 +48,7 @@ catch (Throwable $e)
         $reportFunction = $taskRunner->get(ReportFunction::class);
         $reportFunction->report($e->getMessage(), 'unhandled_exception', $errorReport);
 
-        echo ($taskRunner->get('debug')) ? $errorReport->toString() : 'An error occurred.';
+        echo ($taskRunner->get('debug')) ? $errorReport->getTitle() : 'An error occurred.';
     }
     catch (Throwable $innerException)
     {
