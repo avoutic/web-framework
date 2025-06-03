@@ -193,11 +193,6 @@ class DebugService
 
             $skipping = false;
 
-            if (in_array($entry['function'], ['exit_send_error', 'exit_error']))
-            {
-                unset($entry['args']);
-            }
-
             if ($scrubState)
             {
                 if (isset($entry['args']))
@@ -213,35 +208,41 @@ class DebugService
     }
 
     /**
-     * Condense a stack trace into a string representation.
+     * Condense a stack trace into a shorter representation.
      *
      * @param array<array<mixed>> $stack The stack trace to condense
      *
-     * @return string The condensed stack trace
+     * @return array<string> The condensed stack trace
      */
-    public function condenseStack(array $stack): string
+    public function condenseStack(array $stack): array
     {
-        $stackCondensed = '';
+        $appDir = $this->runtimeEnvironment->getAppDir();
+
+        $stackCondensed = [];
 
         foreach ($stack as $entry)
         {
             $file = $entry['file'] ?? 'unknown';
-            $line = $entry['line'] ?? '-';
-            $stackCondensed .= $file.'('.$line.'): ';
 
+            if (str_starts_with($file, $appDir))
+            {
+                $file = substr($file, strlen($appDir));
+            }
+
+            $line = $entry['line'] ?? '-';
+
+            $function = '';
             if (isset($entry['class']))
             {
                 $pattern = '/@anonymous.*/';
                 $replacement = '@anonymous';
                 $class = preg_replace($pattern, $replacement, $entry['class']);
-                $stackCondensed .= $class.$entry['type'];
+                $function .= $class.$entry['type'];
             }
 
-            $stackCondensed .= $entry['function']."()\n";
-            if (isset($entry['args']) && count($entry['args']))
-            {
-                $stackCondensed .= print_r($entry['args'], true)."\n";
-            }
+            $function = $function.$entry['function'].'()';
+
+            $stackCondensed[] = "{$function} ({$file}:{$line})";
         }
 
         return $stackCondensed;

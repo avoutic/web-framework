@@ -296,63 +296,39 @@ final class DebugServiceTest extends Unit
         ;
     }
 
-    public function testFilterTraceUnsetExitArgs()
-    {
-        $trace = [
-            [
-                'class' => 'Object2',
-                'function' => 'exit_send_error',
-                'args' => 'verify_args',
-            ],
-            [
-                'class' => 'Object1',
-                'function' => 'exit_error',
-                'args' => 'verify_args',
-            ],
-        ];
-
-        $traceFiltered = [
-            [
-                'class' => 'Object2',
-                'function' => 'exit_send_error',
-            ],
-            [
-                'class' => 'Object1',
-                'function' => 'exit_error',
-            ],
-        ];
-
-        $instance = $this->make(DebugService::class);
-
-        verify($instance->filterTrace($trace, false, false))
-            ->equals($traceFiltered)
-        ;
-    }
-
     public function testCondenseStack()
     {
         $trace = [
             [
-                'file' => 'File2',
+                'file' => '/app/src/Dir2/File2.php',
                 'line' => '10',
                 'class' => 'Class2',
                 'type' => '::',
                 'function' => 'function2',
             ],
             [
-                'file' => 'File1',
+                'file' => '/app/src/File1.php',
                 'line' => '11',
                 'function' => 'function1',
             ],
         ];
 
-        $condensedStack = <<<'TXT'
-File2(10): Class2::function2()
-File1(11): function1()
+        $condensedStack = [
+            'Class2::function2() (/src/Dir2/File2.php:10)',
+            'function1() (/src/File1.php:11)',
+        ];
 
-TXT;
-
-        $instance = $this->make(DebugService::class);
+        $instance = $this->make(
+            DebugService::class,
+            [
+                'runtimeEnvironment' => $this->makeEmpty(
+                    RuntimeEnvironment::class,
+                    [
+                        'getAppDir' => '/app',
+                    ],
+                ),
+            ]
+        );
 
         verify($instance->condenseStack($trace))
             ->equals($condensedStack)
@@ -525,6 +501,7 @@ Server: unknown
 Request: unknown
 
 Condensed backtrace:
+No stack trace available
 
 Last Database error:
 Not initialized yet
@@ -633,18 +610,8 @@ Server: TestServer
 Request: GET /test-url
 
 Condensed backtrace:
-Object2.php(3): Object2->function2()
-Array
-(
-    [func2_arg] => val
-)
-
-Object1.php(4): Object1->function1()
-Array
-(
-    [func1_arg] => val
-)
-
+Object2->function2() (Object2.php:3)
+Object1->function1() (Object1.php:4)
 
 Last Database error:
 DB ERROR
