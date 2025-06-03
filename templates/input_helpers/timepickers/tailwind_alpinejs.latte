@@ -28,9 +28,9 @@
   x-data="timePicker()" x-init="initTime('{$value}')"
   class="{$width ?: $defaultWidth}">
   <label for="{$id}" class="block text-sm font-medium text-gray-700">
-    {$label|stripHtml}
+    {$label|noescape}
   </label>
-  <p n:ifset="$extraLabel" class="text-sm text-gray-500">{$extraLabel|stripHtml}</p>
+  <p n:ifset="$extraLabel" class="text-sm text-gray-500">{$extraLabel|noescape}</p>
 
   <input type="hidden"
          name="{$name}"

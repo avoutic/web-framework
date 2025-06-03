@@ -44,16 +44,16 @@
   x-data="{json_encode($counter_info)}"
   class="{$width ?: $defaultWidth}">
   <label n:ifset="$label" for="{$id}" class="block text-sm font-medium {$colors['label-text']}">
-    {$label|stripHtml}
+    {$label|noescape}
   </label>
   <p n:ifset="$extraLabel" class="text-sm {$colors['extra-label-text']}">
-    {$extraLabel|stripHtml}
+    {$extraLabel|noescape}
   </p>
 
 {ifset $prefix}
   <div class="mt-1 flex rounded-md shadow-sm">
     <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
-      {$prefix|stripHtml}
+      {$prefix|noescape}
     </span>
 {/ifset}
     <input

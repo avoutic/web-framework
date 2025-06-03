@@ -50,11 +50,11 @@
 {/ifset}
   >
   <label n:ifset="$label" for="{$id}" class="block text-sm font-medium {$colors['label-text']}">
-    {$label|stripHtml}
+    {$label|noescape}
   </label>
 
   <p n:ifset="$extraLabel" class="text-sm {$colors['extra-label-text']}">
-    {$extraLabel|stripHtml}
+    {$extraLabel|noescape}
   </p>
 
   <div x-ref="border" class="mt-2 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md relative cursor-pointer">
