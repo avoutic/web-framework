@@ -18,9 +18,11 @@ class ErrorReport
     public string $message = 'unknown';
     public string $serverName = 'unknown';
     public string $requestSource = 'unknown';
-    public string $stack = '';
     public string $errorType = 'unknown';
     public string $dbError = 'Not initialized yet';
+
+    /** @var array<string> */
+    public array $stack = [];
 
     /** @var null|array{user_id: int, username: string, email: string} */
     public ?array $auth = null;
@@ -55,6 +57,7 @@ class ErrorReport
         $authFmt = $this->auth ? print_r($this->auth, true) : "Not authenticated\n";
         $headersFmt = print_r($this->headers, true);
         $serverFmt = print_r($this->serverParams, true);
+        $stackFmt = (count($this->stack)) ? implode("\n", $this->stack) : 'No stack trace available';
 
         return <<<TXT
 File: {$this->file}
@@ -66,7 +69,8 @@ Server: {$this->serverName}
 Request: {$this->requestSource}
 
 Condensed backtrace:
-{$this->stack}
+{$stackFmt}
+
 Last Database error:
 {$this->dbError}
 
