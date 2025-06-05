@@ -55,6 +55,19 @@ class DebugService
     }
 
     /**
+     * Report an exception.
+     *
+     * @param \Throwable   $e       The Throwable object
+     * @param null|Request $request The request object, if available
+     */
+    public function reportException(\Throwable $e, ?Request $request = null): void
+    {
+        $errorReport = $this->getThrowableReport($e, $request);
+
+        $this->reportFunction->report($e->getMessage(), $e::class, $errorReport);
+    }
+
+    /**
      * Get a report for a Throwable.
      *
      * @param \Throwable   $e       The Throwable object
