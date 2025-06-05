@@ -3,7 +3,7 @@
 namespace Tests\Unit;
 
 use Codeception\Test\Unit;
-use WebFramework\Core\RepositoryCore;
+use WebFramework\Repository\UserRepository;
 
 /**
  * @internal
@@ -15,7 +15,7 @@ final class RepositoryCoreTest extends Unit
     public function testMgetFilterArrayEmpty()
     {
         $instance = $this->make(
-            RepositoryCore::class,
+            UserRepository::class,
         );
 
         verify($instance->getFilterArray(
@@ -32,7 +32,7 @@ final class RepositoryCoreTest extends Unit
     public function testMgetFilterArrayNull()
     {
         $instance = $this->make(
-            RepositoryCore::class,
+            UserRepository::class,
         );
 
         verify($instance->getFilterArray(
@@ -50,7 +50,7 @@ final class RepositoryCoreTest extends Unit
     public function testMgetFilterArrayFalse()
     {
         $instance = $this->make(
-            RepositoryCore::class,
+            UserRepository::class,
         );
 
         verify($instance->getFilterArray(
@@ -70,7 +70,7 @@ final class RepositoryCoreTest extends Unit
     public function testMgetFilterArrayString()
     {
         $instance = $this->make(
-            RepositoryCore::class,
+            UserRepository::class,
         );
 
         verify($instance->getFilterArray(
@@ -90,7 +90,7 @@ final class RepositoryCoreTest extends Unit
     public function testMgetFilterArrayMultiple()
     {
         $instance = $this->make(
-            RepositoryCore::class,
+            UserRepository::class,
         );
 
         verify($instance->getFilterArray(
@@ -112,7 +112,7 @@ final class RepositoryCoreTest extends Unit
     public function testMgetFilterArrayAdvancedOperator()
     {
         $instance = $this->make(
-            RepositoryCore::class,
+            UserRepository::class,
         );
 
         verify($instance->getFilterArray(
@@ -132,7 +132,7 @@ final class RepositoryCoreTest extends Unit
     public function testMgetFilterArrayIllegalAdvancedOperator()
     {
         $instance = $this->make(
-            RepositoryCore::class,
+            UserRepository::class,
         );
 
         verify(function () use ($instance) {
