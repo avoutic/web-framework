@@ -14,6 +14,7 @@ namespace WebFramework\Task;
 use Carbon\Carbon;
 use DI\Container;
 use DI\ContainerBuilder;
+use WebFramework\Core\BootstrapService;
 use WebFramework\Core\ConfigBuilder;
 use WebFramework\Core\EnvLoader;
 use WebFramework\Exception\ArgumentParserException;
@@ -294,6 +295,13 @@ class TaskRunner
         if ($task instanceof ConsoleTask)
         {
             $this->applyArguments($task, $arguments);
+        }
+
+        // Bootstrap the application if the task doesn't handle its own bootstrapping
+        if (!$task->handlesOwnBootstrapping())
+        {
+            $bootstrapService = $this->get(BootstrapService::class);
+            $bootstrapService->bootstrap();
         }
 
         if ($this->isContinuous)

@@ -125,4 +125,14 @@ class DbMakeMigrationTask extends ConsoleTask
 
         $this->write("Created {$type} migration: {$filename}".PHP_EOL);
     }
+
+    /**
+     * Check if the task handles its own bootstrapping.
+     *
+     * @return bool True if the task handles its own bootstrapping, false otherwise
+     */
+    public function handlesOwnBootstrapping(): bool
+    {
+        return true;
+    }
 }

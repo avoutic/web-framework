@@ -93,4 +93,9 @@ class DbStatusTask extends ConsoleTask
             }
         }
     }
+
+    public function handlesOwnBootstrapping(): bool
+    {
+        return true;
+    }
 }

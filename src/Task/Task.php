@@ -22,4 +22,11 @@ interface Task
      * Execute the task.
      */
     public function execute(): void;
+
+    /**
+     * Check if the task handles its own bootstrapping.
+     *
+     * @return bool True if the task handles its own bootstrapping, false otherwise
+     */
+    public function handlesOwnBootstrapping(): bool;
 }

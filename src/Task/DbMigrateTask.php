@@ -119,4 +119,14 @@ class DbMigrateTask extends ConsoleTask
 
         $this->write('Migration complete.'.PHP_EOL);
     }
+
+    /**
+     * Check if the task handles its own bootstrapping.
+     *
+     * @return bool True if the task handles its own bootstrapping, false otherwise
+     */
+    public function handlesOwnBootstrapping(): bool
+    {
+        return true;
+    }
 }
