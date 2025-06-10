@@ -5,12 +5,12 @@ namespace WebFramework\Core;
 // Default configuration
 //
 return [
-    'debug' => false,
-    'production' => false,
+    'debug' => env('DEBUG', false),
+    'production' => env('PRODUCTION', false),
     'preload' => false,                 /* true to load src/Preload.php during bootstrap, or name of file to
                                          * load relative to appDir */
-    'timezone' => 'UTC',
-    'database_enabled' => false,
+    'timezone' => env('TIMEZONE', 'UTC'),
+    'database_enabled' => env('DATABASE_ENABLED', false),
     'versions' => [
         'supported_framework' => -1,    /* Default is always -1. App should set supported semantic
                                          * version of this framework it supports in own config.
@@ -33,11 +33,11 @@ return [
             'threshold' => 25,          // Points before blacklisting occurs (default: 25)
         ],
         'hash' => 'sha256',
-        'hmac_key' => '',
-        'crypt_key' => '',
+        'hmac_key' => env('HMAC_KEY', ''),
+        'crypt_key' => env('CRYPT_KEY', ''),
         'recaptcha' => [
-            'site_key' => '',
-            'secret_key' => '',
+            'site_key' => env('RECAPTCHA_SITE_KEY', ''),
+            'secret_key' => env('RECAPTCHA_SECRET_KEY', ''),
         ],
     ],
     'error_handlers' => [// Action classes to execute for showing graceful error pages

@@ -6,6 +6,15 @@ This document provides a guide on how to construct the configuration tree for yo
 
 The WebFramework uses a layered approach to configuration, allowing multiple configuration files to be merged to form the final configuration. This is managed by the `ConfigBuilder` class. The `TaskRunner` class uses the `ConfigBuilder` class to build the configuration. So in practice, you don't need to worry about the `ConfigBuilder` class.
 
+### Environment Variables and .env Files
+
+Before loading configuration files, the framework automatically loads environment variables from `.env` files in the following order:
+
+1. `.env` - Main environment file (should be committed to version control with default values)
+2. `.env.local` - Local overrides (should be gitignored and contain local/sensitive values)
+
+Environment variables take precedence over .env files, and .env.local takes precedence over .env. This allows for flexible configuration management across different environments.
+
 ## Default Configuration Files
 
 The `TaskRunner` class specifies a default set of configuration files that are used to build the configuration. These files are:
@@ -120,3 +129,63 @@ class ExampleClass
 ~~~
 
 In this example, the `ExampleClass` receives the `ConfigService` as a dependency through its constructor. The `getDatabaseHost()` method then uses the `ConfigService` to retrieve the `host` value from the `database` configuration.
+
+## Environment Variable Support
+
+The framework supports environment variables for common configuration values. You can use `.env` files to set these values:
+
+### Database Configuration
+
+~~~
+DATABASE_ENABLED=true
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=myuser
+DB_PASSWORD=mypassword
+DB_NAME=mydatabase
+~~~
+
+### Application Settings
+
+~~~
+DEBUG=true
+PRODUCTION=false
+TIMEZONE=Europe/Amsterdam
+~~~
+
+### Security Settings
+
+~~~
+HMAC_KEY=your_secure_hmac_key
+CRYPT_KEY=your_secure_crypt_key
+RECAPTCHA_SITE_KEY=your_recaptcha_site_key
+RECAPTCHA_SECRET_KEY=your_recaptcha_secret_key
+~~~
+
+### Auth Configuration Files
+
+Environment variables can also be used in auth configuration files located in `/config/auth/`. For example, in `db_config.main.php`:
+
+~~~php
+<?php
+
+return [
+    'database_host' => env('DB_HOST', 'localhost'),
+    'database_user' => env('DB_USER', ''),
+    'database_password' => env('DB_PASSWORD', ''),
+    'database_database' => env('DB_NAME', ''),
+];
+~~~
+
+This maintains backwards compatibility while providing the enhanced type-safe environment variable access.
+
+### Precedence Order
+
+Configuration values are resolved in the following order (highest to lowest precedence):
+
+1. System environment variables
+2. `.env.local` file
+3. `.env` file
+4. Configuration files (`config_local.php` > `config.php` > `base_config.php`)
+
+This allows you to override any configuration value at any level while maintaining sensible defaults.

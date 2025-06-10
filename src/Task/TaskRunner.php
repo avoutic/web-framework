@@ -15,6 +15,7 @@ use Carbon\Carbon;
 use DI\Container;
 use DI\ContainerBuilder;
 use WebFramework\Core\ConfigBuilder;
+use WebFramework\Core\EnvLoader;
 use WebFramework\Exception\ArgumentParserException;
 
 /**
@@ -130,8 +131,12 @@ class TaskRunner
      */
     public function build(): void
     {
-        // Build config
-        //
+        $envLoader = new EnvLoader();
+        $envLoader->loadEnvFile("{$this->appDir}/.env");
+        $envLoader->loadEnvFile("{$this->appDir}/.env.local");
+
+        require_once __DIR__.'/../Environment.php';
+
         $config = $this->configBuilder->buildConfig(
             $this->configFiles,
         );
