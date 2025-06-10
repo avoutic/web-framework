@@ -437,6 +437,23 @@ class DatabaseManager
 
             $constraintLines[] = "UNIQUE KEY `unique_{$tableName}_{$valuesFmt}` (`{$fieldsFmt}`)";
         }
+        elseif ($info['type'] == 'index')
+        {
+            if (!isset($info['name']))
+            {
+                throw new \InvalidArgumentException('No name for index specified');
+            }
+
+            if (!isset($info['values']))
+            {
+                throw new \InvalidArgumentException('No values for index specified');
+            }
+
+            $valuesFmt = implode('_', $info['values']);
+            $fieldsFmt = implode('`, `', $info['values']);
+
+            $constraintLines[] = "INDEX `{$info['name']}` (`{$fieldsFmt}`)";
+        }
         else
         {
             throw new \RuntimeException("Unknown constraint type '{$info['type']}'");
