@@ -2,7 +2,6 @@ name: CI
 
 on:
   push:
-
   workflow_dispatch:
 
 permissions:
@@ -72,6 +71,7 @@ jobs:
   deploy-documentation:
     needs: [coding-standard,static-analysis,unit-tests]
     runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Checkout
         uses: actions/checkout@v4
