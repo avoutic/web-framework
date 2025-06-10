@@ -39,9 +39,10 @@ $arguments = array_slice($argv, 2);
 // Map supported commands
 //
 $commands = [
-    'db:init' => 'WebFramework\Task\DbInitTask',
-    'db:update' => 'WebFramework\Task\DbUpdateTask',
-    'db:version' => 'WebFramework\Task\DbVersionTask',
+    'db:migrate' => 'WebFramework\Task\DbMigrateTask',
+    'db:migrate-from-scheme' => 'WebFramework\Task\DbMigrateFromSchemeTask',
+    'db:status' => 'WebFramework\Task\DbStatusTask',
+    'db:make' => 'WebFramework\Task\DbMakeMigrationTask',
     'queue:list' => 'WebFramework\Task\QueueList',
     'queue:worker' => 'WebFramework\Task\QueueWorker',
     'sanity:check' => 'WebFramework\Task\SanityCheckTask',
@@ -54,10 +55,14 @@ function showUsage(string $scriptName): void
     echo 'Available commands:'.PHP_EOL;
     echo '  help         Show this help'.PHP_EOL;
     echo PHP_EOL;
-    echo '  db:init      Initialize the database'.PHP_EOL;
-    echo '  db:update    Update the database to latest version'.PHP_EOL;
+    echo '  db:migrate   Run pending database migrations'.PHP_EOL;
     echo '               --dry-run    Dry run the task (no changes will be made)'.PHP_EOL;
-    echo '  db:version   Show current database version'.PHP_EOL;
+    echo '               --framework  Run framework migrations only'.PHP_EOL;
+    echo '  db:migrate-from-scheme Migrate from old db_scheme system to new migrations system'.PHP_EOL;
+    echo '               --dry-run    Show what would be done without making changes'.PHP_EOL;
+    echo '  db:status    Show database migration status'.PHP_EOL;
+    echo '  db:make      Generate a new migration file'.PHP_EOL;
+    echo '               --framework  Create a framework migration'.PHP_EOL;
     echo PHP_EOL;
     echo '  queue:list   List all queues'.PHP_EOL;
     echo '  queue:worker Run a queue worker'.PHP_EOL;

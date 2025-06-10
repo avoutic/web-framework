@@ -4,9 +4,10 @@ namespace Tests\Instantiations;
 
 use Tests\Support\InstantiationTester;
 use Tests\Support\TaskRunnerTrait;
-use WebFramework\Task\DbInitTask;
-use WebFramework\Task\DbUpdateTask;
-use WebFramework\Task\DbVersionTask;
+use WebFramework\Task\DbMakeMigrationTask;
+use WebFramework\Task\DbMigrateFromSchemeTask;
+use WebFramework\Task\DbMigrateTask;
+use WebFramework\Task\DbStatusTask;
 use WebFramework\Task\QueueList;
 use WebFramework\Task\QueueWorker;
 use WebFramework\Task\SanityCheckTask;
@@ -23,9 +24,10 @@ class testTaskCest
     ];
 
     private array $classes = [
-        DbInitTask::class,
-        DbUpdateTask::class,
-        DbVersionTask::class,
+        DbMigrateTask::class,
+        DbMigrateFromSchemeTask::class,
+        DbStatusTask::class,
+        DbMakeMigrationTask::class,
         QueueList::class,
         QueueWorker::class,
         SanityCheckTask::class,

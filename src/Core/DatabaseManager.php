@@ -12,7 +12,6 @@
 namespace WebFramework\Core;
 
 use Psr\Container\ContainerInterface as Container;
-use WebFramework\Support\StoredValuesService;
 use WebFramework\Task\Task;
 
 /**
@@ -25,16 +24,13 @@ class DatabaseManager
     /**
      * DatabaseManager constructor.
      *
-     * @param Container           $container           The dependency injection container
-     * @param Database            $database            The database interface implementation
-     * @param StoredValuesService $storedValuesService The stored values service
-     * @param resource            $outputStream        The output stream to write to
+     * @param Container $container    The dependency injection container
+     * @param Database  $database     The database interface implementation
+     * @param resource  $outputStream The output stream to write to
      */
     public function __construct(
         private Container $container,
-        private ConfigService $configService,
         private Database $database,
-        private StoredValuesService $storedValuesService,
         private $outputStream = STDOUT
     ) {}
 
@@ -49,124 +45,19 @@ class DatabaseManager
     }
 
     /**
-     * Check if the database is initialized.
-     *
-     * @return bool True if the database is initialized, false otherwise
-     */
-    public function isInitialized(): bool
-    {
-        return $this->database->tableExists('stored_values');
-    }
-
-    /**
-     * Calculate a hash of the current database schema.
-     *
-     * @return string The calculated hash
-     */
-    public function calculateHash(): string
-    {
-        // Get tables
-        //
-        $query = <<<'SQL'
-        SHOW TABLES
-SQL;
-
-        $params = [];
-
-        $result = $this->database->query($query, $params, 'Failed to retrieve tables');
-
-        $dbDef = '';
-
-        foreach ($result as $row)
-        {
-            $tableName = reset($row);
-
-            // Get tables
-            //
-            $query = <<<SQL
-            SHOW CREATE TABLE {$tableName}
-SQL;
-
-            $params = [];
-
-            $result = $this->database->query($query, $params, 'Failed to retrieve create table');
-
-            $statement = $result->fields['Create Table'].PHP_EOL;
-
-            // Filter out AUTO_INCREMENT intrializer
-            //
-            $statement = preg_replace('/ AUTO_INCREMENT=\d+/', '', $statement);
-
-            $dbDef .= $statement;
-        }
-
-        return sha1($dbDef);
-    }
-
-    /**
-     * Verify if the current database schema matches the stored hash.
-     *
-     * @return bool True if the schema matches the stored hash, false otherwise
-     */
-    public function verifyHash(): bool
-    {
-        $storedHash = $this->getStoredHash();
-        $actualHash = $this->calculateHash();
-
-        return $storedHash === $actualHash;
-    }
-
-    /**
-     * Get the stored hash of the database schema.
-     *
-     * @return string The stored hash
-     */
-    public function getStoredHash(): string
-    {
-        // Retrieve hash
-        //
-        return $this->storedValuesService->getValue('db.app_db_hash', '');
-    }
-
-    /**
-     * Update the stored hash with the current database schema hash.
-     */
-    public function updateStoredHash(): void
-    {
-        $actualHash = $this->calculateHash();
-
-        $this->storedValuesService->setValue('db.app_db_hash', $actualHash);
-    }
-
-    /**
      * Execute a set of database actions.
      *
-     * @param array<mixed, mixed> $data          The actions to execute
-     * @param bool                $ignoreVersion Whether to ignore version checks
-     * @param bool                $dryRun        Whether to dry run the task
+     * @param array<mixed, mixed> $data   The actions to execute
+     * @param bool                $dryRun Whether to dry run the task
      *
      * @throws \InvalidArgumentException If the input data is invalid
      * @throws \RuntimeException         If an action fails
      */
-    public function execute(array $data, bool $ignoreVersion = false, bool $dryRun = false): void
+    public function execute(array $data, bool $dryRun = false): void
     {
         if (!is_array($data['actions']))
         {
             throw new \InvalidArgumentException('No action array specified');
-        }
-
-        if (!$ignoreVersion)
-        {
-            if (!isset($data['target_version']))
-            {
-                throw new \InvalidArgumentException('No target version specified');
-            }
-
-            $startVersion = $data['target_version'] - 1;
-
-            $this->write(" - Checking current version to match {$startVersion}".PHP_EOL);
-
-            $this->checkAppVersion($startVersion);
         }
 
         $this->write(' - Preparing all statements'.PHP_EOL);
@@ -392,85 +283,7 @@ SQL;
             }
         }
 
-        if ($ignoreVersion)
-        {
-            return;
-        }
-
-        $this->write(" - Updating version to {$data['target_version']}".PHP_EOL);
-
-        $this->setVersion($data['target_version']);
-
         $this->database->commitTransaction();
-    }
-
-    /**
-     * Get the current database version for the application.
-     *
-     * @return int The current database version for the application
-     */
-    public function getCurrentAppVersion(): int
-    {
-        return (int) $this->storedValuesService->getValue('db.app_db_version', '0');
-    }
-
-    /**
-     * Get the required database version for the application based on the configuration.
-     *
-     * @return int The required database version for the application
-     */
-    public function getRequiredAppVersion(): int
-    {
-        return (int) $this->configService->get('versions.required_app_db');
-    }
-
-    /**
-     * Check if the current database version for the application matches the expected version.
-     *
-     * @param int $appDbVersion The expected database version
-     *
-     * @throws \RuntimeException If the versions don't match
-     */
-    private function checkAppVersion(int $appDbVersion): void
-    {
-        $currentVersion = $this->getCurrentAppVersion();
-
-        if ($currentVersion !== $appDbVersion)
-        {
-            throw new \RuntimeException("DB version '{$currentVersion}' does not match requested version '{$appDbVersion}'");
-        }
-    }
-
-    /**
-     * Set the database version.
-     *
-     * @param int $to The new version number
-     */
-    private function setVersion(int $to): void
-    {
-        $this->storedValuesService->setValue('db.app_db_version', (string) $to);
-
-        $this->updateStoredHash();
-    }
-
-    /**
-     * Get the current database version for WebFramework.
-     *
-     * @return int The current database version for WebFramework
-     */
-    public function getCurrentFrameworkVersion(): int
-    {
-        return (int) $this->storedValuesService->getValue('db.wf_db_version', '0');
-    }
-
-    /**
-     * Get the required database version for WebFramework.
-     *
-     * @return int The required database version WebFramework
-     */
-    public function getRequiredFrameworkVersion(): int
-    {
-        return FRAMEWORK_DB_VERSION;
     }
 
     /**
@@ -922,41 +735,5 @@ SQL;
             'query' => $query,
             'params' => $params,
         ];
-    }
-
-    /**
-     * Load and validate a schema file.
-     *
-     * @param string $schemaFile Path to the schema file
-     *
-     * @return array{target_version: int, actions: array<array<mixed>>}
-     *
-     * @throws \InvalidArgumentException If the schema file is invalid
-     */
-    public function loadSchemaFile(string $schemaFile): array
-    {
-        if (!file_exists($schemaFile))
-        {
-            throw new \InvalidArgumentException("Schema file {$schemaFile} not found");
-        }
-
-        $schema = require $schemaFile;
-
-        if (!is_array($schema))
-        {
-            throw new \InvalidArgumentException('Schema file must return an array');
-        }
-
-        if (!isset($schema['actions']) || !is_array($schema['actions']))
-        {
-            throw new \InvalidArgumentException('Schema must contain an actions array');
-        }
-
-        if (!isset($schema['target_version']) || !is_int($schema['target_version']))
-        {
-            throw new \InvalidArgumentException('Schema must contain an integer target_version');
-        }
-
-        return $schema;
     }
 }

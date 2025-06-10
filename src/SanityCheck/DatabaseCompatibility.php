@@ -14,7 +14,7 @@ namespace WebFramework\SanityCheck;
 use Psr\Log\LoggerInterface;
 use WebFramework\Core\ConfigService;
 use WebFramework\Core\Database;
-use WebFramework\Support\StoredValuesService;
+use WebFramework\Core\MigrationManager;
 
 /**
  * Class DatabaseCompatibility.
@@ -26,22 +26,20 @@ class DatabaseCompatibility extends Base
     /**
      * DatabaseCompatibility constructor.
      *
-     * @param Database            $database            The database service
-     * @param ConfigService       $configService       The configuration service
-     * @param LoggerInterface     $logger              The logger
-     * @param StoredValuesService $storedValuesService The stored values service
-     * @param bool                $checkDb             Whether to check the database
-     * @param bool                $checkWfDbVersion    Whether to check the WebFramework database version
-     * @param bool                $checkAppDbVersion   Whether to check the application database version
+     * @param Database         $database         The database service
+     * @param ConfigService    $configService    The configuration service
+     * @param LoggerInterface  $logger           The logger
+     * @param MigrationManager $migrationManager The migration manager service
+     * @param bool             $checkDb          Whether to check the database
+     * @param bool             $checkMigrations  Whether to check migration status
      */
     public function __construct(
         private Database $database,
         private ConfigService $configService,
         private LoggerInterface $logger,
-        private StoredValuesService $storedValuesService,
+        private MigrationManager $migrationManager,
         private bool $checkDb = true,
-        private bool $checkWfDbVersion = true,
-        private bool $checkAppDbVersion = true,
+        private bool $checkMigrations = true,
     ) {}
 
     /**
@@ -93,7 +91,7 @@ class DatabaseCompatibility extends Base
             $this->logger->emergency('Database missing stored_values table');
             $this->addOutput(
                 '   Database missing stored_values table'.PHP_EOL.
-                '   Please make sure that the core Framework database scheme has been applied. (by running db:init task)'.PHP_EOL
+                '   Please run "php Framework db:migrate" to set up the database schema.'.PHP_EOL
             );
 
             return false;
@@ -103,27 +101,18 @@ class DatabaseCompatibility extends Base
     }
 
     /**
-     * Check if the framework database version is compatible.
+     * Check if migrations table exists and is properly set up.
      *
      * @return bool True if check passes, false otherwise
      */
-    private function checkFrameworkDbVersion(): bool
+    private function checkMigrationsTable(): bool
     {
-        if (!$this->checkWfDbVersion)
+        if (!$this->database->tableExists('migrations'))
         {
-            return true;
-        }
-
-        $requiredWfDbVersion = FRAMEWORK_DB_VERSION;
-        $currentWfDbVersion = $this->storedValuesService->getValue('db.wf_db_version', '0');
-
-        if ($requiredWfDbVersion != $currentWfDbVersion)
-        {
-            $this->logger->emergency('Framework Database version mismatch', ['required_wf_db_version' => $requiredWfDbVersion, 'current_wf_db_version' => $currentWfDbVersion]);
+            $this->logger->emergency('Database missing migrations table');
             $this->addOutput(
-                '   Framework Database version mismatch'.PHP_EOL.
-                '   Please make sure that the latest Framework database changes for version '.PHP_EOL.
-                "   {$requiredWfDbVersion} of the scheme are applied.".PHP_EOL
+                '   Database missing migrations table'.PHP_EOL.
+                '   Please run "php Framework db:migrate" to set up the migration system.'.PHP_EOL
             );
 
             return false;
@@ -133,37 +122,54 @@ class DatabaseCompatibility extends Base
     }
 
     /**
-     * Check if the application database version is compatible.
+     * Check if there are pending migrations that need to be applied.
      *
      * @return bool True if check passes, false otherwise
      */
-    private function checkAppDbVersion(): bool
+    private function checkPendingMigrations(): bool
     {
-        if (!$this->checkAppDbVersion)
+        if (!$this->checkMigrations)
         {
             return true;
         }
 
-        $requiredAppDbVersion = $this->configService->get('versions.required_app_db');
-        $currentAppDbVersion = $this->storedValuesService->getValue('db.app_db_version', '1');
-
-        if ($requiredAppDbVersion > 0 && $currentAppDbVersion == 0)
+        try
         {
-            $this->logger->emergency('No app DB present', ['required_app_db_version' => $requiredAppDbVersion, 'current_app_db_version' => $currentAppDbVersion]);
-            $this->addOutput(
-                '   No app DB present'.PHP_EOL.
-                '   Config (versions.required_app_db) indicates an App DB should be present. None found.'.PHP_EOL
-            );
+            $status = $this->migrationManager->getMigrationStatus();
 
-            return false;
+            $frameworkPending = count($status['framework']['pending']);
+            $appPending = count($status['app']['pending']);
+
+            if ($frameworkPending > 0)
+            {
+                $this->logger->emergency('Pending framework migrations', ['pending_count' => $frameworkPending]);
+                $this->addOutput(
+                    '   Pending framework migrations detected'.PHP_EOL.
+                    "   {$frameworkPending} framework migration(s) need to be applied.".PHP_EOL.
+                    '   Please run "php Framework db:migrate --framework" to apply them.'.PHP_EOL
+                );
+
+                return false;
+            }
+
+            if ($appPending > 0)
+            {
+                $this->logger->emergency('Pending app migrations', ['pending_count' => $appPending]);
+                $this->addOutput(
+                    '   Pending app migrations detected'.PHP_EOL.
+                    "   {$appPending} app migration(s) need to be applied.".PHP_EOL.
+                    '   Please run "php Framework db:migrate" to apply them.'.PHP_EOL
+                );
+
+                return false;
+            }
         }
-
-        if ($requiredAppDbVersion > $currentAppDbVersion)
+        catch (\Exception $e)
         {
-            $this->logger->emergency('Outdated version of the app DB', ['required_app_db_version' => $requiredAppDbVersion, 'current_app_db_version' => $currentAppDbVersion]);
+            $this->logger->emergency('Migration status check failed', ['error' => $e->getMessage()]);
             $this->addOutput(
-                '   Outdated version of the app DB'.PHP_EOL.
-                "   Please make sure that the app DB scheme is at least {$requiredAppDbVersion}. (Current: {$currentAppDbVersion})".PHP_EOL
+                '   Migration status check failed'.PHP_EOL.
+                '   Error: '.$e->getMessage().PHP_EOL
             );
 
             return false;
@@ -198,15 +204,15 @@ class DatabaseCompatibility extends Base
         }
         $this->addOutput('  Pass'.PHP_EOL.PHP_EOL);
 
-        $this->addOutput('Checking for compatible Framework Database verion:'.PHP_EOL);
-        if (!$this->checkFrameworkDbVersion())
+        $this->addOutput('Checking for migrations table:'.PHP_EOL);
+        if (!$this->checkMigrationsTable())
         {
             return false;
         }
-        $this->addOutput('  Pass'.PHP_EOL);
+        $this->addOutput('  Pass'.PHP_EOL.PHP_EOL);
 
-        $this->addOutput('Checking for compatible App Database verion:'.PHP_EOL);
-        if (!$this->checkAppDbVersion())
+        $this->addOutput('Checking for pending migrations:'.PHP_EOL);
+        if (!$this->checkPendingMigrations())
         {
             return false;
         }

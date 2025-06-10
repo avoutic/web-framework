@@ -6,6 +6,7 @@
 
 ### Breaking changes
 
+* Database migration changes for scheme files to migration files
 * Introduction of ErrorReport that is passed around instead of error array
 * Move multiple Core classes to other WebFramework namespaces
 * Move Rule classes to Validation\Rule

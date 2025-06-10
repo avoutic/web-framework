@@ -15,11 +15,6 @@ return [
         'supported_framework' => -1,    /* Default is always -1. App should set supported semantic
                                          * version of this framework it supports in own config.
                                          */
-        'required_app_db' => 1,         /* Default is always 1. App should set this if it tracks its
-                                         * own database version in the db.app_db_version config value
-                                         * in the database and wants the framework to indicate
-                                         * a mismatch between required and current value
-                                         */
     ],
     'http_mode' => 'https',
     'base_url' => '',                    // Add a base_url to be used in external urls
