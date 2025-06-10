@@ -3,6 +3,9 @@
 ### New features
 
 * Ability to configure Validation Rule error message
+* Support for indexes in DatabaseManager
+* Implementation of DatabaseQueue
+* Support for .env and environment variable for configuration
 
 ### Breaking changes
 
