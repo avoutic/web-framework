@@ -168,11 +168,11 @@ Define a new database table `cars` that matches the structure of the `Car` entit
 
 Check out the [Database Migrations](./database-migrations.md) documentation for more information on how to create and apply database migrations.
 
-The `target_version` is used to track the version of the database schema. The `actions` array contains the actual schema changes to be applied. The actual version number is important and should be incremented with each change to the database schema. You also need to update the `versions.required_app_db` field in your config.php file to reflect the new version number.
+The migration file uses a timestamp-based system with `up` and `down` directions. The `up` actions contain the schema changes to apply the migration, while the `down` actions contain the changes to rollback the migration. The timestamp in the filename ensures migrations are applied in chronological order, and the migrations table automatically tracks which migrations have been executed.
 
 You don't need to include a field for the `id` column in the `actions` array, as it will be added automatically.
 
-To perform the migration you would typically run the `DbUpdateTask` task, by executing `php scripts/update_db.php` in the console of your system.
+To perform the migration you would typically run the new migration command by executing `php Framework db:migrate` in the console of your system.
 
 #### Example Migration File
 
@@ -180,37 +180,47 @@ To perform the migration you would typically run the `DbUpdateTask` task, by exe
 <?php
 
 return [
-    'target_version' => 1,
-    'actions' => [
-        [
-            'type' => 'create_table',
-            'table_name' => 'cars',
-            'fields' => [
-                [
-                    'name' => 'make',
-                    'type' => 'varchar',
-                    'size' => 255,
-                    'null' => false,
+    'up' => [
+        'actions' => [
+            [
+                'type' => 'create_table',
+                'table_name' => 'cars',
+                'fields' => [
+                    [
+                        'name' => 'make',
+                        'type' => 'varchar',
+                        'size' => 255,
+                        'null' => false,
+                    ],
+                    [
+                        'name' => 'model',
+                        'type' => 'varchar',
+                        'size' => 255,
+                        'null' => false,
+                    ],
+                    [
+                        'name' => 'year',
+                        'type' => 'int',
+                        'null' => false,
+                    ],
+                    [
+                        'name' => 'color',
+                        'type' => 'varchar',
+                        'size' => 255,
+                        'null' => false,
+                    ],
                 ],
-                [
-                    'name' => 'model',
-                    'type' => 'varchar',
-                    'size' => 255,
-                    'null' => false,
-                ],
-                [
-                    'name' => 'year',
-                    'type' => 'int',
-                    'null' => false,
-                ],
-                [
-                    'name' => 'color',
-                    'type' => 'varchar',
-                    'size' => 255,
-                    'null' => false,
-                ],
+                'constraints' => [],
             ],
-            'constraints' => [],
+        ],
+    ],
+    'down' => [
+        'actions' => [
+            [
+                'type' => 'raw_query',
+                'query' => 'DROP TABLE IF EXISTS `cars`',
+                'params' => [],
+            ],
         ],
     ],
 ];

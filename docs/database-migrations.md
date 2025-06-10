@@ -1,40 +1,115 @@
 # Database Migrations
 
-This document describes how to manage database migrations in WebFramework, including file organization, versioning, and the actions supported by the DatabaseManager class.
+This document describes how to manage database migrations in WebFramework using the new timestamp-based migration system introduced in WebFramework v9.
 
 ## Migration File Organization
 
-Database migration files should be placed in the `db_scheme` directory of your application. Each migration file should be numbered incrementally and have a `.php` extension. For example:
+Database migration files should be placed in the `migrations` directory of your application. Each migration file uses a timestamp-based naming convention and has a `.php` extension. For example:
 
 ~~~
-db_scheme/
-├── 1.php  # Initial schema
-├── 2.php  # Add user roles
-├── 3.php  # Add email verification
-└── 4.php  # Add user preferences
+migrations/
+├── 2025_06_10_120000_create_products.php
+├── 2025_06_10_130000_add_product_code.php
+├── 2025_06_10_140000_add_email_verification.php
+└── 2025_06_10_150000_add_newsletter_preference.php
 ~~~
 
-### File Naming
+### File Naming Convention
 
-- Files should be numbered incrementally (1.php, 2.php, 3.php, etc.)
-- Each number represents a database version
-- Files must be applied in order
-- No gaps in numbering are allowed
+Migration files follow the format: `YYYY_MM_DD_HHMMSS_description.php`
 
-### Version Management
+- `YYYY_MM_DD_HHMMSS`: Timestamp when the migration was created
+- `description`: Brief description of what the migration does (snake_case)
+- Files are executed in chronological order based on the timestamp
 
-After adding a new migration file, you must update the required database version in your `config/config.php`:
+### Migration Tracking
+
+The system uses a `migrations` table to track which migrations have been executed, replacing the old version-based system. This table automatically tracks:
+
+- Migration filename
+- Migration type (framework or app)
+- Batch number (for rollback grouping)
+- Execution timestamp
+
+No manual version configuration is required in your config files.
+
+### Migration Structure
+
+Each migration file contains both `up` and `down` directions for forward and rollback operations:
 
 ~~~php
+<?php
+
 return [
-    // Other configuration settings...
-    'versions' => [
-        'required_app_db' => 4,  // Should match your latest migration file number
+    'up' => [
+        'actions' => [
+            // Actions to apply the migration
+        ],
+    ],
+    'down' => [
+        'actions' => [
+            // Actions to rollback the migration
+        ],
     ],
 ];
 ~~~
 
-This ensures that the application knows which database version it requires to function correctly.
+## CLI Commands
+
+The new migration system provides several CLI commands for managing migrations:
+
+### Run Migrations
+
+Execute all pending migrations:
+
+~~~bash
+php Framework db:migrate
+~~~
+
+Options:
+- `--dry-run` or `-d`: Preview what would be executed without making changes
+- `--framework` or `-f`: Run only framework migrations
+
+### Check Migration Status
+
+View the status of all migrations:
+
+~~~bash
+php Framework db:status
+~~~
+
+This shows executed and pending migrations for both framework and application code.
+
+### Generate New Migration
+
+Create a new migration file with the correct timestamp format:
+
+~~~bash
+php Framework db:make create_products_table
+~~~
+
+This generates a file like `2025_06_10_120000_create_products_table.php` with the basic up/down structure.
+
+### Migrate from Legacy System
+
+If upgrading from the old numbered migration system, use:
+
+~~~bash
+php Framework db:migrate-from-scheme
+~~~
+
+This registers existing migrations as "already executed" to prevent re-application.
+
+## Migration from Legacy System
+
+If you're upgrading from the old `db_scheme` numbered migration system:
+
+1. **Run the migration command**: `php Framework db:migrate-from-scheme`
+2. **Create migrations directory**: `mkdir migrations` in your app root
+3. **Generate new migrations**: Use `php Framework db:make migration_name`
+4. **Backup old system**: Move `db_scheme` to `db_scheme_old`
+5. **Remove config**: Delete `versions.required_app_db` from your config
+6. **Verify database**: Ensure all required tables exist and are correct
 
 ## Migration Actions
 
@@ -52,6 +127,7 @@ Creates a new table in the database.
 
 ### Field Definition
 Each field definition is an associative array that can include the following keys:
+
 - `name` (required): The name of the field
 - `type` (required): The data type of the field. Common types include:
   - String types (require quotes for default values):
@@ -102,52 +178,62 @@ Each field definition is an associative array that can include the following key
 <?php
 
 return [
-    'target_version' => 1,
-    'actions' => [
-        [
-            'type' => 'create_table',
-            'table_name' => 'items',
-            'fields' => [
-                [
-                    'name' => 'name',
-                    'type' => 'varchar',
-                    'size' => 255,
-                    'default' => 'Unnamed Item',  // Will be: DEFAULT 'Unnamed Item'
+    'up' => [
+        'actions' => [
+            [
+                'type' => 'create_table',
+                'table_name' => 'items',
+                'fields' => [
+                    [
+                        'name' => 'name',
+                        'type' => 'varchar',
+                        'size' => 255,
+                        'default' => 'Unnamed Item',  // Will be: DEFAULT 'Unnamed Item'
+                    ],
+                    [
+                        'name' => 'created_at',
+                        'type' => 'datetime',
+                        'default' => ['function' => 'CURRENT_TIMESTAMP'],  // Will be: DEFAULT CURRENT_TIMESTAMP
+                    ],
+                    [
+                        'name' => 'status',
+                        'type' => 'enum',
+                        'default' => 'pending',  // Will be: DEFAULT 'pending'
+                    ],
+                    [
+                        'name' => 'count',
+                        'type' => 'int',
+                        'default' => 0,  // Will be: DEFAULT 0
+                    ],
+                    [
+                        'name' => 'metadata',
+                        'type' => 'json',
+                        'default' => '{}',  // Will be: DEFAULT '{}'
+                    ],
+                    [
+                        'name' => 'type_id',
+                        'type' => 'foreign_key',
+                        'foreign_table' => 'item_types',
+                        'foreign_field' => 'id',
+                        'on_delete' => 'SET NULL',
+                        'on_update' => 'CASCADE',
+                    ],
                 ],
-                [
-                    'name' => 'created_at',
-                    'type' => 'datetime',
-                    'default' => ['function' => 'CURRENT_TIMESTAMP'],  // Will be: DEFAULT CURRENT_TIMESTAMP
-                ],
-                [
-                    'name' => 'status',
-                    'type' => 'enum',
-                    'default' => 'pending',  // Will be: DEFAULT 'pending'
-                ],
-                [
-                    'name' => 'count',
-                    'type' => 'int',
-                    'default' => 0,  // Will be: DEFAULT 0
-                ],
-                [
-                    'name' => 'metadata',
-                    'type' => 'json',
-                    'default' => '{}',  // Will be: DEFAULT '{}'
-                ],
-                [
-                    'name' => 'type_id',
-                    'type' => 'foreign_key',
-                    'foreign_table' => 'item_types',
-                    'foreign_field' => 'id',
-                    'on_delete' => 'SET NULL',
-                    'on_update' => 'CASCADE',
+                'constraints' => [
+                    [
+                        'type' => 'unique',
+                        'values' => ['name'],
+                    ],
                 ],
             ],
-            'constraints' => [
-                [
-                    'type' => 'unique',
-                    'values' => ['name'],
-                ],
+        ],
+    ],
+    'down' => [
+        'actions' => [
+            [
+                'type' => 'raw_query',
+                'query' => 'DROP TABLE IF EXISTS `items`',
+                'params' => [],
             ],
         ],
     ],
@@ -173,16 +259,26 @@ Creates a new trigger in the database.
 <?php
 
 return [
-    'target_version' => 2,
-    'actions' => [
-        [
-            'type' => 'create_trigger',
-            'table_name' => 'users',
-            'trigger' => [
-                'name' => 'update_last_modified',
-                'time' => 'BEFORE',
-                'event' => 'UPDATE',
-                'action' => 'SET NEW.updated_at = CURRENT_TIMESTAMP',
+    'up' => [
+        'actions' => [
+            [
+                'type' => 'create_trigger',
+                'table_name' => 'users',
+                'trigger' => [
+                    'name' => 'update_last_modified',
+                    'time' => 'BEFORE',
+                    'event' => 'UPDATE',
+                    'action' => 'SET NEW.updated_at = CURRENT_TIMESTAMP',
+                ],
+            ],
+        ],
+    ],
+    'down' => [
+        'actions' => [
+            [
+                'type' => 'raw_query',
+                'query' => 'DROP TRIGGER IF EXISTS `update_last_modified`',
+                'params' => [],
             ],
         ],
     ],
@@ -204,15 +300,25 @@ Adds a new column to an existing table.
 <?php
 
 return [
-    'target_version' => 3,
-    'actions' => [
-        [
-            'type' => 'add_column',
-            'table_name' => 'users',
-            'field' => [
-                'name' => 'last_login',
-                'type' => 'datetime',
-                'null' => true,
+    'up' => [
+        'actions' => [
+            [
+                'type' => 'add_column',
+                'table_name' => 'users',
+                'field' => [
+                    'name' => 'last_login',
+                    'type' => 'datetime',
+                    'null' => true,
+                ],
+            ],
+        ],
+    ],
+    'down' => [
+        'actions' => [
+            [
+                'type' => 'raw_query',
+                'query' => 'ALTER TABLE `users` DROP COLUMN `last_login`',
+                'params' => [],
             ],
         ],
     ],
@@ -234,14 +340,24 @@ Adds a new constraint to an existing table.
 <?php
 
 return [
-    'target_version' => 4,
-    'actions' => [
-        [
-            'type' => 'add_constraint',
-            'table_name' => 'users',
-            'constraint' => [
-                'type' => 'unique',
-                'values' => ['username', 'email'],
+    'up' => [
+        'actions' => [
+            [
+                'type' => 'add_constraint',
+                'table_name' => 'users',
+                'constraint' => [
+                    'type' => 'unique',
+                    'values' => ['username', 'email'],
+                ],
+            ],
+        ],
+    ],
+    'down' => [
+        'actions' => [
+            [
+                'type' => 'raw_query',
+                'query' => 'ALTER TABLE `users` DROP INDEX `username`',
+                'params' => [],
             ],
         ],
     ],
@@ -263,15 +379,25 @@ Inserts a new row into a table.
 <?php
 
 return [
-    'target_version' => 5,
-    'actions' => [
-        [
-            'type' => 'insert_row',
-            'table_name' => 'users',
-            'values' => [
-                'username' => 'admin',
-                'email' => 'admin@example.com',
-                'created_at' => '2023-04-01 00:00:00',
+    'up' => [
+        'actions' => [
+            [
+                'type' => 'insert_row',
+                'table_name' => 'users',
+                'values' => [
+                    'username' => 'admin',
+                    'email' => 'admin@example.com',
+                    'created_at' => '2023-04-01 00:00:00',
+                ],
+            ],
+        ],
+    ],
+    'down' => [
+        'actions' => [
+            [
+                'type' => 'raw_query',
+                'query' => 'DELETE FROM `users` WHERE `username` = ?',
+                'params' => ['admin'],
             ],
         ],
     ],
@@ -293,16 +419,31 @@ Modifies the type or attributes of an existing column.
 <?php
 
 return [
-    'target_version' => 6,
-    'actions' => [
-        [
-            'type' => 'modify_column_type',
-            'table_name' => 'users',
-            'field' => [
-                'name' => 'username',
-                'type' => 'varchar',
-                'size' => 100,
-                'null' => false,
+    'up' => [
+        'actions' => [
+            [
+                'type' => 'modify_column_type',
+                'table_name' => 'users',
+                'field' => [
+                    'name' => 'username',
+                    'type' => 'varchar',
+                    'size' => 100,
+                    'null' => false,
+                ],
+            ],
+        ],
+    ],
+    'down' => [
+        'actions' => [
+            [
+                'type' => 'modify_column_type',
+                'table_name' => 'users',
+                'field' => [
+                    'name' => 'username',
+                    'type' => 'varchar',
+                    'size' => 255,
+                    'null' => false,
+                ],
             ],
         ],
     ],
@@ -325,13 +466,24 @@ Renames an existing column in a table.
 <?php
 
 return [
-    'target_version' => 7,
-    'actions' => [
-        [
-            'type' => 'rename_column',
-            'table_name' => 'users',
-            'name' => 'email',
-            'new_name' => 'user_email',
+    'up' => [
+        'actions' => [
+            [
+                'type' => 'rename_column',
+                'table_name' => 'users',
+                'name' => 'email',
+                'new_name' => 'user_email',
+            ],
+        ],
+    ],
+    'down' => [
+        'actions' => [
+            [
+                'type' => 'rename_column',
+                'table_name' => 'users',
+                'name' => 'user_email',
+                'new_name' => 'email',
+            ],
         ],
     ],
 ];
@@ -352,12 +504,22 @@ Renames an existing table.
 <?php
 
 return [
-    'target_version' => 8,
-    'actions' => [
-        [
-            'type' => 'rename_table',
-            'table_name' => 'users',
-            'new_name' => 'app_users',
+    'up' => [
+        'actions' => [
+            [
+                'type' => 'rename_table',
+                'table_name' => 'users',
+                'new_name' => 'app_users',
+            ],
+        ],
+    ],
+    'down' => [
+        'actions' => [
+            [
+                'type' => 'rename_table',
+                'table_name' => 'app_users',
+                'new_name' => 'users',
+            ],
         ],
     ],
 ];
@@ -378,12 +540,22 @@ Executes a raw SQL query.
 <?php
 
 return [
-    'target_version' => 9,
-    'actions' => [
-        [
-            'type' => 'raw_query',
-            'query' => 'UPDATE users SET status = ? WHERE last_login < ?',
-            'params' => ['inactive', '2023-01-01 00:00:00'],
+    'up' => [
+        'actions' => [
+            [
+                'type' => 'raw_query',
+                'query' => 'UPDATE users SET status = ? WHERE last_login < ?',
+                'params' => ['inactive', '2023-01-01 00:00:00'],
+            ],
+        ],
+    ],
+    'down' => [
+        'actions' => [
+            [
+                'type' => 'raw_query',
+                'query' => 'UPDATE users SET status = ? WHERE status = ?',
+                'params' => ['active', 'inactive'],
+            ],
         ],
     ],
 ];
@@ -403,11 +575,20 @@ Executes a custom task defined in a separate class.
 <?php
 
 return [
-    'target_version' => 10,
-    'actions' => [
-        [
-            'type' => 'run_task',
-            'task' => 'App\Tasks\CustomMigrationTask',
+    'up' => [
+        'actions' => [
+            [
+                'type' => 'run_task',
+                'task' => 'App\Tasks\CustomMigrationTask',
+            ],
+        ],
+    ],
+    'down' => [
+        'actions' => [
+            [
+                'type' => 'run_task',
+                'task' => 'App\Tasks\ReverseCustomMigrationTask',
+            ],
         ],
     ],
 ];
