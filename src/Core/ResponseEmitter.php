@@ -232,6 +232,38 @@ class ResponseEmitter
     }
 
     /**
+     * Generate a method not allowed response.
+     *
+     * @param Request $request The current request
+     *
+     * @return Response The method not allowed response
+     */
+    public function methodNotAllowed(Request $request): Response
+    {
+        $contentType = $request->getHeaderLine('Content-Type');
+        $isJson = (str_contains($contentType, 'application/json'));
+
+        $response = $this->responseFactory->createResponse(405, 'Method Not Allowed');
+
+        if ($isJson)
+        {
+            return $response->withHeader('Content-type', 'application/json');
+        }
+
+        $class = $this->configService->get('error_handlers.405');
+        if ($class && $this->container->has($class))
+        {
+            $errorHandler = $this->container->get($class);
+
+            return $errorHandler($request, $response);
+        }
+
+        $response->getBody()->write('Method Not Allowed');
+
+        return $response;
+    }
+
+    /**
      * Generate a redirect response.
      *
      * @param string $url          The URL to redirect to

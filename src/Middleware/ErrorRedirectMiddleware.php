@@ -18,6 +18,7 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
 use Slim\Exception\HttpForbiddenException;
+use Slim\Exception\HttpMethodNotAllowedException;
 use Slim\Exception\HttpNotFoundException;
 use Slim\Exception\HttpUnauthorizedException;
 use WebFramework\Core\DebugService;
@@ -74,6 +75,10 @@ class ErrorRedirectMiddleware implements MiddlewareInterface
         catch (HttpUnauthorizedException $e)
         {
             return $this->responseEmitter->unauthorized($e->getRequest());
+        }
+        catch (HttpMethodNotAllowedException $e)
+        {
+            return $this->responseEmitter->methodNotAllowed($e->getRequest());
         }
         catch (BlacklistException $e)
         {
