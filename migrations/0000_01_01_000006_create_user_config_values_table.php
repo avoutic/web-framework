@@ -5,8 +5,16 @@ return [
         'actions' => [
             [
                 'type' => 'create_table',
-                'table_name' => 'stored_values',
+                'table_name' => 'user_config_values',
                 'fields' => [
+                    [
+                        'name' => 'user_id',
+                        'type' => 'foreign_key',
+                        'foreign_table' => 'users',
+                        'on_delete' => 'cascade',
+                        'on_update' => 'cascade',
+                        'foreign_field' => 'id',
+                    ],
                     [
                         'name' => 'module',
                         'type' => 'varchar',
@@ -26,7 +34,7 @@ return [
                 'constraints' => [
                     [
                         'type' => 'unique',
-                        'values' => ['module', 'name'],
+                        'values' => ['user_id', 'module', 'name'],
                     ],
                 ],
             ],
@@ -36,7 +44,7 @@ return [
         'actions' => [
             [
                 'type' => 'raw_query',
-                'query' => 'DROP TABLE IF EXISTS `stored_values`',
+                'query' => 'DROP TABLE IF EXISTS `user_config_values`',
                 'params' => [],
             ],
         ],

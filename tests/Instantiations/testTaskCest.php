@@ -4,8 +4,8 @@ namespace Tests\Instantiations;
 
 use Tests\Support\InstantiationTester;
 use Tests\Support\TaskRunnerTrait;
+use WebFramework\Task\DbConvertFromSchemeTask;
 use WebFramework\Task\DbMakeMigrationTask;
-use WebFramework\Task\DbMigrateFromSchemeTask;
 use WebFramework\Task\DbMigrateTask;
 use WebFramework\Task\DbStatusTask;
 use WebFramework\Task\QueueList;
@@ -25,7 +25,7 @@ class testTaskCest
 
     private array $classes = [
         DbMigrateTask::class,
-        DbMigrateFromSchemeTask::class,
+        DbConvertFromSchemeTask::class,
         DbStatusTask::class,
         DbMakeMigrationTask::class,
         QueueList::class,

@@ -11,29 +11,32 @@
 
 namespace WebFramework\Task;
 
-use WebFramework\Core\MigrationManager;
+use WebFramework\Core\BootstrapService;
+use WebFramework\Core\DatabaseConversionManager;
 
 /**
- * Class DbMigrateFromSchemeTask.
+ * Class DbConvertFromSchemeTask.
  *
- * Migrates from old db_scheme system to new migrations system.
+ * Converts from old db_scheme system to new migrations system.
  */
-class DbMigrateFromSchemeTask extends ConsoleTask
+class DbConvertFromSchemeTask extends ConsoleTask
 {
     private bool $dryRun = false;
 
     /**
      * DbMigrateFromSchemeTask constructor.
      *
-     * @param MigrationManager $migrationManager The migration manager
+     * @param BootstrapService          $bootstrapService          The bootstrap service
+     * @param DatabaseConversionManager $databaseConversionManager The database conversion manager
      */
     public function __construct(
-        private MigrationManager $migrationManager,
+        private BootstrapService $bootstrapService,
+        private DatabaseConversionManager $databaseConversionManager,
     ) {}
 
     public function getCommand(): string
     {
-        return 'db:migrate-from-scheme';
+        return 'db:convert-from-scheme';
     }
 
     public function getDescription(): string
@@ -61,7 +64,15 @@ class DbMigrateFromSchemeTask extends ConsoleTask
 
     public function execute(): void
     {
-        $this->migrationManager->migrateFromDbScheme($this->dryRun);
+        $this->bootstrapService->skipSanityChecks();
+        $this->bootstrapService->bootstrap();
+
+        $this->databaseConversionManager->convertFromDbScheme($this->dryRun);
+    }
+
+    public function handlesOwnBootstrapping(): bool
+    {
+        return true;
     }
 
     /**
@@ -72,7 +83,7 @@ class DbMigrateFromSchemeTask extends ConsoleTask
     public function getHelp(): string
     {
         return <<<'HELP'
-This command helps migrate existing applications from the old numeric db_scheme
+This command helps convert existing applications from the old numeric db_scheme
 migration system to the new timestamp-based migrations system.
 
 It will:
@@ -92,6 +103,9 @@ After running this command:
 2. Generate new migrations using 'php Framework db:make migration_name'
 3. Consider backing up your db_scheme directory
 4. Remove 'versions.required_app_db' from your config.php
+
+For production deployments where db_scheme directory is not available:
+Use 'php Framework db:convert-production' instead of this command.
 HELP;
     }
 }

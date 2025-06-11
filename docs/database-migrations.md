@@ -104,12 +104,10 @@ This registers existing migrations as "already executed" to prevent re-applicati
 
 If you're upgrading from the old `db_scheme` numbered migration system:
 
-1. **Run the migration command**: `php Framework db:migrate-from-scheme`
-2. **Create migrations directory**: `mkdir migrations` in your app root
-3. **Generate new migrations**: Use `php Framework db:make migration_name`
-4. **Backup old system**: Move `db_scheme` to `db_scheme_old`
-5. **Remove config**: Delete `versions.required_app_db` from your config
-6. **Verify database**: Ensure all required tables exist and are correct
+1. **Run the migration command as a developer**: `php Framework db:convert-from-scheme`
+2. **Remove old system**: Move `db_scheme` to `db_scheme_old` or remove it entirely
+3. **Remove config**: Delete `versions.required_app_db` from your config
+4. **Verify database**: Ensure all required tables exist and are correct. This conversion assumes you had WebFramework 8 compatible tables before running the command.
 
 ## Migration Actions
 

@@ -38,6 +38,11 @@ return [
                     ],
                 ],
             ],
+            [
+                'type' => 'raw_query',
+                'query' => 'INSERT INTO stored_user_values (user_id, module, name, value) SELECT user_id, module, name, value FROM user_config_values',
+                'params' => [],
+            ],
         ],
     ],
     'down' => [

@@ -40,7 +40,8 @@ $arguments = array_slice($argv, 2);
 //
 $commands = [
     'db:migrate' => 'WebFramework\Task\DbMigrateTask',
-    'db:migrate-from-scheme' => 'WebFramework\Task\DbMigrateFromSchemeTask',
+    'db:convert-from-scheme' => 'WebFramework\Task\DbConvertFromSchemeTask',
+    'db:convert-production' => 'WebFramework\Task\DbConvertProductionTask',
     'db:status' => 'WebFramework\Task\DbStatusTask',
     'db:make' => 'WebFramework\Task\DbMakeMigrationTask',
     'queue:list' => 'WebFramework\Task\QueueList',
@@ -58,7 +59,9 @@ function showUsage(string $scriptName): void
     echo '  db:migrate   Run pending database migrations'.PHP_EOL;
     echo '               --dry-run    Dry run the task (no changes will be made)'.PHP_EOL;
     echo '               --framework  Run framework migrations only'.PHP_EOL;
-    echo '  db:migrate-from-scheme Migrate from old db_scheme system to new migrations system'.PHP_EOL;
+    echo '  db:convert-from-scheme Convert from old db_scheme system to new migrations system'.PHP_EOL;
+    echo '               --dry-run    Show what would be done without making changes'.PHP_EOL;
+    echo '  db:convert-production Convert production database to migration system'.PHP_EOL;
     echo '               --dry-run    Show what would be done without making changes'.PHP_EOL;
     echo '  db:status    Show database migration status'.PHP_EOL;
     echo '  db:make      Generate a new migration file'.PHP_EOL;

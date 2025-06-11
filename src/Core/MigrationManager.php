@@ -262,7 +262,7 @@ class MigrationManager
      * @param string $type          Migration type ('app' or 'framework')
      * @param int    $batch         Batch number
      */
-    private function recordMigration(string $migrationName, string $type, int $batch): void
+    public function recordMigration(string $migrationName, string $type, int $batch): void
     {
         $query = 'INSERT INTO migrations (migration, type, batch) VALUES (?, ?, ?)';
         $this->database->insertQuery($query, [$migrationName, $type, $batch]);
@@ -274,7 +274,7 @@ class MigrationManager
      * @param string $migrationName The migration name
      * @param string $type          Migration type ('app' or 'framework')
      */
-    private function removeMigrationRecord(string $migrationName, string $type): void
+    public function removeMigrationRecord(string $migrationName, string $type): void
     {
         $query = 'DELETE FROM migrations WHERE migration = ? AND type = ?';
         $this->database->query($query, [$migrationName, $type]);
@@ -285,7 +285,7 @@ class MigrationManager
      *
      * @return int The next batch number
      */
-    private function getNextBatchNumber(): int
+    public function getNextBatchNumber(): int
     {
         $query = 'SELECT MAX(batch) as max_batch FROM migrations';
         $result = $this->database->query($query, []);
@@ -389,112 +389,5 @@ PHP;
         file_put_contents($filepath, $template);
 
         return $filename;
-    }
-
-    /**
-     * Migrate from old db_scheme system to new migrations system.
-     *
-     * This command registers existing framework and numeric migrations as "already applied"
-     * in the new migrations table to prevent re-application.
-     *
-     * @param bool $dryRun Whether to dry run the migration
-     */
-    public function migrateFromDbScheme(bool $dryRun = false): void
-    {
-        $appDir = $this->container->get('app_dir');
-        $dbSchemeDir = "{$appDir}/db_scheme";
-
-        if (!is_dir($dbSchemeDir))
-        {
-            $this->write("No db_scheme directory found at {$dbSchemeDir}".PHP_EOL);
-            $this->write('This app appears to already be using the new migration system.'.PHP_EOL);
-
-            return;
-        }
-
-        try
-        {
-            $result = $this->database->query('SELECT value FROM stored_values WHERE module = ? AND name = ?', ['db', 'app_db_version']);
-            $currentVersion = (int) $result->fields['value'];
-        }
-        catch (\RuntimeException $e)
-        {
-            $result = $this->database->query('SELECT value FROM config_values WHERE module = ? AND name = ?', ['db', 'app_db_version']);
-            $currentVersion = (int) $result->fields['value'];
-        }
-
-        $this->write("Current app database version: {$currentVersion}".PHP_EOL);
-
-        $frameworkMigrations = $this->getPendingMigrations('framework');
-
-        if (!count($frameworkMigrations) && $currentVersion === 0)
-        {
-            $this->write('No migrations to register (app_db_version is 0 and no required framework migrations found).'.PHP_EOL);
-
-            return;
-        }
-
-        $numericMigrations = [];
-        for ($i = 1; $i <= $currentVersion; $i++)
-        {
-            $migrationFile = "{$dbSchemeDir}/{$i}.php";
-            if (file_exists($migrationFile))
-            {
-                $numericMigrations[] = $i;
-            }
-            else
-            {
-                $this->write("Warning: Migration file {$i}.php not found but version {$currentVersion} indicates it should exist.".PHP_EOL);
-            }
-        }
-
-        $this->write('Found '.count($numericMigrations).' numeric migration files to register.'.PHP_EOL);
-
-        if (!$dryRun)
-        {
-            $this->ensureMigrationsTable();
-
-            $batch = $this->getNextBatchNumber();
-
-            foreach ($frameworkMigrations as $migration)
-            {
-                $migrationName = pathinfo($migration, PATHINFO_FILENAME);
-                $this->write("Registering framework migration: {$migrationName}".PHP_EOL);
-
-                $this->recordMigration($migrationName, 'framework', $batch);
-            }
-
-            foreach ($numericMigrations as $version)
-            {
-                $migrationName = "legacy_db_scheme_{$version}";
-
-                $this->write("Registering legacy migration: {$migrationName}".PHP_EOL);
-
-                $this->recordMigration($migrationName, 'app', $batch);
-            }
-
-            $this->write('Successfully registered '.count($numericMigrations).' legacy migrations.'.PHP_EOL);
-            $this->write(''.PHP_EOL);
-            $this->write('Next steps:'.PHP_EOL);
-            $this->write("1. Create a new 'migrations' directory in your app: mkdir {$appDir}/migrations".PHP_EOL);
-            $this->write('2. Generate new migrations using: php Framework db:make migration_name'.PHP_EOL);
-            $this->write('3. Consider moving your db_scheme directory to db_scheme_old for backup'.PHP_EOL);
-            $this->write("4. Remove 'versions.required_app_db' from your config.php".PHP_EOL);
-            $this->write('5. Verify tables required by WebFramework are correct in your database'.PHP_EOL);
-        }
-        else
-        {
-            $this->write('DRY RUN - Would register the following framework migrations:'.PHP_EOL);
-            foreach ($frameworkMigrations as $migration)
-            {
-                $this->write("  - {$migration}".PHP_EOL);
-            }
-
-            $this->write('DRY RUN - Would register the following legacy migrations:'.PHP_EOL);
-            foreach ($numericMigrations as $version)
-            {
-                $this->write("  - legacy_db_scheme_{$version}".PHP_EOL);
-            }
-        }
     }
 }
