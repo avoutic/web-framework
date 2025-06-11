@@ -229,12 +229,13 @@ class MigrationManager
             throw new \InvalidArgumentException("Migration {$migrationFile} does not support {$direction} direction");
         }
 
+        if (!isset($actions['actions']) || !is_array($actions['actions']))
+        {
+            throw new \InvalidArgumentException("Migration {$migrationFile} has invalid actions format");
+        }
+
         if (!$dryRun)
         {
-            if (!isset($actions['actions']) || !is_array($actions['actions']))
-            {
-                throw new \InvalidArgumentException("Migration {$migrationFile} has invalid actions format");
-            }
             $this->databaseManager->execute($actions);
 
             $migrationName = pathinfo($migrationFile, PATHINFO_FILENAME);
@@ -250,10 +251,6 @@ class MigrationManager
         }
         else
         {
-            if (!isset($actions['actions']) || !is_array($actions['actions']))
-            {
-                throw new \InvalidArgumentException("Migration {$migrationFile} has invalid actions format");
-            }
             $this->databaseManager->execute($actions, true);
         }
     }
