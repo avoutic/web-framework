@@ -53,7 +53,6 @@ final class HelpersTest extends Unit
     {
         $entity = new TestEntity();
         $entity->setName('value1');
-        $entity->setDescription('value2');
 
         $item = [
             'entity' => $entity,

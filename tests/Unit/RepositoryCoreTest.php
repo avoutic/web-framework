@@ -12,7 +12,7 @@ use WebFramework\Repository\UserRepository;
  */
 final class RepositoryCoreTest extends Unit
 {
-    public function testMgetFilterArrayEmpty()
+    public function testGetFilterArrayEmpty()
     {
         $instance = $this->make(
             UserRepository::class,
@@ -29,7 +29,7 @@ final class RepositoryCoreTest extends Unit
         ;
     }
 
-    public function testMgetFilterArrayNull()
+    public function testGetFilterArrayNull()
     {
         $instance = $this->make(
             UserRepository::class,
@@ -47,7 +47,7 @@ final class RepositoryCoreTest extends Unit
         ;
     }
 
-    public function testMgetFilterArrayFalse()
+    public function testGetFilterArrayFalse()
     {
         $instance = $this->make(
             UserRepository::class,
@@ -67,7 +67,7 @@ final class RepositoryCoreTest extends Unit
         ;
     }
 
-    public function testMgetFilterArrayString()
+    public function testGetFilterArrayString()
     {
         $instance = $this->make(
             UserRepository::class,
@@ -87,7 +87,7 @@ final class RepositoryCoreTest extends Unit
         ;
     }
 
-    public function testMgetFilterArrayMultiple()
+    public function testGetFilterArrayMultiple()
     {
         $instance = $this->make(
             UserRepository::class,
@@ -109,7 +109,7 @@ final class RepositoryCoreTest extends Unit
         ;
     }
 
-    public function testMgetFilterArrayAdvancedOperator()
+    public function testGetFilterArrayAdvancedOperator()
     {
         $instance = $this->make(
             UserRepository::class,
@@ -129,7 +129,7 @@ final class RepositoryCoreTest extends Unit
         ;
     }
 
-    public function testMgetFilterArrayIllegalAdvancedOperator()
+    public function testGetFilterArrayIllegalAdvancedOperator()
     {
         $instance = $this->make(
             UserRepository::class,
