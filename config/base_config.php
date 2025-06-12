@@ -43,6 +43,7 @@ return [
     'error_handlers' => [// Action classes to execute for showing graceful error pages
         '403' => null,
         '404' => null,
+        '405' => null,
         '500' => null,
         'blacklisted' => null,
     ],
