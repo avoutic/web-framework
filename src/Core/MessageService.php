@@ -70,7 +70,7 @@ class MessageService
                 $extraMessage = "{$parts[0]}.{$parts[1]}_extra";
             }
 
-            $message = __($parts[0], $parts[1], $params);
+            $message = $this->translationService->translate($parts[0], $parts[1], $params);
         }
 
         if (strlen($extraMessage) && !str_contains($extraMessage, ' '))
@@ -82,7 +82,7 @@ class MessageService
                 throw new \InvalidArgumentException('Invalid message format. Expected "category.tag".');
             }
 
-            $extraMessage = __($parts[0], $parts[1], $params);
+            $extraMessage = $this->translationService->translate($parts[0], $parts[1], $params);
         }
 
         $this->messages[] = [
