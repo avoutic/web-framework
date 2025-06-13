@@ -48,7 +48,7 @@ class ConfigService
 
         foreach ($path as $step)
         {
-            if (!array_key_exists($step, $part))
+            if (!is_array($part) || !array_key_exists($step, $part))
             {
                 throw new \InvalidArgumentException("Missing configuration {$location}");
             }
