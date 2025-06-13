@@ -244,8 +244,6 @@ class DatabaseManager
                 }
             }
 
-            $this->write(" - Would update version to {$data['target_version']}".PHP_EOL);
-
             return;
         }
 
