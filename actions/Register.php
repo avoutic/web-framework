@@ -216,7 +216,7 @@ class Register
             {
                 $afterVerifyParams = $this->getAfterVerifyData($request);
 
-                $user = $this->registerService->register($username, $filtered['email'], $filtered['password'], $afterVerifyParams);
+                $user = $this->registerService->register($request, $username, $filtered['email'], $filtered['password'], $afterVerifyParams);
 
                 $this->customFinalizeCreate($request, $user);
 

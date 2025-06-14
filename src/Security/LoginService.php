@@ -111,7 +111,7 @@ class LoginService
      * @throws InvalidPasswordException          If the password is incorrect
      * @throws UserVerificationRequiredException If the user is not verified
      */
-    public function authenticate(User $user, string $password): void
+    public function authenticate(Request $request, User $user, string $password): void
     {
         if (!$this->checkPasswordService->checkPassword($user, $password))
         {
@@ -129,7 +129,7 @@ class LoginService
 
         $this->authenticationService->authenticate($user);
 
-        $this->eventService->dispatch(new UserLoggedIn($user));
+        $this->eventService->dispatch(new UserLoggedIn($request, $user));
     }
 
     /**

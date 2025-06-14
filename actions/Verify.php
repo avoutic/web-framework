@@ -59,7 +59,7 @@ class Verify
 
         try
         {
-            $this->userVerificationService->handleVerify($request->getParam('code', ''));
+            $this->userVerificationService->verifyLinkCode($request, $request->getParam('code', ''));
 
             $afterVerifyPage = $this->configService->get('actions.login.after_verify_page');
 

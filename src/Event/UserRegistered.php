@@ -14,11 +14,11 @@ namespace WebFramework\Event;
 use Slim\Http\ServerRequest as Request;
 use WebFramework\Entity\User;
 
-class UserVerified implements Event
+class UserRegistered implements Event
 {
     /**
      * @param Request $request The request that triggered the event
-     * @param User    $user    The user that was verified
+     * @param User    $user    The user that was registered
      */
     public function __construct(public Request $request, public User $user) {}
 }

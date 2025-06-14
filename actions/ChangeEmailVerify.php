@@ -70,7 +70,7 @@ class ChangeEmailVerify
 
         try
         {
-            $this->changeEmailService->handleChangeEmailVerify($user, $request->getParam('code', ''));
+            $this->changeEmailService->verifyLinkCode($request, $user, $request->getParam('code', ''));
 
             return $this->responseEmitter->buildRedirect(
                 $returnPage,

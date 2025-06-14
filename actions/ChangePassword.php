@@ -141,7 +141,7 @@ class ChangePassword
 
             // Change Password
             //
-            $this->changePasswordService->changePassword($user, $filtered['orig_password'], $filtered['password']);
+            $this->changePasswordService->changePassword($request, $user, $filtered['orig_password'], $filtered['password']);
 
             // Redirect to main sceen
             //

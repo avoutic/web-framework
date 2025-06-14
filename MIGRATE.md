@@ -1,4 +1,23 @@
-## Untagged v9
+# v9 release
+
+## v9.3
+
+### Breaking changes
+
+* Authentication events now contain request for audit purposes
+* Interfaces for internal user authentication services changes 
+
+## v9.2
+
+* Improved conversion support to new migration system
+
+## v9.1
+
+### New features
+
+* Central bootstrapping for Tasks
+
+## v9.0
 
 ### New features
 

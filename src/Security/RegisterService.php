@@ -13,8 +13,11 @@ namespace WebFramework\Security;
 
 use Carbon\Carbon;
 use Psr\Log\LoggerInterface;
+use Slim\Http\ServerRequest as Request;
 use WebFramework\Core\UserService;
 use WebFramework\Entity\User;
+use WebFramework\Event\EventService;
+use WebFramework\Event\UserRegistered;
 use WebFramework\Exception\InvalidCaptchaException;
 use WebFramework\Exception\PasswordMismatchException;
 use WebFramework\Exception\UsernameUnavailableException;
@@ -28,11 +31,13 @@ class RegisterService
     /**
      * RegisterService constructor.
      *
+     * @param EventService            $eventService            The event service
      * @param LoggerInterface         $logger                  The logger service
      * @param UserService             $userService             The user service
      * @param UserVerificationService $userVerificationService The user verification service
      */
     public function __construct(
+        private EventService $eventService,
         private LoggerInterface $logger,
         private UserService $userService,
         private UserVerificationService $userVerificationService,
@@ -85,13 +90,15 @@ class RegisterService
      *
      * @return User The newly registered user
      */
-    public function register(string $username, string $email, string $password, array $afterVerifyParams = []): User
+    public function register(Request $request, string $username, string $email, string $password, array $afterVerifyParams = []): User
     {
         $this->logger->info('Registering new user', ['username' => $username, 'email' => $email]);
 
         $user = $this->userService->createUser($username, $password, $email, Carbon::now()->getTimestamp());
 
         $this->userVerificationService->sendVerifyMail($user, $afterVerifyParams);
+
+        $this->eventService->dispatch(new UserRegistered($request, $user));
 
         return $user;
     }

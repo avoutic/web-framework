@@ -189,10 +189,11 @@ final class LoginServiceTest extends Unit
             ],
         );
 
+        $request = $this->makeEmpty(Request::class, ['getAttribute' => '']);
         $user = $this->makeEmpty(User::class);
 
-        verify(function () use ($instance, $user) {
-            $instance->authenticate($user, '');
+        verify(function () use ($instance, $request, $user) {
+            $instance->authenticate($request, $user, '');
         })
             ->callableThrows(InvalidPasswordException::class)
         ;
@@ -215,8 +216,10 @@ final class LoginServiceTest extends Unit
             ],
         );
 
-        verify(function () use ($instance, $user) {
-            $instance->authenticate($user, '');
+        $request = $this->makeEmpty(Request::class, ['getAttribute' => '']);
+
+        verify(function () use ($instance, $request, $user) {
+            $instance->authenticate($request, $user, '');
         })
             ->callableThrows(UserVerificationRequiredException::class)
         ;
@@ -250,7 +253,9 @@ final class LoginServiceTest extends Unit
             ],
         );
 
-        verify($instance->authenticate($user, ''));
+        $request = $this->makeEmpty(Request::class, ['getAttribute' => '']);
+
+        verify($instance->authenticate($request, $user, ''));
     }
 
     public function testCaptchaRequiredNoProtection()

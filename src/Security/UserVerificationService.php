@@ -12,6 +12,7 @@
 namespace WebFramework\Security;
 
 use Psr\Log\LoggerInterface;
+use Slim\Http\ServerRequest as Request;
 use WebFramework\Core\ConfigService;
 use WebFramework\Core\UserMailer;
 use WebFramework\Entity\User;
@@ -110,13 +111,14 @@ class UserVerificationService
     }
 
     /**
-     * Handle user verification.
+     * Verify that the code provided is valid and set the user as verified.
      *
-     * @param string $code The verification code
+     * @param Request $request The current request
+     * @param string  $code    The verification code
      *
      * @throws CodeVerificationException If the code is invalid
      */
-    public function handleVerify(string $code): void
+    public function verifyLinkCode(Request $request, string $code): void
     {
         $this->logger->debug('Handling code verification', ['code' => $code]);
 
@@ -143,7 +145,7 @@ class UserVerificationService
             $user->setVerified();
             $this->userRepository->save($user);
 
-            $this->eventService->dispatch(new UserVerified($user));
+            $this->eventService->dispatch(new UserVerified($request, $user));
         }
     }
 }

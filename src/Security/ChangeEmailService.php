@@ -12,6 +12,7 @@
 namespace WebFramework\Security;
 
 use Psr\Log\LoggerInterface;
+use Slim\Http\ServerRequest as Request;
 use WebFramework\Core\ConfigService;
 use WebFramework\Core\UserMailer;
 use WebFramework\Entity\User;
@@ -58,13 +59,14 @@ class ChangeEmailService
     /**
      * Change the email address for a user.
      *
-     * @param User   $user          The user whose email is being changed
-     * @param string $email         The new email address
-     * @param bool   $requireUnique Whether to require the new email to be unique
+     * @param Request $request       The request that triggered the event
+     * @param User    $user          The user whose email is being changed
+     * @param string  $email         The new email address
+     * @param bool    $requireUnique Whether to require the new email to be unique
      *
      * @throws DuplicateEmailException If the email already exists and $requireUnique is true
      */
-    public function changeEmail(User $user, string $email, bool $requireUnique = true): void
+    public function changeEmail(Request $request, User $user, string $email, bool $requireUnique = true): void
     {
         if ($requireUnique)
         {
@@ -93,7 +95,7 @@ class ChangeEmailService
 
         $this->userRepository->save($user);
 
-        $this->eventService->dispatch(new UserEmailChanged($user));
+        $this->eventService->dispatch(new UserEmailChanged($request, $user));
     }
 
     /**
@@ -143,15 +145,16 @@ class ChangeEmailService
     }
 
     /**
-     * Handle the verification of an email change request.
+     * Verify the code for an email change request.
      *
-     * @param User   $user The user verifying the email change
-     * @param string $code The verification code
+     * @param Request $request The request that triggered the event
+     * @param User    $user    The user verifying the email change
+     * @param string  $code    The verification code
      *
      * @throws CodeVerificationException If the verification code is invalid
      * @throws WrongAccountException     If the code doesn't match the current user
      */
-    public function handleChangeEmailVerify(User $user, string $code): void
+    public function verifyLinkCode(Request $request, User $user, string $code): void
     {
         ['user_id' => $codeUserId, 'params' => $verifyParams] = $this->userCodeService->verify(
             $code,
@@ -200,7 +203,7 @@ class ChangeEmailService
             throw new CodeVerificationException();
         }
 
-        $this->changeEmail($user, $email);
+        $this->changeEmail($request, $user, $email);
 
         // Invalidate old sessions
         //

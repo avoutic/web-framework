@@ -12,6 +12,7 @@
 namespace WebFramework\Security;
 
 use Psr\Log\LoggerInterface;
+use Slim\Http\ServerRequest as Request;
 use WebFramework\Entity\User;
 use WebFramework\Event\EventService;
 use WebFramework\Event\UserPasswordChanged;
@@ -88,7 +89,7 @@ class ChangePasswordService
      * @throws WeakPasswordException    If the new password is too weak
      * @throws InvalidPasswordException If the old password is incorrect
      */
-    public function changePassword(User $user, string $oldPassword, string $newPassword): void
+    public function changePassword(Request $request, User $user, string $oldPassword, string $newPassword): void
     {
         if (strlen($newPassword) < 8)
         {
@@ -113,7 +114,7 @@ class ChangePasswordService
         $user->setSolidPassword($newHash);
         $this->userRepository->save($user);
 
-        $this->eventService->dispatch(new UserPasswordChanged($user));
+        $this->eventService->dispatch(new UserPasswordChanged($request, $user));
 
         $this->securityIteratorService->incrementFor($user);
 

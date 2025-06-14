@@ -76,16 +76,25 @@ class Login
     public function init(): void {}
 
     /**
-     * Perform custom value checks.
+     * Perform custom value checks before allowing authentication.
      *
-     * @param User $user The user to check
+     * @param Request $request The current request
+     * @param User    $user    The user to check
      *
      * @return bool True if the checks pass, false otherwise
      */
-    protected function customValueCheck(User $user): bool
+    protected function customValueCheck(Request $request, User $user): bool
     {
         return true;
     }
+
+    /**
+     * Perform custom actions after authentication.
+     *
+     * @param Request $request The current request
+     * @param User    $user    The user to check
+     */
+    protected function afterAuthentication(Request $request, User $user): void {}
 
     /**
      * Get the template name for rendering.
@@ -160,11 +169,13 @@ class Login
 
             $user = $this->loginService->validate($request, $filtered['username'], $filtered['password'], $validCaptcha);
 
-            if ($this->customValueCheck($user))
+            if ($this->customValueCheck($request, $user))
             {
                 // Authenticate user
                 //
-                $this->loginService->authenticate($user, $filtered['password']);
+                $this->loginService->authenticate($request, $user, $filtered['password']);
+
+                $this->afterAuthentication($request, $user);
 
                 return $this->successRedirect($request, 'success', 'login.success');
             }
