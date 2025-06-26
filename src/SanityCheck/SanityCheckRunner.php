@@ -123,7 +123,7 @@ class SanityCheckRunner
      *
      * @return bool True if checks should be run, false otherwise
      */
-    private function needsRun(?string $commit): bool
+    public function needsRun(?string $commit): bool
     {
         if ($this->forceRun)
         {
@@ -138,7 +138,7 @@ class SanityCheckRunner
             //
             $lastTimestamp = new Carbon((int) $this->storedValuesService->getValue('sanity_check.last_check', '0'));
 
-            if (Carbon::now()->diffInSeconds($lastTimestamp) < 5)
+            if ($lastTimestamp->diffInSeconds(Carbon::now()) < 5)
             {
                 return false;
             }
