@@ -9,6 +9,7 @@ use WebFramework\Core\BuildInfoService;
 use WebFramework\Core\Cache;
 use WebFramework\Core\CaptchaService;
 use WebFramework\Core\ConfigService;
+use WebFramework\Core\ConsoleTaskRegistryService;
 use WebFramework\Core\Database;
 use WebFramework\Core\DatabaseManager;
 use WebFramework\Core\DatabaseProvider;
@@ -50,6 +51,7 @@ class testCoreCest
         Cache::class,
         CaptchaService::class,
         ConfigService::class,
+        ConsoleTaskRegistryService::class,
         Database::class,
         DatabaseManager::class,
         DatabaseProvider::class,

@@ -10,6 +10,7 @@
  * file that was distributed with this source code.
  */
 
+use WebFramework\Core\ConsoleTaskRegistryService;
 use WebFramework\Core\DebugService;
 use WebFramework\Exception\ArgumentParserException;
 use WebFramework\Task\TaskRunner;
@@ -36,22 +37,15 @@ $scriptName = basename($argv[0]);
 $command = $argv[1] ?? null;
 $arguments = array_slice($argv, 2);
 
-// Map supported commands
-//
-$commands = [
-    'db:migrate' => 'WebFramework\Task\DbMigrateTask',
-    'db:convert-from-scheme' => 'WebFramework\Task\DbConvertFromSchemeTask',
-    'db:convert-production' => 'WebFramework\Task\DbConvertProductionTask',
-    'db:status' => 'WebFramework\Task\DbStatusTask',
-    'db:make' => 'WebFramework\Task\DbMakeMigrationTask',
-    'queue:list' => 'WebFramework\Task\QueueList',
-    'queue:worker' => 'WebFramework\Task\QueueWorker',
-    'sanity:check' => 'WebFramework\Task\SanityCheckTask',
-    'task:run' => 'WebFramework\Task\TaskRunnerTask',
-];
+$taskRunner = new TaskRunner($projectRoot);
+$taskRunner->build();
+
+$taskRegistry = $taskRunner->get(ConsoleTaskRegistryService::class);
 
 function showUsage(string $scriptName): void
 {
+    global $taskRegistry;
+
     echo 'Usage: '.$scriptName.' <command> [options]'.PHP_EOL.PHP_EOL;
     echo 'Available commands:'.PHP_EOL;
     echo '  help         Show this help'.PHP_EOL;
@@ -78,28 +72,50 @@ function showUsage(string $scriptName): void
     echo '  task:run     Run a task'.PHP_EOL;
     echo '               Usage: '.$scriptName.' task:run <TaskClass>'.PHP_EOL;
 
+    $appTasks = $taskRegistry->getAppTasks();
+    if (!empty($appTasks))
+    {
+        echo PHP_EOL;
+        echo 'App commands:'.PHP_EOL;
+        foreach ($appTasks as $command => $task)
+        {
+            $task = $taskRegistry->getTaskForCommand($command);
+
+            if (!$task)
+            {
+                continue;
+            }
+
+            $description = $task->getDescription();
+            echo "  {$command}";
+            if ($description)
+            {
+                echo "   {$description}";
+            }
+            echo PHP_EOL;
+        }
+    }
+
     exit();
 }
 
-if (!$command || !isset($commands[$command]))
-{
-    showUsage($scriptName);
-}
-
-$taskRunner = new TaskRunner($projectRoot);
-$taskRunner->build();
-
 try
 {
+    if (!$command || !$taskRegistry->getTaskForCommand($command))
+    {
+        showUsage($scriptName);
+    }
+
     if ($command === 'task:run')
     {
         $task = new TaskRunnerTask($taskRunner);
-        $taskRunner->executeTaskObject($task, $arguments);
     }
     else
     {
-        $taskRunner->execute($commands[$command], $arguments);
+        $task = $taskRegistry->getTaskForCommand($command);
     }
+
+    $taskRunner->executeTaskObject($task, $arguments);
 }
 catch (ArgumentParserException $e)
 {

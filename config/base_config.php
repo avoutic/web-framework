@@ -98,4 +98,7 @@ return [
             'new-password' => 'new-password',
         ],
     ],
+    'console_tasks' => [],         // Associative array of console tasks to register
+    // The key is the command name and the value is the class name
+    // of the task. The class must be a subclass of ConsoleTask.
 ];
