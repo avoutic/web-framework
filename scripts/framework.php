@@ -49,6 +49,7 @@ function showUsage(string $scriptName): void
     echo 'Usage: '.$scriptName.' <command> [options]'.PHP_EOL.PHP_EOL;
     echo 'Available commands:'.PHP_EOL;
     echo '  help         Show this help'.PHP_EOL;
+    echo '  help <command> Show help for a command'.PHP_EOL;
     echo PHP_EOL;
     echo '  db:migrate   Run pending database migrations'.PHP_EOL;
     echo '               --dry-run    Dry run the task (no changes will be made)'.PHP_EOL;
@@ -101,10 +102,27 @@ function showUsage(string $scriptName): void
 
 try
 {
-    if (!$command || !$taskRegistry->getTaskForCommand($command))
+    if (!$command || ($command === 'help' && count($arguments) === 0))
     {
         showUsage($scriptName);
     }
+
+    if ($command === 'help' && count($arguments) === 1)
+    {
+        $command = $arguments[0];
+        $task = $taskRegistry->getTaskForCommand($command);
+
+        if ($task)
+        {
+            echo $task->getUsage().PHP_EOL;
+
+            exit();
+        }
+
+        showUsage($scriptName);
+    }
+
+    $task = null;
 
     if ($command === 'task:run')
     {
@@ -113,6 +131,11 @@ try
     else
     {
         $task = $taskRegistry->getTaskForCommand($command);
+    }
+
+    if (!$task)
+    {
+        showUsage($scriptName);
     }
 
     $taskRunner->executeTaskObject($task, $arguments);
