@@ -1,5 +1,11 @@
 # v9 release
 
+## v9.4
+
+### New features
+
+* Support for app console tasks in framework app
+
 ## v9.3
 
 ### Breaking changes
