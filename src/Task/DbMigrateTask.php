@@ -60,6 +60,23 @@ class DbMigrateTask extends ConsoleTask
         return 'Run pending database migrations';
     }
 
+    public function getUsage(): string
+    {
+        return <<<'EOF'
+        Run pending database migrations.
+
+        App migrations are discovered in the /migrations directory of the app,
+        and are run after the framework migrations, in alphabetical order.
+
+        Usage:
+        framework db:migrate [--dry-run] [--framework]
+
+        Options:
+        --dry-run    Dry run the task (no changes will be made)
+        --framework  Run framework migrations only
+        EOF;
+    }
+
     /**
      * Get the options for the task.
      *

@@ -34,6 +34,28 @@ class QueueWorker extends ConsoleTask
         return 'Run a queue worker';
     }
 
+    public function getUsage(): string
+    {
+        return <<<'EOF'
+        Run a queue worker.
+
+        This task will run a queue worker for the given queue name.
+
+        The worker will process jobs from the queue until the maximum number of jobs or
+        runtime is reached.
+
+        The worker will sleep for 1 second, and check again for jobs, if there are no
+        jobs to process.
+
+        Usage:
+        framework queue:worker <queueName> [--max-jobs=<maxJobs>] [--max-runtime=<maxRuntime>]
+
+        Options:
+        --max-jobs=<maxJobs>    The maximum number of jobs to process (default: unlimited)
+        --max-runtime=<maxRuntime> The maximum run time of the worker (default: unlimited)
+        EOF;
+    }
+
     public function getArguments(): array
     {
         return [

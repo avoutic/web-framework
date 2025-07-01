@@ -44,6 +44,25 @@ class DbConvertFromSchemeTask extends ConsoleTask
         return 'Migrate from old db_scheme system to new migrations system';
     }
 
+    public function getUsage(): string
+    {
+        return <<<'EOF'
+        Migrate from old db_scheme system to new migrations system.
+
+        This task will convert the database schema from the old db_scheme system to the new migrations system.
+
+        It will create a new migration file for each old scheme file.
+
+        The migration files will be created in the /migrations directory of the app,
+        and will be named like: YYYYMMDDHHMMSS_<name>.php
+
+        The migrations will be marked as already executed.
+
+        Usage:
+        framework db:convert-from-scheme [--dry-run]
+        EOF;
+    }
+
     public function getOptions(): array
     {
         return [

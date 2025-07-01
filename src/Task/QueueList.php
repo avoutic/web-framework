@@ -56,6 +56,18 @@ class QueueList extends ConsoleTask
         return 'List all queues';
     }
 
+    public function getUsage(): string
+    {
+        return <<<'EOF'
+        List all registered queues.
+
+        This task will list all queues that are registered with the queue service.
+
+        Usage:
+        framework queue:list
+        EOF;
+    }
+
     public function execute(): void
     {
         $queues = $this->queueService->getQueueNames();

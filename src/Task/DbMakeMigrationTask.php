@@ -60,6 +60,22 @@ class DbMakeMigrationTask extends ConsoleTask
         return 'Generate a new migration file';
     }
 
+    public function getUsage(): string
+    {
+        return <<<'EOF'
+        Generate a new migration file.
+
+        App migration files are created in the /migrations directory of the app,
+        and are named like: YYYYMMDDHHMMSS_<name>.php
+
+        Usage:
+        framework db:make <name> [--framework]
+
+        Options:
+        --framework  Create a framework migration
+        EOF;
+    }
+
     /**
      * Get the options for the task.
      *

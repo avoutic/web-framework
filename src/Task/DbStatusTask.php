@@ -57,6 +57,16 @@ class DbStatusTask extends ConsoleTask
         return 'Show database migration status';
     }
 
+    public function getUsage(): string
+    {
+        return <<<'EOF'
+        Database status, shows the status of the framework and app migrations
+
+        Usage:
+        framework db:status
+        EOF;
+    }
+
     /**
      * Execute the database status task.
      */

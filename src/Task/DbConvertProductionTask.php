@@ -41,7 +41,22 @@ class DbConvertProductionTask extends ConsoleTask
 
     public function getDescription(): string
     {
-        return 'Convert production database to migration system (when db_scheme directory is unavailable)';
+        return 'Convert production database to migration system';
+    }
+
+    public function getUsage(): string
+    {
+        return <<<'EOF'
+        Convert production database to migration system.
+
+        This task will convert the production database to the new migrations system.
+
+        It assumes all scheme files have already been converted to the new migrations system,
+        and marks them as already executed.
+
+        Usage:
+        framework db:convert-production [--dry-run]
+        EOF;
     }
 
     public function getOptions(): array
