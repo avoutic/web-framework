@@ -8,7 +8,8 @@ return [
     'debug' => env('DEBUG', false),
     'production' => env('PRODUCTION', false),
     'preload' => false,                 /* true to load src/Preload.php during bootstrap, or name of file to
-                                         * load relative to appDir */
+                                         * load relative to appDir
+                                         */
     'timezone' => env('TIMEZONE', 'UTC'),
     'database_enabled' => env('DATABASE_ENABLED', false),
     'versions' => [
@@ -19,8 +20,8 @@ return [
     'http_mode' => 'https',
     'base_url' => '',                    // Add a base_url to be used in external urls
     'sanity_check_modules' => [],        /* Associative array with application sanity check class names with
-     * full namespace as key and their config array as the value
-     */
+                                          * full namespace as key and their config array as the value
+                                          */
     'authenticator' => [
         'unique_identifier' => 'email',
         'session_timeout' => 900,
@@ -40,7 +41,8 @@ return [
             'secret_key' => env('RECAPTCHA_SECRET_KEY', ''),
         ],
     ],
-    'error_handlers' => [// Action classes to execute for showing graceful error pages
+    // Action classes to execute for showing graceful error pages
+    'error_handlers' => [
         '403' => null,
         '404' => null,
         '405' => null,
@@ -71,34 +73,38 @@ return [
             'after_verify_page' => '/',         // Location to redirect after triggering verification
         ],
     ],
-    'definition_files' => [// Definition files to be loaded
+    // Definition files to be loaded
+    'definition_files' => [
         '/vendor/avoutic/web-framework/definitions/web_framework_definitions.php',
         '/definitions/app_definitions.php',
     ],
     'middlewares' => [
-        'pre_routing' => [],         // Middleware classes to be executed before routing
-        'post_routing' => [],        // Middleware classes to be executed after routing
+        'pre_routing' => [],                    // Middleware classes to be executed before routing
+        'post_routing' => [],                   // Middleware classes to be executed after routing
     ],
-    'routes' => [],                  // The route classes to explicitly load
+    'routes' => [],                             // The route classes to explicitly load
     'sender_core' => [
-        'default_sender' => '',      // Default sender email address
-        'assert_recipient' => '',    // Recipient email address for assertions
+        'default_sender' => '',                 // Default sender email address
+        'assert_recipient' => '',               // Recipient email address for assertions
     ],
     'translations' => [
-        'default_language' => 'en',  // Default language for translations
-        'directories' => [// Directories containing translation files
+        'default_language' => 'en',             // Default language for translations
+        // Directories containing translation files
+        'directories' => [
             '/vendor/avoutic/web-framework/translations',
         ],
     ],
     'user_mailer' => [
-        'template_overrides' => [// Template overrides for UserMailer
+        // Template overrides for UserMailer
+        'template_overrides' => [
             'email-verification-link' => 'email-verification-link',
             'change-email-verification-link' => 'change-email-verification-link',
             'password-reset' => 'password-reset',
             'new-password' => 'new-password',
         ],
     ],
-    'console_tasks' => [],         // Associative array of console tasks to register
-    // The key is the command name and the value is the class name
-    // of the task. The class must be a subclass of ConsoleTask.
+    'console_tasks' => [],                      /* Associative array of console tasks to register
+                                                 * The key is the command name and the value is the class name
+                                                 * of the task. The class must be a subclass of ConsoleTask.
+                                                 */
 ];
