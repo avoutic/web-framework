@@ -12,6 +12,7 @@
 namespace WebFramework\Task;
 
 use WebFramework\Core\BootstrapService;
+use WebFramework\Exception\SanityCheckException;
 
 /**
  * Class SanityCheckTask.
@@ -51,7 +52,14 @@ class SanityCheckTask extends ConsoleTask
         $this->bootstrapService->setSanityCheckVerbose();
         $this->bootstrapService->setSanityCheckForceRun();
 
-        $this->bootstrapService->bootstrap();
+        try
+        {
+            $this->bootstrapService->bootstrap();
+        }
+        catch (SanityCheckException $e)
+        {
+            // No need to handle this exception when explicitly expected
+        }
     }
 
     /**
