@@ -166,9 +166,24 @@ Each field definition is an associative array that can include the following key
   - Required for: varchar, char, binary, varbinary
   - Optional for: int, tinyint, smallint, mediumint, bigint, decimal, numeric
   - Not used for: text, datetime, timestamp, date, time, json
+- `null` (optional): If a field can be NULL (default: false)
 - `default` (optional): The default value for the field. Can be either:
   - A string or number value: Will be quoted automatically based on the field type
   - An array with a 'function' key: The value will be used as-is without quotes as a SQL function
+
+### Constraint Definition
+
+Each constraint definition is an associative array that can include the following keys:
+
+- `type` (required): The type of constraint. Common types include:
+  - `unique`: Unique constraint
+  - `index`: Index constraint
+- `name` (optional): The name of the constraint.
+- `values` (required): The values to use for the constraint.
+  - For `unique` constraints, this is an array of field names.
+  - For `index` constraints, this is an array of field names.
+
+### Example
 
 ### Example with Various Types and Defaults
 
@@ -204,6 +219,12 @@ return [
                         'default' => 0,  // Will be: DEFAULT 0
                     ],
                     [
+                        'name' => 'identifier',
+                        'type' => 'varchar'
+                        'size' => 255,
+                        'null' => true,
+                    ]
+                    [
                         'name' => 'metadata',
                         'type' => 'json',
                         'default' => '{}',  // Will be: DEFAULT '{}'
@@ -221,6 +242,11 @@ return [
                     [
                         'type' => 'unique',
                         'values' => ['name'],
+                    ],
+                    [
+                        'type' => 'index',
+                        'name' => 'item_idx_identifier',
+                        'values' => ['identifier']
                     ],
                 ],
             ],
