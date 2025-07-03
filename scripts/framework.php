@@ -14,7 +14,6 @@ use WebFramework\Core\ConsoleTaskRegistryService;
 use WebFramework\Core\DebugService;
 use WebFramework\Exception\ArgumentParserException;
 use WebFramework\Task\TaskRunner;
-use WebFramework\Task\TaskRunnerTask;
 
 // Get the project root directory
 $projectRoot = __DIR__;
@@ -128,14 +127,7 @@ try
 
     $task = null;
 
-    if ($command === 'task:run')
-    {
-        $task = new TaskRunnerTask($taskRunner);
-    }
-    else
-    {
-        $task = $taskRegistry->getTaskForCommand($command);
-    }
+    $task = $taskRegistry->getTaskForCommand($command);
 
     if (!$task)
     {

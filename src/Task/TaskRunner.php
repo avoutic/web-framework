@@ -124,6 +124,7 @@ class TaskRunner
         $this->containerBuilder->addDefinitions(['config_tree' => $this->configBuilder->getConfig()]);
         $this->containerBuilder->addDefinitions($this->configBuilder->getFlattenedConfig());
         $this->containerBuilder->addDefinitions(['is_plaintext' => $this->isPlaintext]);
+        $this->containerBuilder->addDefinitions([self::class => $this]);
 
         $definitionFiles = $this->definitionFiles ?? $config['definition_files'];
         foreach ($definitionFiles as $file)
