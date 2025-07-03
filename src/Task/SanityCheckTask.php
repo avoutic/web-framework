@@ -18,7 +18,7 @@ use WebFramework\Core\BootstrapService;
  *
  * This task is responsible for running sanity checks on the application.
  */
-class SanityCheckTask implements Task
+class SanityCheckTask extends ConsoleTask
 {
     /**
      * SanityCheckTask constructor.
@@ -28,6 +28,16 @@ class SanityCheckTask implements Task
     public function __construct(
         private BootstrapService $bootstrapService,
     ) {}
+
+    public function getCommand(): string
+    {
+        return 'sanity:check';
+    }
+
+    public function getDescription(): string
+    {
+        return 'Run sanity checks on the application';
+    }
 
     /**
      * Execute the sanity check task.
