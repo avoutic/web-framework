@@ -216,6 +216,12 @@ final class ErrorRedirectMiddlewareTest extends Unit
                         'error' => Expected::once(),
                     ]
                 ),
+                'exceptionLogger' => $this->makeEmpty(
+                    LoggerInterface::class,
+                    [
+                        'error' => Expected::once(),
+                    ]
+                ),
                 'reportFunction' => $this->makeEmpty(
                     ReportFunction::class,
                     [
@@ -266,6 +272,12 @@ final class ErrorRedirectMiddlewareTest extends Unit
                     ]
                 ),
                 'logger' => $this->makeEmpty(
+                    LoggerInterface::class,
+                    [
+                        'error' => Expected::once(),
+                    ]
+                ),
+                'exceptionLogger' => $this->makeEmpty(
                     LoggerInterface::class,
                     [
                         'error' => Expected::once(),

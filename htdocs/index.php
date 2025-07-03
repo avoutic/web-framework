@@ -31,6 +31,7 @@ catch (Throwable $e)
 {
     $request = ServerRequestFactory::createFromGlobals();
     $logger = $taskRunner->get(LoggerInterface::class);
+    $exceptionLogger = $taskRunner->get('exceptionLogger');
 
     header('Content-type: text/html');
 
@@ -40,7 +41,9 @@ catch (Throwable $e)
         //
         $debugService = $taskRunner->get(DebugService::class);
         $errorReport = $debugService->getThrowableReport($e, $request);
-        $logger->error('Unhandled exception: '.$errorReport->getTitle(), [
+
+        $logger->error('Unhandled exception: '.$errorReport->getTitle());
+        $exceptionLogger->error('Unhandled exception: '.$errorReport->getTitle(), [
             'error_report' => $errorReport,
             'hash' => $errorReport->getHash(),
         ]);
@@ -52,7 +55,8 @@ catch (Throwable $e)
     }
     catch (Throwable $innerException)
     {
-        $logger->error('Unhandled exception (without error report): '.$e->getMessage(), [
+        $logger->error('Unhandled exception (without error report): '.$e->getMessage());
+        $exceptionLogger->error('Unhandled exception (without error report): '.$e->getMessage(), [
             'exception' => $e,
             'inner_exception' => $innerException->getMessage(),
         ]);

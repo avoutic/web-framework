@@ -36,6 +36,8 @@ return [
         return new PhpSession($options);
     },
 
+    'exceptionLogger' => DI\autowire(NullLogger::class),
+
     'app_dir' => function (ContainerInterface $c) {
         // Determine app dir
         //
@@ -89,6 +91,9 @@ return [
     Core\UserMailer::class => DI\autowire()
         ->constructorParameter('senderEmail', DI\get('sender_core.default_sender'))
         ->constructorParameter('templateOverrides', DI\get('templateOverrides')),
+
+    Middleware\ErrorRedirectMiddleware::class => DI\autowire()
+        ->constructorParameter('exceptionLogger', DI\get('exceptionLogger')),
 
     Queue\Queue::class => DI\autowire(Queue\MemoryQueue::class)
         ->constructorParameter('name', 'default'),
