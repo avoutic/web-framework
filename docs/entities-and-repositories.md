@@ -30,6 +30,9 @@ $user = $userRepository->getObjectById($userId);  // Returns User|null
 ~~~
 
 #### By Filter
+
+This method takes a single filter as an array. If multiple objects are found, the function will throw an exception.
+
 ~~~php
 $user = $userRepository->getObject(['email' => $email]);  // Returns User|null
 ~~~
@@ -39,10 +42,30 @@ $user = $userRepository->getObject(['email' => $email]);  // Returns User|null
 These methods return an `EntityCollection` object:
 
 #### Multiple Entities
+
+To retrieve multiple entities, you can use the `getObjects` method. This method takes the following parameters:
+
+- `offset`: The offset of the first entity to retrieve.
+- `limit`: The number of entities to retrieve (-1 for all).
+- `filter`: An array of filter conditions.
+- `order`: The order by clause.
+
+The filter is a key-value pair array where the key is the field name and the value is the value to filter by. Each key-value pair being a filter condition. The key is always a field name and the value is the value to filter by. The value can be a string, a number, boolean, null, or an array for describing an operator other than equals.
+
 ~~~php
 // Returns EntityCollection<User>
-$users = $userRepository->getObjects(0, 10, ['active' => 1], 'username ASC');
+$users = $userRepository->getObjects(0, 10, [
+        'email' => $email,
+        'active' => true,
+        'last_login' => [ '>', strtotime('-1 month') ],
+    ],
+    'order' => 'username ASC',
+);
 ~~~
+
+### Counting Entities matching a filter
+
+You can count the number of entities matching a filter using the `countObjects` method. This method takes a single filter as an array.
 
 #### Custom Query
 ~~~php
