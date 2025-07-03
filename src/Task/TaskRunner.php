@@ -37,6 +37,7 @@ class TaskRunner
     private bool $isContinuous = false;
     private int $delayBetweenRunsInSecs = 1;
     private ?int $maxRuntimeInSecs = null;
+    private bool $isPlaintext = false;
 
     /** @var array<string> Default configuration files */
     private array $configFiles = [
@@ -128,6 +129,14 @@ class TaskRunner
     }
 
     /**
+     * Set the task to run in plaintext mode.
+     */
+    public function setPlaintext(): void
+    {
+        $this->isPlaintext = true;
+    }
+
+    /**
      * Build the configuration and container.
      */
     public function build(): void
@@ -146,6 +155,7 @@ class TaskRunner
         //
         $this->containerBuilder->addDefinitions(['config_tree' => $this->configBuilder->getConfig()]);
         $this->containerBuilder->addDefinitions($this->configBuilder->getFlattenedConfig());
+        $this->containerBuilder->addDefinitions(['is_plaintext' => $this->isPlaintext]);
 
         $definitionFiles = $this->definitionFiles ?? $config['definition_files'];
         foreach ($definitionFiles as $file)

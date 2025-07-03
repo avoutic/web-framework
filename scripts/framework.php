@@ -38,6 +38,7 @@ $command = $argv[1] ?? null;
 $arguments = array_slice($argv, 2);
 
 $taskRunner = new TaskRunner($projectRoot);
+$taskRunner->setPlaintext();
 $taskRunner->build();
 
 $taskRegistry = $taskRunner->get(ConsoleTaskRegistryService::class);
