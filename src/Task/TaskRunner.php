@@ -11,7 +11,6 @@
 
 namespace WebFramework\Task;
 
-use Carbon\Carbon;
 use DI\Container;
 use DI\ContainerBuilder;
 use WebFramework\Core\BootstrapService;
@@ -34,9 +33,6 @@ class TaskRunner
     /** @var ContainerBuilder<Container> */
     private ContainerBuilder $containerBuilder;
     private ?Container $container = null;
-    private bool $isContinuous = false;
-    private int $delayBetweenRunsInSecs = 1;
-    private ?int $maxRuntimeInSecs = null;
     private bool $isPlaintext = false;
 
     /** @var array<string> Default configuration files */
@@ -98,34 +94,6 @@ class TaskRunner
         }
 
         return $this->container->get($key);
-    }
-
-    /**
-     * Set the task to run continuously.
-     */
-    public function setContinuous(): void
-    {
-        $this->isContinuous = true;
-    }
-
-    /**
-     * Set the delay between continuous runs.
-     *
-     * @param int $secs The delay in seconds
-     */
-    public function setDelayBetweenRuns(int $secs): void
-    {
-        $this->delayBetweenRunsInSecs = $secs;
-    }
-
-    /**
-     * Set the maximum runtime for continuous execution.
-     *
-     * @param int $secs The maximum runtime in seconds
-     */
-    public function setMaxRunTime(int $secs): void
-    {
-        $this->maxRuntimeInSecs = $secs;
     }
 
     /**
@@ -314,28 +282,6 @@ class TaskRunner
             $bootstrapService->bootstrap();
         }
 
-        if ($this->isContinuous)
-        {
-            $start = Carbon::now();
-
-            while (true)
-            {
-                $task->execute();
-
-                if ($this->maxRuntimeInSecs)
-                {
-                    if ($start->diffInSeconds() > $this->maxRuntimeInSecs)
-                    {
-                        break;
-                    }
-                }
-
-                Carbon::sleep($this->delayBetweenRunsInSecs);
-            }
-        }
-        else
-        {
-            $task->execute();
-        }
+        $task->execute();
     }
 }

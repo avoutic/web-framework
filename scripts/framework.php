@@ -73,6 +73,9 @@ function showUsage(string $scriptName): void
     echo PHP_EOL;
     echo '  task:run     Run a task'.PHP_EOL;
     echo '               Usage: '.$scriptName.' task:run <TaskClass>'.PHP_EOL;
+    echo '               --continuous      Run the task continuously'.PHP_EOL;
+    echo '               --delay <secs>    The delay between continuous runs in seconds'.PHP_EOL;
+    echo '               --max-runtime <secs> The maximum runtime in seconds'.PHP_EOL;
 
     $appTasks = $taskRegistry->getAppTasks();
     if (!empty($appTasks))

@@ -11,9 +11,14 @@
 
 namespace WebFramework\Task;
 
+use Carbon\Carbon;
+
 class TaskRunnerTask extends ConsoleTask
 {
     private ?string $taskClass = null;
+    private bool $isContinuous = false;
+    private int $delayBetweenRunsInSecs = 1;
+    private ?int $maxRuntimeInSecs = null;
 
     public function __construct(
         private readonly TaskRunner $taskRunner,
@@ -29,6 +34,26 @@ class TaskRunnerTask extends ConsoleTask
         return 'Run a task';
     }
 
+    public function getUsage(): string
+    {
+        return <<<EOF
+        Usage:
+          {$this->getCommand()} [options] <taskClass>
+
+        The task class should be a fully qualified class name and must implement the
+        Task interface.
+
+        Examples:
+          {$this->getCommand()} --continuous --delay 60 --max-runtime 3600 App\\Task\\MyTask
+          {$this->getCommand()} App\\Task\\MyTask
+
+        Options:
+          --continuous      Run the task continuously
+          --delay <secs>    The delay between continuous runs in seconds
+          --max-runtime <secs> The maximum runtime in seconds
+        EOF;
+    }
+
     public function getArguments(): array
     {
         return [
@@ -41,9 +66,61 @@ class TaskRunnerTask extends ConsoleTask
         ];
     }
 
+    public function getOptions(): array
+    {
+        return [
+            [
+                'long' => 'continuous',
+                'description' => 'Run the task continuously',
+                'has_value' => false,
+                'setter' => [$this, 'setContinuous'],
+            ],
+            [
+                'long' => 'delay',
+                'description' => 'The delay between continuous runs in seconds',
+                'has_value' => true,
+                'setter' => [$this, 'setDelayBetweenRuns'],
+            ],
+            [
+                'long' => 'max-runtime',
+                'description' => 'The maximum runtime in seconds',
+                'has_value' => true,
+                'setter' => [$this, 'setMaxRunTime'],
+            ],
+        ];
+    }
+
     public function setTaskClass(string $taskClass): void
     {
         $this->taskClass = $taskClass;
+    }
+
+    /**
+     * Set the task to run continuously.
+     */
+    public function setContinuous(): void
+    {
+        $this->isContinuous = true;
+    }
+
+    /**
+     * Set the delay between continuous runs.
+     *
+     * @param int $secs The delay in seconds
+     */
+    public function setDelayBetweenRuns(int $secs): void
+    {
+        $this->delayBetweenRunsInSecs = $secs;
+    }
+
+    /**
+     * Set the maximum runtime for continuous execution.
+     *
+     * @param int $secs The maximum runtime in seconds
+     */
+    public function setMaxRunTime(int $secs): void
+    {
+        $this->maxRuntimeInSecs = $secs;
     }
 
     public function execute(): void
@@ -64,6 +141,28 @@ class TaskRunnerTask extends ConsoleTask
             throw new \RuntimeException("Task {$this->taskClass} does not implement Task");
         }
 
-        $task->execute();
+        if ($this->isContinuous)
+        {
+            $start = Carbon::now();
+
+            while (true)
+            {
+                $task->execute();
+
+                if ($this->maxRuntimeInSecs)
+                {
+                    if ($start->diffInSeconds() > $this->maxRuntimeInSecs)
+                    {
+                        break;
+                    }
+                }
+
+                Carbon::sleep($this->delayBetweenRunsInSecs);
+            }
+        }
+        else
+        {
+            $task->execute();
+        }
     }
 }
