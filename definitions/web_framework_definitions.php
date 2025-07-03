@@ -4,7 +4,6 @@ namespace WebFramework;
 
 use Composer\Autoload\ClassLoader;
 use DI;
-use GuzzleHttp\Client;
 use Latte\Engine;
 use Odan\Session\PhpSession;
 use Odan\Session\SessionInterface;
@@ -23,9 +22,7 @@ return [
     ResponseFactoryInterface::class => DI\autowire(DecoratedResponseFactory::class)
         ->constructorParameter('responseFactory', DI\get(ResponseFactory::class))
         ->constructorParameter('streamFactory', DI\get(StreamFactory::class)),
-    SessionManagerInterface::class => function (ContainerInterface $container) {
-        return $container->get(SessionInterface::class);
-    },
+    SessionManagerInterface::class => DI\get(SessionInterface::class),
     SessionInterface::class => function (ContainerInterface $container) {
         $options = [
             'name' => $container->get('app_name'),
@@ -68,13 +65,8 @@ return [
     Core\MailReportFunction::class => DI\autowire()
         ->constructorParameter('assertRecipient', DI\get('sender_core.assert_recipient')),
     Core\MailService::class => DI\autowire(Core\NullMailService::class),
-    Core\Recaptcha::class => DI\Factory(function (ContainerInterface $c) {
-        return new Core\Recaptcha(
-            logger: $c->get(LoggerInterface::class),
-            client: $c->get(Client::class),
-            secretKey: $c->get('security.recaptcha.secret_key'),
-        );
-    }),
+    Core\Recaptcha::class => DI\autowire()
+        ->constructorParameter('secretKey', DI\get('security.recaptcha.secret_key')),
     Core\RecaptchaFactory::class => DI\autowire()
         ->constructorParameter('secretKey', DI\get('security.recaptcha.secret_key')),
     Core\RenderService::class => DI\get(Core\LatteRenderService::class),
@@ -89,17 +81,14 @@ return [
         ->constructorParameter('offlineMode', DI\get('offline_mode'))
         ->constructorParameter('production', DI\get('production'))
         ->constructorParameter('serverName', DI\get('server_name')),
-    Core\UserMailer::class => function (ContainerInterface $c) {
+    'templateOverrides' => function (ContainerInterface $c) {
         $configService = $c->get(Core\ConfigService::class);
-        $templateOverrides = $configService->get('user_mailer.template_overrides');
 
-        return new Core\UserMailer(
-            logger: $c->get(LoggerInterface::class),
-            mailService: $c->get(Core\MailService::class),
-            senderEmail: $c->get('sender_core.default_sender'),
-            templateOverrides: $templateOverrides,
-        );
+        return $configService->get('user_mailer.template_overrides');
     },
+    Core\UserMailer::class => DI\autowire()
+        ->constructorParameter('senderEmail', DI\get('sender_core.default_sender'))
+        ->constructorParameter('templateOverrides', DI\get('templateOverrides')),
 
     Queue\Queue::class => DI\autowire(Queue\MemoryQueue::class)
         ->constructorParameter('name', 'default'),
@@ -125,17 +114,14 @@ return [
         ]),
     Security\RandomProvider::class => DI\get(Security\OpensslRandomProvider::class),
 
-    Translation\TranslationLoader::class => DI\get(Translation\FileTranslationLoader::class),
-    Translation\FileTranslationLoader::class => function (ContainerInterface $c) {
+    'translationDirectories' => function (ContainerInterface $c) {
         $configService = $c->get(Core\ConfigService::class);
-        $directories = $configService->get('translations.directories');
 
-        return new Translation\FileTranslationLoader(
-            cache: $c->get(Core\Cache::class),
-            runtimeEnvironment: $c->get(Core\RuntimeEnvironment::class),
-            directories: $directories,
-        );
+        return $configService->get('translations.directories');
     },
+    Translation\TranslationLoader::class => DI\get(Translation\FileTranslationLoader::class),
+    Translation\FileTranslationLoader::class => DI\autowire()
+        ->constructorParameter('directories', DI\get('translationDirectories')),
     Translation\TranslationService::class => DI\autowire()
         ->constructorParameter('language', DI\get('translations.default_language')),
 ];
