@@ -301,7 +301,7 @@ SQL;
     }
 
     /**
-     * @param array<null|array{string, bool|float|int|string}|bool|float|int|string> $filter
+     * @param array<null|array{string, null|array<bool|float|int|string>|bool|float|int|string}|bool|float|int|string> $filter
      */
     public function countObjects(array $filter = []): int
     {
@@ -378,7 +378,7 @@ SQL;
     // Helper retrieval functions
     //
     /**
-     * @param array<null|array{string, bool|float|int|string}|bool|float|int|string> $filter
+     * @param array<null|array{string, null|array<bool|float|int|string>|bool|float|int|string}|bool|float|int|string> $filter
      *
      * @return ?T
      */
@@ -428,7 +428,7 @@ SQL;
     }
 
     /**
-     * @param array<null|array{string, bool|float|int|string}|bool|float|int|string> $filter
+     * @param array<null|array{string, null|array<bool|float|int|string>|bool|float|int|string}|bool|float|int|string> $filter
      *
      * @return EntityCollection<T>
      */
@@ -559,7 +559,7 @@ SQL;
     }
 
     /**
-     * @param array<null|array{string, bool|float|int|string}|bool|float|int|string> $filter
+     * @param array<null|array{string, null|array<bool|float|int|string>|bool|float|int|string}|bool|float|int|string> $filter
      *
      * @return array{query: string, params: array<bool|float|int|string>}
      */
@@ -582,19 +582,81 @@ SQL;
 
             if (is_array($definition))
             {
-                if (count($definition) !== 2)
+                if (count($definition) === 3)
                 {
+                    $operator = $definition[0];
+
+                    if ($operator === 'BETWEEN')
+                    {
+                        $filterFmt .= "`{$key}` BETWEEN ? AND ?";
+                        $params[] = $definition[1];
+                        $params[] = $definition[2];
+
+                        continue;
+                    }
+
+                    if ($operator === 'NOT BETWEEN')
+                    {
+                        $filterFmt .= "`{$key}` NOT BETWEEN ? AND ?";
+                        $params[] = $definition[1];
+                        $params[] = $definition[2];
+
+                        continue;
+                    }
+
                     throw new \RuntimeException('Invalid filter definition');
                 }
 
-                $operator = $definition[0];
-                $value = $definition[1];
+                if (count($definition) === 2)
+                {
+                    $operator = $definition[0];
+
+                    if ($operator === 'IN' || $operator === 'NOT IN')
+                    {
+                        if (!is_array($definition[1]))
+                        {
+                            throw new \RuntimeException('Invalid filter definition');
+                        }
+
+                        $params = array_merge($params, $definition[1]);
+
+                        $filterFmt .= "`{$key}` {$operator} (";
+                        $filterFmt .= implode(', ', array_map(fn ($v) => '?', $definition[1]));
+                        $filterFmt .= ')';
+
+                        continue;
+                    }
+
+                    $value = $definition[1];
+
+                    // Mysqli does not accept empty for false, so force to zero
+                    //
+                    if ($value === false)
+                    {
+                        $value = 0;
+                    }
+
+                    if ($value === null && $operator === '=')
+                    {
+                        $filterFmt .= "`{$key}` IS NULL";
+                    }
+                    elseif ($value === null && $operator === '!=')
+                    {
+                        $filterFmt .= "`{$key}` IS NOT NULL";
+                    }
+                    else
+                    {
+                        $filterFmt .= "`{$key}` {$operator} ?";
+                        $params[] = $value;
+                    }
+
+                    continue;
+                }
+
+                throw new \RuntimeException('Invalid filter definition');
             }
-            else
-            {
-                $operator = '=';
-                $value = $definition;
-            }
+
+            $value = $definition;
 
             // Mysqli does not accept empty for false, so force to zero
             //
@@ -609,7 +671,7 @@ SQL;
             }
             else
             {
-                $filterFmt .= "`{$key}` {$operator} ?";
+                $filterFmt .= "`{$key}` = ?";
                 $params[] = $value;
             }
         }
