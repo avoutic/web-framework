@@ -9,7 +9,6 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Server\RequestHandlerInterface;
 use WebFramework\Core\MessageService;
 use WebFramework\Middleware\CsrfValidationMiddleware;
-use WebFramework\Security\BlacklistService;
 use WebFramework\Security\CsrfService;
 
 /**
@@ -103,12 +102,6 @@ final class CsrfValidationMiddlewareTest extends Unit
         $middleware = $this->make(
             CsrfValidationMiddleware::class,
             [
-                'blacklistService' => $this->makeEmpty(
-                    BlacklistService::class,
-                    [
-                        'addEntry' => Expected::once(),
-                    ]
-                ),
                 'csrfService' => $this->makeEmpty(
                     CsrfService::class,
                     [
@@ -162,12 +155,6 @@ final class CsrfValidationMiddlewareTest extends Unit
         $middleware = $this->make(
             CsrfValidationMiddleware::class,
             [
-                'blacklistService' => $this->makeEmpty(
-                    BlacklistService::class,
-                    [
-                        'addEntry' => Expected::once(),
-                    ]
-                ),
                 'csrfService' => $this->makeEmpty(
                     CsrfService::class,
                     [
