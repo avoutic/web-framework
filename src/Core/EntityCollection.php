@@ -35,6 +35,16 @@ class EntityCollection implements \Iterator, \Countable
     ) {}
 
     /**
+     * Get the entities in the collection.
+     *
+     * @return array<T> The entities in the collection
+     */
+    public function getEntities(): array
+    {
+        return $this->entities;
+    }
+
+    /**
      * Convert the collection to an array of entity arrays.
      *
      * @return array<string, mixed> An array representation of the collection
