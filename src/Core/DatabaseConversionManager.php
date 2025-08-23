@@ -54,6 +54,13 @@ class DatabaseConversionManager
      */
     public function convertFromDbScheme(bool $dryRun = false): void
     {
+        if ($this->database instanceof NullDatabase)
+        {
+            $this->write('Called on NullDatabase instance'.PHP_EOL);
+
+            return;
+        }
+
         $appDir = $this->container->get('app_dir');
         $dbSchemeDir = "{$appDir}/db_scheme";
 
