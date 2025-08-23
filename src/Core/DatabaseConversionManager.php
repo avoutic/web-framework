@@ -77,6 +77,14 @@ class DatabaseConversionManager
         try
         {
             $result = $this->database->query('SELECT value FROM stored_values WHERE module = ? AND name = ?', ['db', 'app_db_version']);
+            if ($result->RecordCount() === 0)
+            {
+                $this->write('No app_db_version found in stored_values table'.PHP_EOL);
+                $this->write('No previously initialized database found.'.PHP_EOL);
+
+                return;
+            }
+
             $currentVersion = (int) $result->fields['value'];
         }
         catch (\RuntimeException $e)
