@@ -104,16 +104,31 @@ class TaskRunner
         $this->isPlaintext = true;
     }
 
+    public function loadEnv(): void
+    {
+        $envLoader = new EnvLoader();
+        $envFile = "{$this->appDir}/.env";
+
+        $appEnv = getenv('APP_ENV');
+        if ($appEnv !== false)
+        {
+            if (file_exists("{$this->appDir}/.env.{$appEnv}"))
+            {
+                $envFile = "{$this->appDir}/.env.{$appEnv}";
+            }
+        }
+
+        $envLoader->loadEnvFile($envFile);
+
+        require_once __DIR__.'/../Environment.php';
+    }
+
     /**
      * Build the configuration and container.
      */
     public function build(): void
     {
-        $envLoader = new EnvLoader();
-        $envLoader->loadEnvFile("{$this->appDir}/.env");
-        $envLoader->loadEnvFile("{$this->appDir}/.env.local");
-
-        require_once __DIR__.'/../Environment.php';
+        $this->loadEnv();
 
         $config = $this->configBuilder->buildConfig(
             $this->configFiles,

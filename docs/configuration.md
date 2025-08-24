@@ -184,8 +184,7 @@ This maintains backwards compatibility while providing the enhanced type-safe en
 Configuration values are resolved in the following order (highest to lowest precedence):
 
 1. System environment variables
-2. `.env.local` file
-3. `.env` file
-4. Configuration files (`config_local.php` > `config.php` > `base_config.php`)
+2. Relevant `.env` file depending on `APP_ENV` (e.g. `.env.local` or `.env.production`, and '.env' if no `APP_ENV` is set or no `.env.APP_ENV` file exists)
+3. Configuration files (by default `config_local.php` > `config.php` > `base_config.php`)
 
 This allows you to override any configuration value at any level while maintaining sensible defaults.
