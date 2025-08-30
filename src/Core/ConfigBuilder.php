@@ -33,12 +33,14 @@ class ConfigBuilder
     /**
      * Merge a configuration array on top of the existing global configuration.
      *
+     * For numerically indexed arrays (lists), the array is fully replaced.
+     * For associative arrays, keys are merged recursively.
+     *
      * @param array<string, mixed> $config The configuration array to merge
      */
     public function mergeConfigOnTop(array $config): void
     {
-        // Merge configurations
-        $this->globalConfig = array_replace_recursive($this->globalConfig, $config);
+        $this->globalConfig = $this->deepMerge($this->globalConfig, $config);
     }
 
     /**
@@ -133,6 +135,44 @@ class ConfigBuilder
             else
             {
                 $result[$prefix.$key] = $value;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Deep merge $right on top of $left.
+     * - If both values are arrays:
+     *   - If either is a list (numerically indexed), replace entirely with $right.
+     *   - Else merge associative keys recursively.
+     * - Otherwise, return $right.
+     */
+    private function deepMerge(mixed $left, mixed $right): mixed
+    {
+        if (!is_array($left) || !is_array($right))
+        {
+            return $right;
+        }
+
+        $leftIsList = array_is_list($left);
+        $rightIsList = array_is_list($right);
+
+        if ($leftIsList && $rightIsList)
+        {
+            return $right;
+        }
+
+        $result = $left;
+        foreach ($right as $key => $value)
+        {
+            if (array_key_exists($key, $result))
+            {
+                $result[$key] = $this->deepMerge($result[$key], $value);
+            }
+            else
+            {
+                $result[$key] = $value;
             }
         }
 
