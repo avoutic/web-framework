@@ -12,6 +12,7 @@
 namespace WebFramework\Core;
 
 use Psr\Container\ContainerInterface as Container;
+use WebFramework\Task\CacheClearTask;
 use WebFramework\Task\ConsoleTask;
 use WebFramework\Task\DbConvertFromSchemeTask;
 use WebFramework\Task\DbConvertProductionTask;
@@ -32,6 +33,7 @@ class ConsoleTaskRegistryService
 {
     /** @var array<string, class-string> */
     private array $frameworkCommands = [
+        'cache:clear' => CacheClearTask::class,
         'db:migrate' => DbMigrateTask::class,
         'db:convert-from-scheme' => DbConvertFromSchemeTask::class,
         'db:convert-production' => DbConvertProductionTask::class,
