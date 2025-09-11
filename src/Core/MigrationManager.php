@@ -111,7 +111,7 @@ class MigrationManager
         }
 
         $migrations = [];
-        $files = scandir($directory);
+        $files = scandir($directory) ?: [];
 
         foreach ($files as $file)
         {
