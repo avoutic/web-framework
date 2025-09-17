@@ -144,6 +144,16 @@ class TaskRunner
         $definitionFiles = $this->definitionFiles ?? $config['definition_files'];
         foreach ($definitionFiles as $file)
         {
+            if ($file[0] == '?')
+            {
+                $file = substr($file, 1);
+
+                if (!file_exists("{$this->appDir}/definitions/{$file}"))
+                {
+                    continue;
+                }
+            }
+
             $this->containerBuilder->addDefinitions("{$this->appDir}/definitions/{$file}");
         }
 

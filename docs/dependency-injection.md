@@ -21,6 +21,8 @@ Meaning that if will load the base definition file from the WebFramework, then t
 
 To set your own definition files, you need to specify them in the `base_config.php` file under the `definition_files` key. These files contain PHP-DI definitions that configure how services and classes are instantiated.
 
+If the file starts with a `?`, it will be ignored if it does not exist. This is useful for local configuration files that you don't want to commit to version control.
+
 ### Example Configuration
 
 ~~~php
@@ -30,6 +32,7 @@ return [
     'definition_files' => [
         '/vendor/avoutic/web-framework/definitions/web_framework_definitions.php',
         '/definitions/my_definitions.php', // Your custom definitions
+        '?/definitions/local_definitions.php', // Local definitions that are not committed
     ],
 ];
 ~~~
