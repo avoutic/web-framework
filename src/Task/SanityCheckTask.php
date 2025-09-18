@@ -40,6 +40,16 @@ class SanityCheckTask extends ConsoleTask
         return 'Run sanity checks on the application';
     }
 
+    public function getUsage(): string
+    {
+        return <<<'EOF'
+        Run sanity checks on the application.
+
+        Usage:
+        framework sanity:check
+        EOF;
+    }
+
     /**
      * Execute the sanity check task.
      *
