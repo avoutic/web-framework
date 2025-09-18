@@ -62,6 +62,9 @@ return [
     Core\ConsoleApplication::class => DI\autowire()
         ->constructorParameter('debug', DI\get('debug')),
     Core\Database::class => DI\autowire(Core\NullDatabase::class),
+    Core\HttpApplication::class => DI\autowire()
+        ->constructorParameter('exceptionLogger', DI\get('exceptionLogger'))
+        ->constructorParameter('debug', DI\get('debug')),
     Core\Instrumentation::class => DI\autowire(Core\NullInstrumentation::class),
     Core\LatteRenderService::class => DI\autowire()
         ->constructorParameter('templateDir', DI\string('{app_dir}/templates'))
