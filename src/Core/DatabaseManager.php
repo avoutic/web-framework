@@ -267,7 +267,7 @@ class DatabaseManager
                     $this->write('   Failed: ');
                     $this->write($this->database->getLastError().PHP_EOL);
 
-                    exit();
+                    exit(1);
                 }
             }
             elseif ($step['type'] === 'task')
