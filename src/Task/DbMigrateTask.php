@@ -77,39 +77,22 @@ class DbMigrateTask extends ConsoleTask
         EOF;
     }
 
-    /**
-     * Get the options for the task.
-     *
-     * @return array<array{long: string, short?: string, description: string, has_value: bool, setter: callable}> The options for the task
-     */
     public function getOptions(): array
     {
         return [
-            [
-                'long' => 'dry-run',
-                'short' => 'd',
-                'description' => 'Dry run the task (no changes will be made)',
-                'has_value' => false,
-                'setter' => [$this, 'setDryRun'],
-            ],
-            [
-                'long' => 'framework',
-                'short' => 'f',
-                'description' => 'Run framework migrations only',
-                'has_value' => false,
-                'setter' => [$this, 'setFrameworkOnly'],
-            ],
+            new TaskOption('dry-run', 'd', 'Dry run the task (no changes will be made)', false, [$this, 'setDryRun']),
+            new TaskOption('framework', 'f', 'Run framework migrations only', false, [$this, 'setFrameworkOnly']),
         ];
     }
 
-    public function setDryRun(bool $dryRun = true): void
+    public function setDryRun(): void
     {
-        $this->dryRun = $dryRun;
+        $this->dryRun = true;
     }
 
-    public function setFrameworkOnly(bool $frameworkOnly = true): void
+    public function setFrameworkOnly(): void
     {
-        $this->frameworkOnly = $frameworkOnly;
+        $this->frameworkOnly = true;
     }
 
     /**

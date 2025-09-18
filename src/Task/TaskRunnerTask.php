@@ -12,6 +12,7 @@
 namespace WebFramework\Task;
 
 use Carbon\Carbon;
+use WebFramework\Exception\ArgumentParserException;
 
 class TaskRunnerTask extends ConsoleTask
 {
@@ -57,36 +58,16 @@ class TaskRunnerTask extends ConsoleTask
     public function getArguments(): array
     {
         return [
-            [
-                'name' => 'taskClass',
-                'description' => 'The fully qualified class name of the task to run',
-                'required' => true,
-                'setter' => [$this, 'setTaskClass'],
-            ],
+            new TaskArgument('taskClass', 'The fully qualified class name of the task to run', true, [$this, 'setTaskClass']),
         ];
     }
 
     public function getOptions(): array
     {
         return [
-            [
-                'long' => 'continuous',
-                'description' => 'Run the task continuously',
-                'has_value' => false,
-                'setter' => [$this, 'setContinuous'],
-            ],
-            [
-                'long' => 'delay',
-                'description' => 'The delay between continuous runs in seconds',
-                'has_value' => true,
-                'setter' => [$this, 'setDelayBetweenRuns'],
-            ],
-            [
-                'long' => 'max-runtime',
-                'description' => 'The maximum runtime in seconds',
-                'has_value' => true,
-                'setter' => [$this, 'setMaxRunTime'],
-            ],
+            new TaskOption('continuous', null, 'Run the task continuously', false, [$this, 'setContinuous']),
+            new TaskOption('delay', null, 'The delay between continuous runs in seconds', true, [$this, 'setDelayBetweenRuns']),
+            new TaskOption('max-runtime', null, 'The maximum runtime in seconds', true, [$this, 'setMaxRunTime']),
         ];
     }
 
@@ -106,28 +87,38 @@ class TaskRunnerTask extends ConsoleTask
     /**
      * Set the delay between continuous runs.
      *
-     * @param int $secs The delay in seconds
+     * @param string $secs The delay in seconds
      */
-    public function setDelayBetweenRuns(int $secs): void
+    public function setDelayBetweenRuns(string $secs): void
     {
-        $this->delayBetweenRunsInSecs = $secs;
+        if (!is_numeric($secs))
+        {
+            throw new ArgumentParserException('Delay between runs must be a number');
+        }
+
+        $this->delayBetweenRunsInSecs = (int) $secs;
     }
 
     /**
      * Set the maximum runtime for continuous execution.
      *
-     * @param int $secs The maximum runtime in seconds
+     * @param string $secs The maximum runtime in seconds
      */
-    public function setMaxRunTime(int $secs): void
+    public function setMaxRunTime(string $secs): void
     {
-        $this->maxRuntimeInSecs = $secs;
+        if (!is_numeric($secs))
+        {
+            throw new ArgumentParserException('Max runtime must be a number');
+        }
+
+        $this->maxRuntimeInSecs = (int) $secs;
     }
 
     public function execute(): void
     {
         if ($this->taskClass === null)
         {
-            throw new \RuntimeException('Task class not set');
+            throw new ArgumentParserException('Task class not set');
         }
 
         if (!class_exists($this->taskClass))

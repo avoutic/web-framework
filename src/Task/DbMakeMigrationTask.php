@@ -79,40 +79,29 @@ class DbMakeMigrationTask extends ConsoleTask
     /**
      * Get the options for the task.
      *
-     * @return array<array{long: string, short?: string, description: string, has_value: bool, setter: callable}> The options for the task
+     * @return array<TaskOption>
      */
     public function getOptions(): array
     {
         return [
-            [
-                'long' => 'framework',
-                'short' => 'f',
-                'description' => 'Create a framework migration',
-                'has_value' => false,
-                'setter' => [$this, 'setFramework'],
-            ],
+            new TaskOption('framework', 'f', 'Create a framework migration', false, [$this, 'setFramework']),
         ];
     }
 
-    public function setFramework(bool $framework = true): void
+    public function setFramework(): void
     {
-        $this->framework = $framework;
+        $this->framework = true;
     }
 
     /**
      * Get the arguments for the task.
      *
-     * @return array<array{name: string, description: string, required: bool, setter: callable}> The arguments for the task
+     * @return array<TaskArgument>
      */
     public function getArguments(): array
     {
         return [
-            [
-                'name' => 'name',
-                'description' => 'The name/description of the migration',
-                'required' => true,
-                'setter' => [$this, 'setMigrationName'],
-            ],
+            new TaskArgument('name', 'The name/description of the migration', true, [$this, 'setMigrationName']),
         ];
     }
 

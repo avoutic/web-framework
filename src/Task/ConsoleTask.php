@@ -28,7 +28,7 @@ abstract class ConsoleTask implements Task
     /**
      * Get the arguments for the task.
      *
-     * @return array<array{name: string, description: string, required: bool, setter: callable}> The arguments for the task
+     * @return array<TaskArgument>
      */
     public function getArguments(): array
     {
@@ -38,7 +38,7 @@ abstract class ConsoleTask implements Task
     /**
      * Get the options for the task.
      *
-     * @return array<array{long: string, short?: string, description: string, has_value: bool, setter: callable}> The options for the task
+     * @return array<TaskOption>
      */
     public function getOptions(): array
     {

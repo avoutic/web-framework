@@ -170,8 +170,10 @@ class TaskRunner
      */
     private function applyArguments(ConsoleTask $task, array $commandLineArguments): void
     {
+        /** @var array<TaskOption> $options */
         $options = $task->getOptions();
 
+        /** @var array<TaskArgument> $arguments */
         $arguments = $task->getArguments();
         $argumentIndex = 0;
 
@@ -183,64 +185,54 @@ class TaskRunner
 
             if (str_starts_with($arg, '--'))
             {
-                $searchKey = 'long';
                 $searchValue = substr($arg, 2);
 
-                $result = array_filter($options, function ($item) use ($searchKey, $searchValue) {
-                    return $item[$searchKey] === $searchValue;
-                });
+                $option = $this->findOptionByLong($options, $searchValue);
 
-                $data = reset($result);
-
-                if (!$data)
+                if (!$option)
                 {
                     throw new ArgumentParserException("Unknown option: {$arg}");
                 }
 
-                if ($data['has_value'])
+                if ($option->hasValue())
                 {
                     if ($i + 1 >= $argCount)
                     {
                         throw new ArgumentParserException("Option {$arg} requires a value");
                     }
 
-                    $data['setter']($commandLineArguments[$i + 1]);
+                    $option->applyValue($commandLineArguments[$i + 1]);
                     $i++;
                 }
                 else
                 {
-                    $data['setter']();
+                    $option->trigger();
                 }
             }
             elseif (str_starts_with($arg, '-'))
             {
-                $searchKey = 'short';
                 $searchValue = substr($arg, 1);
 
-                $result = array_filter($options, function ($item) use ($searchKey, $searchValue) {
-                    return isset($item[$searchKey]) && $item[$searchKey] === $searchValue;
-                });
+                $option = $this->findOptionByShort($options, $searchValue);
 
-                $data = reset($result);
-
-                if (!$data)
+                if (!$option)
                 {
                     throw new ArgumentParserException("Unknown option: {$arg}");
                 }
 
-                if ($data['has_value'])
+                if ($option->hasValue())
                 {
                     if ($i + 1 >= $argCount)
                     {
                         throw new ArgumentParserException("Option {$arg} requires a value");
                     }
 
-                    $data['setter']($commandLineArguments[$i + 1]);
+                    $option->applyValue($commandLineArguments[$i + 1]);
                     $i++;
                 }
                 else
                 {
-                    $data['setter']();
+                    $option->trigger();
                 }
             }
             else
@@ -250,18 +242,57 @@ class TaskRunner
                     throw new ArgumentParserException('Too many arguments');
                 }
 
-                $data = $arguments[$argumentIndex];
-                $data['setter']($arg);
+                $argument = $arguments[$argumentIndex];
+                $argument->apply($arg);
                 $argumentIndex++;
             }
 
             $i++;
         }
 
-        if ($argumentIndex < count($arguments))
+        for ($remaining = $argumentIndex; $remaining < count($arguments); $remaining++)
         {
-            throw new ArgumentParserException('Missing arguments');
+            if ($arguments[$remaining]->isRequired())
+            {
+                throw new ArgumentParserException('Missing arguments');
+            }
         }
+    }
+
+    /**
+     * Locate an option by its long name.
+     *
+     * @param array<TaskOption> $options
+     */
+    private function findOptionByLong(array $options, string $long): ?TaskOption
+    {
+        foreach ($options as $option)
+        {
+            if ($option->getLong() === $long)
+            {
+                return $option;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Locate an option by its short name.
+     *
+     * @param array<TaskOption> $options
+     */
+    private function findOptionByShort(array $options, string $short): ?TaskOption
+    {
+        foreach ($options as $option)
+        {
+            if ($option->getShort() === $short)
+            {
+                return $option;
+            }
+        }
+
+        return null;
     }
 
     /**

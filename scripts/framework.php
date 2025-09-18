@@ -13,6 +13,8 @@
 use WebFramework\Core\ConsoleTaskRegistryService;
 use WebFramework\Core\DebugService;
 use WebFramework\Exception\ArgumentParserException;
+use WebFramework\Task\TaskArgument;
+use WebFramework\Task\TaskOption;
 use WebFramework\Task\TaskRunner;
 
 // Get the project root directory
@@ -46,45 +48,101 @@ function showUsage(string $scriptName): void
 {
     global $taskRegistry;
 
+    $printCommand = static function (string $command, ?string $description, array $arguments = [], array $options = []): void {
+        $stdPadStr = str_repeat(' ', 30);
+        $line = ' '.$command;
+
+        if (!empty($arguments))
+        {
+            foreach ($arguments as $argument)
+            {
+                if (!$argument instanceof TaskArgument)
+                {
+                    continue;
+                }
+
+                if ($argument->isRequired())
+                {
+                    $line .= ' <'.$argument->getName().'>';
+                }
+                else
+                {
+                    $line .= ' ['.$argument->getName().']';
+                }
+            }
+        }
+
+        if (strlen($line) < 30)
+        {
+            $line .= str_repeat(' ', 30 - strlen($line));
+        }
+        else
+        {
+            $line .= PHP_EOL.$stdPadStr;
+        }
+
+        echo $line.$description.PHP_EOL;
+
+        if (!empty($options))
+        {
+            foreach ($options as $option)
+            {
+                if (!$option instanceof TaskOption)
+                {
+                    continue;
+                }
+
+                $line = '';
+                if ($option->getShort())
+                {
+                    $line .= '    -'.$option->getShort().', --'.$option->getLong();
+                }
+                else
+                {
+                    $line .= '        --'.$option->getLong();
+                }
+                if ($option->hasValue())
+                {
+                    $line .= ' <value>';
+                }
+
+                $line .= strlen($line) < 30 ? str_repeat(' ', 30 - strlen($line)) : ' ';
+                $line .= $option->getDescription().PHP_EOL;
+
+                echo $line;
+            }
+        }
+    };
+
     echo 'Usage: '.$scriptName.' <command> [options]'.PHP_EOL.PHP_EOL;
     echo 'Available commands:'.PHP_EOL;
-    echo '  help         Show this help'.PHP_EOL;
+    echo '  help           Show this help'.PHP_EOL;
     echo '  help <command> Show help for a command'.PHP_EOL;
-    echo PHP_EOL;
-    echo '  cache:clear  Clear the cache'.PHP_EOL;
-    echo PHP_EOL;
-    echo '  config:show  Show the loaded configuration'.PHP_EOL;
-    echo PHP_EOL;
-    echo '  db:migrate   Run pending database migrations'.PHP_EOL;
-    echo '               --dry-run    Dry run the task (no changes will be made)'.PHP_EOL;
-    echo '               --framework  Run framework migrations only'.PHP_EOL;
-    echo '  db:convert-from-scheme Convert from old db_scheme system to new migrations system'.PHP_EOL;
-    echo '               --dry-run    Show what would be done without making changes'.PHP_EOL;
-    echo '  db:convert-production Convert production database to migration system'.PHP_EOL;
-    echo '               --dry-run    Show what would be done without making changes'.PHP_EOL;
-    echo '  db:status    Show database migration status'.PHP_EOL;
-    echo '  db:make      Generate a new migration file'.PHP_EOL;
-    echo '               --framework  Create a framework migration'.PHP_EOL;
-    echo PHP_EOL;
-    echo '  queue:list   List all queues'.PHP_EOL;
-    echo '  queue:worker Run a queue worker'.PHP_EOL;
-    echo '               Usage: '.$scriptName.' queue:worker <QueueName>'.PHP_EOL;
-    echo '               --max-jobs   The maximum number of jobs to process'.PHP_EOL;
-    echo '               --max-runtime The maximum runtime of the worker'.PHP_EOL;
-    echo PHP_EOL;
-    echo '  sanity:check Run sanity checks'.PHP_EOL;
-    echo PHP_EOL;
-    echo '  task:run     Run a task'.PHP_EOL;
-    echo '               Usage: '.$scriptName.' task:run <TaskClass>'.PHP_EOL;
-    echo '               --continuous      Run the task continuously'.PHP_EOL;
-    echo '               --delay <secs>    The delay between continuous runs in seconds'.PHP_EOL;
-    echo '               --max-runtime <secs> The maximum runtime in seconds'.PHP_EOL;
+
+    $frameworkTasks = $taskRegistry->getFrameworkTasks();
+    $lastCommandModule = '';
+    foreach ($frameworkTasks as $command => $task)
+    {
+        $commandModule = substr($command, 0, strpos($command, ':') ?: -1);
+        if ($commandModule !== $lastCommandModule)
+        {
+            echo PHP_EOL;
+            $lastCommandModule = $commandModule;
+        }
+
+        $task = $taskRegistry->getTaskForCommand($command);
+        $description = $task->getDescription();
+        $arguments = $task->getArguments();
+        $options = $task->getOptions();
+        $printCommand($command, $description, $arguments, $options);
+    }
 
     $appTasks = $taskRegistry->getAppTasks();
     if (!empty($appTasks))
     {
         echo PHP_EOL;
         echo 'App commands:'.PHP_EOL;
+
         foreach ($appTasks as $command => $task)
         {
             $task = $taskRegistry->getTaskForCommand($command);
@@ -95,12 +153,9 @@ function showUsage(string $scriptName): void
             }
 
             $description = $task->getDescription();
-            echo "  {$command}";
-            if ($description)
-            {
-                echo "   {$description}";
-            }
-            echo PHP_EOL;
+            $arguments = $task->getArguments();
+            $options = $task->getOptions();
+            $printCommand($command, $description, $arguments, $options);
         }
     }
 

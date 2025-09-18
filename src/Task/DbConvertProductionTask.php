@@ -62,13 +62,7 @@ class DbConvertProductionTask extends ConsoleTask
     public function getOptions(): array
     {
         return [
-            [
-                'long' => 'dry-run',
-                'short' => 'd',
-                'description' => 'Dry run mode',
-                'has_value' => false,
-                'setter' => [$this, 'setDryRun'],
-            ],
+            new TaskOption('dry-run', 'd', 'Dry run mode', false, [$this, 'setDryRun']),
         ];
     }
 

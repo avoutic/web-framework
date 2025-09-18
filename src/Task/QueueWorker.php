@@ -12,6 +12,7 @@
 namespace WebFramework\Task;
 
 use Carbon\Carbon;
+use WebFramework\Exception\ArgumentParserException;
 use WebFramework\Queue\QueueService;
 
 class QueueWorker extends ConsoleTask
@@ -59,43 +60,36 @@ class QueueWorker extends ConsoleTask
     public function getArguments(): array
     {
         return [
-            [
-                'name' => 'queueName',
-                'description' => 'The name of the queue to work',
-                'required' => true,
-                'setter' => [$this, 'setQueueName'],
-            ],
+            new TaskArgument('queueName', 'The name of the queue to work', true, [$this, 'setQueueName']),
         ];
     }
 
     public function getOptions(): array
     {
         return [
-            [
-                'long' => 'max-jobs',
-                'short' => 'm',
-                'description' => 'The maximum number of jobs to process',
-                'has_value' => true,
-                'setter' => [$this, 'setMaxJobs'],
-            ],
-            [
-                'long' => 'max-runtime',
-                'short' => 'r',
-                'description' => 'The maximum runtime of the worker',
-                'has_value' => true,
-                'setter' => [$this, 'setMaxRuntime'],
-            ],
+            new TaskOption('max-jobs', 'm', 'The maximum number of jobs to process', true, [$this, 'setMaxJobs']),
+            new TaskOption('max-runtime', 'r', 'The maximum runtime of the worker', true, [$this, 'setMaxRuntime']),
         ];
     }
 
-    public function setMaxJobs(int $maxJobs): void
+    public function setMaxJobs(string $maxJobs): void
     {
-        $this->maxJobs = $maxJobs;
+        if (!is_numeric($maxJobs))
+        {
+            throw new ArgumentParserException('Max jobs must be a number');
+        }
+
+        $this->maxJobs = (int) $maxJobs;
     }
 
-    public function setMaxRuntime(int $maxRuntime): void
+    public function setMaxRuntime(string $maxRuntime): void
     {
-        $this->maxRuntime = $maxRuntime;
+        if (!is_numeric($maxRuntime))
+        {
+            throw new ArgumentParserException('Max runtime must be a number');
+        }
+
+        $this->maxRuntime = (int) $maxRuntime;
     }
 
     public function setQueueName(string $queueName): void
@@ -107,7 +101,7 @@ class QueueWorker extends ConsoleTask
     {
         if ($this->queueName === null)
         {
-            throw new \RuntimeException('Queue name not set');
+            throw new ArgumentParserException('Queue name not set');
         }
 
         $queue = $this->queueService->get($this->queueName);
