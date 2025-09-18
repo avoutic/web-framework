@@ -59,6 +59,8 @@ return [
     Core\Cache::class => DI\autowire(Core\NullCache::class),
     Core\ConfigService::class => DI\autowire()
         ->constructorParameter('config', DI\get('config_tree')),
+    Core\ConsoleApplication::class => DI\autowire()
+        ->constructorParameter('debug', DI\get('debug')),
     Core\Database::class => DI\autowire(Core\NullDatabase::class),
     Core\Instrumentation::class => DI\autowire(Core\NullInstrumentation::class),
     Core\LatteRenderService::class => DI\autowire()
