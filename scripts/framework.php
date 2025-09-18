@@ -53,6 +53,8 @@ function showUsage(string $scriptName): void
     echo PHP_EOL;
     echo '  cache:clear  Clear the cache'.PHP_EOL;
     echo PHP_EOL;
+    echo '  config:show  Show the loaded configuration'.PHP_EOL;
+    echo PHP_EOL;
     echo '  db:migrate   Run pending database migrations'.PHP_EOL;
     echo '               --dry-run    Dry run the task (no changes will be made)'.PHP_EOL;
     echo '               --framework  Run framework migrations only'.PHP_EOL;
