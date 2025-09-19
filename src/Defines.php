@@ -9,9 +9,6 @@
  * file that was distributed with this source code.
  */
 
-// Defined versions
-define('FRAMEWORK_VERSION', 9);
-
 // Format defines for verifying input
 //
 define('FORMAT_ID', '\d+');

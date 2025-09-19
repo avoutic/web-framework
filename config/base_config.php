@@ -18,11 +18,6 @@ return [
         ],
     ],
     'database_enabled' => env('DATABASE_ENABLED', false),
-    'versions' => [
-        'supported_framework' => -1,    /* Default is always -1. App should set supported semantic
-                                         * version of this framework it supports in own config.
-                                         */
-    ],
     'http_mode' => 'https',
     'base_url' => '',                    // Add a base_url to be used in external urls
     'sanity_check_modules' => [],        /* Associative array with application sanity check class names with

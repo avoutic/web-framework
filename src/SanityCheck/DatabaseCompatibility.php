@@ -43,43 +43,6 @@ class DatabaseCompatibility extends Base
     ) {}
 
     /**
-     * Check if the supported framework version is configured and the framework version matches the required version.
-     *
-     * @return bool True if check passes, false otherwise
-     */
-    private function checkFrameworkVersion(): bool
-    {
-        $requiredWfVersion = FRAMEWORK_VERSION;
-        $supportedWfVersion = $this->configService->get('versions.supported_framework');
-
-        if ($supportedWfVersion == -1)
-        {
-            $this->logger->emergency('No supported Framework version configured', ['required_wf_version' => $requiredWfVersion, 'supported_wf_version' => $supportedWfVersion]);
-            $this->addOutput(
-                '   No supported Framework version configured'.PHP_EOL.
-                '   There is no supported framework version provided in "versions.supported_framework".'.PHP_EOL.
-                "   The current version is {$requiredWfVersion} of this Framework.".PHP_EOL
-            );
-
-            return false;
-        }
-
-        if ($requiredWfVersion != $supportedWfVersion)
-        {
-            $this->logger->emergency('Framework version mismatch', ['required_wf_version' => $requiredWfVersion, 'supported_wf_version' => $supportedWfVersion]);
-            $this->addOutput(
-                '   Framework version mismatch'.PHP_EOL.
-                '   Please make sure that this app is upgraded to support version '.PHP_EOL.
-                "   {$requiredWfVersion} of this Framework.".PHP_EOL
-            );
-
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
      * Check if the stored_values table exists.
      *
      * @return bool True if check passes, false otherwise
@@ -185,13 +148,6 @@ class DatabaseCompatibility extends Base
      */
     public function performChecks(): bool
     {
-        $this->addOutput('Checking WF version:'.PHP_EOL);
-        if (!$this->checkFrameworkVersion())
-        {
-            return false;
-        }
-        $this->addOutput('  Pass'.PHP_EOL.PHP_EOL);
-
         if ($this->configService->get('database_enabled') != true || !$this->checkDb)
         {
             return true;
