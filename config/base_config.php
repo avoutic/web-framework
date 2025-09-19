@@ -11,6 +11,12 @@ return [
                                          * load relative to appDir
                                          */
     'timezone' => env('TIMEZONE', 'UTC'),
+    'logging' => [
+        'channels' => [
+            'default' => 'channels.default',
+            'exception' => 'channels.exception',
+        ],
+    ],
     'database_enabled' => env('DATABASE_ENABLED', false),
     'versions' => [
         'supported_framework' => -1,    /* Default is always -1. App should set supported semantic

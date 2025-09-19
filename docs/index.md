@@ -87,6 +87,7 @@ This documentation is organized into several sections, each focusing on a specif
 - **[Emitting Responses](./emitting-responses.md)**: How to generate responses in actions using the ResponseEmitter or via exceptions.
 - **[Caching](./caching.md)**: How to use caching to store and retrieve data efficiently.
 - **[Queueing](./queueing.md)**: How to queue Jobs and handle them asynchronously.
+- **[Logging](./logging.md)**: How to configure log channels and route log output.
 - **[Event Handling](./events.md)**: How to trigger and handle Events with EventListeners.
 
 ## Getting Started

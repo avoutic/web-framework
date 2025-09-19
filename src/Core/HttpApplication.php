@@ -11,9 +11,9 @@
 
 namespace WebFramework\Core;
 
-use Psr\Log\LoggerInterface;
 use Slim\Psr7\Factory\ServerRequestFactory;
 use WebFramework\Exception\SanityCheckException;
+use WebFramework\Logging\LogService;
 use WebFramework\Task\SlimAppTask;
 use WebFramework\Task\TaskRunner;
 
@@ -24,8 +24,7 @@ class HttpApplication
 {
     public function __construct(
         private DebugService $debugService,
-        private LoggerInterface $logger,
-        private LoggerInterface $exceptionLogger,
+        private LogService $logger,
         private ReportFunction $reportFunction,
         private TaskRunner $taskRunner,
         private bool $debug,
@@ -60,8 +59,8 @@ class HttpApplication
         {
             $errorReport = $this->debugService->getThrowableReport($throwable, $request);
 
-            $this->logger->error('Unhandled exception: '.$errorReport->getTitle());
-            $this->exceptionLogger->error('Unhandled exception: '.$errorReport->getTitle(), [
+            $this->logger->error('default', 'Unhandled exception: '.$errorReport->getTitle());
+            $this->logger->error('exception', 'Unhandled exception: '.$errorReport->getTitle(), [
                 'error_report' => $errorReport,
                 'hash' => $errorReport->getHash(),
             ]);
@@ -72,8 +71,8 @@ class HttpApplication
         }
         catch (\Throwable $innerException)
         {
-            $this->logger->error('Unhandled exception (without error report): '.$throwable->getMessage());
-            $this->exceptionLogger->error('Unhandled exception (without error report): '.$throwable->getMessage(), [
+            $this->logger->error('default', 'Unhandled exception (without error report): '.$throwable->getMessage());
+            $this->logger->error('exception', 'Unhandled exception (without error report): '.$throwable->getMessage(), [
                 'exception' => $throwable,
                 'inner_exception' => $innerException->getMessage(),
             ]);

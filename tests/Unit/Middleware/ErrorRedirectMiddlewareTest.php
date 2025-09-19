@@ -5,10 +5,8 @@ namespace Tests\Unit\Middleware;
 use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
 use GuzzleHttp\Psr7\ServerRequest as Request;
-use Psr\Container\ContainerInterface as Container;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Server\RequestHandlerInterface;
-use Psr\Log\LoggerInterface;
 use Slim\Exception\HttpForbiddenException;
 use Slim\Exception\HttpNotFoundException;
 use Slim\Exception\HttpUnauthorizedException;
@@ -17,6 +15,7 @@ use WebFramework\Core\ReportFunction;
 use WebFramework\Core\ResponseEmitter;
 use WebFramework\Exception\BlacklistException;
 use WebFramework\Exception\RedirectException;
+use WebFramework\Logging\LogService;
 use WebFramework\Middleware\ErrorRedirectMiddleware;
 use WebFramework\Support\ErrorReport;
 
@@ -198,12 +197,6 @@ final class ErrorRedirectMiddlewareTest extends Unit
         $middleware = $this->make(
             ErrorRedirectMiddleware::class,
             [
-                'container' => $this->makeEmpty(
-                    Container::class,
-                    [
-                        'get' => Expected::once(true),
-                    ]
-                ),
                 'debugService' => $this->makeEmpty(
                     DebugService::class,
                     [
@@ -211,15 +204,9 @@ final class ErrorRedirectMiddlewareTest extends Unit
                     ]
                 ),
                 'logger' => $this->makeEmpty(
-                    LoggerInterface::class,
+                    LogService::class,
                     [
-                        'error' => Expected::once(),
-                    ]
-                ),
-                'exceptionLogger' => $this->makeEmpty(
-                    LoggerInterface::class,
-                    [
-                        'error' => Expected::once(),
+                        'error' => Expected::exactly(2),
                     ]
                 ),
                 'reportFunction' => $this->makeEmpty(
@@ -236,6 +223,7 @@ final class ErrorRedirectMiddlewareTest extends Unit
                         ),
                     ]
                 ),
+                'debug' => true,
             ]
         );
 
@@ -259,12 +247,6 @@ final class ErrorRedirectMiddlewareTest extends Unit
         $middleware = $this->make(
             ErrorRedirectMiddleware::class,
             [
-                'container' => $this->makeEmpty(
-                    Container::class,
-                    [
-                        'get' => Expected::once(false),
-                    ]
-                ),
                 'debugService' => $this->makeEmpty(
                     DebugService::class,
                     [
@@ -272,15 +254,9 @@ final class ErrorRedirectMiddlewareTest extends Unit
                     ]
                 ),
                 'logger' => $this->makeEmpty(
-                    LoggerInterface::class,
+                    LogService::class,
                     [
-                        'error' => Expected::once(),
-                    ]
-                ),
-                'exceptionLogger' => $this->makeEmpty(
-                    LoggerInterface::class,
-                    [
-                        'error' => Expected::once(),
+                        'error' => Expected::exactly(2),
                     ]
                 ),
                 'reportFunction' => $this->makeEmpty(
@@ -297,6 +273,7 @@ final class ErrorRedirectMiddlewareTest extends Unit
                         ),
                     ]
                 ),
+                'debug' => false,
             ]
         );
 

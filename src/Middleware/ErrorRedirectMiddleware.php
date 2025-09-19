@@ -11,12 +11,10 @@
 
 namespace WebFramework\Middleware;
 
-use Psr\Container\ContainerInterface as Container;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Psr\Log\LoggerInterface;
 use Slim\Exception\HttpForbiddenException;
 use Slim\Exception\HttpMethodNotAllowedException;
 use Slim\Exception\HttpNotFoundException;
@@ -26,6 +24,7 @@ use WebFramework\Core\ReportFunction;
 use WebFramework\Core\ResponseEmitter;
 use WebFramework\Exception\BlacklistException;
 use WebFramework\Exception\RedirectException;
+use WebFramework\Logging\LogService;
 
 /**
  * Middleware to handle errors and exceptions.
@@ -35,18 +34,16 @@ use WebFramework\Exception\RedirectException;
 class ErrorRedirectMiddleware implements MiddlewareInterface
 {
     /**
-     * @param Container       $container       The DI container
      * @param DebugService    $debugService    The debug service
      * @param ReportFunction  $reportFunction  The report function
      * @param ResponseEmitter $responseEmitter The response emitter
      */
     public function __construct(
-        private Container $container,
         private DebugService $debugService,
-        private LoggerInterface $logger,
-        private LoggerInterface $exceptionLogger,
+        private LogService $logger,
         private ReportFunction $reportFunction,
         private ResponseEmitter $responseEmitter,
+        private bool $debug,
     ) {}
 
     /**
@@ -91,8 +88,8 @@ class ErrorRedirectMiddleware implements MiddlewareInterface
 
             $request = $request->withAttribute('error_report', $errorReport);
 
-            $this->logger->error('Unhandled exception: '.$errorReport->getTitle());
-            $this->exceptionLogger->error('Unhandled exception: '.$errorReport->getTitle(), [
+            $this->logger->error('default', 'Unhandled exception: '.$errorReport->getTitle());
+            $this->logger->error('exception', 'Unhandled exception: '.$errorReport->getTitle(), [
                 'error_report' => $errorReport,
                 'hash' => $errorReport->getHash(),
             ]);
@@ -107,7 +104,7 @@ class ErrorRedirectMiddleware implements MiddlewareInterface
                 //
             }
 
-            $message = ($this->container->get('debug')) ? $errorReport->toString() : '';
+            $message = ($this->debug) ? $errorReport->toString() : '';
 
             return $this->responseEmitter->error($request, 'Error', $message);
         }

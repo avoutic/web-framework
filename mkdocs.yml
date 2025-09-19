@@ -54,6 +54,7 @@ nav:
     - caching.md
   - Additional Features:
     - instrumentation.md
+    - logging.md
     - translations.md
     - sanity-checks.md
     - tasks.md

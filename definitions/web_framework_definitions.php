@@ -18,7 +18,7 @@ use Slim\Psr7\Factory\StreamFactory;
 
 return [
     Engine::class => DI\create(),
-    LoggerInterface::class => DI\autowire(NullLogger::class),
+    LoggerInterface::class => DI\factory(static fn (Logging\ChannelManager $manager) => $manager->getDefaultLogger()),
     ResponseFactoryInterface::class => DI\autowire(DecoratedResponseFactory::class)
         ->constructorParameter('responseFactory', DI\get(ResponseFactory::class))
         ->constructorParameter('streamFactory', DI\get(StreamFactory::class)),
@@ -36,7 +36,8 @@ return [
         return new PhpSession($options);
     },
 
-    'exceptionLogger' => DI\autowire(NullLogger::class),
+    'channels.default' => NullLogger::class,
+    'channels.exception' => NullLogger::class,
 
     'app_dir' => function (ContainerInterface $c) {
         // Determine app dir
@@ -63,7 +64,6 @@ return [
         ->constructorParameter('debug', DI\get('debug')),
     Core\Database::class => DI\autowire(Core\NullDatabase::class),
     Core\HttpApplication::class => DI\autowire()
-        ->constructorParameter('exceptionLogger', DI\get('exceptionLogger'))
         ->constructorParameter('debug', DI\get('debug')),
     Core\Instrumentation::class => DI\autowire(Core\NullInstrumentation::class),
     Core\LatteRenderService::class => DI\autowire()
@@ -97,8 +97,11 @@ return [
         ->constructorParameter('senderEmail', DI\get('sender_core.default_sender'))
         ->constructorParameter('templateOverrides', DI\get('templateOverrides')),
 
+    Logging\ChannelManager::class => DI\autowire()
+        ->constructorParameter('channelConfig', DI\get('logging.channels')),
+
     Middleware\ErrorRedirectMiddleware::class => DI\autowire()
-        ->constructorParameter('exceptionLogger', DI\get('exceptionLogger')),
+        ->constructorParameter('debug', DI\get('debug')),
 
     Queue\Queue::class => DI\autowire(Queue\MemoryQueue::class)
         ->constructorParameter('name', 'default'),
