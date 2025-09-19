@@ -12,9 +12,9 @@
 namespace WebFramework\SanityCheck;
 
 use Psr\Log\LoggerInterface;
-use WebFramework\Core\ConfigService;
 use WebFramework\Core\Database;
 use WebFramework\Core\MigrationManager;
+use WebFramework\Core\NullDatabase;
 
 /**
  * Class DatabaseCompatibility.
@@ -27,7 +27,6 @@ class DatabaseCompatibility extends Base
      * DatabaseCompatibility constructor.
      *
      * @param Database         $database         The database service
-     * @param ConfigService    $configService    The configuration service
      * @param LoggerInterface  $logger           The logger
      * @param MigrationManager $migrationManager The migration manager service
      * @param bool             $checkDb          Whether to check the database
@@ -35,7 +34,6 @@ class DatabaseCompatibility extends Base
      */
     public function __construct(
         private Database $database,
-        private ConfigService $configService,
         private LoggerInterface $logger,
         private MigrationManager $migrationManager,
         private bool $checkDb = true,
@@ -148,7 +146,7 @@ class DatabaseCompatibility extends Base
      */
     public function performChecks(): bool
     {
-        if ($this->configService->get('database_enabled') != true || !$this->checkDb)
+        if (!$this->database instanceof NullDatabase || !$this->checkDb)
         {
             return true;
         }

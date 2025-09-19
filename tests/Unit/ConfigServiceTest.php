@@ -16,14 +16,12 @@ final class ConfigServiceTest extends Unit
     {
         $config = [
             'debug' => true,
-            'database_enabled' => false,
             'timezone' => 'UTC',
         ];
 
         $service = new ConfigService($config);
 
         verify($service->get('debug'))->equals(true);
-        verify($service->get('database_enabled'))->equals(false);
         verify($service->get('timezone'))->equals('UTC');
     }
 

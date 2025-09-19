@@ -17,7 +17,6 @@ return [
             'exception' => 'channels.exception',
         ],
     ],
-    'database_enabled' => env('DATABASE_ENABLED', false),
     'http_mode' => 'https',
     'base_url' => '',                    // Add a base_url to be used in external urls
     'sanity_check_modules' => [],        /* Associative array with application sanity check class names with
