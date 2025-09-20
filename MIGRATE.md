@@ -1,6 +1,6 @@
 # v10 release
 
-## Unreleased
+## v10.0
 
 ### Breaking changes
 
