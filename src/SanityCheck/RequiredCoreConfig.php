@@ -19,7 +19,7 @@ use WebFramework\Config\ConfigService;
  *
  * Performs sanity checks related to required core configuration options.
  */
-class RequiredCoreConfig extends Base
+class RequiredCoreConfig extends SanityCheckBase
 {
     /**
      * RequiredCoreConfig constructor.

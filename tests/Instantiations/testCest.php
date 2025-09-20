@@ -17,7 +17,7 @@ use WebFramework\Migration\QueryStep;
 use WebFramework\Migration\TaskStep;
 use WebFramework\Queue\DatabaseQueue;
 use WebFramework\Repository\RepositoryCore;
-use WebFramework\SanityCheck\Base;
+use WebFramework\SanityCheck\SanityCheckBase;
 use WebFramework\Task\ConsoleTask;
 use WebFramework\Task\TaskArgument;
 use WebFramework\Task\TaskOption;
@@ -78,7 +78,7 @@ class testCest
         // Repository
         RepositoryCore::class,
         // SanityCheck
-        Base::class,
+        SanityCheckBase::class,
         // Task
         ConsoleTask::class,
         TaskArgument::class,

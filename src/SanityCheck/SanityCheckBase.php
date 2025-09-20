@@ -12,11 +12,11 @@
 namespace WebFramework\SanityCheck;
 
 /**
- * Abstract class Base.
+ * Abstract class SanityCheckBase.
  *
  * Provides a base implementation for sanity check modules.
  */
-abstract class Base implements SanityCheckModule
+abstract class SanityCheckBase implements SanityCheckModule
 {
     /** @var bool Whether fixing is allowed */
     protected bool $allowFixing = false;

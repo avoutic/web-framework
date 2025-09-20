@@ -19,7 +19,7 @@ use WebFramework\Core\RuntimeEnvironment;
  *
  * Performs sanity checks related to required authentication files.
  */
-class RequiredAuth extends Base
+class RequiredAuth extends SanityCheckBase
 {
     /**
      * RequiredAuth constructor.

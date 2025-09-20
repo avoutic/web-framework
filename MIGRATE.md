@@ -8,6 +8,7 @@
 * The `database_enabled` configuration option has been removed. If you need to disable the database, use a `NullDatabase` implementation.
 * `versions.supported_framework` has been removed, due to semantic versioning.
 * Non-kernel classes have moved out of `Core` namespace into their respective namespaces.
+* `SanityCheck\Base` has been moved to `SanityCheck\SanityCheckBase`.
 * `web_framework_definitions.php` has been renamed to `definitions.php` for consistency with plugin definition files.
 
 ### New features

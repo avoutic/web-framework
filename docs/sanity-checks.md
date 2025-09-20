@@ -41,9 +41,9 @@ To add your own sanity checks, you need to create a class that implements the `S
 
 namespace App\SanityCheck;
 
-use WebFramework\SanityCheck\Base;
+use WebFramework\SanityCheck\SanityCheckBase;
 
-class CustomSanityCheck extends Base
+class CustomSanityCheck extends SanityCheckBase
 {
     public function performChecks(): bool
     {

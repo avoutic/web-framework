@@ -21,7 +21,7 @@ use WebFramework\Migration\MigrationManager;
  *
  * Performs sanity checks related to database compatibility.
  */
-class DatabaseCompatibility extends Base
+class DatabaseCompatibility extends SanityCheckBase
 {
     /**
      * DatabaseCompatibility constructor.
