@@ -8,7 +8,7 @@ site_description: >-
 repo_name: avoutic/web-framework
 repo_url: https://github.com/avoutic/web-framework
 
-copyright: Copyright &copy; 2024 Avoutic
+copyright: Copyright &copy; 2025 Avoutic
 
 theme:
   name: material
