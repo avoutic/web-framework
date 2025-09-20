@@ -1,4 +1,96 @@
+# v10 release
+
+## Unreleased
+
+### Breaking changes
+
+* Console tasks must now return `TaskArgument` and `TaskOption` objects from `getArguments()` and `getOptions()`. Update custom tasks to instantiate these helpers and validate option values by throwing `ArgumentParserException` when needed.
+* The `database_enabled` configuration option has been removed. If you need to disable the database, use a `NullDatabase` implementation.
+* `versions.supported_framework` has been removed, due to semantic versioning.
+
+### New features
+
+* Introduced `Logging\ChannelManager` and `Logging\LogService` for configurable log channels. `LoggerInterface` resolves to the default channel, and you can redirect channels per environment through the new `logging.channels` configuration.
+* Added `Core\HttpApplication` to encapsulate Slim bootstrapping and channel-aware exception reporting for the HTTP entry point.
+* Added `Core\ConsoleApplication` to own CLI dispatch, improving help output and error handling in the `framework` script.
+* Added the `config:show` console command for inspecting the merged configuration at runtime.
+
+### Bug fixes
+
+* Database migrations now exit with a non-zero status when a query fails, ensuring CI pipelines surface the failure.
+
 # v9 release
+
+## v9.11
+
+### New features
+
+* Optional definition files are supported by prefixing entries with `?` in `definition_files`; missing files are skipped instead of raising an error.
+* Added the `cache:clear` console command, which flushes the configured cache backend.
+
+### Bug fixes
+
+* MigrationManager gracefully handles `scandir()` failures while scanning migration directories.
+
+## v9.10.1
+
+### Bug fixes
+
+* `ConfigBuilder` now replaces numeric lists (for example `definition_files`, middleware stacks, routes, and translation directories) instead of merging them element by element.
+
+## v9.10
+
+### New features
+
+* `TaskRunner` honours the `APP_ENV` environment variable to load `.env.<environment>` files before falling back to the default `.env`.
+
+## v9.9.1
+
+### Bug fixes
+
+* DatabaseConversionManager now tolerates missing or null database connections when evaluating conversion state.
+
+## v9.9
+
+### New features
+
+* Added `EntityCollection::getEntities()` to expose the underlying entity array when you need direct access.
+
+## v9.8
+
+### Behaviour changes
+
+* `CsrfValidationMiddleware` no longer interacts with the blacklist service; failed validations only affect the current request.
+
+## v9.7
+
+### New features
+
+* Repository filters gained support for `BETWEEN`, `NOT BETWEEN`, `IN`, and `NOT IN` operators, enabling richer query constraints.
+
+## v9.6.1
+
+### Bug fixes
+
+* `SanityCheckTask` suppresses `SanityCheckException` so manual runs do not fail the CLI when a check reports a problem.
+
+## v9.6
+
+### New features
+
+* The `task:run` console command gained options for continuous execution (`--continuous`, `--delay`, and `--max-runtime`).
+* The `TaskRunner` instance is now available in the container, simplifying tasks that need to dispatch other tasks.
+
+### Bug fixes
+
+* Resolved several edge cases in `SanityCheckTask` when force-running checks.
+
+## v9.5
+
+### Internal changes
+
+* Core container definitions were refactored to prefer autowiring. Review overrides of `Core\Recaptcha`, `Core\UserMailer`, and the translation loader to align with the new helper services (`templateOverrides`, `translationDirectories`).
+* `TaskRunner` now exposes an `is_plaintext` container value so services can adjust output when running under the CLI.
 
 ## v9.4
 
