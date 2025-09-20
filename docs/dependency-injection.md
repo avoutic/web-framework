@@ -12,7 +12,7 @@ The `BootstrapService` and `SlimAppTask` classes are responsible for setting up 
 
 The base configuration specifies a default set of definition files that are used for dependency injection. These files are:
 
-- `/vendor/avoutic/web-framework/definitions/web_framework_definitions.php`
+- `/vendor/avoutic/web-framework/definitions/definitions.php`
 - `/definitions/app_definitions.php`
 
 Meaning that if will load the base definition file from the WebFramework, then the application definition file.
@@ -30,7 +30,7 @@ return [
     // Other configuration settings...
 
     'definition_files' => [
-        '/vendor/avoutic/web-framework/definitions/web_framework_definitions.php',
+        '/vendor/avoutic/web-framework/definitions/definitions.php',
         '/definitions/my_definitions.php', // Your custom definitions
         '?/definitions/local_definitions.php', // Local definitions that are not committed
     ],

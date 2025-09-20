@@ -62,7 +62,7 @@ class ExampleService
 
 ## Default Channels
 
-Out of the box, WebFramework provides two channels, for which it provides default definition placeholders in `definitions/web_framework_definitions.php`:
+Out of the box, WebFramework provides two channels, for which it provides default definition placeholders in `definitions/definitions.php`:
 
 - `channels.default`
 - `channels.exception`

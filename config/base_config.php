@@ -75,7 +75,7 @@ return [
     ],
     // Definition files to be loaded
     'definition_files' => [
-        '/vendor/avoutic/web-framework/definitions/web_framework_definitions.php',
+        '/vendor/avoutic/web-framework/definitions/definitions.php',
         '/definitions/app_definitions.php',
     ],
     'middlewares' => [
