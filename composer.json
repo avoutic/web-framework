@@ -39,7 +39,8 @@
         "phpstan/phpstan": "^2.0",
         "codeception/codeception": "^5.0",
         "codeception/module-asserts": "^3.0",
-        "codeception/verify": "^3.0"
+        "codeception/verify": "^3.0",
+        "haydenpierce/class-finder": "^0.5.3"
     },
     "autoload": {
         "psr-4": {
