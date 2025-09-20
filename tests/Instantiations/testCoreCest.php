@@ -11,7 +11,6 @@ use WebFramework\Core\CaptchaService;
 use WebFramework\Core\ConfigService;
 use WebFramework\Core\ConsoleTaskRegistryService;
 use WebFramework\Core\Database;
-use WebFramework\Core\DatabaseManager;
 use WebFramework\Core\DatabaseProvider;
 use WebFramework\Core\DebugService;
 use WebFramework\Core\Instrumentation;
@@ -34,6 +33,7 @@ use WebFramework\Core\RouteRegistrar;
 use WebFramework\Core\RuntimeEnvironment;
 use WebFramework\Core\UserMailer;
 use WebFramework\Core\UserService;
+use WebFramework\Migration\DatabaseManager;
 
 class testCoreCest
 {

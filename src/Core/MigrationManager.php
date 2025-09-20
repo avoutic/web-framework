@@ -12,6 +12,7 @@
 namespace WebFramework\Core;
 
 use Psr\Container\ContainerInterface as Container;
+use WebFramework\Migration\DatabaseManager;
 
 /**
  * Class MigrationManager.

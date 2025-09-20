@@ -6,8 +6,8 @@ use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
 use Psr\Container\ContainerInterface as Container;
 use WebFramework\Core\Database;
-use WebFramework\Core\DatabaseManager;
 use WebFramework\Core\DatabaseResultWrapper;
+use WebFramework\Migration\DatabaseManager;
 use WebFramework\Task\Task;
 
 /**
@@ -60,16 +60,13 @@ final class DatabaseManagerTest extends Unit
     public function getQuerySaverManager(array &$usedQueries)
     {
         $database = $this->getQuerySaver($usedQueries);
+        $container = $this->makeEmpty(Container::class);
 
-        $manager = $this->make(
-            DatabaseManager::class,
-            [
-                'database' => $database,
-                'outputStream' => fopen('php://memory', 'w'),
-            ],
+        return new DatabaseManager(
+            $database,
+            $container,
+            fopen('php://memory', 'w')
         );
-
-        return $manager;
     }
 
     public function testExecuteCreateTable()
@@ -400,31 +397,31 @@ SQL,
 
     public function testExecuteTask()
     {
-        $usedQueries = [];
-        $manager = $this->make(
-            DatabaseManager::class,
+        $task = $this->makeEmpty(Task::class, [
+            'execute' => Expected::once(),
+        ]);
+
+        $container = $this->makeEmpty(
+            Container::class,
             [
-                'container' => $this->makeEmpty(
-                    Container::class,
-                    [
-                        'get' => Expected::once(
-                            $this->makeEmpty(Task::class, [
-                                'execute' => Expected::once(),
-                            ]),
-                        ),
-                    ]
-                ),
-                'database' => $this->makeEmpty(
-                    Database::class,
-                    [
-                        'query' => Expected::never(),
-                        'startTransaction' => Expected::once(),
-                        'commitTransaction' => Expected::once(),
-                        'getLastError' => Expected::never(),
-                    ],
-                ),
-                'outputStream' => fopen('php://memory', 'w'),
+                'get' => Expected::once($task),
+            ]
+        );
+
+        $database = $this->makeEmpty(
+            Database::class,
+            [
+                'query' => Expected::never(),
+                'startTransaction' => Expected::once(),
+                'commitTransaction' => Expected::once(),
+                'getLastError' => Expected::never(),
             ],
+        );
+
+        $manager = new DatabaseManager(
+            $database,
+            $container,
+            fopen('php://memory', 'w')
         );
 
         $migrationData = [
@@ -437,8 +434,6 @@ SQL,
         ];
 
         $manager->execute($migrationData);
-
-        verify($usedQueries)->equals([]);
     }
 
     public function testExecuteDryRun()
@@ -450,15 +445,15 @@ SQL,
             Database::class,
             [
                 'query' => Expected::never(),
+                'startTransaction' => Expected::never(),
+                'commitTransaction' => Expected::never(),
             ]
         );
 
-        $manager = $this->make(
-            DatabaseManager::class,
-            [
-                'database' => $database,
-                'outputStream' => fopen('php://memory', 'w'),
-            ],
+        $manager = new DatabaseManager(
+            $database,
+            $this->makeEmpty(Container::class),
+            fopen('php://memory', 'w')
         );
 
         $migrationData = [
@@ -487,11 +482,10 @@ SQL,
 
     public function testInvalidActionType()
     {
-        $manager = $this->make(
-            DatabaseManager::class,
-            [
-                'outputStream' => fopen('php://memory', 'w'),
-            ],
+        $manager = new DatabaseManager(
+            $this->makeEmpty(Database::class),
+            $this->makeEmpty(Container::class),
+            fopen('php://memory', 'w')
         );
 
         $migrationData = [
