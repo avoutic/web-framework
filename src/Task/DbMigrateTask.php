@@ -12,7 +12,7 @@
 namespace WebFramework\Task;
 
 use WebFramework\Core\BootstrapService;
-use WebFramework\Core\MigrationManager;
+use WebFramework\Migration\MigrationManager;
 
 /**
  * Task for running database migrations using the new timestamp-based system.

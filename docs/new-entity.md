@@ -21,7 +21,7 @@ Create a new class `Car` that extends `EntityCore`. Define the properties and me
 
 namespace WebFramework\Entity;
 
-use WebFramework\Core\EntityCore;
+use WebFramework\Entity\EntityCore;
 
 /**
  * Represents a car in the system.
@@ -94,8 +94,8 @@ Create a new class `CarRepository` that extends `RepositoryCore`. Implement meth
 
 namespace WebFramework\Repository;
 
-use WebFramework\Core\EntityCollection;
-use WebFramework\Core\RepositoryCore;
+use WebFramework\Entity\EntityCollection;
+use WebFramework\Repository\RepositoryCore;
 use WebFramework\Entity\Car;
 
 /**

@@ -12,6 +12,7 @@
 namespace WebFramework\Core;
 
 use Psr\Container\ContainerInterface as Container;
+use WebFramework\Config\ConfigService;
 use WebFramework\SanityCheck\DatabaseCompatibility;
 use WebFramework\SanityCheck\RequiredCoreConfig;
 use WebFramework\SanityCheck\SanityCheckRunner;

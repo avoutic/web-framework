@@ -7,8 +7,8 @@ use Codeception\Test\Unit;
 use GuzzleHttp\Psr7\ServerRequest as Request;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Server\RequestHandlerInterface;
-use WebFramework\Core\MessageService;
 use WebFramework\Middleware\CsrfValidationMiddleware;
+use WebFramework\Presentation\MessageService;
 use WebFramework\Security\CsrfService;
 
 /**

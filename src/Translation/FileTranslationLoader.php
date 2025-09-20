@@ -11,7 +11,7 @@
 
 namespace WebFramework\Translation;
 
-use WebFramework\Core\Cache;
+use WebFramework\Cache\Cache;
 use WebFramework\Core\RuntimeEnvironment;
 
 /**

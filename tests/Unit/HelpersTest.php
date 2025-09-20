@@ -4,7 +4,7 @@ namespace Tests\Unit;
 
 use Codeception\Test\Unit;
 use Tests\Support\TestEntity;
-use WebFramework\Core\EntityCore;
+use WebFramework\Entity\EntityCore;
 use WebFramework\Support\Helpers;
 
 /**

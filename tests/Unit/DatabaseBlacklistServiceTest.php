@@ -4,8 +4,8 @@ namespace Tests\Unit;
 
 use Codeception\Test\Unit;
 use Psr\Log\LoggerInterface;
-use WebFramework\Core\Database;
-use WebFramework\Core\DatabaseResultWrapper;
+use WebFramework\Database\Database;
+use WebFramework\Database\DatabaseResultWrapper;
 use WebFramework\Repository\BlacklistEntryRepository;
 use WebFramework\Security\DatabaseBlacklistService;
 

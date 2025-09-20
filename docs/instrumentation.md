@@ -21,7 +21,7 @@ To add instrumentation to your own classes, you need to inject the `Instrumentat
 ### Example Usage
 
 ~~~php
-use WebFramework\Core\Instrumentation;
+use WebFramework\Diagnostics\Instrumentation;
 
 class ExampleService
 {
@@ -64,7 +64,7 @@ To write a custom instrumentation handler, you need to implement the `Instrument
 ~~~php
 namespace App\Instrumentation;
 
-use WebFramework\Core\Instrumentation;
+use WebFramework\Diagnostics\Instrumentation;
 
 class CustomInstrumentation implements Instrumentation
 {

@@ -49,7 +49,7 @@ Suppose you want to replace the default `Instrumentation` implementation with a 
 
 ~~~php
 use App\Instrumentation\CustomInstrumentation;
-use WebFramework\Core\Instrumentation;
+use WebFramework\Diagnostics\Instrumentation;
 
 return [
     Instrumentation::class => DI\autowire(CustomInstrumentation::class),

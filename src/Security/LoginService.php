@@ -13,7 +13,7 @@ namespace WebFramework\Security;
 
 use Psr\Log\LoggerInterface;
 use Slim\Http\ServerRequest as Request;
-use WebFramework\Core\ConfigService;
+use WebFramework\Config\ConfigService;
 use WebFramework\Entity\User;
 use WebFramework\Event\EventService;
 use WebFramework\Event\UserLoggedIn;

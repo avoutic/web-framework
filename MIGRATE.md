@@ -7,6 +7,7 @@
 * Console tasks must now return `TaskArgument` and `TaskOption` objects from `getArguments()` and `getOptions()`. Update custom tasks to instantiate these helpers and validate option values by throwing `ArgumentParserException` when needed.
 * The `database_enabled` configuration option has been removed. If you need to disable the database, use a `NullDatabase` implementation.
 * `versions.supported_framework` has been removed, due to semantic versioning.
+* Non-kernel classes have moved out of `Core` namespace into their respective namespaces.
 
 ### New features
 

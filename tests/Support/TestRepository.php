@@ -2,7 +2,7 @@
 
 namespace Tests\Support;
 
-use WebFramework\Core\RepositoryCore;
+use WebFramework\Repository\RepositoryCore;
 
 /**
  * @extends RepositoryCore<TestEntity>

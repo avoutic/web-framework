@@ -11,7 +11,7 @@
 
 namespace WebFramework\Migration;
 
-use WebFramework\Core\Database;
+use WebFramework\Database\Database;
 
 /**
  * Represents an SQL query that should be executed during a migration.

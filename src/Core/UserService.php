@@ -13,6 +13,7 @@ namespace WebFramework\Core;
 
 use Carbon\Carbon;
 use Psr\Log\LoggerInterface;
+use WebFramework\Config\ConfigService;
 use WebFramework\Entity\User;
 use WebFramework\Repository\UserRepository;
 use WebFramework\Security\PasswordHashService;

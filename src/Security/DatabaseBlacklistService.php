@@ -13,7 +13,7 @@ namespace WebFramework\Security;
 
 use Carbon\Carbon;
 use Psr\Log\LoggerInterface;
-use WebFramework\Core\Database;
+use WebFramework\Database\Database;
 use WebFramework\Repository\BlacklistEntryRepository;
 
 /**

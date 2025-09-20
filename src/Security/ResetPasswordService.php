@@ -12,10 +12,10 @@
 namespace WebFramework\Security;
 
 use Psr\Log\LoggerInterface;
-use WebFramework\Core\ConfigService;
-use WebFramework\Core\UserMailer;
+use WebFramework\Config\ConfigService;
 use WebFramework\Entity\User;
 use WebFramework\Exception\CodeVerificationException;
+use WebFramework\Mail\UserMailer;
 use WebFramework\Repository\UserRepository;
 use WebFramework\Support\UrlBuilder;
 

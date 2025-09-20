@@ -13,7 +13,7 @@ namespace WebFramework\SanityCheck;
 
 use Carbon\Carbon;
 use Psr\Container\ContainerInterface as Container;
-use WebFramework\Core\Instrumentation;
+use WebFramework\Diagnostics\Instrumentation;
 use WebFramework\Exception\SanityCheckException;
 use WebFramework\Support\StoredValuesService;
 

@@ -6,7 +6,7 @@ use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
 use Psr\Log\LoggerInterface;
 use Slim\Http\ServerRequest as Request;
-use WebFramework\Core\ConfigService;
+use WebFramework\Config\ConfigService;
 use WebFramework\Entity\User;
 use WebFramework\Event\EventService;
 use WebFramework\Exception\CaptchaRequiredException;

@@ -11,8 +11,8 @@
 
 namespace WebFramework\Task;
 
+use WebFramework\Cache\Cache;
 use WebFramework\Core\BootstrapService;
-use WebFramework\Core\Cache;
 
 /**
  * Class CacheClearTask.

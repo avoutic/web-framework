@@ -37,7 +37,7 @@ Here's an example of a route class for unauthenticated routes using the basic We
 namespace App\Routes;
 
 use Slim\App;
-use WebFramework\Core\RouteSet;
+use WebFramework\Http\RouteSet;
 
 class Unauthenticated implements RouteSet
 {
@@ -116,7 +116,7 @@ namespace App\Routes;
 use App\Middleware\LoggedInMiddleware;
 use Slim\App;
 use Slim\Routing\RouteCollectorProxy;
-use WebFramework\Core\RouteSet;
+use WebFramework\Http\RouteSet;
 
 // Authenticated (but not linked to account type)
 //

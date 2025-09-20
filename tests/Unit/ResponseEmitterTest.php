@@ -11,8 +11,8 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\StreamInterface as Stream;
 use Slim\Psr7\Factory\ResponseFactory as SlimResponseFactory;
 use Slim\Psr7\Factory\StreamFactory;
-use WebFramework\Core\ConfigService;
-use WebFramework\Core\ResponseEmitter;
+use WebFramework\Config\ConfigService;
+use WebFramework\Http\ResponseEmitter;
 use WebFramework\Support\UrlBuilder;
 
 /**

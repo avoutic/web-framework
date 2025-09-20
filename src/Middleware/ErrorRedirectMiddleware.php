@@ -19,11 +19,11 @@ use Slim\Exception\HttpForbiddenException;
 use Slim\Exception\HttpMethodNotAllowedException;
 use Slim\Exception\HttpNotFoundException;
 use Slim\Exception\HttpUnauthorizedException;
-use WebFramework\Core\DebugService;
-use WebFramework\Core\ReportFunction;
-use WebFramework\Core\ResponseEmitter;
+use WebFramework\Diagnostics\DebugService;
+use WebFramework\Diagnostics\ReportFunction;
 use WebFramework\Exception\BlacklistException;
 use WebFramework\Exception\RedirectException;
+use WebFramework\Http\ResponseEmitter;
 use WebFramework\Logging\LogService;
 
 /**

@@ -11,8 +11,8 @@
 
 namespace WebFramework\Support;
 
-use WebFramework\Core\MessageService;
 use WebFramework\Core\RuntimeEnvironment;
+use WebFramework\Presentation\MessageService;
 
 /**
  * Class UrlBuilder.

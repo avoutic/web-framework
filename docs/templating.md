@@ -31,7 +31,7 @@ namespace App\Actions;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface as Request;
-use WebFramework\Core\RenderService;
+use WebFramework\Presentation\RenderService;
 
 class HelloWorldAction
 {

@@ -3,8 +3,8 @@
 namespace Tests\Unit;
 
 use Codeception\Test\Unit;
-use WebFramework\Core\MessageService;
 use WebFramework\Core\RuntimeEnvironment;
+use WebFramework\Presentation\MessageService;
 use WebFramework\Support\UrlBuilder;
 
 /**

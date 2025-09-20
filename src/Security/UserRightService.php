@@ -12,7 +12,7 @@
 namespace WebFramework\Security;
 
 use Psr\Log\LoggerInterface;
-use WebFramework\Core\Database;
+use WebFramework\Database\Database;
 use WebFramework\Entity\User;
 use WebFramework\Repository\RightRepository;
 use WebFramework\Repository\UserRightRepository;

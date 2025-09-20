@@ -11,8 +11,6 @@
 
 namespace WebFramework\Entity;
 
-use WebFramework\Core\EntityCore;
-
 class QueueJob extends EntityCore
 {
     protected static string $tableName = 'jobs';

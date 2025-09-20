@@ -17,9 +17,9 @@ use Slim\Exception\HttpNotFoundException;
 use Slim\Exception\HttpUnauthorizedException;
 use Slim\Http\Response;
 use Slim\Http\ServerRequest as Request;
-use WebFramework\Core\DebugService;
-use WebFramework\Core\LatteRenderService;
+use WebFramework\Diagnostics\DebugService;
 use WebFramework\Exception\BlacklistException;
+use WebFramework\Presentation\LatteRenderService;
 
 /**
  * Class Tester.

@@ -3,7 +3,7 @@
 namespace Tests\Unit;
 
 use Codeception\Test\Unit;
-use WebFramework\Core\MessageService;
+use WebFramework\Presentation\MessageService;
 use WebFramework\Translation\TranslationService;
 
 /**

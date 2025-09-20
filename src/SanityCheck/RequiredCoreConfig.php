@@ -12,7 +12,7 @@
 namespace WebFramework\SanityCheck;
 
 use Psr\Log\LoggerInterface;
-use WebFramework\Core\ConfigService;
+use WebFramework\Config\ConfigService;
 
 /**
  * Class RequiredCoreConfig.

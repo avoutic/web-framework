@@ -13,14 +13,14 @@ namespace WebFramework\Security;
 
 use Psr\Log\LoggerInterface;
 use Slim\Http\ServerRequest as Request;
-use WebFramework\Core\ConfigService;
-use WebFramework\Core\UserMailer;
+use WebFramework\Config\ConfigService;
 use WebFramework\Entity\User;
 use WebFramework\Event\EventService;
 use WebFramework\Event\UserEmailChanged;
 use WebFramework\Exception\CodeVerificationException;
 use WebFramework\Exception\DuplicateEmailException;
 use WebFramework\Exception\WrongAccountException;
+use WebFramework\Mail\UserMailer;
 use WebFramework\Repository\UserRepository;
 use WebFramework\Support\UrlBuilder;
 

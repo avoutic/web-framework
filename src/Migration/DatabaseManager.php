@@ -12,7 +12,7 @@
 namespace WebFramework\Migration;
 
 use Psr\Container\ContainerInterface as Container;
-use WebFramework\Core\Database;
+use WebFramework\Database\Database;
 use WebFramework\Migration\Action\ActionHandler;
 use WebFramework\Migration\Action\AddColumnActionHandler;
 use WebFramework\Migration\Action\AddConstraintActionHandler;

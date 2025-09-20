@@ -6,7 +6,7 @@ use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
 use GuzzleHttp\Psr7\ServerRequest as Request;
 use Psr\Http\Server\RequestHandlerInterface;
-use WebFramework\Core\Database;
+use WebFramework\Database\Database;
 use WebFramework\Middleware\TransactionMiddleware;
 
 /**

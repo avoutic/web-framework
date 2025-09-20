@@ -6,8 +6,8 @@ use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Server\RequestHandlerInterface;
-use WebFramework\Core\MessageService;
 use WebFramework\Middleware\MessageMiddleware;
+use WebFramework\Presentation\MessageService;
 
 /**
  * @internal

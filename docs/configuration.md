@@ -113,7 +113,7 @@ The `ConfigService` class provides access to configuration values.
 In a typical application, you would use dependency injection to access the `ConfigService`. Here's an example of how you might do this in a class:
 
 ~~~php
-use WebFramework\Core\ConfigService;
+use WebFramework\Config\ConfigService;
 
 class ExampleClass
 {

@@ -1,6 +1,6 @@
 <?php
 
-use WebFramework\Core\HttpApplication;
+use WebFramework\Http\HttpApplication;
 use WebFramework\Task\TaskRunner;
 
 if (!file_exists(__DIR__.'/../vendor/autoload.php'))

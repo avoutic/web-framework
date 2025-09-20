@@ -12,9 +12,9 @@
 namespace WebFramework\SanityCheck;
 
 use Psr\Log\LoggerInterface;
-use WebFramework\Core\Database;
-use WebFramework\Core\MigrationManager;
-use WebFramework\Core\NullDatabase;
+use WebFramework\Database\Database;
+use WebFramework\Database\NullDatabase;
+use WebFramework\Migration\MigrationManager;
 
 /**
  * Class DatabaseCompatibility.

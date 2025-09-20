@@ -16,7 +16,7 @@ To use caching in your application, you need to inject the `Cache` service and u
 ### Example Usage
 
 ~~~php
-use WebFramework\Core\Cache;
+use WebFramework\Cache\Cache;
 
 class ExampleService
 {
@@ -51,20 +51,27 @@ In this example, the `ExampleService` uses the `Cache` service to check if data 
 
 ## Enabling RedisCache in Dependency Injection
 
-To enable `RedisCache` in your application, you need to configure it in your dependency injection container. This is typically done in your definition file.
+To enable `RedisCache` in your application, you first need to include the `web-framework-redis` module in your project. Then you need to configure it in your dependency injection container.
 
-### Example Configuration
+The easiest way to do this is to add the following entry to your `definition_files` array in your `config.php` file, before your application definition file:
 
 ~~~php
-use WebFramework\Core\RedisCache;
-use WebFramework\Core\Cache;
-
 return [
-    Cache::class => DI\autowire(RedisCache::class),
+    'definition_files' => [
+        '/vendor/avoutic/web-framework/definitions/definitions.php',
+        '/vendor/avoutic/web-framework-redis/definitions/definitions.php',
+        '/definitions/app_definitions.php',
+    ],
 ];
 ~~~
 
-In this example, the `Cache` service is configured to use `RedisCache`.
+Or you can add the following entry to your application definition file:
+
+~~~php
+return [
+    Cache::class => DI\autowire(\WebFramework\Redis\RedisCache::class),
+];
+~~~
 
 ## Providing an Alternative Caching Implementation
 
@@ -75,7 +82,7 @@ To provide an alternative caching implementation, you need to create a class tha
 ~~~php
 namespace App\Cache;
 
-use WebFramework\Core\Cache;
+use WebFramework\Cache\Cache;
 
 class CustomCache implements Cache
 {
@@ -122,7 +129,7 @@ Once you have implemented your custom cache, you need to register it in your [de
 
 ~~~php
 use App\Cache\CustomCache;
-use WebFramework\Core\Cache;
+use WebFramework\Cache\Cache;
 
 return [
     Cache::class => DI\autowire(CustomCache::class),

@@ -2,7 +2,7 @@
 
 namespace Tests\Support;
 
-use WebFramework\Core\EntityCore;
+use WebFramework\Entity\EntityCore;
 
 class TestEntity extends EntityCore
 {

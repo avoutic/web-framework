@@ -12,7 +12,6 @@
 namespace WebFramework\Repository;
 
 use Carbon\Carbon;
-use WebFramework\Core\RepositoryCore;
 use WebFramework\Entity\QueueJob;
 
 /**

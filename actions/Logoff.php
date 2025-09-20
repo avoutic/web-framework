@@ -14,7 +14,7 @@ namespace WebFramework\Actions;
 use Psr\Http\Message\ResponseInterface;
 use Slim\Http\Response;
 use Slim\Http\ServerRequest as Request;
-use WebFramework\Core\ResponseEmitter;
+use WebFramework\Http\ResponseEmitter;
 use WebFramework\Security\AuthenticationService;
 
 /**

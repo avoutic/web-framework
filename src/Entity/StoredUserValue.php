@@ -11,8 +11,6 @@
 
 namespace WebFramework\Entity;
 
-use WebFramework\Core\EntityCore;
-
 /**
  * Entity class for stored user-specific configuration values.
  */

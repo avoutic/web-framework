@@ -14,11 +14,11 @@ namespace WebFramework\Task;
 use Psr\Container\ContainerInterface as Container;
 use Slim\Factory\AppFactory;
 use Slim\Psr7\Factory\ServerRequestFactory;
+use WebFramework\Config\ConfigService;
 use WebFramework\Core\BootstrapService;
-use WebFramework\Core\ConfigService;
-use WebFramework\Core\Instrumentation;
-use WebFramework\Core\MiddlewareRegistrar;
-use WebFramework\Core\RouteRegistrar;
+use WebFramework\Diagnostics\Instrumentation;
+use WebFramework\Http\MiddlewareRegistrar;
+use WebFramework\Http\RouteRegistrar;
 
 /**
  * Class SlimAppTask.

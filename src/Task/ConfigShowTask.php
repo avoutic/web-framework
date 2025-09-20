@@ -11,8 +11,8 @@
 
 namespace WebFramework\Task;
 
+use WebFramework\Config\ConfigService;
 use WebFramework\Core\BootstrapService;
-use WebFramework\Core\ConfigService;
 
 /**
  * Task for displaying the loaded configuration.

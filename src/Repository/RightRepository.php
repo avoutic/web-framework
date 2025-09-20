@@ -11,7 +11,6 @@
 
 namespace WebFramework\Repository;
 
-use WebFramework\Core\RepositoryCore;
 use WebFramework\Entity\Right;
 
 /**

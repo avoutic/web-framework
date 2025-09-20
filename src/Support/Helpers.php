@@ -11,7 +11,7 @@
 
 namespace WebFramework\Support;
 
-use WebFramework\Core\EntityCore;
+use WebFramework\Entity\EntityCore;
 
 /**
  * Class Helpers.

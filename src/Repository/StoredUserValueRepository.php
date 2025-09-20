@@ -11,8 +11,7 @@
 
 namespace WebFramework\Repository;
 
-use WebFramework\Core\EntityCollection;
-use WebFramework\Core\RepositoryCore;
+use WebFramework\Entity\EntityCollection;
 use WebFramework\Entity\StoredUserValue;
 
 /**

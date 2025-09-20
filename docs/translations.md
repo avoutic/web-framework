@@ -77,7 +77,7 @@ When adding a message, you can specify a translation key instead of a plain text
 #### Example
 
 ~~~php
-use WebFramework\Core\MessageService;
+use WebFramework\Presentation\MessageService;
 
 class ExampleAction
 {

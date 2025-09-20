@@ -5,8 +5,8 @@ namespace Tests\Unit;
 use Codeception\Test\Unit;
 use Psr\Container\ContainerInterface as Container;
 use Tests\Support\TestConsoleTask;
-use WebFramework\Core\ConfigService;
-use WebFramework\Core\ConsoleTaskRegistryService;
+use WebFramework\Config\ConfigService;
+use WebFramework\Console\ConsoleTaskRegistryService;
 
 /**
  * @internal

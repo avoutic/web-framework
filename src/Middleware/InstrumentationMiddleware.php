@@ -16,7 +16,7 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Slim\Routing\RouteContext;
-use WebFramework\Core\Instrumentation;
+use WebFramework\Diagnostics\Instrumentation;
 
 /**
  * Middleware to handle instrumentation for performance monitoring.

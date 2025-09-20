@@ -57,29 +57,14 @@ return [
     'offline_mode' => false,
     'server_name' => $_SERVER['SERVER_NAME'] ?? 'app',
 
-    Core\Cache::class => DI\autowire(Core\NullCache::class),
-    Core\ConfigService::class => DI\autowire()
+    Cache\Cache::class => DI\autowire(Cache\NullCache::class),
+
+    Config\ConfigService::class => DI\autowire()
         ->constructorParameter('config', DI\get('config_tree')),
-    Core\ConsoleApplication::class => DI\autowire()
+
+    Console\ConsoleApplication::class => DI\autowire()
         ->constructorParameter('debug', DI\get('debug')),
-    Core\Database::class => DI\autowire(Core\NullDatabase::class),
-    Core\HttpApplication::class => DI\autowire()
-        ->constructorParameter('debug', DI\get('debug')),
-    Core\Instrumentation::class => DI\autowire(Core\NullInstrumentation::class),
-    Core\LatteRenderService::class => DI\autowire()
-        ->constructorParameter('templateDir', DI\string('{app_dir}/templates'))
-        ->constructorParameter('tmpDir', '/tmp/latte'),
-    Core\MailReportFunction::class => DI\autowire()
-        ->constructorParameter('assertRecipient', DI\get('sender_core.assert_recipient')),
-    Core\MailService::class => DI\autowire(Core\NullMailService::class),
-    Core\Recaptcha::class => DI\autowire()
-        ->constructorParameter('secretKey', DI\get('security.recaptcha.secret_key')),
-    Core\RecaptchaFactory::class => DI\autowire()
-        ->constructorParameter('secretKey', DI\get('security.recaptcha.secret_key')),
-    Core\RenderService::class => DI\get(Core\LatteRenderService::class),
-    Core\ReportFunction::class => DI\autowire(Core\NullReportFunction::class),
-    Core\ResponseEmitter::class => DI\autowire()
-        ->constructorParameter('responseFactory', DI\get(ResponseFactoryInterface::class)),
+
     Core\RuntimeEnvironment::class => DI\autowire()
         ->constructorParameter('appDir', DI\get('app_dir'))
         ->constructorParameter('baseUrl', DI\get('base_url'))
@@ -88,20 +73,39 @@ return [
         ->constructorParameter('offlineMode', DI\get('offline_mode'))
         ->constructorParameter('production', DI\get('production'))
         ->constructorParameter('serverName', DI\get('server_name')),
-    'templateOverrides' => function (ContainerInterface $c) {
-        $configService = $c->get(Core\ConfigService::class);
 
-        return $configService->get('user_mailer.template_overrides');
-    },
-    Core\UserMailer::class => DI\autowire()
-        ->constructorParameter('senderEmail', DI\get('sender_core.default_sender'))
-        ->constructorParameter('templateOverrides', DI\get('templateOverrides')),
+    Database\Database::class => DI\autowire(Database\NullDatabase::class),
+
+    Diagnostics\Instrumentation::class => DI\autowire(Diagnostics\NullInstrumentation::class),
+    Diagnostics\MailReportFunction::class => DI\autowire()
+        ->constructorParameter('assertRecipient', DI\get('sender_core.assert_recipient')),
+    Diagnostics\ReportFunction::class => DI\autowire(Diagnostics\NullReportFunction::class),
+
+    Http\HttpApplication::class => DI\autowire()
+        ->constructorParameter('debug', DI\get('debug')),
+    Http\ResponseEmitter::class => DI\autowire()
+        ->constructorParameter('responseFactory', DI\get(ResponseFactoryInterface::class)),
 
     Logging\ChannelManager::class => DI\autowire()
         ->constructorParameter('channelConfig', DI\get('logging.channels')),
 
+    Mail\MailService::class => DI\autowire(Mail\NullMailService::class),
+    'templateOverrides' => function (ContainerInterface $c) {
+        $configService = $c->get(Config\ConfigService::class);
+
+        return $configService->get('user_mailer.template_overrides');
+    },
+    Mail\UserMailer::class => DI\autowire()
+        ->constructorParameter('senderEmail', DI\get('sender_core.default_sender'))
+        ->constructorParameter('templateOverrides', DI\get('templateOverrides')),
+
     Middleware\ErrorRedirectMiddleware::class => DI\autowire()
         ->constructorParameter('debug', DI\get('debug')),
+
+    Presentation\LatteRenderService::class => DI\autowire()
+        ->constructorParameter('templateDir', DI\string('{app_dir}/templates'))
+        ->constructorParameter('tmpDir', '/tmp/latte'),
+    Presentation\RenderService::class => DI\get(Presentation\LatteRenderService::class),
 
     Queue\Queue::class => DI\autowire(Queue\MemoryQueue::class)
         ->constructorParameter('name', 'default'),
@@ -126,9 +130,13 @@ return [
             'hmac_key' => DI\get('security.hmac_key'),
         ]),
     Security\RandomProvider::class => DI\get(Security\OpensslRandomProvider::class),
+    Security\Recaptcha::class => DI\autowire()
+        ->constructorParameter('secretKey', DI\get('security.recaptcha.secret_key')),
+    Security\RecaptchaFactory::class => DI\autowire()
+        ->constructorParameter('secretKey', DI\get('security.recaptcha.secret_key')),
 
     'translationDirectories' => function (ContainerInterface $c) {
-        $configService = $c->get(Core\ConfigService::class);
+        $configService = $c->get(Config\ConfigService::class);
 
         return $configService->get('translations.directories');
     },

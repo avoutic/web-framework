@@ -11,7 +11,7 @@
 
 namespace WebFramework\Migration;
 
-use WebFramework\Core\Database;
+use WebFramework\Database\Database;
 
 /**
  * Represents a single executable unit in a migration.

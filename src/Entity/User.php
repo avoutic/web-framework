@@ -11,8 +11,6 @@
 
 namespace WebFramework\Entity;
 
-use WebFramework\Core\EntityCore;
-
 /**
  * Represents a user in the system.
  */

@@ -4,7 +4,7 @@ namespace Tests\Unit;
 
 use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
-use WebFramework\Core\EntityCollection;
+use WebFramework\Entity\EntityCollection;
 use WebFramework\Entity\StoredValue;
 use WebFramework\Repository\StoredValueRepository;
 use WebFramework\Support\StoredValuesService;

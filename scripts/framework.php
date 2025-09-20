@@ -10,7 +10,7 @@
  * file that was distributed with this source code.
  */
 
-use WebFramework\Core\ConsoleApplication;
+use WebFramework\Console\ConsoleApplication;
 use WebFramework\Task\TaskRunner;
 
 // Get the project root directory

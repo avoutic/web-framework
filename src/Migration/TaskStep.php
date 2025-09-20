@@ -11,7 +11,7 @@
 
 namespace WebFramework\Migration;
 
-use WebFramework\Core\Database;
+use WebFramework\Database\Database;
 use WebFramework\Task\Task;
 
 /**

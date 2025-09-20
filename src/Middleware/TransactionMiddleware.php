@@ -15,7 +15,7 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use WebFramework\Core\Database;
+use WebFramework\Database\Database;
 
 /**
  * Middleware to ensure the request is wrapped in a database transaction.

@@ -15,7 +15,7 @@ use Carbon\Carbon;
 use Odan\Session\SessionInterface;
 use Odan\Session\SessionManagerInterface;
 use Psr\Log\LoggerInterface;
-use WebFramework\Core\Database;
+use WebFramework\Database\Database;
 use WebFramework\Entity\Session;
 use WebFramework\Entity\User;
 use WebFramework\Repository\SessionRepository;

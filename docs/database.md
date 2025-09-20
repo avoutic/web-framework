@@ -15,7 +15,7 @@ To execute a query, you use the `query()` method. This method is used for execut
 ### Example: Executing a Query
 
 ~~~php
-use WebFramework\Core\Database;
+use WebFramework\Database\Database;
 
 class ExampleService
 {
@@ -44,7 +44,7 @@ To insert data into the database, you use the `insertQuery()` method. This metho
 ### Example: Inserting Data
 
 ~~~php
-use WebFramework\Core\Database;
+use WebFramework\Database\Database;
 
 class UserService
 {
@@ -71,7 +71,7 @@ Transactions are used to ensure that a series of database operations are execute
 ### Example: Using Transactions
 
 ~~~php
-use WebFramework\Core\Database;
+use WebFramework\Database\Database;
 
 class OrderService
 {

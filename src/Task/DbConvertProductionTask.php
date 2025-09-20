@@ -12,7 +12,7 @@
 namespace WebFramework\Task;
 
 use WebFramework\Core\BootstrapService;
-use WebFramework\Core\DatabaseConversionManager;
+use WebFramework\Migration\DatabaseConversionManager;
 
 /**
  * Class DbConvertProductionTask.

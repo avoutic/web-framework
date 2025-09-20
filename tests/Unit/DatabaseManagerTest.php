@@ -5,8 +5,8 @@ namespace Tests\Unit;
 use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
 use Psr\Container\ContainerInterface as Container;
-use WebFramework\Core\Database;
-use WebFramework\Core\DatabaseResultWrapper;
+use WebFramework\Database\Database;
+use WebFramework\Database\DatabaseResultWrapper;
 use WebFramework\Migration\DatabaseManager;
 use WebFramework\Task\Task;
 

@@ -3,7 +3,7 @@
 namespace Tests\Unit;
 
 use Codeception\Test\Unit;
-use WebFramework\Core\ConfigService;
+use WebFramework\Config\ConfigService;
 
 /**
  * @internal
