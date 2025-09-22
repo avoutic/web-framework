@@ -343,6 +343,13 @@ class DatabaseConversionManager
      */
     public function convertProduction(bool $dryRun = false): void
     {
+        if ($this->database instanceof NullDatabase)
+        {
+            $this->write('Called on NullDatabase instance'.PHP_EOL);
+
+            return;
+        }
+
         $this->write('Starting production migration setup...'.PHP_EOL);
 
         if ($this->database->tableExists('migrations'))

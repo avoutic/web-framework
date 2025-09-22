@@ -1,5 +1,11 @@
 # v10 release
 
+## v10.0.1
+
+### Bug fixes
+
+* Database tasks handle NullDatabase instances gracefully.
+
 ## v10.0
 
 ### Breaking changes

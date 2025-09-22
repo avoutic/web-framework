@@ -12,6 +12,8 @@
 namespace WebFramework\Task;
 
 use WebFramework\Core\BootstrapService;
+use WebFramework\Database\Database;
+use WebFramework\Database\NullDatabase;
 use WebFramework\Migration\MigrationManager;
 
 /**
@@ -31,6 +33,7 @@ class DbMigrateTask extends ConsoleTask
      */
     public function __construct(
         private BootstrapService $bootstrapService,
+        private Database $database,
         private MigrationManager $migrationManager,
         private $outputStream = STDOUT
     ) {}
@@ -102,6 +105,13 @@ class DbMigrateTask extends ConsoleTask
     {
         $this->bootstrapService->skipSanityChecks();
         $this->bootstrapService->bootstrap();
+
+        if ($this->database instanceof NullDatabase)
+        {
+            $this->write('Called on NullDatabase instance'.PHP_EOL);
+
+            return;
+        }
 
         if ($this->frameworkOnly)
         {
