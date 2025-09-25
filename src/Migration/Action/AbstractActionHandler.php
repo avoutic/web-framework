@@ -151,7 +151,9 @@ abstract class AbstractActionHandler implements ActionHandler
             $valuesFmt = implode('_', $info['values']);
             $fieldsFmt = implode('`, `', $info['values']);
 
-            $constraintLines[] = "UNIQUE KEY `unique_{$tableName}_{$valuesFmt}` (`{$fieldsFmt}`)";
+            $name = isset($info['name']) ? "`{$info['name']}`" : "`unique_{$tableName}_{$valuesFmt}`";
+
+            $constraintLines[] = "UNIQUE KEY {$name} (`{$fieldsFmt}`)";
         }
         elseif ($info['type'] === 'index')
         {

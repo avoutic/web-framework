@@ -244,6 +244,11 @@ return [
                         'values' => ['name'],
                     ],
                     [
+                        'type' => 'unique',
+                        'name' => 'item_uniq_identifier',
+                        'values' => ['identifier'],
+                    ],
+                    [
                         'type' => 'index',
                         'name' => 'item_idx_identifier',
                         'values' => ['identifier']
@@ -371,6 +376,7 @@ return [
                 'table_name' => 'users',
                 'constraint' => [
                     'type' => 'unique',
+                    'name' => 'user_uniq_username_email',
                     'values' => ['username', 'email'],
                 ],
             ],
@@ -380,7 +386,7 @@ return [
         'actions' => [
             [
                 'type' => 'raw_query',
-                'query' => 'ALTER TABLE `users` DROP INDEX `username`',
+                'query' => 'ALTER TABLE `users` DROP INDEX `user_uniq_username_email`',
                 'params' => [],
             ],
         ],

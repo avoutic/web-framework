@@ -1,5 +1,13 @@
 # v10 release
 
+## v10.1
+
+### New features
+
+* Database migrations now support custom index names.
+
+### Bug fixes
+
 ## v10.0.1
 
 ### Bug fixes
