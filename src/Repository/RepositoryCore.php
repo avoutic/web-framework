@@ -351,29 +351,56 @@ SQL;
 
     /**
      * @param array<string, mixed> $data
+     * @param null|string          $prefix Optional alias prefix used in the result set
      *
      * @return T
      */
-    public function instantiateEntityFromData(array $data): Entity
+    public function instantiateEntityFromData(array $data, ?string $prefix = null): Entity
     {
         $entity = new static::$entityClass();
         $reflection = new \ReflectionClass($entity);
 
-        $entity->setObjectId($data['id']);
+        $prefixFmt = '';
+        if ($prefix !== null && $prefix !== '')
+        {
+            $prefixFmt = rtrim($prefix, '.').'.';
+        }
+
+        $idKey = "{$prefixFmt}id";
+
+        if (!isset($data[$idKey]))
+        {
+            $entityClass = static::$entityClass;
+            $prefixInfo = ($prefixFmt === '') ? '' : " using prefix '{$prefixFmt}'";
+
+            throw new \InvalidArgumentException(
+                "Missing identifier field for {$entityClass}{$prefixInfo}"
+            );
+        }
+
+        $entity->setObjectId((int) $data[$idKey]);
+
+        $originalValues = [
+            'id' => (int) $data[$idKey],
+        ];
 
         foreach ($this->baseFields as $name)
         {
-            if (!isset($data[$name]))
+            $fieldKey = $prefixFmt.$name;
+
+            if (!isset($data[$fieldKey]))
             {
                 continue;
             }
 
             $property = $reflection->getProperty($this->snakeToCamel($name));
             $property->setAccessible(true);
-            $property->setValue($entity, $data[$name]);
+            $property->setValue($entity, $data[$fieldKey]);
+
+            $originalValues[$name] = $data[$fieldKey];
         }
 
-        $entity->setOriginalValues($data);
+        $entity->setOriginalValues($originalValues);
 
         return $entity;
     }

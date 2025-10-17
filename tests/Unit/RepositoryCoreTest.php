@@ -3,6 +3,8 @@
 namespace Tests\Unit;
 
 use Codeception\Test\Unit;
+use Psr\Container\ContainerInterface as Container;
+use WebFramework\Database\Database;
 use WebFramework\Repository\UserRepository;
 
 /**
@@ -282,6 +284,90 @@ final class RepositoryCoreTest extends Unit
             );
         })
             ->callableThrows(\RuntimeException::class, 'Invalid filter definition')
+        ;
+    }
+
+    public function testInstantiateEntityFromDataWithPrefix()
+    {
+        $instance = $this->construct(
+            UserRepository::class,
+            [
+                $this->makeEmpty(Container::class),
+                $this->makeEmpty(Database::class),
+            ]
+        );
+
+        $row = [
+            'id' => 1,
+            'username' => 'No use',
+            'email' => 'no@example.com',
+            'u.id' => 42,
+            'u.username' => 'tester',
+            'u.email' => 'tester@example.com',
+        ];
+
+        $entity = $instance->instantiateEntityFromData($row, 'u');
+
+        verify($entity->getId())
+            ->equals(42)
+        ;
+
+        verify($entity->getUsername())
+            ->equals('tester')
+        ;
+
+        verify($entity->getEmail())
+            ->equals('tester@example.com')
+        ;
+
+        verify($entity->getOriginalValues())
+            ->equals([
+                'id' => 42,
+                'username' => 'tester',
+                'email' => 'tester@example.com',
+            ])
+        ;
+    }
+
+    public function testInstantiateEntityFromDataWithoutPrefix()
+    {
+        $instance = $this->construct(
+            UserRepository::class,
+            [
+                $this->makeEmpty(Container::class),
+                $this->makeEmpty(Database::class),
+            ]
+        );
+
+        $row = [
+            'id' => 42,
+            'username' => 'tester',
+            'email' => 'tester@example.com',
+            'u.id' => 1,
+            'u.username' => 'No use',
+            'u.email' => 'no@example.com',
+        ];
+
+        $entity = $instance->instantiateEntityFromData($row);
+
+        verify($entity->getId())
+            ->equals(42)
+        ;
+
+        verify($entity->getUsername())
+            ->equals('tester')
+        ;
+
+        verify($entity->getEmail())
+            ->equals('tester@example.com')
+        ;
+
+        verify($entity->getOriginalValues())
+            ->equals([
+                'id' => 42,
+                'username' => 'tester',
+                'email' => 'tester@example.com',
+            ])
         ;
     }
 }

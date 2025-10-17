@@ -1,5 +1,11 @@
 # v10 release
 
+## v10.2
+
+### New features
+
+* RepositoryCore::instantiateEntityFromData() now supports a prefix parameter to handle cases where the identifier field is prefixed with a table alias.
+
 ## v10.1
 
 ### New features
