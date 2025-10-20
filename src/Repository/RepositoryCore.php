@@ -711,4 +711,18 @@ SQL;
             'params' => $params,
         ];
     }
+
+    /**
+     * @return array<string>
+     */
+    public function getAliasedFields(string $alias, bool $includeId = true): array
+    {
+        $fields = $includeId ? ['id'] : [];
+        $fields = array_merge($fields, $this->baseFields);
+
+        return array_map(
+            static fn (string $field): string => sprintf('%s.%s AS `%s.%s`', $alias, $field, $alias, $field),
+            $fields
+        );
+    }
 }

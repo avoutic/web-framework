@@ -5,6 +5,7 @@
 ### New features
 
 * RepositoryCore::instantiateEntityFromData() now supports a prefix parameter to handle cases where the identifier field is prefixed with a table alias.
+* RepositoryCore::getAliasedFields() to support aliasing fields in queries.
 
 ## v10.1
 
