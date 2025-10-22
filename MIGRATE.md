@@ -1,5 +1,10 @@
 # v10 release
 
+## v11.0
+
+### Breaking changes
+
+* Database\Database interface now require rollbackTransaction() method.
 ## v10.2.1
 
 ### Bug fixes

@@ -87,6 +87,14 @@ class NullDatabase implements Database
     }
 
     /**
+     * Rollback the current database transaction.
+     */
+    public function rollbackTransaction(): void
+    {
+        // No operation
+    }
+
+    /**
      * Get the current transaction nesting depth.
      *
      * @return int The current transaction depth
