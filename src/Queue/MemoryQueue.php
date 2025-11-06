@@ -108,9 +108,19 @@ class MemoryQueue implements Queue
         // MemoryQueue removes jobs immediately on popJob(), so this is a no-op
     }
 
-    public function markJobFailed(Job $job): void
+    public function markJobFailed(Job $job, ?\Throwable $exception = null): void
     {
         // MemoryQueue removes jobs immediately on popJob(), so this is a no-op
         // Failed jobs are already removed and cannot be retried
+        if ($exception !== null)
+        {
+            $this->logger->warning('Job failed in MemoryQueue', [
+                'queue' => $this->name,
+                'jobId' => $job->getJobId(),
+                'jobName' => $job->getJobName(),
+                'exception' => get_class($exception),
+                'message' => $exception->getMessage(),
+            ]);
+        }
     }
 }

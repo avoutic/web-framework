@@ -22,6 +22,8 @@ class QueueJob extends EntityCore
         'attempts',
         'reserved_at',
         'max_attempts',
+        'error',
+        'failed_at',
     ];
 
     protected int $id;
@@ -32,6 +34,8 @@ class QueueJob extends EntityCore
     protected int $attempts;
     protected ?int $reservedAt = null;
     protected int $maxAttempts;
+    protected ?string $error = null;
+    protected ?int $failedAt = null;
 
     public function getId(): int
     {
@@ -106,5 +110,25 @@ class QueueJob extends EntityCore
     public function setMaxAttempts(int $maxAttempts): void
     {
         $this->maxAttempts = $maxAttempts;
+    }
+
+    public function getError(): ?string
+    {
+        return $this->error;
+    }
+
+    public function setError(?string $error): void
+    {
+        $this->error = $error;
+    }
+
+    public function getFailedAt(): ?int
+    {
+        return $this->failedAt;
+    }
+
+    public function setFailedAt(?int $failedAt): void
+    {
+        $this->failedAt = $failedAt;
     }
 }

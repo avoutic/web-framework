@@ -13,6 +13,7 @@ namespace WebFramework\Task;
 
 use Carbon\Carbon;
 use WebFramework\Exception\ArgumentParserException;
+use WebFramework\Logging\LogService;
 use WebFramework\Queue\QueueService;
 
 class QueueWorker extends ConsoleTask
@@ -22,6 +23,7 @@ class QueueWorker extends ConsoleTask
 
     public function __construct(
         private QueueService $queueService,
+        private LogService $logger,
         private ?string $queueName = null,
     ) {}
 
@@ -139,11 +141,24 @@ class QueueWorker extends ConsoleTask
             }
             catch (\Throwable $e)
             {
-                // Handle exceptions - mark job as failed
-                $queue->markJobFailed($job);
+                // Log to default channel with simple message
+                $this->logger->error('default', 'Job execution failed: '.get_class($e).': '.$e->getMessage());
 
-                // Re-throw to allow worker to crash if desired, or log and continue
-                throw $e;
+                // Log to exception channel with detailed context
+                $this->logger->error('exception', 'Job execution failed with exception', [
+                    'queue' => $this->queueName,
+                    'jobId' => $job->getJobId(),
+                    'jobName' => $job->getJobName(),
+                    'exception' => get_class($e),
+                    'message' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                ]);
+
+                // Handle exceptions - mark job as failed with exception details
+                $queue->markJobFailed($job, $e);
+
+                // Continue processing instead of crashing the worker
+                $jobsProcessed++;
             }
 
             if ($this->maxJobs !== null && $jobsProcessed >= $this->maxJobs)

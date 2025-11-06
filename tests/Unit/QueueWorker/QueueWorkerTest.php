@@ -7,6 +7,7 @@ use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
 use Tests\Support\StaticArrayJob;
 use Tests\Support\StaticArrayJobHandler;
+use WebFramework\Logging\LogService;
 use WebFramework\Queue\Job;
 use WebFramework\Queue\MemoryQueue;
 use WebFramework\Queue\QueueService;
@@ -49,6 +50,7 @@ final class QueueWorkerTest extends Unit
                         return $jobHandler;
                     },
                 ]),
+                $this->makeEmpty(LogService::class),
                 'default',
             ],
             [
@@ -87,6 +89,7 @@ final class QueueWorkerTest extends Unit
                         return $jobHandler;
                     },
                 ]),
+                $this->makeEmpty(LogService::class),
                 'default',
             ],
             [

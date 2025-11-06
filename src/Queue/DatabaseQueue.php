@@ -141,7 +141,7 @@ class DatabaseQueue implements Queue
     /**
      * Release a failed job back to the queue with retry logic.
      */
-    public function markJobFailed(Job $job): void
+    public function markJobFailed(Job $job, ?\Throwable $exception = null): void
     {
         $jobId = $job->getJobId();
 
@@ -173,20 +173,39 @@ class DatabaseQueue implements Queue
         $currentAttempts = $queueJob->getAttempts();
         $maxAttempts = $queueJob->getMaxAttempts();
 
+        // Store error details
+        $errorMessage = null;
+        if ($exception !== null)
+        {
+            $errorMessage = sprintf(
+                '%s: %s',
+                get_class($exception),
+                $exception->getMessage()
+            );
+            $queueJob->setError($errorMessage);
+        }
+
         // Check if we've exceeded max attempts
         if ($currentAttempts >= $maxAttempts - 1)
         {
             unset($this->jobIdToQueueJobId[$jobId]);
 
             $queueJob->setAttempts($queueJob->getAttempts() + 1);
+            $queueJob->setFailedAt(Carbon::now()->getTimestamp());
+
+            // Move to dead letter queue (same table, different queue name)
+            $deadLetterQueueName = $this->name.'-failed';
+            $queueJob->setQueueName($deadLetterQueueName);
             $this->queueJobRepository->save($queueJob);
 
-            $this->logger->error('Job failed after max attempts', [
+            $this->logger->error('Job failed after max attempts, moved to dead letter queue', [
                 'queue' => $this->name,
+                'deadLetterQueue' => $deadLetterQueueName,
                 'jobId' => $jobId,
                 'jobName' => $job->getJobName(),
                 'attempts' => $currentAttempts + 1,
                 'maxAttempts' => $maxAttempts,
+                'error' => $errorMessage,
             ]);
 
             return;
@@ -204,13 +223,14 @@ class DatabaseQueue implements Queue
 
         unset($this->jobIdToQueueJobId[$jobId]);
 
-        $this->logger->debug('Job failed, rescheduling with backoff', [
+        $this->logger->warning('Job failed, rescheduling with backoff', [
             'queue' => $this->name,
             'jobId' => $jobId,
             'jobName' => $job->getJobName(),
             'attempts' => $currentAttempts + 1,
             'maxAttempts' => $maxAttempts,
             'backoffSeconds' => $backoffSeconds,
+            'error' => $errorMessage,
         ]);
     }
 

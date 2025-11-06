@@ -38,7 +38,7 @@ class QueueJobRepository extends RepositoryCore
             // 2. Reserved but stale (reserved_at < staleThreshold) - for crash recovery
             // Exclude jobs that have exceeded max_attempts
             $query = <<<'SQL'
-SELECT id, queue_name, job_data, available_at, created_at, attempts, reserved_at, max_attempts
+SELECT id, queue_name, job_data, available_at, created_at, attempts, reserved_at, max_attempts, error, failed_at
 FROM jobs
 WHERE queue_name = ?
   AND available_at <= ?

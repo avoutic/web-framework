@@ -54,7 +54,8 @@ interface Queue
      * Mark a job as failed and release it back to the queue (if applicable).
      * For queues that remove jobs on pop, this may be a no-op.
      *
-     * @param Job $job The job that failed
+     * @param Job             $job       The job that failed
+     * @param null|\Throwable $exception Optional exception that caused the failure
      */
-    public function markJobFailed(Job $job): void;
+    public function markJobFailed(Job $job, ?\Throwable $exception = null): void;
 }
