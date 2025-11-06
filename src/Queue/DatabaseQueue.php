@@ -17,6 +17,9 @@ use WebFramework\Repository\QueueJobRepository;
 
 class DatabaseQueue implements Queue
 {
+    /** @var array<string, int> Mapping of Job ID to QueueJob ID */
+    private array $jobIdToQueueJobId = [];
+
     public function __construct(
         private LoggerInterface $logger,
         private QueueJobRepository $queueJobRepository,
@@ -67,11 +70,111 @@ class DatabaseQueue implements Queue
             return null;
         }
 
-        $this->queueJobRepository->delete($queueJob);
-
+        // Don't delete yet - job is locked and will be deleted after successful processing
         $job = unserialize($queueJob->getJobData());
 
-        return $job instanceof Job ? $job : null;
+        if (!($job instanceof Job))
+        {
+            // Invalid job data - release it back to queue
+            $queueJob->setReservedAt(null);
+            $this->queueJobRepository->save($queueJob);
+
+            $this->logger->warning('Invalid job data encountered', [
+                'queue' => $this->name,
+                'jobId' => $queueJob->getId(),
+            ]);
+
+            return null;
+        }
+
+        // Store mapping of Job ID to QueueJob ID for later cleanup
+        $this->jobIdToQueueJobId[$job->getJobId()] = $queueJob->getId();
+
+        return $job;
+    }
+
+    /**
+     * Mark a job as successfully processed and delete it.
+     */
+    public function markJobCompleted(Job $job): void
+    {
+        $jobId = $job->getJobId();
+
+        if (!isset($this->jobIdToQueueJobId[$jobId]))
+        {
+            $this->logger->warning('Attempted to complete unknown job', [
+                'queue' => $this->name,
+                'jobId' => $jobId,
+            ]);
+
+            return;
+        }
+
+        $queueJobId = $this->jobIdToQueueJobId[$jobId];
+        $queueJob = $this->queueJobRepository->getObjectById($queueJobId);
+
+        if ($queueJob === null)
+        {
+            unset($this->jobIdToQueueJobId[$jobId]);
+            $this->logger->warning('QueueJob not found for completed job', [
+                'queue' => $this->name,
+                'jobId' => $jobId,
+                'queueJobId' => $queueJobId,
+            ]);
+
+            return;
+        }
+
+        $this->queueJobRepository->delete($queueJob);
+        unset($this->jobIdToQueueJobId[$jobId]);
+
+        $this->logger->debug('Job completed and deleted', [
+            'queue' => $this->name,
+            'jobId' => $jobId,
+            'jobName' => $job->getJobName(),
+        ]);
+    }
+
+    /**
+     * Release a failed job back to the queue.
+     */
+    public function markJobFailed(Job $job): void
+    {
+        $jobId = $job->getJobId();
+
+        if (!isset($this->jobIdToQueueJobId[$jobId]))
+        {
+            $this->logger->warning('Attempted to fail unknown job', [
+                'queue' => $this->name,
+                'jobId' => $jobId,
+            ]);
+
+            return;
+        }
+
+        $queueJobId = $this->jobIdToQueueJobId[$jobId];
+        $queueJob = $this->queueJobRepository->getObjectById($queueJobId);
+
+        if ($queueJob === null)
+        {
+            unset($this->jobIdToQueueJobId[$jobId]);
+            $this->logger->warning('QueueJob not found for failed job', [
+                'queue' => $this->name,
+                'jobId' => $jobId,
+                'queueJobId' => $queueJobId,
+            ]);
+
+            return;
+        }
+
+        $this->queueJobRepository->releaseJob($queueJob);
+        unset($this->jobIdToQueueJobId[$jobId]);
+
+        $this->logger->debug('Job failed and released back to queue', [
+            'queue' => $this->name,
+            'jobId' => $jobId,
+            'jobName' => $job->getJobName(),
+        ]);
     }
 
     public function clear(): void

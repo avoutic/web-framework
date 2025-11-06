@@ -20,6 +20,7 @@ class QueueJob extends EntityCore
         'available_at',
         'created_at',
         'attempts',
+        'reserved_at',
     ];
 
     protected int $id;
@@ -28,6 +29,7 @@ class QueueJob extends EntityCore
     protected int $availableAt;
     protected string $createdAt;
     protected int $attempts;
+    protected ?int $reservedAt = null;
 
     public function getId(): int
     {
@@ -82,5 +84,15 @@ class QueueJob extends EntityCore
     public function setAttempts(int $attempts): void
     {
         $this->attempts = $attempts;
+    }
+
+    public function getReservedAt(): ?int
+    {
+        return $this->reservedAt;
+    }
+
+    public function setReservedAt(?int $reservedAt): void
+    {
+        $this->reservedAt = $reservedAt;
     }
 }

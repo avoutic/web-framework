@@ -5,11 +5,13 @@
 ### Breaking changes
 
 * Database\Database interface now require rollbackTransaction() method.
+* Queue\Queue interface now require markJobCompleted() and markJobFailed() methods.
 
 ### New features
 
 * Updated `config:show` to allow showing a specific configuration node.
 * New console command `definitions:show` to show the currently loaded definition files and their contents.
+* Queue\DatabaseQueue now reserves jobs for processing and releases them back to the queue if they fail.
 
 ## v10.2.1
 

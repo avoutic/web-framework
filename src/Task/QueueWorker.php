@@ -120,10 +120,31 @@ class QueueWorker extends ConsoleTask
                 continue;
             }
 
-            $jobHandler = $this->queueService->getJobHandler($job);
-            $jobHandler->handle($job);
+            try
+            {
+                $jobHandler = $this->queueService->getJobHandler($job);
+                $success = $jobHandler->handle($job);
 
-            $jobsProcessed++;
+                // Mark job as completed or failed based on handler return value
+                if ($success)
+                {
+                    $queue->markJobCompleted($job);
+                }
+                else
+                {
+                    $queue->markJobFailed($job);
+                }
+
+                $jobsProcessed++;
+            }
+            catch (\Throwable $e)
+            {
+                // Handle exceptions - mark job as failed
+                $queue->markJobFailed($job);
+
+                // Re-throw to allow worker to crash if desired, or log and continue
+                throw $e;
+            }
 
             if ($this->maxJobs !== null && $jobsProcessed >= $this->maxJobs)
             {

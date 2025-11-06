@@ -40,4 +40,20 @@ interface Queue
      * Clear jobs from the queue.
      */
     public function clear(): void;
+
+    /**
+     * Mark a job as successfully processed.
+     * For queues that remove jobs on pop, this may be a no-op.
+     *
+     * @param Job $job The job that was successfully processed
+     */
+    public function markJobCompleted(Job $job): void;
+
+    /**
+     * Mark a job as failed and release it back to the queue (if applicable).
+     * For queues that remove jobs on pop, this may be a no-op.
+     *
+     * @param Job $job The job that failed
+     */
+    public function markJobFailed(Job $job): void;
 }

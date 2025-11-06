@@ -102,4 +102,15 @@ class MemoryQueue implements Queue
     {
         return $this->name;
     }
+
+    public function markJobCompleted(Job $job): void
+    {
+        // MemoryQueue removes jobs immediately on popJob(), so this is a no-op
+    }
+
+    public function markJobFailed(Job $job): void
+    {
+        // MemoryQueue removes jobs immediately on popJob(), so this is a no-op
+        // Failed jobs are already removed and cannot be retried
+    }
 }
