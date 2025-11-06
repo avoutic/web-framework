@@ -19,6 +19,8 @@ use WebFramework\Core\BootstrapService;
  */
 class ConfigShowTask extends ConsoleTask
 {
+    private ?string $configPath = null;
+
     /**
      * ConfigShowTask constructor.
      *
@@ -31,6 +33,16 @@ class ConfigShowTask extends ConsoleTask
         private ConfigService $configService,
         private $outputStream = STDOUT
     ) {}
+
+    /**
+     * Set the configuration path to display.
+     *
+     * @param string $path The dot-notation path to the configuration node
+     */
+    public function setConfigPath(string $path): void
+    {
+        $this->configPath = $path;
+    }
 
     /**
      * Write a message to the output stream.
@@ -58,8 +70,20 @@ class ConfigShowTask extends ConsoleTask
         Show the currently loaded configuration.
 
         Usage:
+        framework config:show [path]
+
+        Examples:
         framework config:show
+        framework config:show sender_core
+        framework config:show sender_core.default_sender
         EOF;
+    }
+
+    public function getArguments(): array
+    {
+        return [
+            new TaskArgument('path', 'Dot-notation path to a specific configuration node (e.g., sender_core or sender_core.default_sender)', false, [$this, 'setConfigPath']),
+        ];
     }
 
     public function execute(): void
@@ -67,18 +91,29 @@ class ConfigShowTask extends ConsoleTask
         $this->bootstrapService->skipSanityChecks();
         $this->bootstrapService->bootstrap();
 
-        $config = $this->configService->get();
-
-        $json = json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-
-        if ($json === false)
+        try
         {
-            $this->write('Unable to encode configuration.'.PHP_EOL);
+            $config = $this->configPath !== null
+                ? $this->configService->get($this->configPath)
+                : $this->configService->get();
+
+            $json = json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+
+            if ($json === false)
+            {
+                $this->write('Unable to encode configuration.'.PHP_EOL);
+
+                return;
+            }
+
+            $this->write($json.PHP_EOL);
+        }
+        catch (\InvalidArgumentException $e)
+        {
+            $this->write('Error: '.$e->getMessage().PHP_EOL);
 
             return;
         }
-
-        $this->write($json.PHP_EOL);
     }
 
     public function handlesOwnBootstrapping(): bool

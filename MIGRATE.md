@@ -5,6 +5,11 @@
 ### Breaking changes
 
 * Database\Database interface now require rollbackTransaction() method.
+
+### New features
+
+* Updated `config:show` to allow showing a specific configuration node.
+
 ## v10.2.1
 
 ### Bug fixes
