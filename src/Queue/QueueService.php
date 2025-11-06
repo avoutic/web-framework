@@ -93,12 +93,17 @@ class QueueService
 
     /**
      * Dispatch a job to a queue.
+     *
+     * @param Job    $job         Job to dispatch
+     * @param string $queue       Queue name (default: 'default')
+     * @param int    $delay       Delay in seconds (default: 0)
+     * @param int    $maxAttempts Maximum retry attempts (default: 3)
      */
-    public function dispatch(Job $job, string $queue = 'default', int $delay = 0): void
+    public function dispatch(Job $job, string $queue = 'default', int $delay = 0, int $maxAttempts = 3): void
     {
         $job->setJobId($this->uuidProvider->generate());
 
-        $this->get($queue)->dispatch($job, $delay);
+        $this->get($queue)->dispatch($job, $delay, $maxAttempts);
     }
 
     /**

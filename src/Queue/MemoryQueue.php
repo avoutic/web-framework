@@ -38,7 +38,7 @@ class MemoryQueue implements Queue
         $this->lastMaintenance = Carbon::now();
     }
 
-    public function dispatch(Job $job, int $delay = 0): void
+    public function dispatch(Job $job, int $delay = 0, int $maxAttempts = 3): void
     {
         if ($delay > 0)
         {

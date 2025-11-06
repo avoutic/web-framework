@@ -16,10 +16,11 @@ interface Queue
     /**
      * Dispatch a Job to a queue.
      *
-     * @param Job $job   Job to queue
-     * @param int $delay Delay the job in seconds
+     * @param Job $job         Job to queue
+     * @param int $delay       Delay the job in seconds
+     * @param int $maxAttempts Maximum number of retry attempts (default: 3)
      */
-    public function dispatch(Job $job, int $delay = 0): void;
+    public function dispatch(Job $job, int $delay = 0, int $maxAttempts = 3): void;
 
     /**
      * Count the number of jobs in a queue.

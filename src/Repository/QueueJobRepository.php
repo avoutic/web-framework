@@ -32,10 +32,11 @@ class QueueJobRepository extends RepositoryCore
         try
         {
             // Use SELECT FOR UPDATE to lock the row atomically
+            // Exclude jobs that have exceeded max_attempts
             $query = <<<'SQL'
-SELECT id, queue_name, job_data, available_at, created_at, attempts, reserved_at
+SELECT id, queue_name, job_data, available_at, created_at, attempts, reserved_at, max_attempts
 FROM jobs
-WHERE queue_name = ? AND available_at <= ? AND reserved_at IS NULL
+WHERE queue_name = ? AND available_at <= ? AND reserved_at IS NULL AND attempts < max_attempts
 ORDER BY available_at ASC, id ASC
 LIMIT 1
 FOR UPDATE
@@ -71,7 +72,17 @@ SQL;
 
     public function countJobsInQueue(string $queueName): int
     {
-        return $this->countObjects(['queue_name' => $queueName]);
+        // Only count jobs that haven't exceeded max_attempts
+        $query = 'SELECT COUNT(*) as count FROM jobs WHERE queue_name = ? AND attempts < max_attempts';
+        $params = [$queueName];
+        $result = $this->database->query($query, $params, 'Failed to count jobs in queue');
+
+        if ($result->RecordCount() === 0)
+        {
+            return 0;
+        }
+
+        return (int) $result->fields['count'];
     }
 
     public function clearQueue(string $queueName): void
@@ -80,17 +91,5 @@ SQL;
         $params = [$queueName];
 
         $this->database->query($query, $params, 'Failed to clear queue');
-    }
-
-    /**
-     * Reschedule a failed job with exponential backoff.
-     */
-    public function rescheduleJob(QueueJob $queueJob, int $backoffSeconds): void
-    {
-        $newAvailableAt = Carbon::now()->addSeconds($backoffSeconds)->getTimestamp();
-        $queueJob->setReservedAt(null);
-        $queueJob->setAvailableAt($newAvailableAt);
-        $queueJob->setAttempts($queueJob->getAttempts() + 1);
-        $this->save($queueJob);
     }
 }

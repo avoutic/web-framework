@@ -21,6 +21,7 @@ class QueueJob extends EntityCore
         'created_at',
         'attempts',
         'reserved_at',
+        'max_attempts',
     ];
 
     protected int $id;
@@ -30,6 +31,7 @@ class QueueJob extends EntityCore
     protected string $createdAt;
     protected int $attempts;
     protected ?int $reservedAt = null;
+    protected int $maxAttempts;
 
     public function getId(): int
     {
@@ -94,5 +96,15 @@ class QueueJob extends EntityCore
     public function setReservedAt(?int $reservedAt): void
     {
         $this->reservedAt = $reservedAt;
+    }
+
+    public function getMaxAttempts(): int
+    {
+        return $this->maxAttempts;
+    }
+
+    public function setMaxAttempts(int $maxAttempts): void
+    {
+        $this->maxAttempts = $maxAttempts;
     }
 }

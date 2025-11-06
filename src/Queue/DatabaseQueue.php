@@ -26,7 +26,7 @@ class DatabaseQueue implements Queue
         private string $name,
     ) {}
 
-    public function dispatch(Job $job, int $delay = 0): void
+    public function dispatch(Job $job, int $delay = 0, int $maxAttempts = 3): void
     {
         $availableAt = Carbon::now();
         if ($delay > 0)
@@ -37,6 +37,7 @@ class DatabaseQueue implements Queue
                 'jobId' => $job->getJobId(),
                 'jobName' => $job->getJobName(),
                 'delay' => $delay,
+                'maxAttempts' => $maxAttempts,
             ]);
         }
         else
@@ -45,6 +46,7 @@ class DatabaseQueue implements Queue
                 'queue' => $this->name,
                 'jobId' => $job->getJobId(),
                 'jobName' => $job->getJobName(),
+                'maxAttempts' => $maxAttempts,
             ]);
         }
 
@@ -53,6 +55,7 @@ class DatabaseQueue implements Queue
             'job_data' => serialize($job),
             'available_at' => $availableAt->getTimestamp(),
             'attempts' => 0,
+            'max_attempts' => $maxAttempts,
         ]);
     }
 
@@ -136,7 +139,7 @@ class DatabaseQueue implements Queue
     }
 
     /**
-     * Release a failed job back to the queue.
+     * Release a failed job back to the queue with retry logic.
      */
     public function markJobFailed(Job $job): void
     {
@@ -167,13 +170,47 @@ class DatabaseQueue implements Queue
             return;
         }
 
-        $this->queueJobRepository->releaseJob($queueJob);
+        $currentAttempts = $queueJob->getAttempts();
+        $maxAttempts = $queueJob->getMaxAttempts();
+
+        // Check if we've exceeded max attempts
+        if ($currentAttempts >= $maxAttempts - 1)
+        {
+            unset($this->jobIdToQueueJobId[$jobId]);
+
+            $queueJob->setAttempts($queueJob->getAttempts() + 1);
+            $this->queueJobRepository->save($queueJob);
+
+            $this->logger->error('Job failed after max attempts', [
+                'queue' => $this->name,
+                'jobId' => $jobId,
+                'jobName' => $job->getJobName(),
+                'attempts' => $currentAttempts + 1,
+                'maxAttempts' => $maxAttempts,
+            ]);
+
+            return;
+        }
+
+        // Calculate exponential backoff: 2^attempts seconds (min 1 second)
+        $backoffSeconds = (int) max(1, 2 ** $currentAttempts);
+
+        // Reschedule with backoff - update entity and save
+        $newAvailableAt = Carbon::now()->addSeconds($backoffSeconds)->getTimestamp();
+        $queueJob->setReservedAt(null);
+        $queueJob->setAvailableAt($newAvailableAt);
+        $queueJob->setAttempts($currentAttempts + 1);
+        $this->queueJobRepository->save($queueJob);
+
         unset($this->jobIdToQueueJobId[$jobId]);
 
-        $this->logger->debug('Job failed and released back to queue', [
+        $this->logger->debug('Job failed, rescheduling with backoff', [
             'queue' => $this->name,
             'jobId' => $jobId,
             'jobName' => $job->getJobName(),
+            'attempts' => $currentAttempts + 1,
+            'maxAttempts' => $maxAttempts,
+            'backoffSeconds' => $backoffSeconds,
         ]);
     }
 
