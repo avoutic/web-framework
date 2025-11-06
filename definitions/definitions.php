@@ -86,6 +86,10 @@ return [
     Http\ResponseEmitter::class => DI\autowire()
         ->constructorParameter('responseFactory', DI\get(ResponseFactoryInterface::class)),
 
+    // Needed because the mapped config tree does not contain intermediate config nodes
+    'logging.channels' => function (Config\ConfigService $configService) {
+        return $configService->get('logging.channels');
+    },
     Logging\ChannelManager::class => DI\autowire()
         ->constructorParameter('channelConfig', DI\get('logging.channels')),
 

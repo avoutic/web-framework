@@ -1,5 +1,11 @@
 # v10 release
 
+## v10.2.1
+
+### Bug fixes
+
+* Make sure logging channels reach ChannelManager
+
 ## v10.2
 
 ### New features
