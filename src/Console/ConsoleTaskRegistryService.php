@@ -21,6 +21,7 @@ use WebFramework\Task\DbConvertProductionTask;
 use WebFramework\Task\DbMakeMigrationTask;
 use WebFramework\Task\DbMigrateTask;
 use WebFramework\Task\DbStatusTask;
+use WebFramework\Task\DefinitionsShowTask;
 use WebFramework\Task\QueueList;
 use WebFramework\Task\QueueWorker;
 use WebFramework\Task\SanityCheckTask;
@@ -37,6 +38,7 @@ class ConsoleTaskRegistryService
     private array $frameworkCommands = [
         'cache:clear' => CacheClearTask::class,
         'config:show' => ConfigShowTask::class,
+        'definitions:show' => DefinitionsShowTask::class,
         'db:migrate' => DbMigrateTask::class,
         'db:convert-from-scheme' => DbConvertFromSchemeTask::class,
         'db:convert-production' => DbConvertProductionTask::class,

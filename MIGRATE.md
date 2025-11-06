@@ -9,6 +9,7 @@
 ### New features
 
 * Updated `config:show` to allow showing a specific configuration node.
+* New console command `definitions:show` to show the currently loaded definition files and their contents.
 
 ## v10.2.1
 

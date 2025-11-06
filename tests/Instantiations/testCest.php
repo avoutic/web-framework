@@ -113,6 +113,6 @@ class testCest
             }
         }
 
-        verify($count)->equals(123);
+        verify($count)->equals(124);
     }
 }
