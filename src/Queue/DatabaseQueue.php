@@ -74,12 +74,40 @@ class DatabaseQueue implements Queue
         }
 
         // Don't delete yet - job is locked and will be deleted after successful processing
-        $job = unserialize($queueJob->getJobData());
+        try
+        {
+            $job = unserialize($queueJob->getJobData());
+        }
+        catch (\Throwable $e)
+        {
+            // Corrupted job data - release it back to queue and mark as failed
+            $queueJob->setReservedAt(null);
+            $queueJob->setAttempts($queueJob->getAttempts() + 1);
+            $errorMessage = sprintf(
+                'Unserialize failed: %s: %s',
+                get_class($e),
+                $e->getMessage()
+            );
+            $queueJob->setError($errorMessage);
+            $this->queueJobRepository->save($queueJob);
+
+            $this->logger->error('Failed to unserialize job data', [
+                'queue' => $this->name,
+                'queueJobId' => $queueJob->getId(),
+                'exception' => get_class($e),
+                'message' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
 
         if (!($job instanceof Job))
         {
             // Invalid job data - release it back to queue
             $queueJob->setReservedAt(null);
+            $queueJob->setAttempts($queueJob->getAttempts() + 1);
+            $errorMessage = 'Invalid job data: unserialized value is not a Job instance';
+            $queueJob->setError($errorMessage);
             $this->queueJobRepository->save($queueJob);
 
             $this->logger->warning('Invalid job data encountered', [
@@ -215,10 +243,12 @@ class DatabaseQueue implements Queue
         $backoffSeconds = (int) max(1, 2 ** $currentAttempts);
 
         // Reschedule with backoff - update entity and save
+        // Clear error field on retry so old errors don't persist if retry succeeds
         $newAvailableAt = Carbon::now()->addSeconds($backoffSeconds)->getTimestamp();
         $queueJob->setReservedAt(null);
         $queueJob->setAvailableAt($newAvailableAt);
         $queueJob->setAttempts($currentAttempts + 1);
+        $queueJob->setError(null);
         $this->queueJobRepository->save($queueJob);
 
         unset($this->jobIdToQueueJobId[$jobId]);
