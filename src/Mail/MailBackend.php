@@ -12,12 +12,13 @@
 namespace WebFramework\Mail;
 
 /**
- * Class NullMailService.
+ * Interface MailBackend.
  *
- * A null implementation of the MailService and MailBackend interfaces that performs no actual mailing operations.
- * Useful for testing or when email functionality is not required.
+ * Defines the contract for mail backend implementations that actually send emails.
+ * This interface is used by queue handlers to send emails, separate from MailService
+ * which may queue emails instead of sending them directly.
  */
-class NullMailService implements MailService, MailBackend
+interface MailBackend
 {
     /**
      * Send a raw email.
@@ -27,12 +28,9 @@ class NullMailService implements MailService, MailBackend
      * @param string      $title     The email subject
      * @param string      $message   The email body
      *
-     * @return bool|string Always returns true
+     * @return bool|string True if sent successfully, or an error message string
      */
-    public function sendRawMail(?string $from, string $recipient, string $title, string $message): bool|string
-    {
-        return true;
-    }
+    public function sendRawMail(?string $from, string $recipient, string $title, string $message): bool|string;
 
     /**
      * Send an email using a template.
@@ -42,10 +40,7 @@ class NullMailService implements MailService, MailBackend
      * @param string               $recipient         The recipient's email address
      * @param array<string, mixed> $templateVariables Variables to be used in the template
      *
-     * @return bool|string Always returns true
+     * @return bool|string True if sent successfully, or an error message string
      */
-    public function sendTemplateMail(string $templateId, ?string $from, string $recipient, array $templateVariables): bool|string
-    {
-        return true;
-    }
+    public function sendTemplateMail(string $templateId, ?string $from, string $recipient, array $templateVariables): bool|string;
 }

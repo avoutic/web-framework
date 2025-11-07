@@ -14,6 +14,8 @@
 * New console command `definitions:show` to show the currently loaded definition files and their contents.
 * Queue\DatabaseQueue now reserves jobs for processing and releases them back to the queue if they fail.
 * Queue\DatabaseQueue now reschedules failed jobs with exponential backoff.
+* Introduce Mail\MailBackend interface for asynchronous email sending.
+* Introduce default job handlers for RawMailJob and TemplateMailJob.
 
 ## v10.2.1
 

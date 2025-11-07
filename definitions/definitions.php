@@ -94,6 +94,7 @@ return [
         ->constructorParameter('channelConfig', DI\get('logging.channels')),
 
     Mail\MailService::class => DI\autowire(Mail\NullMailService::class),
+    Mail\MailBackend::class => DI\autowire(Mail\NullMailService::class),
     'templateOverrides' => function (ContainerInterface $c) {
         $configService = $c->get(Config\ConfigService::class);
 
@@ -113,6 +114,13 @@ return [
 
     Queue\Queue::class => DI\autowire(Queue\MemoryQueue::class)
         ->constructorParameter('name', 'default'),
+    Queue\QueueService::class => DI\decorate(function (Queue\QueueService $queueService) {
+        // Register mail job handlers
+        $queueService->registerJobHandler(Job\RawMailJob::class, Handler\RawMailJobHandler::class);
+        $queueService->registerJobHandler(Job\TemplateMailJob::class, Handler\TemplateMailJobHandler::class);
+
+        return $queueService;
+    }),
 
     SanityCheck\SanityCheckRunner::class => DI\autowire()
         ->constructorParameter('buildInfo', DI\get('build_info')),
