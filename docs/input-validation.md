@@ -29,8 +29,8 @@ class YourNewAction
 Inside your action method (usually `__invoke`), define the validation rules for the input data. Use the appropriate validators for each field. For example, use `EmailValidator` for email fields, `PasswordValidator` for password fields, etc.
 
 ~~~php
-use WebFramework\Validation\Valdidator\EmailValidator;
-use WebFramework\Validation\Valdidator\PasswordValidator;
+use WebFramework\Validation\Validator\EmailValidator;
+use WebFramework\Validation\Validator\PasswordValidator;
 
 $validators = [
     'email' => (new EmailValidator())->required(),
@@ -88,8 +88,8 @@ use Psr\Http\Message\ResponseInterface;
 use Slim\Http\Response;
 use Slim\Http\ServerRequest as Request;
 use WebFramework\Validation\InputValidationService;
-use WebFramework\Validation\Valdidator\EmailValidator;
-use WebFramework\Validation\Valdidator\PasswordValidator;
+use WebFramework\Validation\Validator\EmailValidator;
+use WebFramework\Validation\Validator\PasswordValidator;
 use WebFramework\Exception\ValidationException;
 
 class ExampleAction
@@ -133,7 +133,7 @@ The WebFramework provides several default validators to handle common validation
 
 ### EmailValidator
 
-- **Class**: `WebFramework\Validation\Valdidator\EmailValidator`
+- **Class**: `WebFramework\Validation\Validator\EmailValidator`
 - **Purpose**: Validates email addresses.
 - **Usage**: Ensures the input is a valid email format and optionally checks for a maximum length.
 
@@ -145,7 +145,7 @@ $validators = ['email' => (new EmailValidator())->required()];
 
 ### PasswordValidator
 
-- **Class**: `WebFramework\Validation\Valdidator\PasswordValidator`
+- **Class**: `WebFramework\Validation\Validator\PasswordValidator`
 - **Purpose**: Validates passwords.
 - **Usage**: Ensures the input meets password requirements, such as being non-empty.
 
@@ -157,7 +157,7 @@ $validators = ['password' => new PasswordValidator()];
 
 ### UsernameValidator
 
-- **Class**: `WebFramework\Validation\Valdidator\UsernameValidator`
+- **Class**: `WebFramework\Validation\Validator\UsernameValidator`
 - **Purpose**: Validates usernames.
 - **Usage**: Ensures the input is a valid username format and optionally checks for a maximum length.
 
@@ -169,7 +169,7 @@ $validators = ['username' => (new UsernameValidator())->required()];
 
 ### CustomBoolValidator
 
-- **Class**: `WebFramework\Validation\Valdidator\CustomBoolValidator`
+- **Class**: `WebFramework\Validation\Validator\CustomBoolValidator`
 - **Purpose**: Validates boolean values.
 - **Usage**: Ensures the input is either '0', '1', 'true', or 'false'.
 
@@ -181,7 +181,7 @@ $validators = ['accept_terms' => (new CustomBoolValidator('accept_terms'))->requ
 
 ### CustomNumberValidator
 
-- **Class**: `WebFramework\Validation\Valdidator\CustomNumberValidator`
+- **Class**: `WebFramework\Validation\Validator\CustomNumberValidator`
 - **Purpose**: Validates numeric values.
 - **Usage**: Ensures the input is a number and optionally checks for minimum and maximum values.
 
@@ -193,7 +193,7 @@ $validators = ['age' => (new CustomNumberValidator('age'))->minValue(18)->maxVal
 
 ### IdValidator
 
-- **Class**: `WebFramework\Validation\Valdidator\IdValidator`
+- **Class**: `WebFramework\Validation\Validator\IdValidator`
 - **Purpose**: Validates ID fields.
 - **Usage**: Ensures the input is a valid ID format and can be converted to an integer.
 
@@ -205,7 +205,7 @@ $validators = ['user_id' => (new IdValidator('user_id'))->required()];
 
 ### UrlValidator
 
-- **Class**: `WebFramework\Validation\Valdidator\UrlValidator`
+- **Class**: `WebFramework\Validation\Validator\UrlValidator`
 - **Purpose**: Validates Url fields.
 - **Usage**: Ensures the input is a valid Url format.
 
@@ -217,7 +217,7 @@ $validators = ['url' => (new UrlValidator('url'))->required()];
 
 ## Using CustomValidator
 
-The `WebFramework\Validation\Valdidator\CustomValidator` class is a flexible validator that can be extended to create custom validation logic. It provides basic validation functionality and can be configured with various rules.
+The `WebFramework\Validation\Validator\CustomValidator` class is a flexible validator that can be extended to create custom validation logic. It provides basic validation functionality and can be configured with various rules.
 
 ### Key Features
 
