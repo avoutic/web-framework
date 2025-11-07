@@ -18,7 +18,7 @@ use WebFramework\Queue\Job;
 use WebFramework\Queue\JobHandler;
 
 /**
- * @implements JobHandler<EventJob>
+ * @implements JobHandler<Job>
  */
 class EventJobHandler implements JobHandler
 {
@@ -32,6 +32,13 @@ class EventJobHandler implements JobHandler
      */
     public function handle(Job $job): bool
     {
+        if (!$job instanceof EventJob)
+        {
+            $this->logger->error('EventJobHandler received invalid job type', ['jobClass' => get_class($job)]);
+
+            return false;
+        }
+
         $this->logger->debug('Handling EventJob', ['jobId' => $job->getJobId(), 'jobName' => $job->getJobName()]);
 
         $listener = $this->eventService->getListenerByClass($job->listenerClass);

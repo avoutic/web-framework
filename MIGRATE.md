@@ -16,6 +16,7 @@
 * Queue\DatabaseQueue now reschedules failed jobs with exponential backoff.
 * Introduce Mail\MailBackend interface for asynchronous email sending.
 * Introduce default job handlers for RawMailJob and TemplateMailJob.
+* Introduce default job handler for EventJob.
 
 ## v10.2.1
 

@@ -119,6 +119,9 @@ return [
         $queueService->registerJobHandler(Job\RawMailJob::class, Handler\RawMailJobHandler::class);
         $queueService->registerJobHandler(Job\TemplateMailJob::class, Handler\TemplateMailJobHandler::class);
 
+        // Register event job handler
+        $queueService->registerJobHandler(Job\EventJob::class, Handler\EventJobHandler::class);
+
         return $queueService;
     }),
 
