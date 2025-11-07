@@ -12,6 +12,8 @@
 namespace WebFramework\Handler;
 
 use Psr\Log\LoggerInterface;
+use WebFramework\Exception\InvalidJobException;
+use WebFramework\Exception\JobExecutionException;
 use WebFramework\Job\RawMailJob;
 use WebFramework\Mail\MailBackend;
 use WebFramework\Queue\Job;
@@ -30,13 +32,15 @@ class RawMailJobHandler implements JobHandler
     /**
      * @param RawMailJob $job
      */
-    public function handle(Job $job): bool
+    public function handle(Job $job): void
     {
         if (!$job instanceof RawMailJob)
         {
-            $this->logger->error('RawMailJobHandler received invalid job type', ['jobClass' => get_class($job)]);
+            /** @var class-string $jobClass */
+            $jobClass = get_class($job);
+            $this->logger->error('RawMailJobHandler received invalid job type', ['jobClass' => $jobClass]);
 
-            return false;
+            throw new InvalidJobException(RawMailJob::class, $jobClass);
         }
 
         $this->logger->debug('Handling RawMailJob', [
@@ -55,14 +59,13 @@ class RawMailJobHandler implements JobHandler
 
         if ($result !== true)
         {
+            $errorMessage = is_string($result) ? $result : 'Unknown error';
             $this->logger->error('Failed to send raw mail', [
                 'jobId' => $job->getJobId(),
-                'error' => $result,
+                'error' => $errorMessage,
             ]);
 
-            return false;
+            throw new JobExecutionException($job->getJobName(), $errorMessage);
         }
-
-        return true;
     }
 }

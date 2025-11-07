@@ -7,6 +7,7 @@
 * Database\Database interface now require rollbackTransaction() method.
 * Queue\Queue interface now require markJobCompleted() and markJobFailed() methods.
 * Queue\Queue interface now require dispatch() to accept a maxAttempts parameter.
+* Queue\JobHandler interface now requires handle() to return void instead of bool. Job handlers must throw exceptions on failure instead of returning false.
 
 ### New features
 
@@ -17,6 +18,7 @@
 * Introduce Mail\MailBackend interface for asynchronous email sending.
 * Introduce default job handlers for RawMailJob and TemplateMailJob.
 * Introduce default job handler for EventJob.
+* Introduce exception classes for job handling errors: InvalidJobException, JobDataException, and JobExecutionException.
 
 ## v10.2.1
 

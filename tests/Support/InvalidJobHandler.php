@@ -6,8 +6,8 @@ use WebFramework\Queue\Job;
 
 class InvalidJobHandler
 {
-    public function handle(Job $job): bool
+    public function handle(Job $job): void
     {
-        return true;
+        // This class doesn't implement JobHandler interface
     }
 }

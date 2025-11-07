@@ -12,6 +12,9 @@
 namespace WebFramework\Handler;
 
 use Psr\Log\LoggerInterface;
+use WebFramework\Exception\InvalidJobException;
+use WebFramework\Exception\JobDataException;
+use WebFramework\Exception\JobExecutionException;
 use WebFramework\Job\TemplateMailJob;
 use WebFramework\Mail\MailBackend;
 use WebFramework\Queue\Job;
@@ -30,13 +33,15 @@ class TemplateMailJobHandler implements JobHandler
     /**
      * @param TemplateMailJob $job
      */
-    public function handle(Job $job): bool
+    public function handle(Job $job): void
     {
         if (!$job instanceof TemplateMailJob)
         {
-            $this->logger->error('TemplateMailJobHandler received invalid job type', ['jobClass' => get_class($job)]);
+            /** @var class-string $jobClass */
+            $jobClass = get_class($job);
+            $this->logger->error('TemplateMailJobHandler received invalid job type', ['jobClass' => $jobClass]);
 
-            return false;
+            throw new InvalidJobException(TemplateMailJob::class, $jobClass);
         }
 
         $this->logger->debug('Handling TemplateMailJob', [
@@ -53,7 +58,7 @@ class TemplateMailJobHandler implements JobHandler
                 'jobId' => $job->getJobId(),
             ]);
 
-            return false;
+            throw new JobDataException($job->getJobName(), 'templateId');
         }
 
         $result = $this->mailBackend->sendTemplateMail(
@@ -65,15 +70,14 @@ class TemplateMailJobHandler implements JobHandler
 
         if ($result !== true)
         {
+            $errorMessage = is_string($result) ? $result : 'Unknown error';
             $this->logger->error('Failed to send template mail', [
                 'jobId' => $job->getJobId(),
                 'templateId' => $job->getTemplateId(),
-                'error' => $result,
+                'error' => $errorMessage,
             ]);
 
-            return false;
+            throw new JobExecutionException($job->getJobName(), $errorMessage);
         }
-
-        return true;
     }
 }

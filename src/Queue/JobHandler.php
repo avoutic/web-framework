@@ -28,8 +28,7 @@ interface JobHandler
      *
      * @param T $job The job to handle
      *
-     * @return bool true if the job was properly handled and can be removed
-     *              from the queue, false otherwise
+     * @throws \Throwable if the job fails to execute
      */
-    public function handle(Job $job): bool;
+    public function handle(Job $job): void;
 }

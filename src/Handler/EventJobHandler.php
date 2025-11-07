@@ -13,6 +13,7 @@ namespace WebFramework\Handler;
 
 use Psr\Log\LoggerInterface;
 use WebFramework\Event\EventService;
+use WebFramework\Exception\InvalidJobException;
 use WebFramework\Job\EventJob;
 use WebFramework\Queue\Job;
 use WebFramework\Queue\JobHandler;
@@ -30,13 +31,15 @@ class EventJobHandler implements JobHandler
     /**
      * @param EventJob $job
      */
-    public function handle(Job $job): bool
+    public function handle(Job $job): void
     {
         if (!$job instanceof EventJob)
         {
-            $this->logger->error('EventJobHandler received invalid job type', ['jobClass' => get_class($job)]);
+            /** @var class-string $jobClass */
+            $jobClass = get_class($job);
+            $this->logger->error('EventJobHandler received invalid job type', ['jobClass' => $jobClass]);
 
-            return false;
+            throw new InvalidJobException(EventJob::class, $jobClass);
         }
 
         $this->logger->debug('Handling EventJob', ['jobId' => $job->getJobId(), 'jobName' => $job->getJobName()]);
@@ -44,7 +47,5 @@ class EventJobHandler implements JobHandler
         $listener = $this->eventService->getListenerByClass($job->listenerClass);
 
         $listener->handle($job->event);
-
-        return true;
     }
 }

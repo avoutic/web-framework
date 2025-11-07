@@ -55,13 +55,16 @@ Job handlers implement the `JobHandler` interface and contain the actual logic f
 ~~~php
 interface JobHandler
 {
-    public function handle(Job $job): bool;
+    public function handle(Job $job): void;
 }
 ~~~
 
-The `handle()` method returns:
-- `true` if the job was successfully processed and should be removed from the queue
-- `false` if the job failed and should be retried (if retry attempts remain)
+The `handle()` method should throw an exception if the job fails to execute. If no exception is thrown, the job is considered successfully processed and will be removed from the queue.
+
+Common exceptions to throw:
+- `InvalidJobException` - when the job type doesn't match the handler's expected type
+- `JobDataException` - when required job data is missing
+- `JobExecutionException` - when the job execution fails (e.g., mail delivery failure)
 
 ## Usage
 
@@ -106,19 +109,27 @@ class SendEmailJob implements Job
 ### Creating a Job Handler
 
 ~~~php
+use WebFramework\Exception\InvalidJobException;
+use WebFramework\Exception\JobExecutionException;
+
 /**
  * @implements JobHandler<Job>
  */
 class SendEmailJobHandler implements JobHandler
 {
-    public function handle(Job $job): bool
+    public function handle(Job $job): void
     {
         if (!$job instanceof SendEmailJob) {
-            return false;
+            /** @var class-string $jobClass */
+            $jobClass = get_class($job);
+            throw new InvalidJobException(SendEmailJob::class, $jobClass);
         }
 
         // Send email logic here
-        return true;
+        // If sending fails, throw JobExecutionException
+        if (!$this->sendEmail($job)) {
+            throw new JobExecutionException($job->getJobName(), 'Failed to send email');
+        }
     }
 }
 ~~~

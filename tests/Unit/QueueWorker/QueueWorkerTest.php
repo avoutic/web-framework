@@ -31,7 +31,7 @@ final class QueueWorkerTest extends Unit
         ]);
 
         $jobHandler = $this->make(StaticArrayJobHandler::class, [
-            'handle' => Expected::once(true),
+            'handle' => Expected::once(),
         ]);
 
         $instance = $this->construct(
@@ -72,7 +72,7 @@ final class QueueWorkerTest extends Unit
         ]);
 
         $jobHandler = $this->make(StaticArrayJobHandler::class, [
-            'handle' => Expected::exactly(10, true),
+            'handle' => Expected::exactly(10),
         ]);
 
         $instance = $this->construct(

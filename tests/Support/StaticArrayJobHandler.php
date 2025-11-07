@@ -10,12 +10,10 @@ class StaticArrayJobHandler implements JobHandler
     /** @var string[] */
     public static $data = [];
 
-    public function handle(Job $job): bool
+    public function handle(Job $job): void
     {
         // Add the data to the static array
         //
         self::$data[] = $job->name;
-
-        return true;
     }
 }

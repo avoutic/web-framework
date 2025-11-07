@@ -125,17 +125,10 @@ class QueueWorker extends ConsoleTask
             try
             {
                 $jobHandler = $this->queueService->getJobHandler($job);
-                $success = $jobHandler->handle($job);
+                $jobHandler->handle($job);
 
-                // Mark job as completed or failed based on handler return value
-                if ($success)
-                {
-                    $queue->markJobCompleted($job);
-                }
-                else
-                {
-                    $queue->markJobFailed($job);
-                }
+                // Mark job as completed if no exception was thrown
+                $queue->markJobCompleted($job);
 
                 $jobsProcessed++;
             }
