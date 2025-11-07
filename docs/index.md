@@ -90,6 +90,7 @@ This documentation is organized into several sections, each focusing on a specif
 - **[Mailing](./mailing.md)**: How to send emails synchronously or asynchronously using the mail system.
 - **[Logging](./logging.md)**: How to configure log channels and route log output.
 - **[Event Handling](./events.md)**: How to trigger and handle Events with EventListeners.
+- **[Modules](./modules.md)**: Available installable modules that extend WebFramework functionality.
 
 ## Getting Started
 
