@@ -27,6 +27,22 @@ The `?` before a file path indicates that the file is optional. If it exists, it
 
 Meaning that if will load the base configuration file from the WebFramework, then the application configuration file, and finally the local configuration file if it exists.
 
+### Available Configuration Options
+
+For a complete list of all available WebFramework configuration options and their default settings, see `config/base_config.php`. This file contains all the default configuration values used by the framework, including:
+
+- Application settings (debug, production, timezone, etc.)
+- Logging configuration
+- Security settings (authentication, blacklist, encryption keys, etc.)
+- Action configurations (login, password reset, email change, etc.)
+- Middleware configuration
+- Routing configuration
+- Translation settings
+- Mailer configuration
+- And more
+
+When configuring your application, you can override any of these defaults in your `config.php` or `config_local.php` files.
+
 ### Setting Another Set of Files
 
 To use a different set of configuration files, you can call the `setConfigFiles` method on the `TaskRunner` instance, passing an array of file paths.

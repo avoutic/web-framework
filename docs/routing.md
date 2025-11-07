@@ -10,6 +10,8 @@ Routes are defined in the configuration under the `routes` key. The configuratio
 
 In your `config/config.php` file, specify the route classes to load:
 
+For available configuration options and default settings, see `config/base_config.php`.
+
 ~~~
 <?php
 

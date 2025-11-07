@@ -199,6 +199,8 @@ Available `UserMailer` methods:
 
 You can override default template IDs used by `UserMailer` in your configuration:
 
+For available configuration options and default settings, see `config/base_config.php`.
+
 ~~~php
 return [
     'user_mailer' => [
@@ -215,6 +217,8 @@ return [
 ## Default Sender Configuration
 
 Configure the default sender email address:
+
+For available configuration options and default settings, see `config/base_config.php`.
 
 ~~~php
 return [

@@ -21,6 +21,8 @@ Meaning that if will load the base definition file from the WebFramework, then t
 
 To set your own definition files, you need to specify them in the `base_config.php` file under the `definition_files` key. These files contain PHP-DI definitions that configure how services and classes are instantiated.
 
+For available configuration options and default settings, see `config/base_config.php`.
+
 If the file starts with a `?`, it will be ignored if it does not exist. This is useful for local configuration files that you don't want to commit to version control.
 
 ### Example Configuration

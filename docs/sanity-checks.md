@@ -59,6 +59,8 @@ class CustomSanityCheck extends SanityCheckBase
 
 Sanity checks are enabled and configured in the application's configuration file under the `sanity_check_modules` key. This key contains an associative array with fully qualified class names as keys and their respective configuration arrays as values.
 
+For available configuration options and default settings, see `config/base_config.php`.
+
 ### Example Configuration
 
 ~~~php

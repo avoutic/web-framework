@@ -35,6 +35,8 @@ return [
 
 In your configuration file (e.g., `config.php`), specify the directories where translation files are located. This is done under the `translations` key.
 
+For available configuration options and default settings, see `config/base_config.php`.
+
 ~~~php
 return [
     // Other configuration settings...
