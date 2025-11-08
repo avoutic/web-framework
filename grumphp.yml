@@ -19,3 +19,7 @@ grumphp:
             configuration: phpstan.neon
             memory_limit: 256M
             use_grumphp_paths: false
+        shell:
+            scripts:
+                - ["-c", "php scripts/VerifyTranslationKeys.php"]
+            triggered_by: [php]

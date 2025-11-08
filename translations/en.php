@@ -42,8 +42,6 @@ return [
         'username_mismatch_extra' => 'Please check if you entered the combination correctly.',
     ],
     'register' => [
-        'accept_terms' => 'Please accept our Terms',
-        'accept_terms_extra' => 'To register for our site you need to accept our Privacy Policy and our Terms of Service.',
         'captcha_incorrect' => 'The CAPTCHA code entered was incorrect',
         'captcha_required' => 'CAPTCHA required',
         'captcha_required_extra' => 'To prevent bots registering account en masse, filling in a CAPTCHA is required',
