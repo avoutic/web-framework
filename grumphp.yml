@@ -22,4 +22,5 @@ grumphp:
         shell:
             scripts:
                 - ["-c", "php scripts/VerifyTranslationKeys.php"]
+                - ["-c", "php scripts/VerifyConfigKeys.php"]
             triggered_by: [php]
