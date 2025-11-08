@@ -13,7 +13,6 @@ namespace WebFramework\Core;
 
 use Carbon\Carbon;
 use Psr\Log\LoggerInterface;
-use WebFramework\Config\ConfigService;
 use WebFramework\Entity\User;
 use WebFramework\Repository\UserRepository;
 use WebFramework\Security\PasswordHashService;
@@ -28,16 +27,16 @@ class UserService
     /**
      * UserService constructor.
      *
-     * @param ConfigService       $configService       The configuration service
      * @param LoggerInterface     $logger              The logger
      * @param PasswordHashService $passwordHashService Service for hashing passwords
      * @param UserRepository      $userRepository      Repository for user data operations
+     * @param string              $uniqueIdentifier    The unique identifier type ('email' or 'username')
      */
     public function __construct(
-        private ConfigService $configService,
         private LoggerInterface $logger,
         private PasswordHashService $passwordHashService,
         private UserRepository $userRepository,
+        private string $uniqueIdentifier,
     ) {}
 
     /**
@@ -74,11 +73,9 @@ class UserService
      */
     public function isUsernameAvailable(string $username): bool
     {
-        $uniqueIdentifier = $this->configService->get('authenticator.unique_identifier');
-
         // Check if identifier already exists
         //
-        if ($uniqueIdentifier == 'email')
+        if ($this->uniqueIdentifier == 'email')
         {
             return $this->userRepository->countObjects(['email' => $username]) === 0;
         }

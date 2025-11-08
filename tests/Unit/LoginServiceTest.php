@@ -6,7 +6,6 @@ use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
 use Psr\Log\LoggerInterface;
 use Slim\Http\ServerRequest as Request;
-use WebFramework\Config\ConfigService;
 use WebFramework\Entity\User;
 use WebFramework\Event\EventService;
 use WebFramework\Exception\CaptchaRequiredException;
@@ -265,12 +264,7 @@ final class LoginServiceTest extends Unit
         $instance = $this->make(
             LoginService::class,
             [
-                'configService' => $this->makeEmpty(
-                    ConfigService::class,
-                    [
-                        'get' => Expected::once(false),
-                    ],
-                ),
+                'bruteforceProtection' => false,
             ],
         );
 
@@ -286,13 +280,8 @@ final class LoginServiceTest extends Unit
         $instance = $this->make(
             LoginService::class,
             [
-                'configService' => $this->makeEmpty(
-                    ConfigService::class,
-                    [
-                        'get' => Expected::once(true),
-                    ],
-                ),
                 'logger' => $this->makeEmpty(LoggerInterface::class),
+                'bruteforceProtection' => true,
             ],
         );
 
@@ -308,12 +297,6 @@ final class LoginServiceTest extends Unit
         $instance = $this->make(
             LoginService::class,
             [
-                'configService' => $this->makeEmpty(
-                    ConfigService::class,
-                    [
-                        'get' => Expected::once(true),
-                    ],
-                ),
             ],
         );
 

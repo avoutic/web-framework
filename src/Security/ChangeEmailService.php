@@ -13,7 +13,6 @@ namespace WebFramework\Security;
 
 use Psr\Log\LoggerInterface;
 use Slim\Http\ServerRequest as Request;
-use WebFramework\Config\ConfigService;
 use WebFramework\Entity\User;
 use WebFramework\Event\EventService;
 use WebFramework\Event\UserEmailChanged;
@@ -35,7 +34,6 @@ class ChangeEmailService
      * ChangeEmailService constructor.
      *
      * @param AuthenticationService   $authenticationService   The authentication service
-     * @param ConfigService           $configService           The configuration service
      * @param EventService            $eventService            The event service
      * @param LoggerInterface         $logger                  The logger service
      * @param SecurityIteratorService $securityIteratorService The security iterator service
@@ -43,10 +41,10 @@ class ChangeEmailService
      * @param UserCodeService         $userCodeService         The user code service
      * @param UserMailer              $userMailer              The user mailer service
      * @param UserRepository          $userRepository          The user repository
+     * @param string                  $uniqueIdentifier        The unique identifier type ('email' or 'username')
      */
     public function __construct(
         private AuthenticationService $authenticationService,
-        private ConfigService $configService,
         private EventService $eventService,
         private LoggerInterface $logger,
         private SecurityIteratorService $securityIteratorService,
@@ -54,6 +52,7 @@ class ChangeEmailService
         private UserCodeService $userCodeService,
         private UserMailer $userMailer,
         private UserRepository $userRepository,
+        private string $uniqueIdentifier,
     ) {}
 
     /**
@@ -86,7 +85,7 @@ class ChangeEmailService
         //
         $user->setEmail($email);
 
-        if ($this->configService->get('authenticator.unique_identifier') == 'email')
+        if ($this->uniqueIdentifier == 'email')
         {
             $this->logger->info('Setting username to email', ['user_id' => $user->getId(), 'email' => $email]);
 

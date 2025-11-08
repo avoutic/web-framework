@@ -73,6 +73,8 @@ return [
         ->constructorParameter('offlineMode', DI\get('offline_mode'))
         ->constructorParameter('production', DI\get('production'))
         ->constructorParameter('serverName', DI\get('server_name')),
+    Core\UserService::class => DI\autowire()
+        ->constructorParameter('uniqueIdentifier', DI\get('authenticator.unique_identifier')),
 
     Database\Database::class => DI\autowire(Database\NullDatabase::class),
 
@@ -130,6 +132,8 @@ return [
 
     Security\AuthenticationService::class => DI\autowire(Security\NullAuthenticationService::class),
     Security\BlacklistService::class => DI\autowire(Security\NullBlacklistService::class),
+    Security\ChangeEmailService::class => DI\autowire()
+        ->constructorParameter('uniqueIdentifier', DI\get('authenticator.unique_identifier')),
     Security\ConfigService::class => DI\autowire()
         ->constructorParameter('authDir', DI\get('security.auth_dir')),
     Security\DatabaseAuthenticationService::class => DI\autowire(Security\DatabaseAuthenticationService::class)
@@ -138,6 +142,8 @@ return [
         ->constructorParameter('storePeriod', DI\get('security.blacklist.store_period'))
         ->constructorParameter('threshold', DI\get('security.blacklist.threshold'))
         ->constructorParameter('triggerPeriod', DI\get('security.blacklist.trigger_period')),
+    Security\LoginService::class => DI\autowire()
+        ->constructorParameter('bruteforceProtection', DI\get('actions.login.bruteforce_protection'))
     Security\ProtectService::class => DI\autowire()
         ->constructorParameter('moduleConfig', [
             'hash' => DI\get('security.hash'),

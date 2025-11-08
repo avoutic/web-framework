@@ -13,7 +13,6 @@ namespace WebFramework\Security;
 
 use Psr\Log\LoggerInterface;
 use Slim\Http\ServerRequest as Request;
-use WebFramework\Config\ConfigService;
 use WebFramework\Entity\User;
 use WebFramework\Event\EventService;
 use WebFramework\Event\UserLoggedIn;
@@ -34,7 +33,6 @@ class LoginService
      *
      * @param AuthenticationService $authenticationService The authentication service
      * @param BlacklistService      $blacklistService      The blacklist service
-     * @param ConfigService         $configService         The configuration service
      * @param CheckPasswordService  $checkPasswordService  The password checking service
      * @param EventService          $eventService          The event service
      * @param LoggerInterface       $logger                The logger service
@@ -43,11 +41,11 @@ class LoginService
     public function __construct(
         private AuthenticationService $authenticationService,
         private BlacklistService $blacklistService,
-        private ConfigService $configService,
         private CheckPasswordService $checkPasswordService,
         private EventService $eventService,
         private LoggerInterface $logger,
         private UserRepository $userRepository,
+        private bool $bruteforceProtection,
     ) {}
 
     /**
@@ -141,9 +139,7 @@ class LoginService
      */
     public function captchaRequired(User $user): bool
     {
-        $bruteforceProtection = $this->configService->get('actions.login.bruteforce_protection');
-
-        if ($user->getFailedLogin() > 5 && $bruteforceProtection)
+        if ($user->getFailedLogin() > 5 && $this->bruteforceProtection)
         {
             $this->logger->debug('CAPTCHA required', ['user_id' => $user->getId(), 'failed_logins' => $user->getFailedLogin()]);
 
