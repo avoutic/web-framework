@@ -144,6 +144,7 @@ return [
         ->constructorParameter('triggerPeriod', DI\get('security.blacklist.trigger_period')),
     Security\LoginService::class => DI\autowire()
         ->constructorParameter('bruteforceProtection', DI\get('actions.login.bruteforce_protection'))
+        ->constructorParameter('validityPeriodDays', DI\get('security.email_verification.validity_period_days')),
     Security\ProtectService::class => DI\autowire()
         ->constructorParameter('moduleConfig', [
             'hash' => DI\get('security.hash'),

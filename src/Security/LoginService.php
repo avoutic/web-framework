@@ -37,6 +37,8 @@ class LoginService
      * @param EventService          $eventService          The event service
      * @param LoggerInterface       $logger                The logger service
      * @param UserRepository        $userRepository        The user repository
+     * @param bool                  $bruteforceProtection  Whether bruteforce protection is enabled
+     * @param int                   $validityPeriodDays    The number of days that email verification remains valid
      */
     public function __construct(
         private AuthenticationService $authenticationService,
@@ -46,6 +48,7 @@ class LoginService
         private LoggerInterface $logger,
         private UserRepository $userRepository,
         private bool $bruteforceProtection,
+        private int $validityPeriodDays,
     ) {}
 
     /**
@@ -97,6 +100,13 @@ class LoginService
             throw new UserVerificationRequiredException($user);
         }
 
+        if (!$user->isVerifiedValid($this->validityPeriodDays))
+        {
+            $this->logger->debug('User verification expired', ['user_id' => $user->getId()]);
+
+            throw new UserVerificationRequiredException($user);
+        }
+
         return $user;
     }
 
@@ -121,6 +131,13 @@ class LoginService
         if (!$user->isVerified())
         {
             $this->logger->debug('User not verified', ['user_id' => $user->getId()]);
+
+            throw new UserVerificationRequiredException($user);
+        }
+
+        if (!$user->isVerifiedValid($this->validityPeriodDays))
+        {
+            $this->logger->debug('User verification expired', ['user_id' => $user->getId()]);
 
             throw new UserVerificationRequiredException($user);
         }

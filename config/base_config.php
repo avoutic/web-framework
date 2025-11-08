@@ -40,6 +40,9 @@ return [
             'site_key' => env('RECAPTCHA_SITE_KEY', ''),
             'secret_key' => env('RECAPTCHA_SECRET_KEY', ''),
         ],
+        'email_verification' => [
+            'validity_period_days' => 30,   // Days that email verification remains valid (default: 30)
+        ],
     ],
     // Action classes to execute for showing graceful error pages
     'error_handlers' => [

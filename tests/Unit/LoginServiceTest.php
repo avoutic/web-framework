@@ -144,7 +144,10 @@ final class LoginServiceTest extends Unit
 
     public function testValidateSuccess()
     {
-        $user = $this->makeEmpty(User::class, ['isVerified' => Expected::once(true)]);
+        $user = $this->makeEmpty(User::class, [
+            'isVerified' => Expected::once(true),
+            'isVerifiedValid' => Expected::once(true),
+        ]);
 
         $instance = $this->make(
             LoginService::class,
@@ -163,6 +166,7 @@ final class LoginServiceTest extends Unit
                         'getUserByUsername' => $user,
                     ],
                 ),
+                'validityPeriodDays' => 1,
             ],
         );
 
@@ -226,7 +230,10 @@ final class LoginServiceTest extends Unit
 
     public function testAuthenticateSuccess()
     {
-        $user = $this->makeEmpty(User::class, ['isVerified' => Expected::once(true)]);
+        $user = $this->makeEmpty(User::class, [
+            'isVerified' => Expected::once(true),
+            'isVerifiedValid' => Expected::once(true),
+        ]);
 
         $instance = $this->make(
             LoginService::class,
@@ -249,6 +256,7 @@ final class LoginServiceTest extends Unit
                         'dispatch' => Expected::once(),
                     ],
                 ),
+                'validityPeriodDays' => 1,
             ],
         );
 

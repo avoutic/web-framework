@@ -11,13 +11,15 @@
 
 namespace WebFramework\Entity;
 
+use Carbon\Carbon;
+
 /**
  * Represents a user in the system.
  */
 class User extends EntityCore
 {
     protected static string $tableName = 'users';
-    protected static array $baseFields = ['username', 'email', 'solid_password', 'terms_accepted', 'registered', 'verified', 'last_login', 'failed_login'];
+    protected static array $baseFields = ['username', 'email', 'solid_password', 'terms_accepted', 'registered', 'verified', 'verified_at', 'last_login', 'failed_login'];
     protected static array $privateFields = ['solid_password'];
 
     // Protected because User is often extended with project specific fields
@@ -27,6 +29,7 @@ class User extends EntityCore
     protected string $solidPassword = '';
     protected int $termsAccepted = 0;
     protected bool $verified = false;
+    protected ?int $verifiedAt = null;
     protected int $registered = 0;
     protected int $lastLogin = 0;
     protected int $failedLogin = 0;
@@ -105,10 +108,41 @@ class User extends EntityCore
 
     /**
      * Mark the user as verified.
+     *
+     * @param int $timestamp The timestamp when the user was verified
      */
-    public function setVerified(): void
+    public function setVerified(int $timestamp): void
     {
         $this->verified = true;
+        $this->verifiedAt = $timestamp;
+    }
+
+    /**
+     * Get the timestamp when the user was verified.
+     */
+    public function getVerifiedAt(): ?int
+    {
+        return $this->verifiedAt;
+    }
+
+    /**
+     * Set the timestamp when the user was verified.
+     */
+    public function setVerifiedAt(?int $timestamp): void
+    {
+        $this->verifiedAt = $timestamp;
+    }
+
+    /**
+     * Check if the user's verification is valid.
+     *
+     * @param int $validity_days The number of days that the verification is valid
+     *
+     * @return bool True if the user's verification is valid, false otherwise
+     */
+    public function isVerifiedValid(int $validity_days): bool
+    {
+        return $this->verifiedAt > Carbon::now()->subDays($validity_days)->getTimestamp();
     }
 
     /**
