@@ -4,10 +4,10 @@
 
 ### Breaking changes
 
-* Database\Database interface now require rollbackTransaction() method.
-* Queue\Queue interface now require markJobCompleted() and markJobFailed() methods.
-* Queue\Queue interface now require dispatch() to accept a maxAttempts parameter.
-* Queue\JobHandler interface now requires handle() to return void instead of bool. Job handlers must throw exceptions on failure instead of returning false.
+* `Database\Database` interface now require `rollbackTransaction()` method.
+* `Queue\Queue` interface now require `markJobCompleted()` and `markJobFailed()` methods.
+* `Queue\Queue` interface now require `dispatch()` to accept a `maxAttempts` parameter.
+* `Queue\JobHandler` interface now requires `handle()` to return void instead of bool. Job handlers must throw exceptions on failure instead of returning false.
 
 ### New features
 
@@ -30,8 +30,8 @@
 
 ### New features
 
-* RepositoryCore::instantiateEntityFromData() now supports a prefix parameter to handle cases where the identifier field is prefixed with a table alias.
-* RepositoryCore::getAliasedFields() to support aliasing fields in queries.
+* `RepositoryCore::instantiateEntityFromData()` now supports a `prefix` parameter to handle cases where the identifier field is prefixed with a table alias.
+* `RepositoryCore::getAliasedFields()` to support aliasing fields in queries.
 
 ## v10.1
 
