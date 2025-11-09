@@ -205,8 +205,8 @@ For available configuration options and default settings, see `config/base_confi
 return [
     'user_mailer' => [
         'template_overrides' => [
-            'email-verification-link' => 'my-custom-verification-template',
-            'change-email-verification-link' => 'my-custom-change-email-template',
+            'email-verification-code' => 'my-custom-verification-template',
+            'change-email-verification-code' => 'my-custom-change-email-template',
             'password-reset' => 'my-custom-password-reset-template',
             'new-password' => 'my-custom-new-password-template',
         ],

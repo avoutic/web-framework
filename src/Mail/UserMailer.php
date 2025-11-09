@@ -36,23 +36,25 @@ class UserMailer
     ) {}
 
     /**
-     * Send an email verification link to a user.
+     * Send an email verification code to a user.
      *
      * @param string       $to     The recipient's email address
      * @param array<mixed> $params Parameters for the email template
      *
      * @return bool|string True if sent successfully, or an error message string
      */
-    public function emailVerificationLink(string $to, array $params): bool|string
+    public function emailVerificationCode(string $to, array $params): bool|string
     {
-        $this->logger->debug('Sending email verification link', ['to' => $to]);
+        $this->logger->debug('Sending email verification code', ['to' => $to]);
 
-        $templateId = $this->templateOverrides['email-verification-link'] ?? 'email-verification-link';
-        $verifyUrl = $params['verify_url'];
+        $templateId = $this->templateOverrides['email-verification-code'] ?? 'email-verification-code';
+        $code = $params['code'];
         $username = $params['user']['username'];
+        $validity = $params['validity'];
 
         $vars = [
-            'action_url' => $verifyUrl,
+            'code' => $code,
+            'validity' => $validity,
             'username' => $username,
         ];
 
@@ -60,23 +62,25 @@ class UserMailer
     }
 
     /**
-     * Send a change email verification link to a user.
+     * Send a change email verification code to a user.
      *
      * @param string       $to     The recipient's email address
      * @param array<mixed> $params Parameters for the email template
      *
      * @return bool|string True if sent successfully, or an error message string
      */
-    public function changeEmailVerificationLink(string $to, array $params): bool|string
+    public function changeEmailVerificationCode(string $to, array $params): bool|string
     {
-        $this->logger->debug('Sending change email verification link', ['to' => $to]);
+        $this->logger->debug('Sending change email verification code', ['to' => $to]);
 
-        $templateId = $this->templateOverrides['change-email-verification-link'] ?? 'change-email-verification-link';
-        $verifyUrl = $params['verify_url'];
+        $templateId = $this->templateOverrides['change-email-verification-code'] ?? 'change-email-verification-code';
+        $code = $params['code'];
         $username = $params['user']['username'];
+        $validity = $params['validity'];
 
         $vars = [
-            'action_url' => $verifyUrl,
+            'code' => $code,
+            'validity' => $validity,
             'username' => $username,
         ];
 

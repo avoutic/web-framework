@@ -42,6 +42,9 @@ return [
         ],
         'email_verification' => [
             'validity_period_days' => 30,   // Days that email verification remains valid (default: 30)
+            'code_length' => 6,             // Length of verification code (default: 6)
+            'code_expiry_minutes' => 15,    // Minutes until code expires (default: 15)
+            'max_attempts' => 5,            // Maximum verification attempts per code (default: 5)
         ],
     ],
     // Action classes to execute for showing graceful error pages
@@ -54,26 +57,43 @@ return [
     ],
     'actions' => [
         'login' => [
-            'location' => '/login',             // Location of the login page
-            'verify_page' => '/verify',         // Location of the verify page
-            'after_verify_page' => '/',         // Location to redirect after triggering verification
-            'default_return_page' => '/',       // Default return page
-            'bruteforce_protection' => true,    // Enable bruteforce protection
+            'location' => '/login',                 // Location of the login page
+            'after_verify' => '/login/verify',      // Location to redirect to after verifying
+            'default_return_page' => '/',           // Default return page
+            'bruteforce_protection' => true,        // Enable bruteforce protection
+            'template_name' => 'Login.latte',       // Template name for login page
         ],
-        'forgot_password' => [
-            'location' => '/forgot-password',   // Location of the forgot password page
-            'reset_password_page' => '/reset-password', // Location of the reset password page
+        'reset_password' => [
+            'location' => '/forgot-password',    // Location of the forgot password page
+            'after_verify' => '/reset-password', // Location of the reset password page
+            'template_name' => 'ForgotPassword.latte', // Template name for forgot password page
         ],
         'change_password' => [
-            'return_page' => '/',               // Location to redirect after changing password
+            'location' => '/change-password',          // Location of the change password page
+            'return_page' => '/',                      // Location to redirect after changing password
+            'template_name' => 'ChangePassword.latte', // Template name for change password page
         ],
         'change_email' => [
-            'location' => '/change-email',      // Location of the change email page
-            'verify_page' => '/change-email-verify', // Location of the change email verify page
-            'return_page' => '/',               // Location to redirect after changing email
+            'location' => '/change-email',            // Location of the change email page
+            'after_verify' => '/change-email/verify', // Location of the change email verify page
+            'return_page' => '/',                     // Location to redirect after changing email
+            'template_name' => 'ChangeEmail.latte',   // Template name for change email page
         ],
-        'send_verify' => [
-            'after_verify_page' => '/',         // Location to redirect after triggering verification
+        'register' => [
+            'location' => '/register',            // Location of the register page
+            'after_verify' => '/register-verify', // Location to redirect to after verifying
+            'return_page' => '/',                 // Default page to redirect to after verifying
+            'template_name' => 'Register.latte',  // Template name for register page
+        ],
+        'verify' => [
+            'location' => '/verify',               // Location of the verify page
+            'resend_location' => '/verify/resend', // Location of the verify resend page
+            'templates' => [                       // Template names per action type
+                'login' => 'Verify.latte',
+                'register' => 'Verify.latte',
+                'reset_password' => 'Verify.latte',
+                'change_email' => 'Verify.latte',
+            ],
         ],
     ],
     // Definition files to be loaded
@@ -100,8 +120,8 @@ return [
     'user_mailer' => [
         // Template overrides for UserMailer
         'template_overrides' => [
-            'email-verification-link' => 'email-verification-link',
-            'change-email-verification-link' => 'change-email-verification-link',
+            'email-verification-code' => 'email-verification-code',
+            'change-email-verification-code' => 'change-email-verification-code',
             'password-reset' => 'password-reset',
             'new-password' => 'new-password',
         ],

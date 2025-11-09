@@ -79,6 +79,7 @@ This documentation is organized into several sections, each focusing on a specif
 - **[Creating New Entities](./new-entity.md)**: Step-by-step guide to creating new entities and repositories.
 - **[Input Validation](./input-validation.md)**: How to add input validation to your actions using the InputValidationService.
 - **[Routing](./routing.md)**: How to set up and manage routes in your WebFramework application.
+- **[User Management Flows](./user-management-flows.md)**: Understanding registration, login, password reset, and email change flows.
 - **[Middleware Management](./middlewares.md)**: How to define and use middleware to process requests and responses.
 - **[Sanity Checks](./sanity-checks.md)**: How to use the sanity check system to ensure your application environment is correct.
 - **[Tasks](./tasks.md)**: How to create and run tasks from the command line.

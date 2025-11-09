@@ -57,6 +57,23 @@ return [
     'offline_mode' => false,
     'server_name' => $_SERVER['SERVER_NAME'] ?? 'app',
 
+    // Needed because the mapped config tree does not contain intermediate config nodes
+    'actions.verify.templates' => function (Config\ConfigService $c) {
+        return $c->get('actions.verify.templates');
+    },
+    Actions\Login::class => DI\autowire()
+        ->constructorParameter('templateName', DI\get('actions.login.template_name')),
+    Actions\Register::class => DI\autowire()
+        ->constructorParameter('templateName', DI\get('actions.register.template_name')),
+    Actions\ChangeEmail::class => DI\autowire()
+        ->constructorParameter('templateName', DI\get('actions.change_email.template_name')),
+    Actions\ChangePassword::class => DI\autowire()
+        ->constructorParameter('templateName', DI\get('actions.change_password.template_name')),
+    Actions\ForgotPassword::class => DI\autowire()
+        ->constructorParameter('templateName', DI\get('actions.reset_password.template_name')),
+    Actions\Verify::class => DI\autowire()
+        ->constructorParameter('templateConfig', DI\get('actions.verify.templates')),
+
     Cache\Cache::class => DI\autowire(Cache\NullCache::class),
 
     Config\ConfigService::class => DI\autowire()
@@ -133,6 +150,7 @@ return [
     Security\AuthenticationService::class => DI\autowire(Security\NullAuthenticationService::class),
     Security\BlacklistService::class => DI\autowire(Security\NullBlacklistService::class),
     Security\ChangeEmailService::class => DI\autowire()
+        ->constructorParameter('codeExpiryMinutes', DI\get('security.email_verification.code_expiry_minutes'))
         ->constructorParameter('uniqueIdentifier', DI\get('authenticator.unique_identifier')),
     Security\ConfigService::class => DI\autowire()
         ->constructorParameter('authDir', DI\get('security.auth_dir')),
@@ -156,6 +174,14 @@ return [
         ->constructorParameter('secretKey', DI\get('security.recaptcha.secret_key')),
     Security\RecaptchaFactory::class => DI\autowire()
         ->constructorParameter('secretKey', DI\get('security.recaptcha.secret_key')),
+    Security\ResetPasswordService::class => DI\autowire()
+        ->constructorParameter('codeExpiryMinutes', DI\get('security.email_verification.code_expiry_minutes')),
+    Security\UserCodeService::class => DI\autowire()
+        ->constructorParameter('codeLength', DI\get('security.email_verification.code_length'))
+        ->constructorParameter('codeExpiryMinutes', DI\get('security.email_verification.code_expiry_minutes'))
+        ->constructorParameter('maxAttempts', DI\get('security.email_verification.max_attempts')),
+    Security\UserVerificationService::class => DI\autowire()
+        ->constructorParameter('codeExpiryMinutes', DI\get('security.email_verification.code_expiry_minutes')),
 
     'translationDirectories' => function (ContainerInterface $c) {
         $configService = $c->get(Config\ConfigService::class);

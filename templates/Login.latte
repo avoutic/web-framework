@@ -1,6 +1,5 @@
 <form method="post" action="/login">
   <fieldset>
-    <input type="hidden" name="do" value="yes"/>
     <input type="hidden" name="token" value="{$csrfToken}"/>
     <input type="hidden" id="password" name="password" value=""/>
     <input type="hidden" name="return_page" value="{$returnPage}"/>
@@ -27,7 +26,3 @@
     </div>
   </fieldset>
 </form>
-<span>
-  <a href="/forgot_password">Forgot your password?</a>
-  | <a href="/register_account">No account yet?</a>
-</span>

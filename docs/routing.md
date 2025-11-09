@@ -49,62 +49,34 @@ class Unauthenticated implements RouteSet
         //
         $app->get('/login', \WebFramework\Actions\Login::class);
         $app->post('/login', \WebFramework\Actions\Login::class);
+        $app->get('/login/verify', \WebFramework\Actions\LoginVerify::class);
 
         $app->get('/logoff', \WebFramework\Actions\Logoff::class);
 
-        $app->get('/send-verify', \WebFramework\Actions\SendVerify::class);
-        $app->get('/verify', \WebFramework\Actions\Verify::class);
-        $app->get('/change-email-verify', \WebFramework\Actions\ChangeEmailVerify::class);
-
         $app->get('/forgot-password', \WebFramework\Actions\ForgotPassword::class);
         $app->post('/forgot-password', \WebFramework\Actions\ForgotPassword::class);
+        $app->get('/change-email', \WebFramework\Actions\ChangeEmail::class);
+        $app->post('/change-email', \WebFramework\Actions\ChangeEmail::class);
+        $app->get('/change-email/verify', \WebFramework\Actions\ChangeEmailVerify::class);
 
         $app->get('/reset-password', \WebFramework\Actions\ResetPassword::class);
+
+        $app->get('/verify', \WebFramework\Actions\Verify::class);
+        $app->post('/verify', \WebFramework\Actions\Verify::class);
+        $app->post('/verify/resend', \WebFramework\Actions\VerifyResend::class);
 
         // Registration related
         //
         $app->get('/register', \WebFramework\Actions\Register::class);
+        $app->post('/register', \WebFramework\Actions\Register::class);
+        $app->get('/register/verify', \WebFramework\Actions\RegisterVerify::class);
     }
 }
 ~~~
 
 ## Example: Authenticated Routes
 
-For authenticated routes, you can create a middleware to ensure that the user is logged in before accessing certain routes.
-
-### LoggedInMiddleware
-
-Here's an example of a `LoggedInMiddleware` class that checks if a user is authenticated:
-
-~~~
-<?php
-
-namespace App\Middleware;
-
-use Psr\Http\Message\ResponseInterface as Response;
-use Psr\Http\Message\ServerRequestInterface as Request;
-use Psr\Http\Server\MiddlewareInterface;
-use Psr\Http\Server\RequestHandlerInterface;
-use Slim\Exception\HttpUnauthorizedException;
-use WebFramework\Security\AuthenticationService;
-
-class LoggedInMiddleware implements MiddlewareInterface
-{
-    public function __construct(
-        private AuthenticationService $authenticationService,
-    ) {}
-
-    public function process(Request $request, RequestHandlerInterface $handler): Response
-    {
-        if (!$this->authenticationService->isAuthenticated())
-        {
-            throw new HttpUnauthorizedException($request);
-        }
-
-        return $handler->handle($request);
-    }
-}
-~~~
+For authenticated routes, you can use the `WebFramework\Middleware\LoggedInMiddleware` to ensure that the user is logged in before accessing certain routes.
 
 ### Authenticated Route Group
 
@@ -115,10 +87,10 @@ You can then create a route group for authenticated routes, using the `LoggedInM
 
 namespace App\Routes;
 
-use App\Middleware\LoggedInMiddleware;
 use Slim\App;
 use Slim\Routing\RouteCollectorProxy;
 use WebFramework\Http\RouteSet;
+use WebFramework\Middleware\LoggedInMiddleware;
 
 // Authenticated (but not linked to account type)
 //
@@ -133,6 +105,10 @@ class Authenticated implements RouteSet
     {
         $app->group('', function (RouteCollectorProxy $group) {
             $group->get('/', \App\Actions\Main::class);
+            
+            $group->get('/change-password', \WebFramework\Actions\ChangePassword::class);
+            $group->post('/change-password', \WebFramework\Actions\ChangePassword::class);
+
             $group->get('/settings', \App\Actions\Settings::class);
         })
             ->add($this->loggedInMiddleware)

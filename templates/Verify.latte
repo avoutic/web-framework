@@ -1,0 +1,25 @@
+<form method="post" action="/verify">
+  <fieldset>
+    <input type="hidden" name="token" value="{$csrfToken}"/>
+    <legend>Email Verification</legend>
+    <p>
+      Please enter the verification code that was sent to your email address.
+    </p>
+    <p>
+      <label for="code">Verification Code</label>
+      <input type="text" id="code" name="code" value="{$code}" autocomplete="off" maxlength="10" pattern="[0-9]+" required/>
+    </p>
+
+    <div>
+      <label>&nbsp;</label>
+      <input type="submit" value="Verify" />
+    </div>
+  </fieldset>
+</form>
+<p>
+  <form method="post" action="/verify/resend">
+    <input type="hidden" name="token" value="{$csrfToken}"/>
+    <input type="submit" value="Resend verification code" />
+  </form>
+</p>
+

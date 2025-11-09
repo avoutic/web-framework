@@ -66,6 +66,7 @@ class Login
         protected RenderService $renderer,
         protected ResponseEmitter $responseEmitter,
         protected UserVerificationService $userVerificationService,
+        protected string $templateName,
     ) {
         $this->init();
     }
@@ -73,7 +74,7 @@ class Login
     /**
      * Initialize the action.
      */
-    public function init(): void {}
+    protected function init(): void {}
 
     /**
      * Perform custom value checks before allowing authentication.
@@ -86,24 +87,6 @@ class Login
     protected function customValueCheck(Request $request, User $user): bool
     {
         return true;
-    }
-
-    /**
-     * Perform custom actions after authentication.
-     *
-     * @param Request $request The current request
-     * @param User    $user    The user to check
-     */
-    protected function afterAuthentication(Request $request, User $user): void {}
-
-    /**
-     * Get the template name for rendering.
-     *
-     * @return string The template name
-     */
-    protected function getTemplateName(): string
-    {
-        return 'Login.latte';
     }
 
     /**
@@ -123,8 +106,8 @@ class Login
      *
      * @uses config authenticator.unique_identifier
      * @uses config actions.login.default_return_page
+     * @uses config actions.verify.location
      * @uses config security.recaptcha.site_key
-     * @uses config actions.send_verify.after_verify_page
      */
     public function __invoke(Request $request, Response $response, array $routeArgs): ResponseInterface
     {
@@ -134,7 +117,7 @@ class Login
         //
         if ($this->authenticationService->isAuthenticated())
         {
-            return $this->successRedirect($request, 'info', 'login.already_authenticated');
+            return $this->redirect($request, 'info', 'login.already_authenticated');
         }
 
         $params = [
@@ -148,7 +131,7 @@ class Login
         //
         if (!$request->getAttribute('passed_csrf'))
         {
-            return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
+            return $this->renderer->render($request, $response, $this->templateName, $params);
         }
 
         try
@@ -175,9 +158,7 @@ class Login
                 //
                 $this->loginService->authenticate($request, $user, $filtered['password']);
 
-                $this->afterAuthentication($request, $user);
-
-                return $this->successRedirect($request, 'success', 'login.success');
+                return $this->redirect($request, 'success', 'login.success');
             }
         }
         catch (CaptchaRequiredException $e)
@@ -200,13 +181,21 @@ class Login
         }
         catch (UserVerificationRequiredException $e)
         {
-            $this->userVerificationService->sendVerifyMail($e->getUser());
+            $afterVerifyData = [
+                'return_page' => $this->getReturnPage($request),
+                'return_query' => $this->getReturnQuery($request),
+            ];
 
-            return $this->responseEmitter->buildRedirect(
-                $this->configService->get('actions.send_verify.after_verify_page'),
+            $guid = $this->userVerificationService->sendVerifyMail($e->getUser(), 'login', $afterVerifyData);
+
+            return $this->responseEmitter->buildQueryRedirect(
+                $this->configService->get('actions.verify.location'),
                 [],
+                [
+                    'guid' => $guid,
+                ],
                 'success',
-                'verify.mail_sent',
+                'verify.code_sent',
             );
         }
         catch (ValidationException $e)
@@ -214,7 +203,7 @@ class Login
             $this->messageService->addErrors($e->getErrors());
         }
 
-        return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
+        return $this->renderer->render($request, $response, $this->templateName, $params);
     }
 
     /**
@@ -226,7 +215,7 @@ class Login
      *
      * @uses config actions.login.default_return_page
      */
-    protected function getReturnPage(Request $request): string
+    private function getReturnPage(Request $request): string
     {
         $returnPage = $request->getParam('return_page', '');
 
@@ -251,7 +240,7 @@ class Login
      *
      * @return array<mixed> The return query parameters
      */
-    protected function getReturnQuery(Request $request): array
+    private function getReturnQuery(Request $request): array
     {
         $returnQuery = [];
         $returnQueryStr = $request->getParam('return_query', '');
@@ -261,7 +250,7 @@ class Login
     }
 
     /**
-     * Build the success redirect response.
+     * Build a redirect response.
      *
      * @param Request $request     The current request
      * @param string  $messageType The type of message to display
@@ -269,14 +258,14 @@ class Login
      *
      * @return ResponseInterface The redirect response
      */
-    protected function successRedirect(Request $request, string $messageType, string $message): ResponseInterface
+    private function redirect(Request $request, string $messageType, string $message): ResponseInterface
     {
         return $this->responseEmitter->buildQueryRedirect(
             $this->getReturnPage($request),
             [],
             $this->getReturnQuery($request),
-            'success',
-            'login.success',
+            $messageType,
+            $message,
         );
     }
 }

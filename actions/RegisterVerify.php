@@ -12,35 +12,41 @@
 namespace WebFramework\Actions;
 
 use Psr\Http\Message\ResponseInterface;
+use Slim\Exception\HttpNotFoundException;
 use Slim\Http\Response;
 use Slim\Http\ServerRequest as Request;
 use WebFramework\Config\ConfigService;
 use WebFramework\Exception\CodeVerificationException;
 use WebFramework\Http\ResponseEmitter;
-use WebFramework\Security\ResetPasswordService;
+use WebFramework\Security\AuthenticationService;
+use WebFramework\Security\RegisterService;
+use WebFramework\Security\UserVerificationService;
 
 /**
- * Class ResetPassword.
+ * Class RegisterVerify.
  *
- * This action handles the password reset process.
+ * This action handles applying verification after registering a user.
  */
-class ResetPassword
+class RegisterVerify
 {
     /**
-     * ResetPassword constructor.
+     * RegisterVerify constructor.
      *
-     * @param ConfigService        $configService        The configuration service
-     * @param ResponseEmitter      $responseEmitter      The response emitter
-     * @param ResetPasswordService $resetPasswordService The reset password service
+     * @param AuthenticationService   $authenticationService   The authentication service
+     * @param ConfigService           $configService           The configuration service
+     * @param ResponseEmitter         $responseEmitter         The response emitter
+     * @param UserVerificationService $userVerificationService The user verification service
      */
     public function __construct(
+        protected AuthenticationService $authenticationService,
         protected ConfigService $configService,
+        protected RegisterService $registerService,
         protected ResponseEmitter $responseEmitter,
-        protected ResetPasswordService $resetPasswordService,
+        protected UserVerificationService $userVerificationService,
     ) {}
 
     /**
-     * Handle the password reset request.
+     * Handle the login verification request.
      *
      * @param Request               $request   The current request
      * @param Response              $response  The response object
@@ -51,27 +57,36 @@ class ResetPassword
      * @throws CodeVerificationException If the verification code is invalid or expired
      *
      * @uses config actions.login.location
-     * @uses config actions.forgot_password.location
+     * @uses config actions.register.post_verify_page
      */
     public function __invoke(Request $request, Response $response, array $routeArgs): ResponseInterface
     {
+        $guid = $request->getParam('guid');
+
+        if (!$guid)
+        {
+            throw new HttpNotFoundException($request);
+        }
+
         try
         {
-            $this->resetPasswordService->handleData($request, $request->getParam('guid', ''));
+            ['user' => $user, 'after_verify_data' => $afterVerifyData] = $this->userVerificationService->handleData($request, $guid, 'register');
 
-            // Redirect to main screen
-            //
+            $this->authenticationService->authenticate($user);
+
+            $this->registerService->postVerify($user, $afterVerifyData);
+
             return $this->responseEmitter->buildRedirect(
-                $this->configService->get('actions.login.location'),
+                $this->configService->get('actions.register.return_page'),
                 [],
                 'success',
-                'reset_password.success',
+                'verify.success',
             );
         }
         catch (CodeVerificationException $e)
         {
             return $this->responseEmitter->buildRedirect(
-                $this->configService->get('actions.reset_password.location'),
+                $this->configService->get('actions.login.location'),
                 [],
                 'error',
                 'verify.code_expired',

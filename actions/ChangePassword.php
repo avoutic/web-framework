@@ -46,6 +46,7 @@ class ChangePassword
      * @param MessageService         $messageService         The message service
      * @param RenderService          $renderer               The render service
      * @param ResponseEmitter        $responseEmitter        The response emitter
+     * @param string                 $templateName           The template name
      */
     public function __construct(
         protected Container $container,
@@ -56,6 +57,7 @@ class ChangePassword
         protected MessageService $messageService,
         protected RenderService $renderer,
         protected ResponseEmitter $responseEmitter,
+        protected string $templateName,
     ) {
         $this->init();
     }
@@ -78,28 +80,6 @@ class ChangePassword
     }
 
     /**
-     * Get the template name for rendering.
-     *
-     * @return string The template name
-     */
-    protected function getTemplateName(): string
-    {
-        return 'ChangePassword.latte';
-    }
-
-    /**
-     * Get the return page after successful password change.
-     *
-     * @return string The return page URL
-     *
-     * @uses config actions.change_password.return_page
-     */
-    protected function getReturnPage(): string
-    {
-        return $this->configService->get('actions.change_password.return_page');
-    }
-
-    /**
      * Handle the change password request.
      *
      * @param Request               $request   The current request
@@ -116,12 +96,12 @@ class ChangePassword
     public function __invoke(Request $request, Response $response, array $routeArgs): ResponseInterface
     {
         $user = $this->authenticationService->getAuthenticatedUser();
-        $params = $this->customParams($request);
+        $params = $this->getCustomParams($request);
         $csrfPassed = $request->getAttribute('passed_csrf', false);
 
         if (!$csrfPassed)
         {
-            return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
+            return $this->renderer->render($request, $response, $this->templateName, $params);
         }
 
         try
@@ -146,7 +126,7 @@ class ChangePassword
             // Redirect to main sceen
             //
             return $this->responseEmitter->buildRedirect(
-                $this->getReturnPage(),
+                $this->configService->get('actions.change_password.return_page'),
                 [],
                 'success',
                 'change_password.success',
@@ -156,7 +136,7 @@ class ChangePassword
         {
             $this->messageService->addErrors($e->getErrors());
 
-            return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
+            return $this->renderer->render($request, $response, $this->templateName, $params);
         }
         catch (PasswordMismatchException $e)
         {
@@ -171,6 +151,6 @@ class ChangePassword
             $this->messageService->add('error', 'change_password.weak');
         }
 
-        return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
+        return $this->renderer->render($request, $response, $this->templateName, $params);
     }
 }

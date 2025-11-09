@@ -14,6 +14,7 @@ namespace WebFramework\Console;
 use Psr\Container\ContainerInterface as Container;
 use WebFramework\Config\ConfigService;
 use WebFramework\Task\CacheClearTask;
+use WebFramework\Task\CleanupVerificationCodesTask;
 use WebFramework\Task\ConfigShowTask;
 use WebFramework\Task\ConsoleTask;
 use WebFramework\Task\DbConvertFromSchemeTask;
@@ -48,6 +49,7 @@ class ConsoleTaskRegistryService
         'queue:worker' => QueueWorker::class,
         'sanity:check' => SanityCheckTask::class,
         'task:run' => TaskRunnerTask::class,
+        'verification-codes:cleanup' => CleanupVerificationCodesTask::class,
     ];
 
     /**

@@ -8,6 +8,8 @@
 * `Queue\Queue` interface now require `markJobCompleted()` and `markJobFailed()` methods.
 * `Queue\Queue` interface now require `dispatch()` to accept a `maxAttempts` parameter.
 * `Queue\JobHandler` interface now requires `handle()` to return void instead of bool. Job handlers must throw exceptions on failure instead of returning false.
+* Authentication system changed to use codes instead of links. Each of the four actions (`Login`, `Register`, `ChangeEmail`, `ForgotPassword`) that require (e-mail) verification, now flow through `Verify` and require a code then continue to the final step (`LoginVerify`, `RegisterVerify`, `ChangeEmailVerify`, `ResetPassword`). Requires routes for the final steps, new e-mail templates for `email-verification-code`, `change-email-verification-code`, possibly configuring action location in your config.
+* Removed `afterAuthentication()` method from `Login` action, listen to `UserLoggedIn` event instead.
 
 ### New features
 

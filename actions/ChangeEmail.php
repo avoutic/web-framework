@@ -54,6 +54,7 @@ class ChangeEmail
         protected RenderService $renderer,
         protected ResponseEmitter $responseEmitter,
         protected ChangeEmailService $changeEmailService,
+        protected string $templateName,
     ) {
         $this->init();
     }
@@ -61,7 +62,7 @@ class ChangeEmail
     /**
      * Initialize the action.
      */
-    public function init(): void {}
+    protected function init(): void {}
 
     /**
      * Get custom parameters for the action.
@@ -73,28 +74,6 @@ class ChangeEmail
     protected function customParams(Request $request): array
     {
         return [];
-    }
-
-    /**
-     * Get the template name for rendering.
-     *
-     * @return string The template name
-     */
-    protected function getTemplateName(): string
-    {
-        return 'ChangeEmail.latte';
-    }
-
-    /**
-     * Get the return page after successful email change.
-     *
-     * @return string The return page URL
-     *
-     * @uses config actions.change_email.return_page
-     */
-    protected function getReturnPage(): string
-    {
-        return $this->configService->get('actions.change_email.return_page');
     }
 
     /**
@@ -124,7 +103,7 @@ class ChangeEmail
         //
         if (!$request->getAttribute('passed_csrf'))
         {
-            return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
+            return $this->renderer->render($request, $response, $this->templateName, $params);
         }
 
         try
@@ -140,13 +119,16 @@ class ChangeEmail
 
             // Send verification mail
             //
-            $this->changeEmailService->sendChangeEmailVerify($user, $filtered['email']);
+            $guid = $this->changeEmailService->sendChangeEmailVerify($user, $filtered['email']);
 
             // Redirect to verification request screen
             //
-            return $this->responseEmitter->buildRedirect(
-                $this->getReturnPage(),
+            return $this->responseEmitter->buildQueryRedirect(
+                $this->configService->get('actions.verify.location'),
                 [],
+                [
+                    'guid' => $guid,
+                ],
                 'success',
                 'change_email.verification_sent',
             );
@@ -160,6 +142,6 @@ class ChangeEmail
             $this->messageService->add('error', 'change_email.duplicate');
         }
 
-        return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
+        return $this->renderer->render($request, $response, $this->templateName, $params);
     }
 }

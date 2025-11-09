@@ -11,16 +11,16 @@
 
 namespace WebFramework\Security;
 
+use Carbon\Carbon;
 use Psr\Log\LoggerInterface;
 use Slim\Http\ServerRequest as Request;
-use WebFramework\Config\ConfigService;
 use WebFramework\Entity\User;
 use WebFramework\Event\EventService;
 use WebFramework\Event\UserVerified;
 use WebFramework\Exception\CodeVerificationException;
 use WebFramework\Mail\UserMailer;
 use WebFramework\Repository\UserRepository;
-use WebFramework\Support\UrlBuilder;
+use WebFramework\Repository\VerificationCodeRepository;
 
 /**
  * Handles user verification processes.
@@ -30,111 +30,118 @@ class UserVerificationService
     /**
      * UserVerificationService constructor.
      *
-     * @param ConfigService   $configService   The configuration service
-     * @param EventService    $eventService    The event service
-     * @param LoggerInterface $logger          The logger service
-     * @param UrlBuilder      $urlBuilder      The URL builder service
-     * @param UserCodeService $userCodeService The user code service
-     * @param UserMailer      $userMailer      The user mailer service
-     * @param UserRepository  $userRepository  The user repository
+     * @param EventService               $eventService               The event service
+     * @param LoggerInterface            $logger                     The logger service
+     * @param UserCodeService            $userCodeService            The user code service
+     * @param UserMailer                 $userMailer                 The user mailer service
+     * @param UserRepository             $userRepository             The user repository
+     * @param VerificationCodeRepository $verificationCodeRepository The verification code repository
+     * @param int                        $codeExpiryMinutes          The number of minutes until verification codes expire
      */
     public function __construct(
-        private ConfigService $configService,
         private EventService $eventService,
         private LoggerInterface $logger,
-        private UrlBuilder $urlBuilder,
         private UserCodeService $userCodeService,
         private UserMailer $userMailer,
         private UserRepository $userRepository,
+        private VerificationCodeRepository $verificationCodeRepository,
+        private int $codeExpiryMinutes,
     ) {}
 
     /**
-     * Handle sending a verification email.
+     * Send a verification email to a user and return the GUID for passing to the verify action.
      *
-     * @param string $code The verification code
+     * @param User         $user            The user to send the verification email to
+     * @param string       $action          The action to send the verification email for
+     * @param array<mixed> $afterVerifyData Additional data to include after verification
+     *
+     * @return string The GUID for passing to the verify action
+     */
+    public function sendVerifyMail(User $user, string $action, array $afterVerifyData = []): string
+    {
+        $this->logger->debug('Sending verification mail', ['user_id' => $user->getId()]);
+
+        ['guid' => $guid, 'code' => $code] = $this->userCodeService->generateVerificationCodeEntry(
+            $user,
+            $action,
+            [
+                'action' => $action,
+                'after_verify_data' => $afterVerifyData,
+            ]
+        );
+
+        $this->userMailer->emailVerificationCode(
+            $user->getEmail(),
+            [
+                'user' => $user->toArray(),
+                'code' => $code,
+                'validity' => $this->codeExpiryMinutes,
+            ]
+        );
+
+        return $guid;
+    }
+
+    /**
+     * Handle the data for a verification request.
+     *
+     * @param Request $request The current request
+     * @param string  $guid    The GUID of the verification code
+     * @param string  $action  The action to handle the verification data for
+     *
+     * @return array{user: User, after_verify_data: array<mixed>} The user and after verify data
      *
      * @throws CodeVerificationException If the code is invalid
      */
-    public function handleSendVerify(string $code): void
+    public function handleData(Request $request, string $guid, string $action): array
     {
-        $this->logger->debug('Sending verification mail', ['code' => $code]);
+        $this->logger->debug('Handling verification data', ['guid' => $guid]);
 
-        ['user_id' => $codeUserId, 'params' => $verifyParams] = $this->userCodeService->verify(
-            $code,
-            validity: 24 * 60 * 60,
-            action: 'send_verify',
-        );
+        $verificationCode = $this->verificationCodeRepository->getByGuid($guid);
 
-        // Check user status
-        //
-        $user = $this->userRepository->getObjectById($codeUserId);
-        if ($user === null)
+        if ($verificationCode === null)
         {
-            $this->logger->debug('User not found', ['code_user_id' => $codeUserId]);
+            throw new CodeVerificationException();
+        }
+
+        // Verify the code was actually verified (marked as correct) and hasn't expired
+        if (!$verificationCode->isCorrect())
+        {
+            $this->logger->debug('Verification code not yet correct', ['guid' => $guid]);
 
             throw new CodeVerificationException();
         }
 
-        if (!$user->isVerified())
+        if ($verificationCode->isExpired())
         {
-            $this->sendVerifyMail($user, $verifyParams);
+            $this->logger->debug('Verification code expired', ['guid' => $guid]);
+
+            throw new CodeVerificationException();
         }
-    }
 
-    /**
-     * Send a verification email to a user.
-     *
-     * @param User         $user            The user to send the verification email to
-     * @param array<mixed> $afterVerifyData Additional data to include after verification
-     */
-    public function sendVerifyMail(User $user, array $afterVerifyData = []): void
-    {
-        $this->logger->debug('Sending verification mail', ['user_id' => $user->getId()]);
+        // Prevent replay attacks - check if code has already been invalidated or processed
+        if ($verificationCode->isInvalidated() || $verificationCode->isProcessed())
+        {
+            $this->logger->warning('Verification code already invalidated or processed (replay attempt)', ['guid' => $guid]);
 
-        $code = $this->userCodeService->generate($user, 'verify', $afterVerifyData);
+            throw new CodeVerificationException();
+        }
 
-        $verifyUrl =
-            $this->urlBuilder->getServerUrl().
-            $this->urlBuilder->buildQueryUrl(
-                $this->configService->get('actions.login.verify_page'),
-                [],
-                ['code' => $code],
-            );
+        if ($verificationCode->getAction() !== $action)
+        {
+            $this->logger->error('Invalid action for verification code', [
+                'guid' => $guid,
+                'action' => $verificationCode->getAction(),
+            ]);
 
-        $this->userMailer->emailVerificationLink(
-            $user->getEmail(),
-            [
-                'user' => $user->toArray(),
-                'verify_url' => $verifyUrl,
-            ]
-        );
-    }
+            throw new CodeVerificationException();
+        }
 
-    /**
-     * Verify that the code provided is valid and set the user as verified.
-     *
-     * @param Request $request The current request
-     * @param string  $code    The verification code
-     *
-     * @throws CodeVerificationException If the code is invalid
-     */
-    public function verifyLinkCode(Request $request, string $code): void
-    {
-        $this->logger->debug('Handling code verification', ['code' => $code]);
+        $flowData = $verificationCode->getFlowData();
+        $user = $this->userRepository->getObjectById($verificationCode->getUserId());
 
-        ['user_id' => $codeUserId, 'params' => $verifyParams] = $this->userCodeService->verify(
-            $code,
-            validity: 24 * 60 * 60,
-            action: 'verify',
-        );
-
-        // Check user status
-        //
-        $user = $this->userRepository->getObjectById($codeUserId);
         if ($user === null)
         {
-            $this->logger->debug('User not found', ['code_user_id' => $codeUserId]);
-
             throw new CodeVerificationException();
         }
 
@@ -142,10 +149,19 @@ class UserVerificationService
         {
             $this->logger->info('Setting user to verified', ['user_id' => $user->getId()]);
 
-            $user->setVerified();
+            $user->setVerified(Carbon::now()->getTimestamp());
             $this->userRepository->save($user);
 
             $this->eventService->dispatch(new UserVerified($request, $user));
         }
+
+        // Mark as processed to prevent replay attacks
+        $verificationCode->markAsProcessed();
+        $this->verificationCodeRepository->save($verificationCode);
+
+        return [
+            'user' => $user,
+            'after_verify_data' => $flowData['after_verify_data'] ?? [],
+        ];
     }
 }

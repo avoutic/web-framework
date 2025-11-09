@@ -17,6 +17,7 @@ use Slim\Http\Response;
 use Slim\Http\ServerRequest as Request;
 use WebFramework\Config\ConfigService;
 use WebFramework\Entity\User;
+use WebFramework\Exception\CaptchaRequiredException;
 use WebFramework\Exception\InvalidCaptchaException;
 use WebFramework\Exception\PasswordMismatchException;
 use WebFramework\Exception\UsernameUnavailableException;
@@ -29,7 +30,6 @@ use WebFramework\Security\AuthenticationService;
 use WebFramework\Security\CaptchaService;
 use WebFramework\Security\RegisterService;
 use WebFramework\Validation\InputValidationService;
-use WebFramework\Validation\Validator\CustomBoolValidator;
 use WebFramework\Validation\Validator\EmailValidator;
 use WebFramework\Validation\Validator\PasswordValidator;
 use WebFramework\Validation\Validator\UsernameValidator;
@@ -64,6 +64,7 @@ class Register
         protected RegisterService $registerService,
         protected RenderService $renderer,
         protected ResponseEmitter $responseEmitter,
+        protected string $templateName,
     ) {
         $this->init();
     }
@@ -118,16 +119,6 @@ class Register
     protected function customFinalizeCreate(Request $request, User $user): void {}
 
     /**
-     * Get the template name for rendering.
-     *
-     * @return string The template name
-     */
-    protected function getTemplateName(): string
-    {
-        return 'Register.latte';
-    }
-
-    /**
      * Handle the registration request.
      *
      * @param Request               $request   The current request
@@ -144,7 +135,8 @@ class Register
      * @uses config authenticator.unique_identifier
      * @uses config security.recaptcha.site_key
      * @uses config actions.login.default_return_page
-     * @uses config actions.send_verify.after_verify_page
+     * @uses config actions.register.post_verify_page
+     * @uses config actions.verify.location
      */
     public function __invoke(Request $request, Response $response, array $routeArgs): ResponseInterface
     {
@@ -168,12 +160,12 @@ class Register
         $recaptchaSiteKey = $this->configService->get('security.recaptcha.site_key');
 
         $params = [
-            'recaptcha_site_key' => $recaptchaSiteKey,
+            'recaptchaNeeded' => false,
+            'recaptchaSiteKey' => $recaptchaSiteKey,
             'username' => $request->getParam('username', ''),
             'password' => $request->getParam('password', ''),
             'password2' => $request->getParam('password2', ''),
             'email' => $request->getParam('email', ''),
-            'accept_terms' => $request->getParam('accept_terms', false),
         ];
 
         $customParams = $this->customPreparePageContent($request);
@@ -183,7 +175,7 @@ class Register
         //
         if (!$request->getAttribute('passed_csrf'))
         {
-            return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
+            return $this->renderer->render($request, $response, $this->templateName, $params);
         }
 
         try
@@ -202,7 +194,6 @@ class Register
                     'email' => (new EmailValidator())->required(),
                     'password' => new PasswordValidator(),
                     'password2' => new PasswordValidator('password verification'),
-                    'accept_terms' => (new CustomBoolValidator('term acceptance'))->required(),
                 ],
                 $request->getParams(),
             );
@@ -216,13 +207,16 @@ class Register
             {
                 $afterVerifyParams = $this->getAfterVerifyData($request);
 
-                $user = $this->registerService->register($request, $username, $filtered['email'], $filtered['password'], $afterVerifyParams);
+                ['user' => $user, 'guid' => $guid] = $this->registerService->register($request, $username, $filtered['email'], $filtered['password'], $afterVerifyParams);
 
                 $this->customFinalizeCreate($request, $user);
 
-                return $this->responseEmitter->buildRedirect(
-                    $this->configService->get('actions.send_verify.after_verify_page'),
+                return $this->responseEmitter->buildQueryRedirect(
+                    $this->configService->get('actions.verify.location'),
                     [],
+                    [
+                        'guid' => $guid,
+                    ],
                     'success',
                     'register.verification_sent',
                 );
@@ -236,9 +230,19 @@ class Register
         {
             $this->messageService->add('error', 'register.weak_password');
         }
+        catch (CaptchaRequiredException $e)
+        {
+            $this->messageService->add('error', 'register.captcha_required');
+
+            $params['recaptchaNeeded'] = true;
+            $params['recaptchaSiteKey'] = $this->configService->get('security.recaptcha.site_key');
+        }
         catch (InvalidCaptchaException $e)
         {
             $this->messageService->add('error', 'register.captcha_incorrect');
+
+            $params['recaptchaNeeded'] = true;
+            $params['recaptchaSiteKey'] = $this->configService->get('security.recaptcha.site_key');
         }
         catch (UsernameUnavailableException $e)
         {
@@ -254,6 +258,6 @@ class Register
             $params = array_merge($params, $all);
         }
 
-        return $this->renderer->render($request, $response, $this->getTemplateName(), $params);
+        return $this->renderer->render($request, $response, $this->templateName, $params);
     }
 }

@@ -12,6 +12,7 @@
 namespace WebFramework\Actions;
 
 use Psr\Http\Message\ResponseInterface;
+use Slim\Exception\HttpNotFoundException;
 use Slim\Http\Response;
 use Slim\Http\ServerRequest as Request;
 use WebFramework\Config\ConfigService;
@@ -64,16 +65,21 @@ class ChangeEmailVerify
     public function __invoke(Request $request, Response $response, array $routeArgs): ResponseInterface
     {
         $user = $this->authenticationService->getAuthenticatedUser();
+        $guid = $request->getParam('guid');
+
+        if (!$guid)
+        {
+            throw new HttpNotFoundException($request);
+        }
 
         $changePage = $this->configService->get('actions.change_email.location');
-        $returnPage = $this->configService->get('actions.change_email.return_page');
 
         try
         {
-            $this->changeEmailService->verifyLinkCode($request, $user, $request->getParam('code', ''));
+            $this->changeEmailService->handleData($request, $user, $guid);
 
             return $this->responseEmitter->buildRedirect(
-                $returnPage,
+                $this->configService->get('actions.change_email.return_page'),
                 [],
                 'success',
                 'change_email.success',
@@ -85,7 +91,7 @@ class ChangeEmailVerify
                 $changePage,
                 [],
                 'error',
-                'change_email.link_expired',
+                'change_email.code_expired',
             );
         }
         catch (WrongAccountException $e)

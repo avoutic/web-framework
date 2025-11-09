@@ -88,18 +88,27 @@ class RegisterService
      * @param string       $password          The password
      * @param array<mixed> $afterVerifyParams Additional parameters for after verification
      *
-     * @return User The newly registered user
+     * @return array{user: User, guid: string} The newly registered user and the verification GUID
      */
-    public function register(Request $request, string $username, string $email, string $password, array $afterVerifyParams = []): User
+    public function register(Request $request, string $username, string $email, string $password, array $afterVerifyParams = []): array
     {
         $this->logger->info('Registering new user', ['username' => $username, 'email' => $email]);
 
         $user = $this->userService->createUser($username, $password, $email, Carbon::now()->getTimestamp());
 
-        $this->userVerificationService->sendVerifyMail($user, $afterVerifyParams);
+        $guid = $this->userVerificationService->sendVerifyMail($user, 'register', $afterVerifyParams);
 
         $this->eventService->dispatch(new UserRegistered($request, $user));
 
-        return $user;
+        return ['user' => $user, 'guid' => $guid];
     }
+
+    /**
+     * Called after e-mail verification on registration with the afterVerifyParams
+     * from register().
+     *
+     * @param User         $user              The user to post verify
+     * @param array<mixed> $afterVerifyParams Additional parameters for after verification
+     */
+    public function postVerify(User $user, array $afterVerifyParams = []): void {}
 }

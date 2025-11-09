@@ -15,6 +15,9 @@ use Carbon\Carbon;
 use Psr\Log\LoggerInterface;
 use WebFramework\Entity\User;
 use WebFramework\Exception\CodeVerificationException;
+use WebFramework\Exception\InvalidCodeException;
+use WebFramework\Repository\UserRepository;
+use WebFramework\Repository\VerificationCodeRepository;
 
 /**
  * Handles generation and verification of user-specific codes.
@@ -24,86 +27,178 @@ class UserCodeService
     /**
      * UserCodeService constructor.
      *
-     * @param LoggerInterface $logger         The logger service
-     * @param ProtectService  $protectService The protect service
+     * @param LoggerInterface            $logger                     The logger service
+     * @param RandomProvider             $randomProvider             The random provider service
+     * @param UserRepository             $userRepository             The user repository
+     * @param VerificationCodeRepository $verificationCodeRepository The verification code repository
+     * @param int                        $codeLength                 The length of verification codes
+     * @param int                        $codeExpiryMinutes          The number of minutes until codes expire
+     * @param int                        $maxAttempts                The maximum number of verification attempts
      */
     public function __construct(
         private LoggerInterface $logger,
-        private ProtectService $protectService,
+        private RandomProvider $randomProvider,
+        private UserRepository $userRepository,
+        private VerificationCodeRepository $verificationCodeRepository,
+        private int $codeLength,
+        private int $codeExpiryMinutes,
+        private int $maxAttempts,
     ) {}
 
     /**
-     * Generate a code for a user.
-     *
-     * @param User         $user   The user to generate the code for
-     * @param string       $action The action associated with the code
-     * @param array<mixed> $params Additional parameters to include in the code
-     *
-     * @return string The generated code
+     * Generate a verification code.
      */
-    public function generate(User $user, string $action, array $params = []): string
+    public function generateVerificationCode(): string
     {
-        $msg = [
-            'user_id' => $user->getId(),
-            'action' => $action,
-            'params' => $params,
-            'timestamp' => Carbon::now()->getTimestamp(),
-        ];
+        $alphabet = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+        $alphabetLength = strlen($alphabet);
+        $randomBytes = $this->randomProvider->getRandom($this->codeLength);
+        $code = '';
 
-        return $this->protectService->packArray($msg);
+        for ($i = 0; $i < $this->codeLength; $i++)
+        {
+            $code .= $alphabet[ord($randomBytes[$i]) % $alphabetLength];
+        }
+
+        return $code;
     }
 
     /**
-     * Verify a user code.
+     * Get the action associated with a verification code.
      *
-     * @param string $packedCode The packed code to verify
-     * @param string $action     The expected action
-     * @param int    $validity   The validity period of the code in seconds
+     * @param string $guid The GUID of the verification code
      *
-     * @return array{user_id: int, action: string, params: array<mixed>, timestamp: int} The unpacked code data
-     *
-     * @throws CodeVerificationException If the code is invalid or expired
+     * @return null|string The action associated with the verification code, or null if not found
      */
-    public function verify(string $packedCode, string $action, int $validity): array
+    public function getActionByGuid(string $guid): ?string
     {
-        if (!strlen($packedCode))
+        $verificationCode = $this->verificationCodeRepository->getByGuid($guid);
+        if ($verificationCode === null)
         {
-            $this->logger->debug('Empty code received');
-
-            throw new CodeVerificationException();
+            return null;
         }
 
-        $data = $this->protectService->unpackArray($packedCode);
-        if (!is_array($data)
-            || !isset($data['user_id'])
-            || !isset($data['action'])
-            || !isset($data['params'])
-            || !isset($data['timestamp'])
-            || !is_int($data['user_id'])
-            || !is_string($data['action'])
-            || !is_array($data['params'])
-            || !is_int($data['timestamp'])
-        ) {
-            $this->logger->debug('Invalid code received', ['packed_code' => $packedCode]);
+        return $verificationCode->getAction();
+    }
 
-            throw new CodeVerificationException();
-        }
+    /**
+     * Generate a verification code entry in the database.
+     *
+     * @param User         $user     The user to generate the code for
+     * @param string       $action   The action associated with the code
+     * @param array<mixed> $flowData Additional flow-specific data to store
+     *
+     * @return array{guid: string, code: string} The GUID and the plain code
+     */
+    public function generateVerificationCodeEntry(User $user, string $action, array $flowData = []): array
+    {
+        $code = $this->generateVerificationCode();
+        $expiresAt = Carbon::now()->addMinutes($this->codeExpiryMinutes)->getTimestamp();
 
-        if ($data['action'] !== $action)
+        $verificationCode = $this->verificationCodeRepository->create([
+            'user_id' => $user->getId(),
+            'code' => $code,
+            'action' => $action,
+            'max_attempts' => $this->maxAttempts,
+            'expires_at' => $expiresAt,
+            'flow_data' => json_encode($flowData),
+        ]);
+
+        $this->logger->debug('Generated verification code entry', [
+            'guid' => $verificationCode->getGuid(),
+            'user_id' => $user->getId(),
+            'action' => $action,
+        ]);
+
+        return ['guid' => $verificationCode->getGuid(), 'code' => $code];
+    }
+
+    /**
+     * Verify a code by GUID.
+     *
+     * @param string $guid   The GUID of the verification code entry
+     * @param string $action The expected action
+     * @param string $code   The code to verify
+     *
+     * @return array{user: User, flow_data: array<mixed>} The user and flow data
+     *
+     * @throws InvalidCodeException      If the code is invalid or max attempts exceeded
+     * @throws CodeVerificationException If the verification code entry is invalid or expired
+     */
+    public function verifyCodeByGuid(string $guid, string $action, string $code): array
+    {
+        $this->logger->debug('Handling code verification by GUID', ['guid' => $guid, 'action' => $action]);
+
+        $verificationCode = $this->verificationCodeRepository->getActiveByGuid($guid);
+
+        if ($verificationCode === null)
         {
-            $this->logger->error('Invalid action received in packed code', ['user_id' => $data['user_id'], 'action' => $action]);
+            $this->logger->debug('Verification code not found or inactive', ['guid' => $guid]);
 
             throw new CodeVerificationException();
         }
 
-        $timestamp = new Carbon($data['timestamp']);
-        if ($timestamp->addSeconds($validity)->lt(Carbon::now()))
+        if ($verificationCode->getAction() !== $action)
         {
-            $this->logger->debug('Received expired code', ['user_id' => $data['user_id'], 'timestamp' => $data['timestamp'], 'validity' => $validity]);
+            $this->logger->error('Invalid action for verification code', [
+                'guid' => $guid,
+                'expected_action' => $action,
+                'actual_action' => $verificationCode->getAction(),
+            ]);
 
             throw new CodeVerificationException();
         }
 
-        return $data;
+        // Increment attempts before checking code
+        $verificationCode->incrementAttempts();
+        $this->verificationCodeRepository->save($verificationCode);
+
+        // Check if max attempts exceeded
+        if (!$verificationCode->hasAttemptsRemaining())
+        {
+            $this->logger->warning('Max attempts exceeded for verification code', [
+                'guid' => $guid,
+                'attempts' => $verificationCode->getAttempts(),
+            ]);
+
+            throw new InvalidCodeException();
+        }
+
+        // Verify the code
+        if ($verificationCode->getCode() !== $code)
+        {
+            $this->logger->debug('Invalid code provided', [
+                'guid' => $guid,
+                'attempts' => $verificationCode->getAttempts(),
+            ]);
+
+            throw new InvalidCodeException();
+        }
+
+        // Code is valid - mark as correct
+        $verificationCode->markAsCorrect();
+        $this->verificationCodeRepository->save($verificationCode);
+
+        $user = $this->userRepository->getObjectById($verificationCode->getUserId());
+        if ($user === null)
+        {
+            $this->logger->error('User not found for verification code', [
+                'guid' => $guid,
+                'user_id' => $verificationCode->getUserId(),
+            ]);
+
+            throw new CodeVerificationException();
+        }
+
+        $this->logger->info('Verification code verified successfully', [
+            'guid' => $guid,
+            'user_id' => $user->getId(),
+            'action' => $action,
+        ]);
+
+        return [
+            'user' => $user,
+            'flow_data' => $verificationCode->getFlowData(),
+        ];
     }
 }
