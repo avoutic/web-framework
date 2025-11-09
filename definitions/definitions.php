@@ -154,6 +154,14 @@ return [
         ->constructorParameter('uniqueIdentifier', DI\get('authenticator.unique_identifier')),
     Security\ConfigService::class => DI\autowire()
         ->constructorParameter('authDir', DI\get('security.auth_dir')),
+
+    // Extension interfaces for user flow customization
+    Security\Extension\ChangeEmailExtensionInterface::class => DI\autowire(Security\Extension\NullChangeEmailExtension::class),
+    Security\Extension\ChangePasswordExtensionInterface::class => DI\autowire(Security\Extension\NullChangePasswordExtension::class),
+    Security\Extension\LoginExtensionInterface::class => DI\autowire(Security\Extension\NullLoginExtension::class),
+    Security\Extension\RegisterExtensionInterface::class => DI\autowire(Security\Extension\NullRegisterExtension::class),
+    Security\Extension\ResetPasswordExtensionInterface::class => DI\autowire(Security\Extension\NullResetPasswordExtension::class),
+
     Security\DatabaseAuthenticationService::class => DI\autowire(Security\DatabaseAuthenticationService::class)
         ->constructorParameter('sessionTimeout', DI\get('authenticator.session_timeout')),
     Security\DatabaseBlacklistService::class => DI\autowire()

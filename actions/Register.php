@@ -11,7 +11,6 @@
 
 namespace WebFramework\Actions;
 
-use Psr\Container\ContainerInterface as Container;
 use Psr\Http\Message\ResponseInterface;
 use Slim\Http\Response;
 use Slim\Http\ServerRequest as Request;
@@ -28,6 +27,7 @@ use WebFramework\Presentation\MessageService;
 use WebFramework\Presentation\RenderService;
 use WebFramework\Security\AuthenticationService;
 use WebFramework\Security\CaptchaService;
+use WebFramework\Security\Extension\RegisterExtensionInterface;
 use WebFramework\Security\RegisterService;
 use WebFramework\Validation\InputValidationService;
 use WebFramework\Validation\Validator\EmailValidator;
@@ -44,79 +44,28 @@ class Register
     /**
      * Register constructor.
      *
-     * @param Container              $container              The dependency injection container
-     * @param AuthenticationService  $authenticationService  The authentication service
-     * @param CaptchaService         $captchaService         The captcha service
-     * @param ConfigService          $configService          The configuration service
-     * @param InputValidationService $inputValidationService The input validation service
-     * @param MessageService         $messageService         The message service
-     * @param RegisterService        $registerService        The register service
-     * @param RenderService          $renderer               The render service
-     * @param ResponseEmitter        $responseEmitter        The response emitter
+     * @param AuthenticationService      $authenticationService  The authentication service
+     * @param CaptchaService             $captchaService         The captcha service
+     * @param ConfigService              $configService          The configuration service
+     * @param InputValidationService     $inputValidationService The input validation service
+     * @param MessageService             $messageService         The message service
+     * @param RegisterExtensionInterface $registerExtension      The register extension
+     * @param RegisterService            $registerService        The register service
+     * @param RenderService              $renderer               The render service
+     * @param ResponseEmitter            $responseEmitter        The response emitter
      */
     public function __construct(
-        protected Container $container,
-        protected AuthenticationService $authenticationService,
-        protected CaptchaService $captchaService,
-        protected ConfigService $configService,
-        protected InputValidationService $inputValidationService,
-        protected MessageService $messageService,
-        protected RegisterService $registerService,
-        protected RenderService $renderer,
-        protected ResponseEmitter $responseEmitter,
-        protected string $templateName,
-    ) {
-        $this->init();
-    }
-
-    /**
-     * Initialize the action.
-     */
-    public function init(): void {}
-
-    /**
-     * Get additional data to be passed after verification.
-     *
-     * @param Request $request The current request
-     *
-     * @return array<mixed> Additional data
-     */
-    protected function getAfterVerifyData(Request $request): array
-    {
-        return [];
-    }
-
-    /**
-     * Prepare custom page content.
-     *
-     * @param Request $request The current request
-     *
-     * @return array<string, mixed> Custom page content
-     */
-    protected function customPreparePageContent(Request $request): array
-    {
-        return [];
-    }
-
-    /**
-     * Perform custom value checks.
-     *
-     * @param Request $request The current request
-     *
-     * @return bool True if the checks pass, false otherwise
-     */
-    protected function customValueCheck(Request $request): bool
-    {
-        return true;
-    }
-
-    /**
-     * Perform custom finalization after user creation.
-     *
-     * @param Request $request The current request
-     * @param User    $user    The newly created user
-     */
-    protected function customFinalizeCreate(Request $request, User $user): void {}
+        private AuthenticationService $authenticationService,
+        private CaptchaService $captchaService,
+        private ConfigService $configService,
+        private InputValidationService $inputValidationService,
+        private MessageService $messageService,
+        private RegisterExtensionInterface $registerExtension,
+        private RegisterService $registerService,
+        private RenderService $renderer,
+        private ResponseEmitter $responseEmitter,
+        private string $templateName,
+    ) {}
 
     /**
      * Handle the registration request.
@@ -168,7 +117,7 @@ class Register
             'email' => $request->getParam('email', ''),
         ];
 
-        $customParams = $this->customPreparePageContent($request);
+        $customParams = $this->registerExtension->getCustomParams($request);
         $params = array_replace_recursive($params, $customParams);
 
         // Check if this is a true attempt
@@ -203,13 +152,13 @@ class Register
             $username = ($uniqueIdentifier == 'email') ? $filtered['email'] : $filtered['username'];
             $this->registerService->validate($username, $filtered['email'], $filtered['password'], $filtered['password2'], $validCaptcha);
 
-            if ($this->customValueCheck($request))
+            if ($this->registerExtension->customValueCheck($request))
             {
-                $afterVerifyParams = $this->getAfterVerifyData($request);
+                $afterVerifyParams = $this->registerExtension->getAfterVerifyData($request);
 
                 ['user' => $user, 'guid' => $guid] = $this->registerService->register($request, $username, $filtered['email'], $filtered['password'], $afterVerifyParams);
 
-                $this->customFinalizeCreate($request, $user);
+                $this->registerExtension->postCreate($request, $user);
 
                 return $this->responseEmitter->buildQueryRedirect(
                     $this->configService->get('actions.verify.location'),

@@ -28,14 +28,21 @@ The registration flow allows new users to create accounts with email verificatio
 1. User submits registration form (username, email, password, password2)
 2. Validates input (username/email format, password strength, CAPTCHA)
 3. Checks username/email availability
-4. Creates user account via `RegisterService::register()`
-5. Generates verification code entry in database via `UserCodeService::generateVerificationCodeEntry()`
-6. Sends verification email via `UserVerificationService::sendVerifyMail()` with code
-7. Redirects to Verify page with `guid` parameter
+4. Calls `RegisterExtensionInterface::customValueCheck()` for custom validation
+5. Gets after-verify data via `RegisterExtensionInterface::getAfterVerifyData()`
+6. Creates user account via `RegisterService::register()` (which generates verification code and sends email) and dispatches `UserRegistered` event
+7. Calls `RegisterExtensionInterface::postCreate()` hook
+8. Redirects to Verify page with `guid` parameter
+
+**Extension Hooks**:
+- `getCustomParams()`: Add custom template parameters
+- `customValueCheck()`: Perform additional validation checks
+- `getAfterVerifyData()`: Provide data to pass through verification
+- `postCreate()`: Execute logic after user creation
+- `postVerify()`: Execute logic after verification (called in RegisterVerify)
 
 **Configuration**:
-- `actions.register.post_verify_page`: Page to redirect after verification
-- `actions.register.default_page`: Default page after successful registration
+- `actions.register.return_page`: Page to redirect after successful registration verification
 - `actions.verify.location`: Location of verification page
 
 ### Step 2: Verify Action (`/verify`)
@@ -63,10 +70,10 @@ The registration flow allows new users to create accounts with email verificatio
 2. Verifies flow is 'register'
 3. Sets user as verified (if not already verified)
 4. Authenticates user via `AuthenticationService::authenticate()`
-5. Calls `RegisterService::postVerify()` hook (extensible for custom logic)
-6. Redirects to `actions.register.default_page`
+5. Calls `RegisterExtensionInterface::postVerify()` hook (extensible for custom logic)
+6. Redirects to `actions.register.return_page`
 
-**Customization**: Override `RegisterService::postVerify()` to add custom logic after verification.
+**Customization**: Implement `RegisterExtensionInterface` and configure it in dependency injection to add custom logic.
 
 ## Flow 2: Login with Verification
 
@@ -81,8 +88,14 @@ The login flow handles user authentication, including cases where users need to 
 2. Validates credentials via `LoginService::validate()`
 3. Checks if user is verified and verification hasn't expired
 4. If user not verified → throws `UserVerificationRequiredException`
-5. Generates verification code entry and sends verification email with flow='login' and return_page/return_query
-6. Redirects to Verify page with `guid` parameter
+5. Calls `LoginExtensionInterface::customValueCheck()` for custom validation
+6. If checks pass, authenticates user and redirects and dispatches `UserLoggedIn` event
+7. If user not verified, generates verification code entry and sends verification email with flow='login' and return_page/return_query
+8. Redirects to Verify page with `guid` parameter
+
+**Extension Hooks**:
+- `getCustomParams()`: Add custom template parameters
+- `customValueCheck()`: Perform additional validation checks before authentication
 
 **Configuration**:
 - `actions.login.default_return_page`: Default page after successful login
@@ -126,15 +139,21 @@ The password reset flow allows users to reset forgotten passwords via email veri
 
 **Process**:
 1. User submits username/email
-2. Finds user via `UserRepository::getUserByUsername()`
-3. Calls `ResetPasswordService::sendPasswordResetMail()`
-4. Generates verification code entry in database with flow='reset_password'
-5. Increments security iterator to invalidate old reset links
-6. Sends password reset email with code
-7. Redirects to Verify page with `flow=reset_password` and `guid` parameter
+2. Validates input
+3. Calls `ResetPasswordExtensionInterface::customValueCheck()` for custom validation
+4. Finds user via `UserRepository::getUserByUsername()`
+5. Calls `ResetPasswordService::sendPasswordResetMail()`
+6. Generates verification code entry in database with flow='reset_password'
+7. Increments security iterator to invalidate old reset links
+8. Sends password reset email with code
+9. Redirects to Verify page with `flow=reset_password` and `guid` parameter
+
+**Extension Hooks**:
+- `getCustomParams()`: Add custom template parameters
+- `customValueCheck()`: Perform additional validation checks
 
 **Configuration**:
-- `actions.forgot_password.reset_password_page`: Page to redirect after verification
+- `actions.reset_password.reset_password_page`: Page to redirect after verification
 - `actions.verify.location`: Location of verification page
 
 ### Step 2: Verify Action (`/verify`)
@@ -178,11 +197,16 @@ The change email flow allows authenticated users to change their email address w
 **Process**:
 1. Authenticated user submits new email address
 2. Validates email format and uniqueness
-3. Calls `ChangeEmailService::sendChangeEmailVerify()`
-4. Generates verification code entry in database with flow='change_email'
-5. Increments security iterator
-6. Sends verification email to **new** email address with code
-7. Redirects to Verify page with `guid` parameter
+3. Calls `ChangeEmailExtensionInterface::customValueCheck()` for custom validation
+4. Calls `ChangeEmailService::sendChangeEmailVerify()`
+5. Generates verification code entry in database with flow='change_email'
+6. Increments security iterator
+7. Sends verification email to **new** email address with code
+8. Redirects to Verify page with `guid` parameter
+
+**Extension Hooks**:
+- `getCustomParams()`: Add custom template parameters
+- `customValueCheck()`: Perform additional validation checks
 
 **Configuration**:
 - `actions.change_email.after_verify_page`: Page to redirect after verification
@@ -242,13 +266,13 @@ return [
             'template_name' => 'Login.latte',       // Template name for login page
         ],
         'reset_password' => [
-            'location' => '/forgot-password',    // Location of the forgot password page
-            'after_verify' => '/reset-password', // Location of the reset password page
-            'template_name' => 'ForgotPassword.latte', // Template name for forgot password page
+            'location' => '/reset-password',            // Location of the reset password page
+            'after_verify' => '/reset-password/verify', // Location to redirect to after verifying
+            'template_name' => 'ResetPassword.latte',   // Template name for reset password page
         ],
         'change_password' => [
-            'location' => '/change-password',   // Location of the change password page
-            'return_page' => '/',               // Location to redirect after changing password
+            'location' => '/change-password',          // Location of the change password page
+            'return_page' => '/',                      // Location to redirect after changing password
             'template_name' => 'ChangePassword.latte', // Template name for change password page
         ],
         'change_email' => [
@@ -264,17 +288,13 @@ return [
             'template_name' => 'Register.latte',  // Template name for register page
         ],
         'verify' => [
-            'location' => '/verify',
-        ],
-        'forgot_password' => [
-            'location' => '/forgot-password',
-            'reset_password_page' => '/reset-password',
-            'after_verify_page' => '/reset-password',
-        ],
-        'change_email' => [
-            'location' => '/change-email',
-            'after_verify_page' => '/change-email-verify',
-            'return_page' => '/settings',
+            'location' => '/verify',            // Location of the verify page
+            'templates' => [                    // Template names per action type
+                'login' => 'Verify.latte',
+                'register' => 'Verify.latte',
+                'reset_password' => 'Verify.latte',
+                'change_email' => 'Verify.latte',
+            ],
         ],
     ],
     'security' => [
@@ -283,34 +303,107 @@ return [
             'code_expiry_minutes' => 15,    // Minutes until code expires
             'max_attempts' => 5,           // Maximum verification attempts per code
         ],
-        'validity_period_days' => 365, // Email verification validity period
+        'validity_period_days' => 365,      // Email verification validity period
     ],
 ];
 ```
 
 ## Customization Points
 
-### RegisterService::postVerify()
+WebFramework uses an extension interface system for customizing user management flows. Instead of overriding action classes or service methods, implement the appropriate extension interface and configure it via dependency injection.
 
-Override this method to add custom logic after user registration verification:
+### Extension Interfaces
+
+Each flow has a corresponding extension interface:
+
+- **RegisterExtensionInterface**: Customize registration flow
+- **LoginExtensionInterface**: Customize login flow
+- **ChangeEmailExtensionInterface**: Customize email change flow
+- **ChangePasswordExtensionInterface**: Customize password change flow
+- **ResetPasswordExtensionInterface**: Customize password reset flow
+
+### Implementing an Extension
+
+1. **Create your extension class** implementing the appropriate interface:
 
 ```php
-public function postVerify(User $user, array $afterVerifyParams = []): void
+use WebFramework\Security\Extension\RegisterExtensionInterface;
+use Slim\Http\ServerRequest as Request;
+use WebFramework\Entity\User;
+
+class MyRegisterExtension implements RegisterExtensionInterface
 {
-    // Add custom logic here
-    // e.g., send welcome email, create default settings, etc.
+    public function getCustomParams(Request $request): array
+    {
+        return [
+            'customField' => 'value',
+        ];
+    }
+
+    public function customValueCheck(Request $request): bool
+    {
+        // Perform additional validation
+        return true;
+    }
+
+    public function getAfterVerifyData(Request $request): array
+    {
+        return [
+            'referral_code' => $request->getParam('referral_code'),
+        ];
+    }
+
+    public function postCreate(Request $request, User $user): void
+    {
+        // Execute logic after user creation
+        // e.g., create default settings, send welcome email
+    }
+
+    public function postVerify(User $user, array $afterVerifyParams): void
+    {
+        // Execute logic after verification
+        // e.g., process referral code from $afterVerifyParams
+    }
 }
 ```
 
-### Custom Action Methods
+2. **Configure in dependency injection** (`definitions/definitions.php`):
 
-All action classes provide extensible methods:
+```php
+return [
+    // ... other definitions ...
+    Security\Extension\RegisterExtensionInterface::class => DI\autowire(MyRegisterExtension::class),
+];
+```
 
-- **Register**: `customPreparePageContent()`, `customValueCheck()`, `customFinalizeCreate()`, `getAfterVerifyData()`
-- **Login**: `customValueCheck()`
-- **ChangeEmail**: `customParams()`
+### Available Extension Hooks
 
-Override these methods in your action classes to customize behavior.
+#### RegisterExtensionInterface
+- `getCustomParams(Request $request): array` - Add custom template parameters
+- `customValueCheck(Request $request): bool` - Perform additional validation before user creation
+- `getAfterVerifyData(Request $request): array` - Provide data to pass through verification
+- `postCreate(Request $request, User $user): void` - Execute logic after user creation
+- `postVerify(User $user, array $afterVerifyParams): void` - Execute logic after verification
+
+#### LoginExtensionInterface
+- `getCustomParams(Request $request): array` - Add custom template parameters
+- `customValueCheck(Request $request, User $user): bool` - Perform additional validation before authentication
+
+#### ChangeEmailExtensionInterface
+- `getCustomParams(Request $request): array` - Add custom template parameters
+- `customValueCheck(Request $request, User $user): bool` - Perform additional validation
+
+#### ChangePasswordExtensionInterface
+- `getCustomParams(Request $request): array` - Add custom template parameters
+- `customValueCheck(Request $request, User $user): bool` - Perform additional validation
+
+#### ResetPasswordExtensionInterface
+- `getCustomParams(Request $request): array` - Add custom template parameters
+- `customValueCheck(Request $request): bool` - Perform additional validation
+
+### Default Implementations
+
+Null implementations are provided as defaults (`NullRegisterExtension`, `NullLoginExtension`, etc.) that perform no operations. These are configured in `definitions/definitions.php` and can be replaced with your custom implementations.
 
 ## Security Features
 

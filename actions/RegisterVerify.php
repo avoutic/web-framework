@@ -19,7 +19,7 @@ use WebFramework\Config\ConfigService;
 use WebFramework\Exception\CodeVerificationException;
 use WebFramework\Http\ResponseEmitter;
 use WebFramework\Security\AuthenticationService;
-use WebFramework\Security\RegisterService;
+use WebFramework\Security\Extension\RegisterExtensionInterface;
 use WebFramework\Security\UserVerificationService;
 
 /**
@@ -40,7 +40,7 @@ class RegisterVerify
     public function __construct(
         protected AuthenticationService $authenticationService,
         protected ConfigService $configService,
-        protected RegisterService $registerService,
+        protected RegisterExtensionInterface $registerExtension,
         protected ResponseEmitter $responseEmitter,
         protected UserVerificationService $userVerificationService,
     ) {}
@@ -74,7 +74,7 @@ class RegisterVerify
 
             $this->authenticationService->authenticate($user);
 
-            $this->registerService->postVerify($user, $afterVerifyData);
+            $this->registerExtension->postVerify($user, $afterVerifyData);
 
             return $this->responseEmitter->buildRedirect(
                 $this->configService->get('actions.register.return_page'),

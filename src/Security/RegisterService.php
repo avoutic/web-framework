@@ -102,13 +102,4 @@ class RegisterService
 
         return ['user' => $user, 'guid' => $guid];
     }
-
-    /**
-     * Called after e-mail verification on registration with the afterVerifyParams
-     * from register().
-     *
-     * @param User         $user              The user to post verify
-     * @param array<mixed> $afterVerifyParams Additional parameters for after verification
-     */
-    public function postVerify(User $user, array $afterVerifyParams = []): void {}
 }

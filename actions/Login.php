@@ -11,7 +11,6 @@
 
 namespace WebFramework\Actions;
 
-use Psr\Container\ContainerInterface as Container;
 use Psr\Http\Message\ResponseInterface;
 use Slim\Http\Response;
 use Slim\Http\ServerRequest as Request;
@@ -27,6 +26,7 @@ use WebFramework\Presentation\MessageService;
 use WebFramework\Presentation\RenderService;
 use WebFramework\Security\AuthenticationService;
 use WebFramework\Security\CaptchaService;
+use WebFramework\Security\Extension\LoginExtensionInterface;
 use WebFramework\Security\LoginService;
 use WebFramework\Security\UserVerificationService;
 use WebFramework\Validation\InputValidationService;
@@ -44,11 +44,11 @@ class Login
     /**
      * Login constructor.
      *
-     * @param Container               $container               The dependency injection container
      * @param AuthenticationService   $authenticationService   The authentication service
      * @param CaptchaService          $captchaService          The captcha service
      * @param ConfigService           $configService           The configuration service
      * @param InputValidationService  $inputValidationService  The input validation service
+     * @param LoginExtensionInterface $loginExtension          The login extension
      * @param LoginService            $loginService            The login service
      * @param MessageService          $messageService          The message service
      * @param RenderService           $renderer                The render service
@@ -56,38 +56,18 @@ class Login
      * @param UserVerificationService $userVerificationService The user verification service
      */
     public function __construct(
-        protected Container $container,
-        protected AuthenticationService $authenticationService,
-        protected CaptchaService $captchaService,
-        protected ConfigService $configService,
-        protected InputValidationService $inputValidationService,
-        protected LoginService $loginService,
-        protected MessageService $messageService,
-        protected RenderService $renderer,
-        protected ResponseEmitter $responseEmitter,
-        protected UserVerificationService $userVerificationService,
-        protected string $templateName,
-    ) {
-        $this->init();
-    }
-
-    /**
-     * Initialize the action.
-     */
-    protected function init(): void {}
-
-    /**
-     * Perform custom value checks before allowing authentication.
-     *
-     * @param Request $request The current request
-     * @param User    $user    The user to check
-     *
-     * @return bool True if the checks pass, false otherwise
-     */
-    protected function customValueCheck(Request $request, User $user): bool
-    {
-        return true;
-    }
+        private AuthenticationService $authenticationService,
+        private CaptchaService $captchaService,
+        private ConfigService $configService,
+        private InputValidationService $inputValidationService,
+        private LoginExtensionInterface $loginExtension,
+        private LoginService $loginService,
+        private MessageService $messageService,
+        private RenderService $renderer,
+        private ResponseEmitter $responseEmitter,
+        private UserVerificationService $userVerificationService,
+        private string $templateName,
+    ) {}
 
     /**
      * Handle the login request.
@@ -127,6 +107,9 @@ class Login
             'recaptchaNeeded' => false,
         ];
 
+        $customParams = $this->loginExtension->getCustomParams($request);
+        $params = array_replace_recursive($params, $customParams);
+
         // Check if this is a login attempt
         //
         if (!$request->getAttribute('passed_csrf'))
@@ -152,7 +135,7 @@ class Login
 
             $user = $this->loginService->validate($request, $filtered['username'], $filtered['password'], $validCaptcha);
 
-            if ($this->customValueCheck($request, $user))
+            if ($this->loginExtension->customValueCheck($request, $user))
             {
                 // Authenticate user
                 //

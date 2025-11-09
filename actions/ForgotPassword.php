@@ -20,8 +20,8 @@ use WebFramework\Http\ResponseEmitter;
 use WebFramework\Presentation\MessageService;
 use WebFramework\Presentation\RenderService;
 use WebFramework\Repository\UserRepository;
+use WebFramework\Security\Extension\ResetPasswordExtensionInterface;
 use WebFramework\Security\ResetPasswordService;
-use WebFramework\Security\UserCodeService;
 use WebFramework\Support\UuidProvider;
 use WebFramework\Validation\InputValidationService;
 use WebFramework\Validation\Validator\EmailValidator;
@@ -43,21 +43,20 @@ class ForgotPassword
      * @param RenderService          $renderer               The render service
      * @param ResponseEmitter        $responseEmitter        The response emitter
      * @param ResetPasswordService   $resetPasswordService   The reset password service
-     * @param UserCodeService        $userCodeService        The user code service
      * @param UserRepository         $userRepository         The user repository
      * @param UuidProvider           $uuidProvider           The UUID provider
      */
     public function __construct(
-        protected ConfigService $configService,
-        protected InputValidationService $inputValidationService,
-        protected MessageService $messageService,
-        protected RenderService $renderer,
-        protected ResponseEmitter $responseEmitter,
-        protected ResetPasswordService $resetPasswordService,
-        protected UserCodeService $userCodeService,
-        protected UserRepository $userRepository,
-        protected UuidProvider $uuidProvider,
-        protected string $templateName,
+        private ConfigService $configService,
+        private InputValidationService $inputValidationService,
+        private MessageService $messageService,
+        private RenderService $renderer,
+        private ResponseEmitter $responseEmitter,
+        private ResetPasswordExtensionInterface $resetPasswordExtension,
+        private ResetPasswordService $resetPasswordService,
+        private UserRepository $userRepository,
+        private UuidProvider $uuidProvider,
+        private string $templateName,
     ) {}
 
     /**
@@ -76,11 +75,12 @@ class ForgotPassword
      */
     public function __invoke(Request $request, Response $response, array $routeArgs): ResponseInterface
     {
+        $params = $this->resetPasswordExtension->getCustomParams($request);
         $csrfPassed = $request->getAttribute('passed_csrf', false);
 
         if (!$csrfPassed)
         {
-            return $this->renderer->render($request, $response, $this->templateName, []);
+            return $this->renderer->render($request, $response, $this->templateName, $params);
         }
 
         $uniqueIdentifier = $this->configService->get('authenticator.unique_identifier');
@@ -95,36 +95,39 @@ class ForgotPassword
                 $request->getParams(),
             );
 
-            // Retrieve user
-            //
-            $user = $this->userRepository->getUserByUsername($filtered['username']);
-
-            if ($user === null)
+            if ($this->resetPasswordExtension->customValueCheck($request))
             {
-                // Don't reveal if user exists - still redirect to verify page
-                // but without a valid GUID, verification will fail gracefully
-                $guid = $this->uuidProvider->generate();
-            }
-            else
-            {
-                $guid = $this->resetPasswordService->sendPasswordResetMail($user);
-            }
+                // Retrieve user
+                //
+                $user = $this->userRepository->getUserByUsername($filtered['username']);
 
-            return $this->responseEmitter->buildRedirect(
-                $this->configService->get('actions.verify.location'),
-                [
-                    'flow' => 'reset_password',
-                    'guid' => $guid,
-                ],
-                'success',
-                'forgot_password.reset_link_mailed',
-            );
+                if ($user === null)
+                {
+                    // Don't reveal if user exists - still redirect to verify page
+                    // but without a valid GUID, verification will fail gracefully
+                    $guid = $this->uuidProvider->generate();
+                }
+                else
+                {
+                    $guid = $this->resetPasswordService->sendPasswordResetMail($user);
+                }
+
+                return $this->responseEmitter->buildRedirect(
+                    $this->configService->get('actions.verify.location'),
+                    [
+                        'flow' => 'reset_password',
+                        'guid' => $guid,
+                    ],
+                    'success',
+                    'forgot_password.reset_link_mailed',
+                );
+            }
         }
         catch (ValidationException $e)
         {
             $this->messageService->addErrors($e->getErrors());
         }
 
-        return $this->renderer->render($request, $response, $this->templateName, []);
+        return $this->renderer->render($request, $response, $this->templateName, $params);
     }
 }

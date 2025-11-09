@@ -11,7 +11,6 @@
 
 namespace WebFramework\Actions;
 
-use Psr\Container\ContainerInterface as Container;
 use Psr\Http\Message\ResponseInterface;
 use Slim\Http\Response;
 use Slim\Http\ServerRequest as Request;
@@ -23,6 +22,7 @@ use WebFramework\Presentation\MessageService;
 use WebFramework\Presentation\RenderService;
 use WebFramework\Security\AuthenticationService;
 use WebFramework\Security\ChangeEmailService;
+use WebFramework\Security\Extension\ChangeEmailExtensionInterface;
 use WebFramework\Validation\InputValidationService;
 use WebFramework\Validation\Validator\EmailValidator;
 
@@ -36,45 +36,26 @@ class ChangeEmail
     /**
      * ChangeEmail constructor.
      *
-     * @param Container              $container              The dependency injection container
-     * @param AuthenticationService  $authenticationService  The authentication service
-     * @param ConfigService          $configService          The configuration service
-     * @param InputValidationService $inputValidationService The input validation service
-     * @param MessageService         $messageService         The message service
-     * @param RenderService          $renderer               The render service
-     * @param ResponseEmitter        $responseEmitter        The response emitter
-     * @param ChangeEmailService     $changeEmailService     The change email service
+     * @param AuthenticationService         $authenticationService  The authentication service
+     * @param ChangeEmailExtensionInterface $changeEmailExtension   The change email extension
+     * @param ChangeEmailService            $changeEmailService     The change email service
+     * @param ConfigService                 $configService          The configuration service
+     * @param InputValidationService        $inputValidationService The input validation service
+     * @param MessageService                $messageService         The message service
+     * @param RenderService                 $renderer               The render service
+     * @param ResponseEmitter               $responseEmitter        The response emitter
      */
     public function __construct(
-        protected Container $container,
-        protected AuthenticationService $authenticationService,
-        protected ConfigService $configService,
-        protected InputValidationService $inputValidationService,
-        protected MessageService $messageService,
-        protected RenderService $renderer,
-        protected ResponseEmitter $responseEmitter,
-        protected ChangeEmailService $changeEmailService,
-        protected string $templateName,
-    ) {
-        $this->init();
-    }
-
-    /**
-     * Initialize the action.
-     */
-    protected function init(): void {}
-
-    /**
-     * Get custom parameters for the action.
-     *
-     * @param Request $request The current request
-     *
-     * @return array<string, mixed> Custom parameters
-     */
-    protected function customParams(Request $request): array
-    {
-        return [];
-    }
+        private AuthenticationService $authenticationService,
+        private ChangeEmailExtensionInterface $changeEmailExtension,
+        private ChangeEmailService $changeEmailService,
+        private ConfigService $configService,
+        private InputValidationService $inputValidationService,
+        private MessageService $messageService,
+        private RenderService $renderer,
+        private ResponseEmitter $responseEmitter,
+        private string $templateName,
+    ) {}
 
     /**
      * Handle the change email request.
@@ -96,7 +77,7 @@ class ChangeEmail
             'email' => $request->getParam('email', ''),
         ];
 
-        $customParams = $this->customParams($request);
+        $customParams = $this->changeEmailExtension->getCustomParams($request);
         $params = array_replace_recursive($params, $customParams);
 
         // Check if this is a true attempt
@@ -117,21 +98,22 @@ class ChangeEmail
                 $request->getParams(),
             );
 
-            // Send verification mail
-            //
-            $guid = $this->changeEmailService->sendChangeEmailVerify($user, $filtered['email']);
+            if ($this->changeEmailExtension->customValueCheck($request, $user))
+            {
+                // Send verification mail
+                //
+                $guid = $this->changeEmailService->sendChangeEmailVerify($user, $filtered['email']);
 
-            // Redirect to verification request screen
-            //
-            return $this->responseEmitter->buildQueryRedirect(
-                $this->configService->get('actions.verify.location'),
-                [],
-                [
-                    'guid' => $guid,
-                ],
-                'success',
-                'change_email.verification_sent',
-            );
+                return $this->responseEmitter->buildQueryRedirect(
+                    $this->configService->get('actions.verify.location'),
+                    [],
+                    [
+                        'guid' => $guid,
+                    ],
+                    'success',
+                    'change_email.verification_sent',
+                );
+            }
         }
         catch (ValidationException $e)
         {

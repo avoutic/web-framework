@@ -11,7 +11,6 @@
 
 namespace WebFramework\Actions;
 
-use Psr\Container\ContainerInterface as Container;
 use Psr\Http\Message\ResponseInterface;
 use Slim\Http\Response;
 use Slim\Http\ServerRequest as Request;
@@ -25,6 +24,7 @@ use WebFramework\Presentation\MessageService;
 use WebFramework\Presentation\RenderService;
 use WebFramework\Security\AuthenticationService;
 use WebFramework\Security\ChangePasswordService;
+use WebFramework\Security\Extension\ChangePasswordExtensionInterface;
 use WebFramework\Validation\InputValidationService;
 use WebFramework\Validation\Validator\PasswordValidator;
 
@@ -38,46 +38,27 @@ class ChangePassword
     /**
      * ChangePassword constructor.
      *
-     * @param Container              $container              The dependency injection container
-     * @param AuthenticationService  $authenticationService  The authentication service
-     * @param ChangePasswordService  $changePasswordService  The change password service
-     * @param ConfigService          $configService          The configuration service
-     * @param InputValidationService $inputValidationService The input validation service
-     * @param MessageService         $messageService         The message service
-     * @param RenderService          $renderer               The render service
-     * @param ResponseEmitter        $responseEmitter        The response emitter
-     * @param string                 $templateName           The template name
+     * @param AuthenticationService            $authenticationService   The authentication service
+     * @param ChangePasswordExtensionInterface $changePasswordExtension The change password extension
+     * @param ChangePasswordService            $changePasswordService   The change password service
+     * @param ConfigService                    $configService           The configuration service
+     * @param InputValidationService           $inputValidationService  The input validation service
+     * @param MessageService                   $messageService          The message service
+     * @param RenderService                    $renderer                The render service
+     * @param ResponseEmitter                  $responseEmitter         The response emitter
+     * @param string                           $templateName            The template name
      */
     public function __construct(
-        protected Container $container,
-        protected AuthenticationService $authenticationService,
-        protected ChangePasswordService $changePasswordService,
-        protected ConfigService $configService,
-        protected InputValidationService $inputValidationService,
-        protected MessageService $messageService,
-        protected RenderService $renderer,
-        protected ResponseEmitter $responseEmitter,
-        protected string $templateName,
-    ) {
-        $this->init();
-    }
-
-    /**
-     * Initialize the action.
-     */
-    public function init(): void {}
-
-    /**
-     * Get custom parameters for the action.
-     *
-     * @param Request $request The current request
-     *
-     * @return array<string, mixed> Custom parameters
-     */
-    protected function customParams(Request $request): array
-    {
-        return [];
-    }
+        private AuthenticationService $authenticationService,
+        private ChangePasswordExtensionInterface $changePasswordExtension,
+        private ChangePasswordService $changePasswordService,
+        private ConfigService $configService,
+        private InputValidationService $inputValidationService,
+        private MessageService $messageService,
+        private RenderService $renderer,
+        private ResponseEmitter $responseEmitter,
+        private string $templateName,
+    ) {}
 
     /**
      * Handle the change password request.
@@ -96,7 +77,7 @@ class ChangePassword
     public function __invoke(Request $request, Response $response, array $routeArgs): ResponseInterface
     {
         $user = $this->authenticationService->getAuthenticatedUser();
-        $params = $this->getCustomParams($request);
+        $params = $this->changePasswordExtension->getCustomParams($request);
         $csrfPassed = $request->getAttribute('passed_csrf', false);
 
         if (!$csrfPassed)
@@ -119,18 +100,21 @@ class ChangePassword
 
             $this->changePasswordService->validate($user, $filtered['orig_password'], $filtered['password'], $filtered['password2']);
 
-            // Change Password
-            //
-            $this->changePasswordService->changePassword($request, $user, $filtered['orig_password'], $filtered['password']);
+            if ($this->changePasswordExtension->customValueCheck($request, $user))
+            {
+                // Change Password
+                //
+                $this->changePasswordService->changePassword($request, $user, $filtered['orig_password'], $filtered['password']);
 
-            // Redirect to main sceen
-            //
-            return $this->responseEmitter->buildRedirect(
-                $this->configService->get('actions.change_password.return_page'),
-                [],
-                'success',
-                'change_password.success',
-            );
+                // Redirect to main sceen
+                //
+                return $this->responseEmitter->buildRedirect(
+                    $this->configService->get('actions.change_password.return_page'),
+                    [],
+                    'success',
+                    'change_password.success',
+                );
+            }
         }
         catch (ValidationException $e)
         {
