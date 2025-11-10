@@ -62,7 +62,7 @@ The WebFramework includes several predefined tasks for common operations. Here a
 ### SlimAppTask
 
 - **Purpose**: Initializes and runs the Slim application.
-- **Script**: `htdocs/index.php`
+- **Script**: `public/index.php`
 - **Script**: Typically run as part of the web server setup, not directly from the command line.
 
 ### DbInitTask

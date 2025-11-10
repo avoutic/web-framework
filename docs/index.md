@@ -23,11 +23,11 @@ You then probably want to add something like the following to your `composer.jso
 ```json
     "scripts": {
         "post-install-cmd": [
-            "php -r \"copy('vendor/avoutic/web-framework/htdocs/index.php', 'htdocs/index.php');\"",
+            "php -r \"copy('vendor/avoutic/web-framework/public/index.php', 'public/index.php');\"",
             "php -r \"copy('vendor/avoutic/web-framework/scripts/framework.php', 'framework');\""
         ],
         "post-update-cmd": [
-            "php -r \"copy('vendor/avoutic/web-framework/htdocs/index.php', 'htdocs/index.php');\"",
+            "php -r \"copy('vendor/avoutic/web-framework/public/index.php', 'public/index.php');\"",
             "php -r \"copy('vendor/avoutic/web-framework/scripts/framework.php', 'framework');\""
         ]
     },
@@ -40,7 +40,7 @@ Applications using WebFramework typically have the following directory structure
 - **actions**: Contains files for each endpoint and related API functions.
 - **config**: Contains the configuration files for the application.
 - **definitions**: Contains the PHP-DI definitions for the application.
-- **htdocs**: The location for the core `index.php` and external static files like images, CSS, and JavaScript.
+- **public**: The location for the core `index.php` and external static files like images, CSS, and JavaScript.
 - **migrations**: Contains the database migrations for the application.
 - **scripts**: Contains scripts for tasks, migrations, and other automation tasks.
 - **src**: Contains the core application/business logic and model files.

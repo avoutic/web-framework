@@ -8,7 +8,7 @@ WebFramework applications typically have the following directory structure:
 - **config**: Contains the configuration files for the application.
 - **migrations**: Contains the database migrations for the application.
 - **definitions**: Contains the PHP-DI definitions for the application.
-- **htdocs**: The location for the core `index.php` and external static files like images, CSS, and JavaScript.
+- **public**: The location for the core `index.php` and external static files like images, CSS, and JavaScript.
 - **scripts**: Contains scripts for tasks, migrations, and other automation tasks.
 - **src**: Contains the core application/business logic and model files.
 - **templates**: Contains the templates used by the actions.
