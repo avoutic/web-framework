@@ -44,6 +44,8 @@ This documentation is organized into several sections, each focusing on a specif
 
 To get started with WebFramework, follow the [Installation Guide](INSTALL.md) to set up your project. Once installed, explore the documentation to learn how to leverage the full capabilities of WebFramework in your application.
 
+A sample demo application is available at [github.com/avoutic/web-framework-example](https://github.com/avoutic/web-framework-example).
+
 For any questions or further assistance, please refer to the documentation or reach out to the WebFramework community.
 
 Happy coding!
