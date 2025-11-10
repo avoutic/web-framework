@@ -17,6 +17,7 @@ use Monolog\Logger;
 use Psr\Container\ContainerInterface as Container;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+use WebFramework\Core\RuntimeEnvironment;
 
 class ChannelManager
 {
@@ -28,6 +29,7 @@ class ChannelManager
      */
     public function __construct(
         private Container $container,
+        private RuntimeEnvironment $runtimeEnvironment,
         private array $channelConfig = [],
     ) {}
 
@@ -69,7 +71,14 @@ class ChannelManager
                     throw new \InvalidArgumentException("Channel configuration for {$channel} is missing a path");
                 }
 
-                $handler = new StreamHandler($configuration['path'], $configuration['level'] ?? Level::Debug);
+                $path = $configuration['path'];
+                // If path is relative (doesn't start with /), base it on app directory
+                if (!str_starts_with($path, '/'))
+                {
+                    $path = $this->runtimeEnvironment->getAppDir().'/'.$path;
+                }
+
+                $handler = new StreamHandler($path, $configuration['level'] ?? Level::Debug);
 
                 $logger = new Logger($channel);
                 $logger->pushHandler($handler);
