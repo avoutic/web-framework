@@ -13,6 +13,7 @@
 * `Validator` interface now requires `getRequiredErrorMessage()` and `getRequiredErrorParams()` methods to support customization of the error message for required fields.
 * Removed `afterAuthentication()` method from `Login` action, listen to `UserLoggedIn` event instead.
 * Authentication actions are now extensible through extension interfaces, instead of overriding the actions themselves. Migration requires implementing the new extension interface instead of extending the action class. Function names are similar, but not identical. Behavior is identical.
+* Remove forced CAPTCHA protection from `Login` and `Register` actions. Can now be implemented with the extension interfaces.
 
 ### New features
 

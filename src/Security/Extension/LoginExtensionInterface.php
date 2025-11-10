@@ -29,6 +29,16 @@ interface LoginExtensionInterface
     public function getCustomParams(Request $request): array;
 
     /**
+     * Perform custom validation before password validation.
+     * This is useful for example to check if a CAPTCHA is required/valid.
+     *
+     * @param Request $request The current request
+     *
+     * @return bool True if the validation passes, false otherwise
+     */
+    public function preValidate(Request $request): bool;
+
+    /**
      * Perform custom value checks before allowing authentication.
      *
      * @param Request $request The current request

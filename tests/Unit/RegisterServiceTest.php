@@ -5,7 +5,6 @@ namespace Tests\Unit;
 use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
 use WebFramework\Core\UserService;
-use WebFramework\Exception\InvalidCaptchaException;
 use WebFramework\Exception\PasswordMismatchException;
 use WebFramework\Exception\UsernameUnavailableException;
 use WebFramework\Exception\WeakPasswordException;
@@ -18,19 +17,6 @@ use WebFramework\Security\RegisterService;
  */
 final class RegisterServiceTest extends Unit
 {
-    public function testValidateInvalidCaptcha()
-    {
-        $instance = $this->make(
-            RegisterService::class,
-        );
-
-        verify(function () use ($instance) {
-            $instance->validate('username', 'email', 'password', 'verify', false);
-        })
-            ->callableThrows(InvalidCaptchaException::class)
-        ;
-    }
-
     public function testValidatePasswordMismatch()
     {
         $instance = $this->make(

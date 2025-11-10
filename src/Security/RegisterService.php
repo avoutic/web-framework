@@ -18,7 +18,6 @@ use WebFramework\Core\UserService;
 use WebFramework\Entity\User;
 use WebFramework\Event\EventService;
 use WebFramework\Event\UserRegistered;
-use WebFramework\Exception\InvalidCaptchaException;
 use WebFramework\Exception\PasswordMismatchException;
 use WebFramework\Exception\UsernameUnavailableException;
 use WebFramework\Exception\WeakPasswordException;
@@ -50,20 +49,13 @@ class RegisterService
      * @param string $email                The email address
      * @param string $password             The password
      * @param string $passwordVerification The password verification
-     * @param bool   $validCaptcha         Whether a valid CAPTCHA was provided
      *
-     * @throws InvalidCaptchaException      If the CAPTCHA is invalid
      * @throws PasswordMismatchException    If the passwords don't match
      * @throws WeakPasswordException        If the password is too weak
      * @throws UsernameUnavailableException If the username is already taken
      */
-    public function validate(string $username, string $email, string $password, string $passwordVerification, bool $validCaptcha): void
+    public function validate(string $username, string $email, string $password, string $passwordVerification): void
     {
-        if (!$validCaptcha)
-        {
-            throw new InvalidCaptchaException();
-        }
-
         if ($password !== $passwordVerification)
         {
             throw new PasswordMismatchException();

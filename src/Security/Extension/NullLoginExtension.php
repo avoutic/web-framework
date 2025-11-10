@@ -26,6 +26,11 @@ class NullLoginExtension implements LoginExtensionInterface
         return [];
     }
 
+    public function preValidate(Request $request): bool
+    {
+        return true;
+    }
+
     public function customValueCheck(Request $request, User $user): bool
     {
         return true;

@@ -16,8 +16,6 @@ use Slim\Http\Response;
 use Slim\Http\ServerRequest as Request;
 use WebFramework\Config\ConfigService;
 use WebFramework\Entity\User;
-use WebFramework\Exception\CaptchaRequiredException;
-use WebFramework\Exception\InvalidCaptchaException;
 use WebFramework\Exception\InvalidPasswordException;
 use WebFramework\Exception\UserVerificationRequiredException;
 use WebFramework\Exception\ValidationException;
@@ -25,7 +23,6 @@ use WebFramework\Http\ResponseEmitter;
 use WebFramework\Presentation\MessageService;
 use WebFramework\Presentation\RenderService;
 use WebFramework\Security\AuthenticationService;
-use WebFramework\Security\CaptchaService;
 use WebFramework\Security\Extension\LoginExtensionInterface;
 use WebFramework\Security\LoginService;
 use WebFramework\Security\UserVerificationService;
@@ -45,7 +42,6 @@ class Login
      * Login constructor.
      *
      * @param AuthenticationService   $authenticationService   The authentication service
-     * @param CaptchaService          $captchaService          The captcha service
      * @param ConfigService           $configService           The configuration service
      * @param InputValidationService  $inputValidationService  The input validation service
      * @param LoginExtensionInterface $loginExtension          The login extension
@@ -57,7 +53,6 @@ class Login
      */
     public function __construct(
         private AuthenticationService $authenticationService,
-        private CaptchaService $captchaService,
         private ConfigService $configService,
         private InputValidationService $inputValidationService,
         private LoginExtensionInterface $loginExtension,
@@ -78,16 +73,9 @@ class Login
      *
      * @return ResponseInterface The response
      *
-     * @throws ValidationException               If the input validation fails
-     * @throws CaptchaRequiredException          If a captcha is required but not provided
-     * @throws InvalidCaptchaException           If the provided captcha is invalid
-     * @throws InvalidPasswordException          If the provided password is incorrect
-     * @throws UserVerificationRequiredException If the user needs to verify their account
-     *
      * @uses config authenticator.unique_identifier
      * @uses config actions.login.default_return_page
      * @uses config actions.verify.location
-     * @uses config security.recaptcha.site_key
      */
     public function __invoke(Request $request, Response $response, array $routeArgs): ResponseInterface
     {
@@ -104,7 +92,6 @@ class Login
             'returnPage' => $this->getReturnPage($request),
             'returnQuery' => $this->getReturnQuery($request),
             'username' => $request->getParam('username', ''),
-            'recaptchaNeeded' => false,
         ];
 
         $customParams = $this->loginExtension->getCustomParams($request);
@@ -131,32 +118,19 @@ class Login
                 $request->getParams(),
             );
 
-            $validCaptcha = $this->captchaService->hasValidCaptcha($request);
-
-            $user = $this->loginService->validate($request, $filtered['username'], $filtered['password'], $validCaptcha);
-
-            if ($this->loginExtension->customValueCheck($request, $user))
+            if ($this->loginExtension->preValidate($request))
             {
-                // Authenticate user
-                //
-                $this->loginService->authenticate($request, $user, $filtered['password']);
+                $user = $this->loginService->validate($request, $filtered['username'], $filtered['password']);
 
-                return $this->redirect($request, 'success', 'login.success');
+                if ($this->loginExtension->customValueCheck($request, $user))
+                {
+                    // Authenticate user
+                    //
+                    $this->loginService->authenticate($request, $user, $filtered['password']);
+
+                    return $this->redirect($request, 'success', 'login.success');
+                }
             }
-        }
-        catch (CaptchaRequiredException $e)
-        {
-            $this->messageService->add('error', 'login.captcha_required');
-
-            $params['recaptchaNeeded'] = true;
-            $params['recaptchaSiteKey'] = $this->configService->get('security.recaptcha.site_key');
-        }
-        catch (InvalidCaptchaException $e)
-        {
-            $this->messageService->add('error', 'login.captcha_incorrect');
-
-            $params['recaptchaNeeded'] = true;
-            $params['recaptchaSiteKey'] = $this->configService->get('security.recaptcha.site_key');
         }
         catch (InvalidPasswordException $e)
         {

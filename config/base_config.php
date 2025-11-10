@@ -60,7 +60,6 @@ return [
             'location' => '/login',                 // Location of the login page
             'after_verify' => '/login/verify',      // Location to redirect to after verifying
             'default_return_page' => '/',           // Default return page
-            'bruteforce_protection' => true,        // Enable bruteforce protection
             'template_name' => 'Login.latte',       // Template name for login page
         ],
         'reset_password' => [

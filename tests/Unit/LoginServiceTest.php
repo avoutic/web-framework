@@ -8,7 +8,6 @@ use Psr\Log\LoggerInterface;
 use Slim\Http\ServerRequest as Request;
 use WebFramework\Entity\User;
 use WebFramework\Event\EventService;
-use WebFramework\Exception\CaptchaRequiredException;
 use WebFramework\Exception\InvalidPasswordException;
 use WebFramework\Exception\UserVerificationRequiredException;
 use WebFramework\Repository\UserRepository;
@@ -77,31 +76,6 @@ final class LoginServiceTest extends Unit
             $instance->validate($request, 'noname', '', true);
         })
             ->callableThrows(InvalidPasswordException::class)
-        ;
-    }
-
-    public function testValidateCaptchaRequired()
-    {
-        $instance = $this->make(
-            LoginService::class,
-            [
-                'logger' => $this->makeEmpty(LoggerInterface::class),
-                'userRepository' => $this->makeEmpty(
-                    UserRepository::class,
-                    [
-                        'getUserByUsername' => $this->makeEmpty(User::class),
-                    ],
-                ),
-                'captchaRequired' => Expected::once(true),
-            ],
-        );
-
-        $request = $this->makeEmpty(Request::class, ['getAttribute' => '']);
-
-        verify(function () use ($instance, $request) {
-            $instance->validate($request, 'noname', '', false);
-        })
-            ->callableThrows(CaptchaRequiredException::class)
         ;
     }
 
@@ -263,53 +237,5 @@ final class LoginServiceTest extends Unit
         $request = $this->makeEmpty(Request::class, ['getAttribute' => '']);
 
         verify($instance->authenticate($request, $user, ''));
-    }
-
-    public function testCaptchaRequiredNoProtection()
-    {
-        $user = $this->makeEmpty(User::class, ['getFailedLogin' => Expected::once(200)]);
-
-        $instance = $this->make(
-            LoginService::class,
-            [
-                'bruteforceProtection' => false,
-            ],
-        );
-
-        verify($instance->captchaRequired($user))
-            ->equals(false)
-        ;
-    }
-
-    public function testCaptchaRequired()
-    {
-        $user = $this->makeEmpty(User::class, ['getFailedLogin' => Expected::atLeastOnce(200)]);
-
-        $instance = $this->make(
-            LoginService::class,
-            [
-                'logger' => $this->makeEmpty(LoggerInterface::class),
-                'bruteforceProtection' => true,
-            ],
-        );
-
-        verify($instance->captchaRequired($user))
-            ->equals(true)
-        ;
-    }
-
-    public function testCaptchaNotRequired()
-    {
-        $user = $this->makeEmpty(User::class, ['getFailedLogin' => Expected::once(0)]);
-
-        $instance = $this->make(
-            LoginService::class,
-            [
-            ],
-        );
-
-        verify($instance->captchaRequired($user))
-            ->equals(false)
-        ;
     }
 }

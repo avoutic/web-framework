@@ -16,8 +16,6 @@ use Slim\Http\Response;
 use Slim\Http\ServerRequest as Request;
 use WebFramework\Config\ConfigService;
 use WebFramework\Entity\User;
-use WebFramework\Exception\CaptchaRequiredException;
-use WebFramework\Exception\InvalidCaptchaException;
 use WebFramework\Exception\PasswordMismatchException;
 use WebFramework\Exception\UsernameUnavailableException;
 use WebFramework\Exception\ValidationException;
@@ -26,7 +24,6 @@ use WebFramework\Http\ResponseEmitter;
 use WebFramework\Presentation\MessageService;
 use WebFramework\Presentation\RenderService;
 use WebFramework\Security\AuthenticationService;
-use WebFramework\Security\CaptchaService;
 use WebFramework\Security\Extension\RegisterExtensionInterface;
 use WebFramework\Security\RegisterService;
 use WebFramework\Validation\InputValidationService;
@@ -45,7 +42,6 @@ class Register
      * Register constructor.
      *
      * @param AuthenticationService      $authenticationService  The authentication service
-     * @param CaptchaService             $captchaService         The captcha service
      * @param ConfigService              $configService          The configuration service
      * @param InputValidationService     $inputValidationService The input validation service
      * @param MessageService             $messageService         The message service
@@ -56,7 +52,6 @@ class Register
      */
     public function __construct(
         private AuthenticationService $authenticationService,
-        private CaptchaService $captchaService,
         private ConfigService $configService,
         private InputValidationService $inputValidationService,
         private MessageService $messageService,
@@ -76,13 +71,11 @@ class Register
      *
      * @return ResponseInterface The response
      *
-     * @throws InvalidCaptchaException      If the provided captcha is invalid
      * @throws PasswordMismatchException    If the provided passwords don't match
      * @throws UsernameUnavailableException If the chosen username is already taken
      * @throws WeakPasswordException        If the provided password is too weak
      *
      * @uses config authenticator.unique_identifier
-     * @uses config security.recaptcha.site_key
      * @uses config actions.login.default_return_page
      * @uses config actions.register.post_verify_page
      * @uses config actions.verify.location
@@ -106,11 +99,8 @@ class Register
         }
 
         $uniqueIdentifier = $this->configService->get('authenticator.unique_identifier');
-        $recaptchaSiteKey = $this->configService->get('security.recaptcha.site_key');
 
         $params = [
-            'recaptchaNeeded' => false,
-            'recaptchaSiteKey' => $recaptchaSiteKey,
             'username' => $request->getParam('username', ''),
             'password' => $request->getParam('password', ''),
             'password2' => $request->getParam('password2', ''),
@@ -147,10 +137,8 @@ class Register
                 $request->getParams(),
             );
 
-            $validCaptcha = $this->captchaService->hasValidCaptcha($request);
-
             $username = ($uniqueIdentifier == 'email') ? $filtered['email'] : $filtered['username'];
-            $this->registerService->validate($username, $filtered['email'], $filtered['password'], $filtered['password2'], $validCaptcha);
+            $this->registerService->validate($username, $filtered['email'], $filtered['password'], $filtered['password2']);
 
             if ($this->registerExtension->customValueCheck($request))
             {
@@ -178,20 +166,6 @@ class Register
         catch (WeakPasswordException $e)
         {
             $this->messageService->add('error', 'register.weak_password');
-        }
-        catch (CaptchaRequiredException $e)
-        {
-            $this->messageService->add('error', 'register.captcha_required');
-
-            $params['recaptchaNeeded'] = true;
-            $params['recaptchaSiteKey'] = $this->configService->get('security.recaptcha.site_key');
-        }
-        catch (InvalidCaptchaException $e)
-        {
-            $this->messageService->add('error', 'register.captcha_incorrect');
-
-            $params['recaptchaNeeded'] = true;
-            $params['recaptchaSiteKey'] = $this->configService->get('security.recaptcha.site_key');
         }
         catch (UsernameUnavailableException $e)
         {

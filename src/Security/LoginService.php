@@ -16,7 +16,6 @@ use Slim\Http\ServerRequest as Request;
 use WebFramework\Entity\User;
 use WebFramework\Event\EventService;
 use WebFramework\Event\UserLoggedIn;
-use WebFramework\Exception\CaptchaRequiredException;
 use WebFramework\Exception\InvalidPasswordException;
 use WebFramework\Exception\UserVerificationRequiredException;
 use WebFramework\Repository\UserRepository;
@@ -37,7 +36,6 @@ class LoginService
      * @param EventService          $eventService          The event service
      * @param LoggerInterface       $logger                The logger service
      * @param UserRepository        $userRepository        The user repository
-     * @param bool                  $bruteforceProtection  Whether bruteforce protection is enabled
      * @param int                   $validityPeriodDays    The number of days that email verification remains valid
      */
     public function __construct(
@@ -47,25 +45,22 @@ class LoginService
         private EventService $eventService,
         private LoggerInterface $logger,
         private UserRepository $userRepository,
-        private bool $bruteforceProtection,
         private int $validityPeriodDays,
     ) {}
 
     /**
      * Validate login credentials.
      *
-     * @param Request $request      The request object
-     * @param string  $username     The username or email
-     * @param string  $password     The password
-     * @param bool    $validCaptcha Whether a valid CAPTCHA was provided
+     * @param Request $request  The request object
+     * @param string  $username The username or email
+     * @param string  $password The password
      *
      * @return User The user if validation is successful
      *
      * @throws InvalidPasswordException          If the credentials are invalid
-     * @throws CaptchaRequiredException          If a CAPTCHA is required but not provided
      * @throws UserVerificationRequiredException If the user is not verified
      */
-    public function validate(Request $request, string $username, string $password, bool $validCaptcha): User
+    public function validate(Request $request, string $username, string $password): User
     {
         $user = $this->userRepository->getUserByUsername($username);
         if ($user === null)
@@ -75,13 +70,6 @@ class LoginService
             $this->blacklistService->addEntry($request->getAttribute('ip'), null, 'unknown-username');
 
             throw new InvalidPasswordException();
-        }
-
-        if (!$validCaptcha && $this->captchaRequired($user))
-        {
-            $this->logger->debug('CAPTCHA required but not provided', ['user_id' => $user->getId()]);
-
-            throw new CaptchaRequiredException();
         }
 
         if (!$this->checkPasswordService->checkPassword($user, $password))
@@ -145,24 +133,5 @@ class LoginService
         $this->authenticationService->authenticate($user);
 
         $this->eventService->dispatch(new UserLoggedIn($request, $user));
-    }
-
-    /**
-     * Check if a CAPTCHA is required for the given user.
-     *
-     * @param User $user The user to check
-     *
-     * @return bool True if a CAPTCHA is required, false otherwise
-     */
-    public function captchaRequired(User $user): bool
-    {
-        if ($user->getFailedLogin() > 5 && $this->bruteforceProtection)
-        {
-            $this->logger->debug('CAPTCHA required', ['user_id' => $user->getId(), 'failed_logins' => $user->getFailedLogin()]);
-
-            return true;
-        }
-
-        return false;
     }
 }

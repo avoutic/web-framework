@@ -13,13 +13,6 @@
       <label for="password_helper">Password</label>
       <input type="password" id="password_helper" name="password_helper"/>
     </p>
-
-{if $recaptchaNeeded}
-    <div>
-      <div class="g-recaptcha" data-sitekey="{$recaptchaSiteKey}"></div>
-    </div>
-{/if}
-
     <div>
       <label>&nbsp;</label>
       <input type="submit" value="Submit" />
