@@ -35,13 +35,6 @@ interface ValidationRule
     public function getErrorMessage(): string;
 
     /**
-     * Get any extra error message for this rule.
-     *
-     * @return string The extra error message
-     */
-    public function getErrorExtraMessage(): string;
-
-    /**
      * Get the error parameters for this rule.
      *
      * @param string $fieldName The name of the field being validated

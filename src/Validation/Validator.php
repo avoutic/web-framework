@@ -54,4 +54,20 @@ interface Validator
      * @return mixed The default value
      */
     public function getDefault(): mixed;
+
+    /**
+     * Get the error message key for required validation.
+     *
+     * @return string The error message key
+     */
+    public function getRequiredErrorMessage(): string;
+
+    /**
+     * Get the error parameters for required validation.
+     *
+     * @param string $fieldName The name of the field being validated
+     *
+     * @return array<string, string> The error parameters
+     */
+    public function getRequiredErrorParams(string $fieldName): array;
 }

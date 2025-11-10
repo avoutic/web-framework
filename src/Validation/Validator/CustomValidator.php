@@ -28,6 +28,7 @@ class CustomValidator implements Validator
 {
     private bool $required = false;
     private mixed $default = '';
+    private string $requiredErrorMessage = 'validation.required';
 
     /** @var array<ValidationRule> */
     private array $rules = [];
@@ -46,9 +47,9 @@ class CustomValidator implements Validator
      *
      * @param string $filter The filter regex
      */
-    public function filter(string $filter, string $errorMessage = 'validation.filter', string $errorMessageExtra = ''): self
+    public function filter(string $filter, string $errorMessage = 'validation.filter'): self
     {
-        $this->addRule(new FilterRule($filter, $errorMessage, $errorMessageExtra));
+        $this->addRule(new FilterRule($filter, $errorMessage));
 
         return $this;
     }
@@ -65,10 +66,13 @@ class CustomValidator implements Validator
 
     /**
      * Mark this field as required.
+     *
+     * @param string $errorMessage The error message key (default: 'validation.required')
      */
-    public function required(): self
+    public function required(string $errorMessage = 'validation.required'): self
     {
         $this->required = true;
+        $this->requiredErrorMessage = $errorMessage;
 
         return $this;
     }
@@ -78,9 +82,9 @@ class CustomValidator implements Validator
      *
      * @param int $length The minimum length
      */
-    public function minLength(int $length, string $errorMessage = 'validation.min_length', string $errorMessageExtra = ''): self
+    public function minLength(int $length, string $errorMessage = 'validation.min_length'): self
     {
-        $this->addRule(new MinLengthRule($length, $errorMessage, $errorMessageExtra));
+        $this->addRule(new MinLengthRule($length, $errorMessage));
 
         return $this;
     }
@@ -90,9 +94,9 @@ class CustomValidator implements Validator
      *
      * @param int $length The maximum length
      */
-    public function maxLength(int $length, string $errorMessage = 'validation.max_length', string $errorMessageExtra = ''): self
+    public function maxLength(int $length, string $errorMessage = 'validation.max_length'): self
     {
-        $this->addRule(new MaxLengthRule($length, $errorMessage, $errorMessageExtra));
+        $this->addRule(new MaxLengthRule($length, $errorMessage));
 
         return $this;
     }
@@ -100,9 +104,9 @@ class CustomValidator implements Validator
     /**
      * Set email validation for this field.
      */
-    public function email(string $errorMessage = 'validation.email', string $errorMessageExtra = ''): self
+    public function email(string $errorMessage = 'validation.email'): self
     {
-        $this->addRule(new EmailRule($errorMessage, $errorMessageExtra));
+        $this->addRule(new EmailRule($errorMessage));
 
         return $this;
     }
@@ -110,9 +114,9 @@ class CustomValidator implements Validator
     /**
      * Set url validation for this field.
      */
-    public function url(string $errorMessage = 'validation.url', string $errorMessageExtra = ''): self
+    public function url(string $errorMessage = 'validation.url'): self
     {
-        $this->addRule(new UrlRule($errorMessage, $errorMessageExtra));
+        $this->addRule(new UrlRule($errorMessage));
 
         return $this;
     }
@@ -189,5 +193,27 @@ class CustomValidator implements Validator
     public function getTyped(string $value): mixed
     {
         return $value;
+    }
+
+    /**
+     * Get the error message key for required validation.
+     *
+     * @return string The error message key
+     */
+    public function getRequiredErrorMessage(): string
+    {
+        return $this->requiredErrorMessage;
+    }
+
+    /**
+     * Get the error parameters for required validation.
+     *
+     * @param string $fieldName The name of the field being validated
+     *
+     * @return array<string, string> The error parameters
+     */
+    public function getRequiredErrorParams(string $fieldName): array
+    {
+        return ['field_name' => $fieldName];
     }
 }

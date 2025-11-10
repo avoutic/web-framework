@@ -139,7 +139,11 @@ class InputValidationService
         {
             if ($required)
             {
-                $this->registerError($field, 'validation.required', ['field_name' => $validator->getName()]);
+                $this->registerError(
+                    $field,
+                    $validator->getRequiredErrorMessage(),
+                    $validator->getRequiredErrorParams($validator->getName()),
+                );
 
                 return;
             }

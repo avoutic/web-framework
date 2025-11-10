@@ -25,7 +25,6 @@ class UrlRule implements ValidationRule
      */
     public function __construct(
         private string $errorMessage = 'validation.url',
-        private string $errorMessageExtra = '',
     ) {}
 
     /**
@@ -48,16 +47,6 @@ class UrlRule implements ValidationRule
     public function getErrorMessage(): string
     {
         return $this->errorMessage;
-    }
-
-    /**
-     * Get any extra error message for this rule.
-     *
-     * @return string The extra error message (empty in this case)
-     */
-    public function getErrorExtraMessage(): string
-    {
-        return $this->errorMessageExtra;
     }
 
     /**
