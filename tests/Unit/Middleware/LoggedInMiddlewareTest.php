@@ -6,7 +6,7 @@ use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Server\RequestHandlerInterface;
-use Slim\Exception\HttpForbiddenException;
+use Slim\Exception\HttpUnauthorizedException;
 use WebFramework\Middleware\LoggedInMiddleware;
 
 /**
@@ -53,7 +53,7 @@ final class LoggedInMiddlewareTest extends Unit
 
         verify(function () use ($middleware, $request, $handler) {
             $middleware->process($request, $handler);
-        })->callableThrows(HttpForbiddenException::class);
+        })->callableThrows(HttpUnauthorizedException::class);
     }
 
     public function testPassIfUserIsAuthenticated()

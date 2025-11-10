@@ -15,7 +15,7 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Slim\Exception\HttpForbiddenException;
+use Slim\Exception\HttpUnauthorizedException;
 
 /**
  * Middleware to check if there is an authenticated user.
@@ -35,7 +35,7 @@ class LoggedInMiddleware implements MiddlewareInterface
 
         if (!$isAuthenticated)
         {
-            throw new HttpForbiddenException($request);
+            throw new HttpUnauthorizedException($request);
         }
 
         return $handler->handle($request);
