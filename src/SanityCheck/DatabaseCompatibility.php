@@ -107,7 +107,7 @@ class DatabaseCompatibility extends SanityCheckBase
                 $this->addOutput(
                     '   Pending framework migrations detected'.PHP_EOL.
                     "   {$frameworkPending} framework migration(s) need to be applied.".PHP_EOL.
-                    '   Please run "php Framework db:migrate --framework" to apply them.'.PHP_EOL
+                    '   Please run "php framework db:migrate --framework" to apply them.'.PHP_EOL
                 );
 
                 return false;
@@ -119,7 +119,7 @@ class DatabaseCompatibility extends SanityCheckBase
                 $this->addOutput(
                     '   Pending app migrations detected'.PHP_EOL.
                     "   {$appPending} app migration(s) need to be applied.".PHP_EOL.
-                    '   Please run "php Framework db:migrate" to apply them.'.PHP_EOL
+                    '   Please run "php framework db:migrate" to apply them.'.PHP_EOL
                 );
 
                 return false;
@@ -146,7 +146,7 @@ class DatabaseCompatibility extends SanityCheckBase
      */
     public function performChecks(): bool
     {
-        if (!$this->database instanceof NullDatabase || !$this->checkDb)
+        if ($this->database instanceof NullDatabase || !$this->checkDb)
         {
             return true;
         }
