@@ -15,32 +15,52 @@ use Psr\Http\Message\ResponseInterface;
 use Slim\Http\Response;
 use Slim\Http\ServerRequest as Request;
 use WebFramework\Config\ConfigService;
-use WebFramework\Exception\CodeVerificationException;
+use WebFramework\Exception\ValidationException;
 use WebFramework\Http\ResponseEmitter;
+use WebFramework\Presentation\MessageService;
+use WebFramework\Presentation\RenderService;
+use WebFramework\Repository\UserRepository;
+use WebFramework\Security\Extension\ResetPasswordExtensionInterface;
 use WebFramework\Security\ResetPasswordService;
+use WebFramework\Support\UuidProvider;
+use WebFramework\Validation\InputValidationService;
+use WebFramework\Validation\Validator\EmailValidator;
+use WebFramework\Validation\Validator\UsernameValidator;
 
 /**
  * Class ResetPassword.
  *
- * This action handles the password reset process.
+ * This action handles the process of initiating a password reset.
  */
 class ResetPassword
 {
     /**
      * ResetPassword constructor.
      *
-     * @param ConfigService        $configService        The configuration service
-     * @param ResponseEmitter      $responseEmitter      The response emitter
-     * @param ResetPasswordService $resetPasswordService The reset password service
+     * @param ConfigService          $configService          The configuration service
+     * @param InputValidationService $inputValidationService The input validation service
+     * @param MessageService         $messageService         The message service
+     * @param RenderService          $renderer               The render service
+     * @param ResponseEmitter        $responseEmitter        The response emitter
+     * @param ResetPasswordService   $resetPasswordService   The reset password service
+     * @param UserRepository         $userRepository         The user repository
+     * @param UuidProvider           $uuidProvider           The UUID provider
      */
     public function __construct(
-        protected ConfigService $configService,
-        protected ResponseEmitter $responseEmitter,
-        protected ResetPasswordService $resetPasswordService,
+        private ConfigService $configService,
+        private InputValidationService $inputValidationService,
+        private MessageService $messageService,
+        private RenderService $renderer,
+        private ResponseEmitter $responseEmitter,
+        private ResetPasswordExtensionInterface $resetPasswordExtension,
+        private ResetPasswordService $resetPasswordService,
+        private UserRepository $userRepository,
+        private UuidProvider $uuidProvider,
+        private string $templateName,
     ) {}
 
     /**
-     * Handle the password reset request.
+     * Handle the reset password request.
      *
      * @param Request               $request   The current request
      * @param Response              $response  The response object
@@ -48,34 +68,67 @@ class ResetPassword
      *
      * @return ResponseInterface The response
      *
-     * @throws CodeVerificationException If the verification code is invalid or expired
+     * @throws ValidationException If the input validation fails
      *
+     * @uses config authenticator.unique_identifier
      * @uses config actions.login.location
-     * @uses config actions.forgot_password.location
      */
     public function __invoke(Request $request, Response $response, array $routeArgs): ResponseInterface
     {
+        $params = $this->resetPasswordExtension->getCustomParams($request);
+
+        $csrfPassed = $request->getAttribute('passed_csrf', false);
+
+        if (!$csrfPassed)
+        {
+            return $this->renderer->render($request, $response, $this->templateName, $params);
+        }
+
+        $uniqueIdentifier = $this->configService->get('authenticator.unique_identifier');
+        $validator = ($uniqueIdentifier === 'email') ? new EmailValidator('username') : new UsernameValidator();
+
         try
         {
-            $this->resetPasswordService->handleData($request, $request->getParam('guid', ''));
-
-            // Redirect to main screen
+            // Validate input
             //
-            return $this->responseEmitter->buildRedirect(
-                $this->configService->get('actions.login.location'),
-                [],
-                'success',
-                'reset_password.success',
+            $filtered = $this->inputValidationService->validate(
+                ['username' => $validator->required()],
+                $request->getParams(),
             );
+
+            if ($this->resetPasswordExtension->customValueCheck($request))
+            {
+                // Retrieve user
+                //
+                $user = $this->userRepository->getUserByUsername($filtered['username']);
+
+                if ($user === null)
+                {
+                    // Don't reveal if user exists - still redirect to verify page
+                    // but without a valid GUID, verification will fail gracefully
+                    $guid = $this->uuidProvider->generate();
+                }
+                else
+                {
+                    $guid = $this->resetPasswordService->sendPasswordResetMail($user);
+                }
+
+                return $this->responseEmitter->buildQueryRedirect(
+                    $this->configService->get('actions.verify.location'),
+                    [],
+                    [
+                        'guid' => $guid,
+                    ],
+                    'success',
+                    'reset_password.reset_link_mailed',
+                );
+            }
         }
-        catch (CodeVerificationException $e)
+        catch (ValidationException $e)
         {
-            return $this->responseEmitter->buildRedirect(
-                $this->configService->get('actions.reset_password.location'),
-                [],
-                'error',
-                'verify.code_expired',
-            );
+            $this->messageService->addErrors($e->getErrors());
         }
+
+        return $this->renderer->render($request, $response, $this->templateName, $params);
     }
 }

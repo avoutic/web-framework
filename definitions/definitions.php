@@ -69,7 +69,7 @@ return [
         ->constructorParameter('templateName', DI\get('actions.change_email.template_name')),
     Actions\ChangePassword::class => DI\autowire()
         ->constructorParameter('templateName', DI\get('actions.change_password.template_name')),
-    Actions\ForgotPassword::class => DI\autowire()
+    Actions\ResetPassword::class => DI\autowire()
         ->constructorParameter('templateName', DI\get('actions.reset_password.template_name')),
     Actions\Verify::class => DI\autowire()
         ->constructorParameter('templateConfig', DI\get('actions.verify.templates')),

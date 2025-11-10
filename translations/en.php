@@ -24,9 +24,6 @@ return [
         'weak' => 'New password is too weak',
         'weak_extra' => 'Use at least 8 characters.',
     ],
-    'forgot_password' => [
-        'reset_link_mailed' => 'Reset link mailed to registered email account',
-    ],
     'generic' => [
         'csrf_missing' => 'CSRF token is missing',
     ],
@@ -55,6 +52,8 @@ return [
         'weak_password_extra' => 'Use at least 8 characters.',
     ],
     'reset_password' => [
+        'reset_link_mailed' => 'Password reset link mailed to registered email account',
+        'reset_link_mailed_extra' => 'A password reset link has been sent to your registered email address. Please check your inbox and follow the instructions.',
         'success' => 'Password reset',
         'success_extra' => 'You will receive a mail with your new password',
     ],

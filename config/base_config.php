@@ -64,9 +64,9 @@ return [
             'template_name' => 'Login.latte',       // Template name for login page
         ],
         'reset_password' => [
-            'location' => '/forgot-password',    // Location of the forgot password page
-            'after_verify' => '/reset-password', // Location of the reset password page
-            'template_name' => 'ForgotPassword.latte', // Template name for forgot password page
+            'location' => '/reset-password',            // Location of the reset password page
+            'after_verify' => '/reset-password/verify', // Location of the reset password page
+            'template_name' => 'ResetPassword.latte',   // Template name for reset password page
         ],
         'change_password' => [
             'location' => '/change-password',          // Location of the change password page

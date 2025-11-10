@@ -141,9 +141,9 @@ function extractTranslationKeys(string $content): array
                 continue;
             }
 
-            // Known translation categories: authenticator, change_email, change_password, forgot_password,
+            // Known translation categories: authenticator, change_email, change_password,
             // generic, login, register, reset_password, upload, validation, verify
-            $knownCategories = ['authenticator', 'change_email', 'change_password', 'forgot_password', 'generic', 'login', 'register', 'reset_password', 'upload', 'validation', 'verify'];
+            $knownCategories = ['authenticator', 'change_email', 'change_password', 'generic', 'login', 'register', 'reset_password', 'upload', 'validation', 'verify'];
             $parts = explode('.', $key);
             if (count($parts) === 2 && in_array($parts[0], $knownCategories, true))
             {
@@ -178,7 +178,7 @@ function extractTranslationKeys(string $content): array
             $parts = explode('.', $key);
             if (count($parts) === 2)
             {
-                $knownCategories = ['authenticator', 'change_email', 'change_password', 'forgot_password', 'generic', 'login', 'register', 'reset_password', 'upload', 'validation', 'verify'];
+                $knownCategories = ['authenticator', 'change_email', 'change_password', 'generic', 'login', 'register', 'reset_password', 'upload', 'validation', 'verify'];
                 if (in_array($parts[0], $knownCategories, true))
                 {
                     $keys[] = $key;

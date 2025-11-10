@@ -53,13 +53,16 @@ class Unauthenticated implements RouteSet
 
         $app->get('/logoff', \WebFramework\Actions\Logoff::class);
 
-        $app->get('/forgot-password', \WebFramework\Actions\ForgotPassword::class);
-        $app->post('/forgot-password', \WebFramework\Actions\ForgotPassword::class);
         $app->get('/change-email', \WebFramework\Actions\ChangeEmail::class);
         $app->post('/change-email', \WebFramework\Actions\ChangeEmail::class);
         $app->get('/change-email/verify', \WebFramework\Actions\ChangeEmailVerify::class);
 
         $app->get('/reset-password', \WebFramework\Actions\ResetPassword::class);
+        $app->post('/reset-password', \WebFramework\Actions\ResetPassword::class);
+        $app->get('/reset-password/verify', \WebFramework\Actions\ResetPasswordVerify::class);
+
+        $app->get('/verify', \WebFramework\Actions\Verify::class);
+        $app->post('/verify', \WebFramework\Actions\Verify::class);
 
         $app->get('/verify', \WebFramework\Actions\Verify::class);
         $app->post('/verify', \WebFramework\Actions\Verify::class);

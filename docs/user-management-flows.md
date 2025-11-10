@@ -133,9 +133,9 @@ The login flow handles user authentication, including cases where users need to 
 
 The password reset flow allows users to reset forgotten passwords via email verification.
 
-### Step 1: ForgotPassword Action (`/forgot-password`)
+### Step 1: ResetPassword Action (`/reset-password`)
 
-**Action**: `WebFramework\Actions\ForgotPassword`
+**Action**: `WebFramework\Actions\ResetPassword`
 
 **Process**:
 1. User submits username/email
@@ -153,7 +153,7 @@ The password reset flow allows users to reset forgotten passwords via email veri
 - `customValueCheck()`: Perform additional validation checks
 
 **Configuration**:
-- `actions.reset_password.reset_password_page`: Page to redirect after verification
+- `actions.reset_password.after_verify_page`: Page to redirect after verification
 - `actions.verify.location`: Location of verification page
 
 ### Step 2: Verify Action (`/verify`)
@@ -164,16 +164,16 @@ The password reset flow allows users to reset forgotten passwords via email veri
 1. User enters verification code from email
 2. Verifies code via `UserCodeService::verifyCodeByGuid()`
 3. Marks code as used
-4. Redirects to ResetPassword with `guid` parameter
+4. Redirects to ResetPasswordVerify with `guid` parameter
 
 **Required Parameters**:
 - `guid`: GUID from password reset email
 - `flow`: Must be 'reset_password'
 - `code`: Verification code from email
 
-### Step 3: ResetPassword Action (`/reset-password`)
+### Step 3: ResetPasswordVerify Action (`/reset-password-verify`)
 
-**Action**: `WebFramework\Actions\ResetPassword`
+**Action**: `WebFramework\Actions\ResetPasswordVerify`
 
 **Process**:
 1. Calls `ResetPasswordService::handleData()` with `guid`
