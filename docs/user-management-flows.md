@@ -90,7 +90,7 @@ The login flow handles user authentication, including cases where users need to 
 4. If user not verified → throws `UserVerificationRequiredException`
 5. Calls `LoginExtensionInterface::customValueCheck()` for custom validation
 6. If checks pass, authenticates user and redirects and dispatches `UserLoggedIn` event
-7. If user not verified, generates verification code entry and sends verification email with flow='login' and return_page/return_query
+7. If user not verified, generates verification code entry and sends verification email
 8. Redirects to Verify page with `guid` parameter
 
 **Extension Hooks**:
@@ -143,10 +143,10 @@ The password reset flow allows users to reset forgotten passwords via email veri
 3. Calls `ResetPasswordExtensionInterface::customValueCheck()` for custom validation
 4. Finds user via `UserRepository::getUserByUsername()`
 5. Calls `ResetPasswordService::sendPasswordResetMail()`
-6. Generates verification code entry in database with flow='reset_password'
+6. Generates verification code entry in database with action='reset_password'
 7. Increments security iterator to invalidate old reset links
 8. Sends password reset email with code
-9. Redirects to Verify page with `flow=reset_password` and `guid` parameter
+9. Redirects to Verify page with `guid` parameter
 
 **Extension Hooks**:
 - `getCustomParams()`: Add custom template parameters
@@ -199,7 +199,7 @@ The change email flow allows authenticated users to change their email address w
 2. Validates email format and uniqueness
 3. Calls `ChangeEmailExtensionInterface::customValueCheck()` for custom validation
 4. Calls `ChangeEmailService::sendChangeEmailVerify()`
-5. Generates verification code entry in database with flow='change_email'
+5. Generates verification code entry in database with action='change_email'
 6. Increments security iterator
 7. Sends verification email to **new** email address with code
 8. Redirects to Verify page with `guid` parameter
