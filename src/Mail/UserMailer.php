@@ -100,11 +100,13 @@ class UserMailer
         $this->logger->debug('Sending password reset email', ['to' => $to]);
 
         $templateId = $this->templateOverrides['password-reset'] ?? 'password-reset';
-        $resetUrl = $params['reset_url'];
+        $code = $params['code'];
         $username = $params['user']['username'];
+        $validity = $params['validity'];
 
         $vars = [
-            'action_url' => $resetUrl,
+            'code' => $code,
+            'validity' => $validity,
             'username' => $username,
         ];
 
