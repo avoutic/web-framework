@@ -80,7 +80,7 @@ return [
         ],
         'register' => [
             'location' => '/register',            // Location of the register page
-            'after_verify' => '/register-verify', // Location to redirect to after verifying
+            'after_verify' => '/register/verify', // Location to redirect to after verifying
             'return_page' => '/',                 // Default page to redirect to after verifying
             'template_name' => 'Register.latte',  // Template name for register page
         ],
