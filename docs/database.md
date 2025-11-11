@@ -2,6 +2,8 @@
 
 This document provides a guide for developers on how to use the database in the WebFramework. It covers the basic operations, including executing queries, inserting data, and managing transactions.
 
+In most cases, you should use [Entities and Repositories](./entities-and-repositories.md) to interact with the database. But there are multiple cases where you might want to interact with the database directly.
+
 ## Overview
 
 The WebFramework uses the `Database` interface to define the contract for database operations. The default implementation is `MysqliDatabase`, which uses the MySQLi extension to interact with a MySQL database.
@@ -15,6 +17,8 @@ To execute a query, you use the `query()` method. This method is used for execut
 ### Example: Executing a Query
 
 ~~~php
+<?php
+
 use WebFramework\Database\Database;
 
 class ExampleService
@@ -23,14 +27,16 @@ class ExampleService
         private Database $database,
     ) {}
 
-    public function getUsers(): array
+    public function listActiveUsers(): void
     {
         $query = 'SELECT * FROM users WHERE active = ?';
         $params = [1];
 
         $result = $this->database->query($query, $params);
 
-        return $result->fetchAll();
+        foreach ($result as $row) {
+            echo $row['username'] . ' - ' . $row['email'] . PHP_EOL;
+        }
     }
 }
 ~~~
@@ -44,6 +50,8 @@ To insert data into the database, you use the `insertQuery()` method. This metho
 ### Example: Inserting Data
 
 ~~~php
+<?php
+
 use WebFramework\Database\Database;
 
 class UserService
@@ -71,6 +79,8 @@ Transactions are used to ensure that a series of database operations are execute
 ### Example: Using Transactions
 
 ~~~php
+<?php
+
 use WebFramework\Database\Database;
 
 class OrderService

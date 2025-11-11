@@ -38,6 +38,8 @@ In your configuration file (e.g., `config.php`), specify the directories where t
 For available configuration options and default settings, see `config/base_config.php`.
 
 ~~~php
+<?php
+
 return [
     // Other configuration settings...
 
@@ -59,6 +61,8 @@ The WebFramework provides helper functions `__()` and `__C()` to retrieve transl
 #### Example Usage
 
 ~~~php
+<?php
+
 // Translate a specific tag within a category
 $message = __('notifications', 'hello_world');
 
@@ -79,6 +83,8 @@ When adding a message, you can specify a translation key instead of a plain text
 #### Example
 
 ~~~php
+<?php
+
 use WebFramework\Presentation\MessageService;
 
 class ExampleAction

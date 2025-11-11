@@ -9,6 +9,8 @@ The WebFramework provides a flexible mailing system that supports both synchrono
 The `MailService` interface defines the contract for mail service implementations. It provides two methods for sending emails:
 
 ~~~php
+<?php
+
 interface MailService
 {
     public function sendRawMail(?string $from, string $recipient, string $title, string $message): bool|string;
@@ -21,6 +23,8 @@ interface MailService
 The `MailBackend` interface has the same contract as `MailService` but represents the actual email sending backend (e.g., Postmark, SMTP). This interface is used by queue handlers to send emails after they've been queued.
 
 ~~~php
+<?php
+
 interface MailBackend
 {
     public function sendRawMail(?string $from, string $recipient, string $title, string $message): bool|string;
@@ -47,6 +51,8 @@ When using `QueuedMailService`, emails are dispatched to the queue system and pr
 To send emails synchronously (immediately), bind `MailService` to your backend implementation:
 
 ~~~php
+<?php
+
 use WebFramework\Mail\MailService;
 use YourModule\PostmarkMailService;
 
@@ -60,6 +66,8 @@ return [
 To send emails asynchronously (queued), configure both `MailService` and `MailBackend`:
 
 ~~~php
+<?php
+
 use WebFramework\Mail\MailService;
 use WebFramework\Mail\MailBackend;
 use WebFramework\Mail\QueuedMailService;
@@ -87,6 +95,8 @@ php scripts/framework.php queue:worker default
 By default, the mail job handlers (`RawMailJobHandler` and `TemplateMailJobHandler`) are automatically registered when the `QueueService` is instantiated in the `definitions.php` file. If you want to register your own job handlers, you can do so by registering them with the `QueueService` in your application definitions. Use DI\decorate to register your own job handlers in addition to the default ones, use DI\autowire to register your own job handlers and override the default ones.
 
 ~~~php
+<?php
+
 use WebFramework\Queue\QueueService;
 
 return [
@@ -105,6 +115,8 @@ return [
 Inject `MailService` into your classes via constructor injection:
 
 ~~~php
+<?php
+
 use WebFramework\Mail\MailService;
 
 class MyService
@@ -130,6 +142,8 @@ class MyService
 Use `sendRawMail()` to send emails with plain text or HTML content:
 
 ~~~php
+<?php
+
 $result = $this->mailService->sendRawMail(
     'sender@example.com',  // From address (null to use default)
     'recipient@example.com', // Recipient
@@ -148,6 +162,8 @@ if ($result !== true) {
 Use `sendTemplateMail()` to send emails using templates configured in your email provider:
 
 ~~~php
+<?php
+
 $result = $this->mailService->sendTemplateMail(
     'welcome-email',              // Template ID
     'sender@example.com',         // From address (null to use default)
@@ -169,6 +185,8 @@ if ($result !== true) {
 The framework provides a `UserMailer` helper class for common user-related emails:
 
 ~~~php
+<?php
+
 use WebFramework\Mail\UserMailer;
 
 class MyService
@@ -202,6 +220,8 @@ You can override default template IDs used by `UserMailer` in your configuration
 For available configuration options and default settings, see `config/base_config.php`.
 
 ~~~php
+<?php
+
 return [
     'user_mailer' => [
         'template_overrides' => [
@@ -221,6 +241,8 @@ Configure the default sender email address:
 For available configuration options and default settings, see `config/base_config.php`.
 
 ~~~php
+<?php
+
 return [
     'sender_core' => [
         'default_sender' => 'noreply@example.com',
@@ -237,6 +259,8 @@ Both `sendRawMail()` and `sendTemplateMail()` return:
 Always check the return value:
 
 ~~~php
+<?php
+
 $result = $this->mailService->sendRawMail(null, $email, $subject, $body);
 
 if ($result !== true) {

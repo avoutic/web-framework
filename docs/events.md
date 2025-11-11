@@ -18,6 +18,8 @@ The `EventService` is the central manager for all events in the application. It 
 Events are simple data containers that implement the `Event` interface. They should contain only the data needed for the event, not the logic:
 
 ~~~php
+<?php
+
 interface Event {}
 ~~~
 
@@ -26,6 +28,8 @@ interface Event {}
 Event listeners implement the `EventListener` interface and contain the actual logic for handling events:
 
 ~~~php
+<?php
+
 interface EventListener
 {
     public function handle(Event $event): bool;
@@ -37,6 +41,8 @@ interface EventListener
 The `QueuedEventListener` abstract class provides a base for event listeners that should be processed asynchronously:
 
 ~~~php
+<?php
+
 abstract class QueuedEventListener implements EventListener
 {
     protected string $queueName = 'default';
@@ -55,6 +61,8 @@ abstract class QueuedEventListener implements EventListener
 An Event should only contain data and no logic. All logic related to an Event should be in a separate EventListener.
 
 ~~~php
+<?php
+
 class UserRegisteredEvent implements Event
 {
     public function __construct(
@@ -77,6 +85,8 @@ class UserRegisteredEvent implements Event
 ### Creating a Synchronous Event Listener
 
 ~~~php
+<?php
+
 /**
  * @implements EventListener<UserRegisteredEvent>
  */
@@ -97,6 +107,8 @@ class SendWelcomeEmailListener implements EventListener
 ### Creating a Queued Event Listener
 
 ~~~php
+<?php
+
 /**
  * @extends QueuedEventListener<UserRegisteredEvent>
  */
@@ -119,6 +131,8 @@ class ProcessUserDataListener extends QueuedEventListener
 ### Registering Events and Listeners
 
 ~~~php
+<?php
+
 // Register an event with its listeners
 $eventService->registerEvent(
     UserRegisteredEvent::class,
@@ -138,6 +152,8 @@ $eventService->addListener(
 ### Dispatching Events
 
 ~~~php
+<?php
+
 $event = new UserRegisteredEvent(123, 'user@example.com');
 $eventService->dispatch($event);
 ~~~
@@ -151,6 +167,8 @@ Here are real examples from the WebFramework showing how events are used in prac
 When a user successfully logs in, the framework dispatches a `UserLoggedIn` event:
 
 ~~~php
+<?php
+
 $this->authenticationService->authenticate($user);
 $this->eventService->dispatch(new UserLoggedIn($user));
 ~~~
@@ -160,6 +178,8 @@ $this->eventService->dispatch(new UserLoggedIn($user));
 When a user changes their password, a `UserPasswordChanged` event is dispatched:
 
 ~~~php
+<?php
+
 $user->setSolidPassword($newHash);
 $this->userRepository->save($user);
 $this->eventService->dispatch(new UserPasswordChanged($user));
@@ -170,6 +190,8 @@ $this->eventService->dispatch(new UserPasswordChanged($user));
 When a user's email address is changed, a `UserEmailChanged` event is dispatched:
 
 ~~~php
+<?php
+
 $user->setEmail($email);
 $this->userRepository->save($user);
 $this->eventService->dispatch(new UserEmailChanged($user));
@@ -180,6 +202,8 @@ $this->eventService->dispatch(new UserEmailChanged($user));
 When a user completes email verification, a `UserVerified` event is dispatched:
 
 ~~~php
+<?php
+
 $user->setVerified();
 $this->userRepository->save($user);
 $this->eventService->dispatch(new UserVerified($user));
@@ -192,6 +216,8 @@ To use queued event listeners, you must:
 1. **Register the EventJobHandler** in your application configuration:
 
 ~~~php
+<?php
+
 $queueService->registerJobHandler(EventJob::class, EventJobHandler::class);
 ~~~
 
@@ -204,6 +230,8 @@ php scripts/framework.php queue:worker
 3. **Configure queue names** in your listeners:
 
 ~~~php
+<?php
+
 class HeavyProcessingListener extends QueuedEventListener
 {
     protected string $queueName = 'heavy-processing';
@@ -237,6 +265,8 @@ $eventService->dispatch(new UnregisteredEvent());
 If a listener throws an exception, it will bubble up and stop processing of subsequent listeners. Wrap listener logic in try-catch blocks for graceful error handling:
 
 ~~~php
+<?php
+
 public function handle(Event $event): bool
 {
     try {
@@ -276,6 +306,8 @@ For queued events, ensure you have:
 ### Testing Event Dispatch
 
 ~~~php
+<?php
+
 // Mock the EventService to verify events are dispatched
 $eventService = $this->createMock(EventService::class);
 $eventService->expects($this->once())
@@ -286,6 +318,8 @@ $eventService->expects($this->once())
 ### Testing Event Listeners
 
 ~~~php
+<?php
+
 public function testUserLoggedInListener()
 {
     $user = new User();

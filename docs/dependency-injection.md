@@ -28,6 +28,8 @@ If the file starts with a `?`, it will be ignored if it does not exist. This is 
 ### Example Configuration
 
 ~~~php
+<?php
+
 return [
     // Other configuration settings...
 
@@ -50,6 +52,8 @@ To override a class like `Instrumentation`, you need to provide a new implementa
 Suppose you want to replace the default `Instrumentation` implementation with a custom one. You can do this by adding the following entry to your definition file:
 
 ~~~php
+<?php
+
 use App\Instrumentation\CustomInstrumentation;
 use WebFramework\Diagnostics\Instrumentation;
 

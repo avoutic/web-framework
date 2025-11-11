@@ -64,12 +64,12 @@ For available configuration options and default settings, see `config/base_confi
 ### Example Configuration
 
 ~~~php
+<?php
+
 return [
     // Other configuration settings...
 
     'sanity_check_modules' => [
-        \WebFramework\SanityCheck\RequiredCoreConfig::class => [],
-        \WebFramework\SanityCheck\DatabaseCompatibility::class => [],
         \App\SanityCheck\CustomSanityCheck::class => [],
     ],
 ];
@@ -79,12 +79,12 @@ return [
 
 Here is a description of the existing sanity check modules and their configuration:
 
-### RequiredCoreConfig
+### RequiredCoreConfig (Built-in)
 
 - **Purpose**: Checks for required core configuration options.
 - **Configuration**: No additional configuration is required.
 
-### DatabaseCompatibility
+### DatabaseCompatibility (Built-in)
 
 - **Purpose**: Checks for database compatibility, including version checks.
 - **Configuration**: No additional configuration is required.
@@ -97,8 +97,14 @@ Here is a description of the existing sanity check modules and their configurati
 #### Example
 
 ~~~php
-\WebFramework\SanityCheck\RequiredAuth::class => [
-    'auth_file_1.php',
-    'auth_file_2.php',
-],
+<?php
+
+return [
+    'sanity_check_modules' => [
+        \WebFramework\SanityCheck\RequiredAuth::class => [
+            'auth_file_1.php',
+            'auth_file_2.php',
+        ],
+    ],
+];
 ~~~

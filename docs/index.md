@@ -1,4 +1,8 @@
-Welcome to the WebFramework documentation. WebFramework is a companion framework to use on top of the Slim Framework, designed to provide a cohesive set of services around database management, ORM, caching, authentication, middleware, templating, translations, instrumentation, and more.
+# WebFramework Documentation
+
+Welcome to the WebFramework documentation. WebFramework is a lightweight, secure-by-default PHP microframework built on top of the Slim Framework. It provides a cohesive set of services around database management, ORM, caching, authentication, middleware, templating, translations, instrumentation, and more – giving you Laravel-like features without the bloat.
+
+Perfect for developers who love Slim's simplicity but need full-featured components for building modern PHP applications and REST APIs.
 
 ## Installation
 

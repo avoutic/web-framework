@@ -1,9 +1,21 @@
 {
     "name": "avoutic/web-framework",
-    "description": "web-framework is a secure-by-default PHP framework for quickly making PHP sites and APIs",
+    "description": "A lightweight, secure-by-default PHP microframework built on Slim – providing Laravel-like features (ORM, authentication, migrations, caching) without the bloat. Perfect for building REST APIs and small-to-medium PHP applications.",
     "type": "library",
     "keywords": [
         "framework",
+        "php-framework",
+        "microframework",
+        "slim",
+        "slim-framework",
+        "laravel-alternative",
+        "orm",
+        "authentication",
+        "migrations",
+        "psr-7",
+        "psr-15",
+        "rest-api",
+        "api-framework",
         "security"
     ],
     "homepage": "https://web-framework.com",

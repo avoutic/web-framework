@@ -16,6 +16,7 @@ To use caching in your application, you need to inject the `Cache` service and u
 ### Example Usage
 
 ~~~php
+<?php
 use WebFramework\Cache\Cache;
 
 class ExampleService
@@ -56,6 +57,8 @@ To enable `RedisCache` in your application, you first need to include the `web-f
 The easiest way to do this is to add the following entry to your `definition_files` array in your `config.php` file, before your application definition file:
 
 ~~~php
+<?php
+
 return [
     'definition_files' => [
         '/vendor/avoutic/web-framework/definitions/definitions.php',
@@ -68,6 +71,8 @@ return [
 Or you can add the following entry to your application definition file:
 
 ~~~php
+<?php
+
 return [
     Cache::class => DI\autowire(\WebFramework\Redis\RedisCache::class),
 ];
@@ -80,6 +85,8 @@ To provide an alternative caching implementation, you need to create a class tha
 ### Example Custom Cache Implementation
 
 ~~~php
+<?php
+
 namespace App\Cache;
 
 use WebFramework\Cache\Cache;
@@ -128,6 +135,8 @@ class CustomCache implements Cache
 Once you have implemented your custom cache, you need to register it in your [dependency injection container](dependency-injection.md).
 
 ~~~php
+<?php
+
 use App\Cache\CustomCache;
 use WebFramework\Cache\Cache;
 

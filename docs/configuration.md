@@ -52,6 +52,10 @@ As `base_config.php` is the base configuration file for the WebFramework, it sho
 #### Example
 
 ~~~php
+<?php
+
+// Rest of the setup code...
+
 $taskRunner = new TaskRunner('/path/to/app');
 $taskRunner->setConfigFiles([
     '/config/base_config.php',
@@ -76,6 +80,10 @@ The `ConfigBuilder` class is actually responsible for building and managing the 
 ### Example Usage
 
 ~~~php
+<?php
+
+// Rest of the setup code...
+
 $configBuilder = new ConfigBuilder('/path/to/app');
 $finalConfig = $configBuilder->buildConfig([
     '/config/default.php',
@@ -96,16 +104,10 @@ Configuration files are PHP files that return an associative array. Each file ca
 <?php
 
 return [
-    'database' => [
-        'host' => 'localhost',
-        'port' => 3306,
-        'username' => 'root',
-        'password' => '',
-        'dbname' => 'webframework',
-    ],
-    'app' => [
-        'debug' => true,
-        'timezone' => 'UTC',
+    'service' => [
+        'host' => env('SERVICE_HOST', 'localhost'),
+        'username' => env('SERVICE_USER', 'root'),
+        'password' => env('SERVICE_PASSWORD', ''),
     ],
 ];
 ~~~
@@ -129,6 +131,8 @@ The `ConfigService` class provides access to configuration values.
 In a typical application, you would use dependency injection to access the `ConfigService`. Here's an example of how you might do this in a class:
 
 ~~~php
+<?php
+
 use WebFramework\Config\ConfigService;
 
 class ExampleClass
@@ -137,27 +141,27 @@ class ExampleClass
         private ConfigService $configService,
     ) {}
 
-    public function getDatabaseHost(): string
+    public function getServiceHost(): string
     {
-        return $this->configService->get('database.host');
+        return $this->configService->get('service.host');
     }
 }
 ~~~
 
-In this example, the `ExampleClass` receives the `ConfigService` as a dependency through its constructor. The `getDatabaseHost()` method then uses the `ConfigService` to retrieve the `host` value from the `database` configuration.
+In this example, the `ExampleClass` receives the `ConfigService` as a dependency through its constructor. The `getServiceHost()` method then uses the `ConfigService` to retrieve the `host` value from the `service` configuration.
 
 ## Environment Variable Support
 
 The framework supports environment variables for common configuration values. You can use `.env` files to set these values:
 
-### Database Configuration
+### Service Configuration
+
+Providing environment variables for the service configuration just defined in the above configuration file.
 
 ~~~
-DB_HOST=localhost
-DB_PORT=3306
-DB_USER=myuser
-DB_PASSWORD=mypassword
-DB_NAME=mydatabase
+SERVICE_HOST=localhost
+SERVICE_USER=myuser
+SERVICE_PASSWORD=mypassword
 ~~~
 
 ### Application Settings
@@ -191,8 +195,6 @@ return [
     'database_database' => env('DB_NAME', ''),
 ];
 ~~~
-
-This maintains backwards compatibility while providing the enhanced type-safe environment variable access.
 
 ### Precedence Order
 

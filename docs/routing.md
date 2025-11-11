@@ -12,7 +12,7 @@ In your `config/config.php` file, specify the route classes to load:
 
 For available configuration options and default settings, see `config/base_config.php`.
 
-~~~
+~~~php
 <?php
 
 return [
@@ -33,7 +33,7 @@ Route classes should implement the `RouteSet` interface and are usually placed i
 
 Here's an example of a route class for unauthenticated routes using the basic WebFramework actions for authentication. You don't need to use these actions, but they provide a good starting point.
 
-~~~
+~~~php
 <?php
 
 namespace App\Routes;
@@ -85,7 +85,7 @@ For authenticated routes, you can use the `WebFramework\Middleware\LoggedInMiddl
 
 You can then create a route group for authenticated routes, using the `LoggedInMiddleware` to protect the routes:
 
-~~~
+~~~php
 <?php
 
 namespace App\Routes;

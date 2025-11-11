@@ -13,6 +13,8 @@ The `ResponseEmitter` class provides methods to generate various types of respon
 #### Example: Generating a Redirect Response
 
 ~~~php
+<?php
+
 use WebFramework\Http\ResponseEmitter;
 
 class ExampleAction
@@ -182,6 +184,8 @@ The `ResponseEmitter` service provides methods to build and generate redirect re
 ### Example: Building a Simple Redirect
 
 ~~~php
+<?php
+
 use WebFramework\Http\ResponseEmitter;
 
 class ExampleService
@@ -200,6 +204,8 @@ class ExampleService
 ### Example: Building a Programmatic Redirect
 
 ~~~php
+<?php
+
 use WebFramework\Http\ResponseEmitter;
 
 class ExampleService
@@ -218,6 +224,8 @@ class ExampleService
 ### Example: Building a Redirect with Query Parameters
 
 ~~~php
+<?php
+
 use WebFramework\Http\ResponseEmitter;
 
 class ExampleService

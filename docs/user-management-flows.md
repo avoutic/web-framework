@@ -256,6 +256,8 @@ The change email flow allows authenticated users to change their email address w
 All flows require configuration in `config/config.php`. Key configuration options:
 
 ```php
+<?php
+
 return [
     'actions' => [
         'login' => [
@@ -326,6 +328,8 @@ Each flow has a corresponding extension interface:
 1. **Create your extension class** implementing the appropriate interface:
 
 ```php
+<?php
+
 use WebFramework\Security\Extension\RegisterExtensionInterface;
 use Slim\Http\ServerRequest as Request;
 use WebFramework\Entity\User;
@@ -369,6 +373,8 @@ class MyRegisterExtension implements RegisterExtensionInterface
 2. **Configure in dependency injection** (`definitions/definitions.php`):
 
 ```php
+<?php
+
 return [
     // ... other definitions ...
     Security\Extension\RegisterExtensionInterface::class => DI\autowire(MyRegisterExtension::class),

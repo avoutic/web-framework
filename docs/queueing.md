@@ -19,6 +19,8 @@ The `QueueService` is the central manager for all queues in the application. It 
 The `Queue` interface defines the contract that all queue implementations must follow:
 
 ~~~php
+<?php
+
 interface Queue
 {
     public function dispatch(Job $job, int $delay = 0, int $maxAttempts = 3): void;
@@ -38,6 +40,8 @@ Jobs are simple data containers that implement the `Job` interface. They should 
 All jobs must implement the following methods:
 
 ~~~php
+<?php
+
 interface Job
 {
     public function getJobId(): string;
@@ -53,6 +57,8 @@ The `QueueService` automatically sets the job ID when dispatching. The job name 
 Job handlers implement the `JobHandler` interface and contain the actual logic for processing jobs:
 
 ~~~php
+<?php
+
 interface JobHandler
 {
     public function handle(Job $job): void;
@@ -71,6 +77,8 @@ Common exceptions to throw:
 ### Registering a Queue
 
 ~~~php
+<?php
+
 $queueService->register('email', $emailQueue, true); // true makes it the default queue
 ~~~
 
@@ -79,6 +87,8 @@ $queueService->register('email', $emailQueue, true); // true makes it the defaul
 You can either use public readonly properties or private properties with public getters.
 
 ~~~php
+<?php
+
 class SendEmailJob implements Job
 {
     private string $jobId = '';
@@ -109,6 +119,8 @@ class SendEmailJob implements Job
 ### Creating a Job Handler
 
 ~~~php
+<?php
+
 use WebFramework\Exception\InvalidJobException;
 use WebFramework\Exception\JobExecutionException;
 
@@ -137,12 +149,16 @@ class SendEmailJobHandler implements JobHandler
 ### Registering a Job Handler
 
 ~~~php
+<?php
+
 $queueService->registerJobHandler(SendEmailJob::class, SendEmailJobHandler::class);
 ~~~
 
 ### Dispatching a Job
 
 ~~~php
+<?php
+
 $job = new SendEmailJob('user@example.com', 'Hello', 'Welcome!');
 $queueService->dispatch($job); // Uses default queue
 $queueService->dispatch($job, 'email', 60); // Uses 'email' queue with 60 second delay

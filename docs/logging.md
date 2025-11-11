@@ -11,6 +11,8 @@ The `WebFramework\\Logging\\ChannelManager` resolves loggers by channel name. It
 `WebFramework\\Logging\\LogService` is a convenience wrapper that mirrors the PSR-3 logging methods. You pass the channel name as the first argument and the message/level follows the usual PSR-3 signature:
 
 ~~~php
+<?php
+
 use WebFramework\Logging\LogService;
 
 class InvoiceService
@@ -31,6 +33,8 @@ It provides all the usual PSR-3 logging methods in this way with the channel nam
 To use the default channel in your class, you can just inject `LoggerInterface` and use its methods, as LoggerInterface is mapped to retrieve the default channel in the container:
 
 ~~~php
+<?php
+
 use Psr\Log\LoggerInterface;
 
 class ExampleService
@@ -47,6 +51,8 @@ class ExampleService
 To be able to send messages to other channels, you can inject `LogService` and use its methods:
 
 ~~~php
+<?php
+
 use WebFramework\Logging\LogService;
 
 class ExampleService
@@ -76,6 +82,8 @@ To define the Logger for these (and other) channels, you can override the defini
 Channel definitions live in the dependency injection container. By convention they use the `channels.*` naming scheme. Each definition must return a `Psr\Log\LoggerInterface`. For example:
 
 ```php
+<?php
+
 use Monolog\Handler\StreamHandler;
 use Monolog\Level;
 use Monolog\Logger;
@@ -103,6 +111,8 @@ Once such definitions exist, the `ChannelManager` can resolve the channel by ask
 The effective channels are determined by the `logging.channels` section in your configuration (see `config/base_config.php`). Each entry maps a channel name to a container id or to an inline configuration array:
 
 ```php
+<?php
+
 return [
     'logging' => [
         'channels' => [

@@ -20,25 +20,29 @@ During routing route-specific middleware, such as LoggedInMiddleware or AdminUse
 
 Most applications will use the following configuration:
 
-~~~
-'pre_routing' => [
-    // End of stack
-    ErrorRedirectMiddleware::class,
-    // Start of stack
-],
-'post_routing' => [
-    // End of stack
-    RequestServiceMiddleware::class,
-    SecurityHeadersMiddleware::class,
-    MessageMiddleware::class,
-    JsonParserMiddleware::class,
-    BlacklistMiddleware::class,
-    CsrfValidationMiddleware::class,
-    AuthenticationMiddleware::class,
-    IpMiddleware::class,
-    SessionStartMiddleware::class,
-    // Start of stack
-],
+~~~php
+<?php
+
+return
+    'pre_routing' => [
+        // End of stack
+        ErrorRedirectMiddleware::class,
+        // Start of stack
+    ],
+    'post_routing' => [
+        // End of stack
+        RequestServiceMiddleware::class,
+        SecurityHeadersMiddleware::class,
+        MessageMiddleware::class,
+        JsonParserMiddleware::class,
+        BlacklistMiddleware::class,
+        CsrfValidationMiddleware::class,
+        AuthenticationMiddleware::class,
+        IpMiddleware::class,
+        SessionStartMiddleware::class,
+        // Start of stack
+    ],
+];
 ~~~
 
 In this configuration, `ErrorRedirectMiddleware` is executed first in the `pre_routing` stack, and `SessionStartMiddleware` is executed first in the `post_routing` stack.

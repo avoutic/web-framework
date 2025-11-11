@@ -26,6 +26,8 @@ composer require avoutic/web-framework-mysql
 1. Add the module's definition file to your `config.php`:
 
 ```php
+<?php
+
 return [
     'definition_files' => [
         '../vendor/avoutic/web-framework/definitions/definitions.php',
@@ -74,6 +76,8 @@ composer require avoutic/web-framework-redis
 1. Add the module's definition file to your `config.php`:
 
 ```php
+<?php
+
 return [
     'definition_files' => [
         '../vendor/avoutic/web-framework/definitions/definitions.php',
@@ -135,6 +139,8 @@ composer require avoutic/web-framework-postmark
 1. Add the module's definition file to your `config.php`:
 
 ```php
+<?php
+
 return [
     'definition_files' => [
         '../vendor/avoutic/web-framework/definitions/definitions.php',
@@ -210,6 +216,8 @@ composer require avoutic/web-framework-browserless
 1. Add the module's definition file to your `config.php`:
 
 ```php
+<?php
+
 return [
     'definition_files' => [
         '../vendor/avoutic/web-framework/definitions/definitions.php',
@@ -267,6 +275,8 @@ composer require avoutic/web-framework-sentry
 1. Add the module's definition file to your `config.php`:
 
 ```php
+<?php
+
 return [
     'definition_files' => [
         '../vendor/avoutic/web-framework/definitions/definitions.php',
@@ -317,6 +327,8 @@ composer require avoutic/web-framework-stripe
 1. Add the module's definition file to your `config.php`:
 
 ```php
+<?php
+
 return [
     'definition_files' => [
         '../vendor/avoutic/web-framework/definitions/definitions.php',

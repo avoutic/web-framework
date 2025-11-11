@@ -1,4 +1,4 @@
-# Entity and Repository Pattern
+# Entities and Repositories
 
 This document provides a guide for developers on the Entity and Repository pattern used in the WebFramework. This pattern is used to separate the concerns of data representation and data persistence, making your application more modular and maintainable.
 
@@ -26,6 +26,8 @@ These methods return either a single entity or null:
 
 #### By ID
 ~~~php
+<?php
+
 $user = $userRepository->getObjectById($userId);  // Returns User|null
 ~~~
 
@@ -34,6 +36,8 @@ $user = $userRepository->getObjectById($userId);  // Returns User|null
 This method takes a single filter as an array. If multiple objects are found, the function will throw an exception.
 
 ~~~php
+<?php
+
 $user = $userRepository->getObject(['email' => $email]);  // Returns User|null
 ~~~
 
@@ -53,6 +57,8 @@ To retrieve multiple entities, you can use the `getObjects` method. This method 
 The filter is a key-value pair array where the key is the field name and the value is the value to filter by. Each key-value pair being a filter condition. The key is always a field name and the value is the value to filter by. The value can be a string, a number, boolean, null, or an array for describing an operator other than equals.
 
 ~~~php
+<?php
+
 // Returns EntityCollection<User>
 $users = $userRepository->getObjects(0, 10, [
         'email' => $email,
@@ -69,6 +75,8 @@ You can count the number of entities matching a filter using the `countObjects` 
 
 #### Custom Query
 ~~~php
+<?php
+
 // Returns EntityCollection<User>
 $query = 'SELECT * FROM users WHERE last_login > ?';
 $params = [strtotime('-1 month')];
@@ -89,6 +97,8 @@ $users = $userRepository->getFromQuery($query, $params);
 
 #### Iterating Over a Collection
 ~~~php
+<?php
+
 $users = $userRepository->getObjects(0, 10);
 foreach ($users as $user) {
     echo $user->getUsername();
@@ -97,6 +107,8 @@ foreach ($users as $user) {
 
 #### Counting Entities
 ~~~php
+<?php
+
 $userCount = $users->count();
 ~~~
 
@@ -105,11 +117,15 @@ You can convert an EntityCollection to an array in two ways:
 
 1. Convert to an array of entity arrays:
 ~~~php
+<?php
+
 $arrayOfArrays = $users->toArray();  // Each entity is converted to array form
 ~~~
 
 2. Apply a custom callback to each entity:
 ~~~php
+<?php
+
 $usernames = $users->call(function($user) {
     return $user->getUsername();
 });
@@ -130,6 +146,8 @@ Here's why EntityCollection is preferred over regular arrays:
 Here's an example of working with an EntityCollection:
 
 ~~~php
+<?php
+
 use App\Repository\UserRepository;
 
 class UserService

@@ -13,6 +13,8 @@ Create a new action class in the `actions` directory. This class should implemen
 In the constructor of your action class, inject the `InputValidationService` along with any other services you need. This service will be used to validate the input data.
 
 ~~~php
+<?php
+
 use WebFramework\Validation\InputValidationService;
 
 class YourNewAction
@@ -29,6 +31,8 @@ class YourNewAction
 Inside your action method (usually `__invoke`), define the validation rules for the input data. Use the appropriate validators for each field. For example, use `EmailValidator` for email fields, `PasswordValidator` for password fields, etc.
 
 ~~~php
+<?php
+
 use WebFramework\Validation\Validator\EmailValidator;
 use WebFramework\Validation\Validator\PasswordValidator;
 
@@ -43,6 +47,8 @@ $validators = [
 Use the `InputValidationService` to validate the input data against the defined rules. Pass the request parameters to the `validate` method.
 
 ~~~php
+<?php
+
 $filtered = $this->inputValidationService->validate(
     $validators,
     $request->getParams()
@@ -54,6 +60,8 @@ $filtered = $this->inputValidationService->validate(
 If validation fails, the `InputValidationService` will throw a `MultiValidationException`. Catch this exception and handle the errors appropriately, such as by adding error messages to the response.
 
 ~~~php
+<?php
+
 use WebFramework\Exception\ValidationException;
 
 try {
@@ -73,6 +81,8 @@ try {
 Once the data is validated, you can safely use the `$filtered` array to access the validated input values and proceed with your action's logic.
 
 ~~~php
+<?php
+
 $email = $filtered['email'];
 $password = $filtered['password'];
 
@@ -84,6 +94,8 @@ $password = $filtered['password'];
 Here's a simplified example of an action that validates an email and password:
 
 ~~~php
+<?php
+
 use Psr\Http\Message\ResponseInterface;
 use Slim\Http\Response;
 use Slim\Http\ServerRequest as Request;
@@ -140,6 +152,8 @@ The WebFramework provides several default validators to handle common validation
 #### Example
 
 ~~~php
+<?php
+
 $validators = ['email' => (new EmailValidator())->required()];
 ~~~
 
@@ -152,6 +166,8 @@ $validators = ['email' => (new EmailValidator())->required()];
 #### Example
 
 ~~~php
+<?php
+
 $validators = ['password' => new PasswordValidator()];
 ~~~
 
@@ -164,6 +180,8 @@ $validators = ['password' => new PasswordValidator()];
 #### Example
 
 ~~~php
+<?php
+
 $validators = ['username' => (new UsernameValidator())->required()];
 ~~~
 
@@ -176,6 +194,8 @@ $validators = ['username' => (new UsernameValidator())->required()];
 #### Example
 
 ~~~php
+<?php
+
 $validators = ['accept_terms' => (new CustomBoolValidator('accept_terms'))->required()];
 ~~~
 
@@ -188,6 +208,8 @@ $validators = ['accept_terms' => (new CustomBoolValidator('accept_terms'))->requ
 #### Example
 
 ~~~php
+<?php
+
 $validators = ['age' => (new CustomNumberValidator('age'))->minValue(18)->maxValue(99)];
 ~~~
 
@@ -200,6 +222,8 @@ $validators = ['age' => (new CustomNumberValidator('age'))->minValue(18)->maxVal
 #### Example
 
 ~~~php
+<?php
+
 $validators = ['user_id' => (new IdValidator('user_id'))->required()];
 ~~~
 
@@ -212,6 +236,8 @@ $validators = ['user_id' => (new IdValidator('user_id'))->required()];
 #### Example
 
 ~~~php
+<?php
+
 $validators = ['url' => (new UrlValidator('url'))->required()];
 ~~~
 
@@ -231,6 +257,8 @@ The `WebFramework\Validation\Validator\CustomValidator` class is a flexible vali
 To create a custom validator, extend the `CustomValidator` class and define your validation logic:
 
 ~~~php
+<?php
+
 use WebFramework\Validation\CustomValidator;
 
 class MyCustomValidator extends CustomValidator
