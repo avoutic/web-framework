@@ -1,5 +1,10 @@
 # WebFramework
 
+[![Build Status](https://img.shields.io/github/check-runs/avoutic/web-framework/main)](https://github.com/avoutic/web-framework/actions/workflows/ci.yml?query=branch:main)
+[![Latest Tag](https://img.shields.io/github/v/tag/avoutic/web-framework)](https://packagist.org/packages/avoutic/web-framework)
+[![License](https://img.shields.io/github/license/avoutic/web-framework)](https://packagist.org/packages/avoutic/web-framework)
+[![GitHub top language](https://img.shields.io/github/languages/top/avoutic/web-framework)](https://github.com/avoutic/web-framework)
+
 **A lightweight, secure-by-default PHP microframework built on Slim – providing Laravel-like features (ORM, authentication, migrations, caching) without the bloat.**
 
 WebFramework is a companion framework that extends the [Slim Framework](https://www.slimframework.com/) with a cohesive set of services for database management, ORM, caching, authentication, middleware, templating, and more. Perfect for developers who love Slim's simplicity but need full-featured components for building modern PHP applications and REST APIs.
