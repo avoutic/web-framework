@@ -1,4 +1,4 @@
-# v10 release
+# v11 release
 
 ## v11.0
 
@@ -25,6 +25,8 @@
 * Introduce default job handlers for RawMailJob and TemplateMailJob.
 * Introduce default job handler for EventJob.
 * Introduce exception classes for job handling errors: InvalidJobException, JobDataException, and JobExecutionException.
+
+# v10 release
 
 ## v10.2.1
 

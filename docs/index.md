@@ -73,29 +73,56 @@ You are free to organize your project in any way you like, but the above structu
 
 This documentation is organized into several sections, each focusing on a specific aspect of WebFramework. Click on the links below to explore each section in detail:
 
+### Getting Started
+
 - **[Installation Guide](https://github.com/avoutic/web-framework/blob/main/INSTALL.md)**: Instructions for installing WebFramework and setting up a base project.
 - **[Migration Guide](https://github.com/avoutic/web-framework/blob/main/MIGRATE.md)**: Guidance on migrating between different versions of WebFramework.
+
+### Core Concepts
+
 - **[Configuration Management](./configuration.md)**: How to manage and access configuration settings in your application.
 - **[Dependency Injection](./dependency-injection.md)**: How to use and configure dependency injection in WebFramework.
+- **[Entities and Repositories](./entities-and-repositories.md)**: Understanding the Entity and Repository pattern in WebFramework.
+
+### HTTP & Routing
+
+- **[Routing](./routing.md)**: How to set up and manage routes in your WebFramework application.
+- **[Middleware Management](./middlewares.md)**: How to define and use middleware to process requests and responses.
+- **[Emitting Responses](./emitting-responses.md)**: How to generate responses in actions using the ResponseEmitter or via exceptions.
+- **[Input Validation](./input-validation.md)**: How to add input validation to your actions using the InputValidationService.
+- **[Templating](./templating.md)**: How to use the Latte templating engine to render templates.
+
+### Authentication & Security
+
+- **[User Management Flows](./user-management-flows.md)**: Understanding registration, login, password reset, and email change flows.
+
+### Data & Storage
+
 - **[Database Usage](./database.md)**: How to interact with the database, including executing queries and managing transactions.
 - **[Database Migrations](./database-migrations.md)**: How to manage database schema changes using the DatabaseManager.
-- **[Entities and Repositories](./entities-and-repositories.md)**: Understanding the Entity and Repository pattern in WebFramework.
-- **[Creating New Entities](./new-entity.md)**: Step-by-step guide to creating new entities and repositories.
-- **[Input Validation](./input-validation.md)**: How to add input validation to your actions using the InputValidationService.
-- **[Routing](./routing.md)**: How to set up and manage routes in your WebFramework application.
-- **[User Management Flows](./user-management-flows.md)**: Understanding registration, login, password reset, and email change flows.
-- **[Middleware Management](./middlewares.md)**: How to define and use middleware to process requests and responses.
-- **[Sanity Checks](./sanity-checks.md)**: How to use the sanity check system to ensure your application environment is correct.
-- **[Tasks](./tasks.md)**: How to create and run tasks from the command line.
-- **[Templating](./templating.md)**: How to use the Latte templating engine to render templates.
-- **[Translations](./translations.md)**: How to deploy and configure multi-lingual support in your application.
-- **[Emitting Responses](./emitting-responses.md)**: How to generate responses in actions using the ResponseEmitter or via exceptions.
 - **[Caching](./caching.md)**: How to use caching to store and retrieve data efficiently.
+
+### Background Processing
+
 - **[Queueing](./queueing.md)**: How to queue Jobs and handle them asynchronously.
-- **[Mailing](./mailing.md)**: How to send emails synchronously or asynchronously using the mail system.
+- **[Tasks](./tasks.md)**: How to create and run tasks from the command line.
+
+### Observability
+
+- **[Instrumentation](./instrumentation.md)**: How to instrument your application for monitoring and performance tracking.
 - **[Logging](./logging.md)**: How to configure log channels and route log output.
+- **[Sanity Checks](./sanity-checks.md)**: How to use the sanity check system to ensure your application environment is correct.
+
+### Utilities
+
+- **[Translations](./translations.md)**: How to deploy and configure multi-lingual support in your application.
 - **[Event Handling](./events.md)**: How to trigger and handle Events with EventListeners.
 - **[Modules](./modules.md)**: Available installable modules that extend WebFramework functionality.
+- **[Mailing](./mailing.md)**: How to send emails synchronously or asynchronously using the mail system.
+
+### Development Guide
+
+- **[Creating New Entities](./new-entity.md)**: Step-by-step guide to creating new entities and repositories.
 
 ## Getting Started
 
