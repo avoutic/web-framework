@@ -154,6 +154,13 @@ class UserVerificationService
 
             $this->eventService->dispatch(new UserVerified($request, $user));
         }
+        else
+        {
+            $this->logger->info('Updating user verified at', ['user_id' => $user->getId()]);
+
+            $user->setVerifiedAt(Carbon::now()->getTimestamp());
+            $this->userRepository->save($user);
+        }
 
         // Mark as processed to prevent replay attacks
         $verificationCode->markAsProcessed();
