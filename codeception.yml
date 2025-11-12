@@ -16,7 +16,7 @@ coverage:
         - src/Exception/*
         - src/Job/*
         - src/Repository/*
-        - tests/Unit/Support/*
+        - src/*/Null*.php
     format:
         - clover
 extensions:
