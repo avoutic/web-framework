@@ -18,7 +18,7 @@ use WebFramework\Security\UserCodeService;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Security\UserCodeService
  */
 final class UserCodeServiceTest extends Unit
 {

@@ -15,7 +15,7 @@ use WebFramework\Security\UserRightService;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Middleware\AdminUserMiddleware
  */
 final class AdminUserMiddlewareTest extends Unit
 {

@@ -8,7 +8,7 @@ use WebFramework\Validation\Rule\MinLengthRule;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Validation\Rule\MinLengthRule
  */
 final class MinLengthRuleTest extends Unit
 {

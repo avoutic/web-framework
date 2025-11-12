@@ -8,7 +8,7 @@ use WebFramework\Validation\Rule\FilterRule;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Validation\Rule\FilterRule
  */
 final class FilterRuleTest extends Unit
 {

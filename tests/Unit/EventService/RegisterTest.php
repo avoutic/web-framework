@@ -14,7 +14,7 @@ use WebFramework\Event\EventService;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Event\EventService
  */
 final class RegisterTest extends Unit
 {

@@ -8,7 +8,7 @@ use WebFramework\Config\ConfigBuilder;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Config\ConfigBuilder
  */
 final class ConfigBuilderTest extends Unit
 {

@@ -12,7 +12,7 @@ use WebFramework\Middleware\TransactionMiddleware;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Middleware\TransactionMiddleware
  */
 final class TransactionMiddlewareTest extends Unit
 {

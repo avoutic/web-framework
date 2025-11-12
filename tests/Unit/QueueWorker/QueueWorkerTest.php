@@ -16,7 +16,7 @@ use WebFramework\Task\QueueWorker;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Task\QueueWorker
  */
 final class QueueWorkerTest extends Unit
 {

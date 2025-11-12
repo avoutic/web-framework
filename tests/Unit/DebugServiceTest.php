@@ -20,7 +20,7 @@ use WebFramework\Support\ErrorReport;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Diagnostics\DebugService
  */
 final class DebugServiceTest extends Unit
 {

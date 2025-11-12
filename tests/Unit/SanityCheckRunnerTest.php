@@ -11,7 +11,7 @@ use WebFramework\Support\StoredValuesService;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\SanityCheck\SanityCheckRunner
  */
 final class SanityCheckRunnerTest extends Unit
 {

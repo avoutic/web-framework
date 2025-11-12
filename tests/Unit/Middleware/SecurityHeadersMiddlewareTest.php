@@ -12,7 +12,7 @@ use WebFramework\Middleware\SecurityHeadersMiddleware;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Middleware\SecurityHeadersMiddleware
  */
 final class SecurityHeadersMiddlewareTest extends Unit
 {

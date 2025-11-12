@@ -8,7 +8,7 @@ use WebFramework\Validation\Rule\MaxLengthRule;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Validation\Rule\MaxLengthRule
  */
 final class MaxLengthRuleTest extends Unit
 {

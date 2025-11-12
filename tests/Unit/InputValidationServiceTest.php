@@ -14,7 +14,7 @@ require_once 'src/Defines.php';
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Validation\InputValidationService
  */
 final class InputValidationServiceTest extends Unit
 {

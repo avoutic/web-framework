@@ -13,7 +13,7 @@ use WebFramework\Security\RegisterService;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Security\RegisterService
  */
 final class RegisterServiceTest extends Unit
 {

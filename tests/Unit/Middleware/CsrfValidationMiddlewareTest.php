@@ -14,7 +14,7 @@ use WebFramework\Security\CsrfService;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Middleware\CsrfValidationMiddleware
  */
 final class CsrfValidationMiddlewareTest extends Unit
 {

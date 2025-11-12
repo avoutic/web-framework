@@ -12,7 +12,7 @@ use WebFramework\Middleware\JsonParserMiddleware;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Middleware\JsonParserMiddleware
  */
 final class JsonParserMiddlewareTest extends Unit
 {

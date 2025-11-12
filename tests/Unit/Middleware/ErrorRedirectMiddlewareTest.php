@@ -22,7 +22,7 @@ use WebFramework\Support\ErrorReport;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Middleware\ErrorRedirectMiddleware
  */
 final class ErrorRedirectMiddlewareTest extends Unit
 {

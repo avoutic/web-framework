@@ -8,7 +8,7 @@ use WebFramework\Core\EnvLoader;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Core\EnvLoader
  */
 final class EnvLoaderTest extends Unit
 {

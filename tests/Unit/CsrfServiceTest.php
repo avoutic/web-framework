@@ -11,7 +11,7 @@ use WebFramework\Security\OpensslRandomProvider;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Security\CsrfService
  */
 final class CsrfServiceTest extends Unit
 {

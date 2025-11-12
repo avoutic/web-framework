@@ -8,7 +8,7 @@ use WebFramework\Support\UploadHandler;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Support\UploadHandler
  */
 final class UploadHandlerTest extends Unit
 {

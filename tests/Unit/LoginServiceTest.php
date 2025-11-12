@@ -19,7 +19,7 @@ use WebFramework\Security\NullBlacklistService;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Security\LoginService
  */
 final class LoginServiceTest extends Unit
 {

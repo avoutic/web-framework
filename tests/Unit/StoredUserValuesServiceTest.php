@@ -12,7 +12,7 @@ use WebFramework\Support\StoredUserValuesService;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Support\StoredUserValuesService
  */
 final class StoredUserValuesServiceTest extends Unit
 {

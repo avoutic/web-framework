@@ -10,7 +10,7 @@ use WebFramework\Repository\UserRepository;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Repository\RepositoryCore
  */
 final class RepositoryCoreTest extends Unit
 {

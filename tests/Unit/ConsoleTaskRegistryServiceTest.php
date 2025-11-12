@@ -11,7 +11,7 @@ use WebFramework\Console\ConsoleTaskRegistryService;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Console\ConsoleTaskRegistryService
  */
 final class ConsoleTaskRegistryServiceTest extends Unit
 {

@@ -15,7 +15,7 @@ use WebFramework\Security\UserRightService;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Security\UserRightService
  */
 final class UserRightServiceTest extends Unit
 {

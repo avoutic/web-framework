@@ -9,7 +9,7 @@ use WebFramework\Support\Base62;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Support\Base62
  */
 final class Base62Test extends Unit
 {

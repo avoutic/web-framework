@@ -12,7 +12,7 @@ use WebFramework\Middleware\LoggedInMiddleware;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Middleware\LoggedInMiddleware
  */
 final class LoggedInMiddlewareTest extends Unit
 {

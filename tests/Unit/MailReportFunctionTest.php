@@ -13,7 +13,7 @@ use WebFramework\Support\ErrorReport;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Diagnostics\MailReportFunction
  */
 final class MailReportFunctionTest extends Unit
 {

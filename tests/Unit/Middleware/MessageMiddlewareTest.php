@@ -12,7 +12,7 @@ use WebFramework\Presentation\MessageService;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Middleware\MessageMiddleware
  */
 final class MessageMiddlewareTest extends Unit
 {

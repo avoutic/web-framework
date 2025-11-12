@@ -8,7 +8,7 @@ use WebFramework\Config\ConfigService;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Config\ConfigService
  */
 final class ConfigServiceTest extends Unit
 {

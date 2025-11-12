@@ -9,7 +9,7 @@ use WebFramework\Security\PasswordHashService;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Security\PasswordHashService
  */
 final class PasswordHashServiceTest extends Unit
 {

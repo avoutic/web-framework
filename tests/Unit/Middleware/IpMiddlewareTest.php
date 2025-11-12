@@ -12,7 +12,7 @@ use WebFramework\Middleware\IpMiddleware;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Middleware\IpMiddleware
  */
 final class IpMiddlewareTest extends Unit
 {

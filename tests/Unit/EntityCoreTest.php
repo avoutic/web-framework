@@ -8,7 +8,7 @@ use Tests\Support\TestEntity;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Entity\EntityCore
  */
 final class EntityCoreTest extends Unit
 {

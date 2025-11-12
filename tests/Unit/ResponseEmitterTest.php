@@ -18,7 +18,7 @@ use WebFramework\Support\UrlBuilder;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Http\ResponseEmitter
  */
 final class ResponseEmitterTest extends Unit
 {

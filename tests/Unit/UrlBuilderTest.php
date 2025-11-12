@@ -10,7 +10,7 @@ use WebFramework\Support\UrlBuilder;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Support\UrlBuilder
  */
 final class UrlBuilderTest extends Unit
 {

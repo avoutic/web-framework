@@ -9,7 +9,7 @@ use WebFramework\Translation\TranslationService;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Presentation\MessageService
  */
 final class MessageServiceTest extends Unit
 {

@@ -13,7 +13,7 @@ use WebFramework\Task\Task;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Migration\DatabaseManager
  */
 final class DatabaseManagerTest extends Unit
 {

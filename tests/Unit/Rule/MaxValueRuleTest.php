@@ -8,7 +8,7 @@ use WebFramework\Validation\Rule\MaxValueRule;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Validation\Rule\MaxValueRule
  */
 final class MaxValueRuleTest extends Unit
 {

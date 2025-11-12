@@ -9,7 +9,7 @@ require_once __DIR__.'/../../src/Environment.php';
 /**
  * @internal
  *
- * @coversNothing
+ * @covers ::env
  */
 final class EnvironmentTest extends Unit
 {

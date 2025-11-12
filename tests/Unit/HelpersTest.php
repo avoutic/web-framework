@@ -10,7 +10,7 @@ use WebFramework\Support\Helpers;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Support\Helpers
  */
 final class HelpersTest extends Unit
 {

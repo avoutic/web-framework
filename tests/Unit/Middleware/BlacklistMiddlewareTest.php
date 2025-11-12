@@ -14,7 +14,7 @@ use WebFramework\Security\BlacklistService;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Middleware\BlacklistMiddleware
  */
 final class BlacklistMiddlewareTest extends Unit
 {

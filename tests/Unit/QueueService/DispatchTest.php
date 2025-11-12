@@ -13,7 +13,7 @@ use WebFramework\Support\UuidProvider;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Queue\QueueService
  */
 final class DispatchTest extends Unit
 {

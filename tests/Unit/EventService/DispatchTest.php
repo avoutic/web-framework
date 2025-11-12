@@ -15,7 +15,7 @@ use WebFramework\Queue\QueueService;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Event\EventService
  */
 final class DispatchTest extends Unit
 {

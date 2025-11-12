@@ -14,7 +14,7 @@ use WebFramework\Security\AuthenticationService;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Middleware\AuthenticationMiddleware
  */
 final class AuthenticationMiddlewareTest extends Unit
 {

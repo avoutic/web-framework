@@ -17,7 +17,7 @@ use WebFramework\Task\TaskRunner;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Task\TaskRunner
  */
 trait TaskRunnerTrait
 {

@@ -9,7 +9,7 @@ use WebFramework\Security\ProtectService;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Security\ProtectService
  */
 final class ProtectServiceTest extends Unit
 {

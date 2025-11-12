@@ -10,7 +10,7 @@ use WebFramework\Support\UuidProvider;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Support\UuidProvider
  */
 final class UuidProviderTest extends Unit
 {

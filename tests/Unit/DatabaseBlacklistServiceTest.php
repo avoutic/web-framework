@@ -12,7 +12,7 @@ use WebFramework\Security\DatabaseBlacklistService;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Security\DatabaseBlacklistService
  */
 final class DatabaseBlacklistServiceTest extends Unit
 {

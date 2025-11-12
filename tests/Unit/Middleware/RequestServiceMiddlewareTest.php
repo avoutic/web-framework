@@ -12,7 +12,7 @@ use WebFramework\Support\RequestService;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Middleware\RequestServiceMiddleware
  */
 final class RequestServiceMiddlewareTest extends Unit
 {

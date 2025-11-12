@@ -8,7 +8,7 @@ use WebFramework\Validation\Rule\MinValueRule;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Validation\Rule\MinValueRule
  */
 final class MinValueRuleTest extends Unit
 {

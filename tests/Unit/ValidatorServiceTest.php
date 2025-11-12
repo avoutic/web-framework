@@ -8,7 +8,7 @@ use WebFramework\Support\ValidatorService;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \WebFramework\Support\ValidatorService
  */
 final class ValidatorServiceTest extends Unit
 {
