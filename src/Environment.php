@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-/**
+/*
  * Get an environment variable with an optional default value.
  *
  * @param string $key     The environment variable name
@@ -17,21 +17,24 @@
  *
  * @return mixed The environment variable value or the default value
  */
-function env(string $key, mixed $default = null): mixed
+if (!function_exists('env'))
 {
-    $value = getenv($key);
-
-    if ($value === false)
+    function env(string $key, mixed $default = null): mixed
     {
-        return $default;
+        $value = getenv($key);
+
+        if ($value === false)
+        {
+            return $default;
+        }
+
+        return match (strtolower($value))
+        {
+            'true', '(true)' => true,
+            'false', '(false)' => false,
+            'null', '(null)' => null,
+            'empty', '(empty)' => '',
+            default => $value,
+        };
     }
-
-    return match (strtolower($value))
-    {
-        'true', '(true)' => true,
-        'false', '(false)' => false,
-        'null', '(null)' => null,
-        'empty', '(empty)' => '',
-        default => $value,
-    };
 }
