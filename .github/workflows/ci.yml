@@ -59,11 +59,16 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
-          extensions: gd zip soap
+          extensions: gd zip soap pcov
           tools: codeception
 
       - name: Install packages
         run: composer install --no-progress --optimize-autoloader
 
       - name: Run Codeception Unit tests
-        run: vendor/bin/codecept run tests/Unit
+        run: vendor/bin/codecept run --coverage-xml=clover.xml tests/Unit
+
+      - name: Coveralls
+        uses: coverallsapp/github-action@v2
+        with:
+          file: tests/_output/clover.xml
