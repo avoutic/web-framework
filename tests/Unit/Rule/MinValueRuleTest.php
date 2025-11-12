@@ -67,4 +67,20 @@ final class MinValueRuleTest extends Unit
             ->equals(false)
         ;
     }
+
+    public function testMessage()
+    {
+        $instance = $this->construct(
+            MinValueRule::class,
+            [
+                10,
+            ]
+        );
+
+        verify($instance->getErrorMessage())->equals('validation.min_value');
+        verify($instance->getErrorParams('test'))->equals([
+            'field_name' => 'test',
+            'min_value' => '10',
+        ]);
+    }
 }

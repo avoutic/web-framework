@@ -67,4 +67,20 @@ final class MaxLengthRuleTest extends Unit
             ->equals(false)
         ;
     }
+
+    public function testMessage()
+    {
+        $instance = $this->construct(
+            MaxLengthRule::class,
+            [
+                10,
+            ]
+        );
+
+        verify($instance->getErrorMessage())->equals('validation.max_length');
+        verify($instance->getErrorParams('test'))->equals([
+            'field_name' => 'test',
+            'max_length' => '10',
+        ]);
+    }
 }

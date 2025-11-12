@@ -59,6 +59,17 @@ final class EnvLoaderTest extends Unit
         verify(getenv('NONEXISTENT_VAR'))->equals(false);
     }
 
+    public function testLoadEnvFileEmpty()
+    {
+        $envFile = $this->tempDir.'/.env';
+        file_put_contents($envFile, '');
+
+        $envLoader = new EnvLoader();
+        $envLoader->loadEnvFile($envFile);
+
+        verify(getenv('NONEXISTENT_VAR'))->equals(false);
+    }
+
     public function testLoadEnvFileBasic()
     {
         $envFile = $this->tempDir.'/.env';

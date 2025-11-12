@@ -18,6 +18,13 @@ use WebFramework\Security\BlacklistService;
  */
 final class BlacklistMiddlewareTest extends Unit
 {
+    public function testConstructor()
+    {
+        $blacklistService = $this->makeEmpty(BlacklistService::class);
+        $middleware = new BlacklistMiddleware($blacklistService);
+        verify($middleware)->instanceOf(BlacklistMiddleware::class);
+    }
+
     public function testThrowExceptionIfIpMiddlewareHasNotRun()
     {
         $middleware = $this->make(

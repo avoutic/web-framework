@@ -15,6 +15,8 @@ use WebFramework\Database\Database;
 
 /**
  * Represents an SQL query that should be executed during a migration.
+ *
+ * @codeCoverageIgnore
  */
 final class QueryStep implements MigrationStep
 {

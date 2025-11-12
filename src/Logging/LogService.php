@@ -11,6 +11,9 @@
 
 namespace WebFramework\Logging;
 
+/**
+ * @codeCoverageIgnore
+ */
 class LogService
 {
     public function __construct(

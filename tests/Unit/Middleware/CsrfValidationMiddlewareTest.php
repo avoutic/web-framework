@@ -18,6 +18,14 @@ use WebFramework\Security\CsrfService;
  */
 final class CsrfValidationMiddlewareTest extends Unit
 {
+    public function testConstructor()
+    {
+        $csrfService = $this->makeEmpty(CsrfService::class);
+        $messageService = $this->makeEmpty(MessageService::class);
+        $middleware = new CsrfValidationMiddleware($csrfService, $messageService);
+        verify($middleware)->instanceOf(CsrfValidationMiddleware::class);
+    }
+
     public function testGetNoCsrf()
     {
         $middleware = $this->make(

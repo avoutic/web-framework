@@ -16,6 +16,8 @@ namespace WebFramework\Database;
  *
  * Provides a way to set and retrieve a Database instance.
  * This class acts as a simple service locator for the Database interface.
+ *
+ * @codeCoverageIgnore
  */
 class DatabaseProvider
 {

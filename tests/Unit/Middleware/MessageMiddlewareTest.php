@@ -16,6 +16,13 @@ use WebFramework\Presentation\MessageService;
  */
 final class MessageMiddlewareTest extends Unit
 {
+    public function testConstructor()
+    {
+        $messageService = $this->makeEmpty(MessageService::class);
+        $middleware = new MessageMiddleware($messageService);
+        verify($middleware)->instanceOf(MessageMiddleware::class);
+    }
+
     public function testAddMessageFromUrl()
     {
         $middleware = $this->make(

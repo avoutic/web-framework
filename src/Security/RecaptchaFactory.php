@@ -18,6 +18,8 @@ use WebFramework\Support\GuzzleClientFactory;
  * Class RecaptchaFactory.
  *
  * Factory class for creating Recaptcha instances.
+ *
+ * @codeCoverageIgnore
  */
 class RecaptchaFactory
 {

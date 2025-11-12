@@ -18,6 +18,13 @@ use WebFramework\Security\AuthenticationService;
  */
 final class AuthenticationMiddlewareTest extends Unit
 {
+    public function testConstructor()
+    {
+        $authenticationService = $this->makeEmpty(AuthenticationService::class);
+        $middleware = new AuthenticationMiddleware($authenticationService);
+        verify($middleware)->instanceOf(AuthenticationMiddleware::class);
+    }
+
     public function testNotAuthenticated()
     {
         $middleware = $this->make(

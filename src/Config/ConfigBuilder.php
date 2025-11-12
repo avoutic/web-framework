@@ -64,6 +64,11 @@ class ConfigBuilder
             }
         }
 
+        if (!file_exists("{$this->appDir}{$configLocation}"))
+        {
+            throw new \RuntimeException("File '{$configLocation}' does not exist");
+        }
+
         $fileConfig = require "{$this->appDir}{$configLocation}";
         if (!is_array($fileConfig))
         {

@@ -14,6 +14,9 @@ namespace WebFramework\Event;
 use Slim\Http\ServerRequest as Request;
 use WebFramework\Entity\User;
 
+/**
+ * @codeCoverageIgnore
+ */
 class UserLoggedIn implements Event
 {
     /**

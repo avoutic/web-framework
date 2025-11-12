@@ -16,6 +16,13 @@ use WebFramework\Support\RequestService;
  */
 final class RequestServiceMiddlewareTest extends Unit
 {
+    public function testConstructor()
+    {
+        $requestService = $this->makeEmpty(RequestService::class);
+        $middleware = new RequestServiceMiddleware($requestService);
+        verify($middleware)->instanceOf(RequestServiceMiddleware::class);
+    }
+
     public function testSetRequest()
     {
         $middleware = $this->make(

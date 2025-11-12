@@ -26,6 +26,16 @@ use WebFramework\Support\ErrorReport;
  */
 final class ErrorRedirectMiddlewareTest extends Unit
 {
+    public function testConstructor()
+    {
+        $debugService = $this->makeEmpty(DebugService::class);
+        $logger = $this->makeEmpty(LogService::class);
+        $reportFunction = $this->makeEmpty(ReportFunction::class);
+        $responseEmitter = $this->makeEmpty(ResponseEmitter::class);
+        $middleware = new ErrorRedirectMiddleware($debugService, $logger, $reportFunction, $responseEmitter, false);
+        verify($middleware)->instanceOf(ErrorRedirectMiddleware::class);
+    }
+
     public function testNormalFlow()
     {
         $response = $this->makeEmpty(Response::class);

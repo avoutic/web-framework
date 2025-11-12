@@ -67,4 +67,20 @@ final class MinLengthRuleTest extends Unit
             ->equals(false)
         ;
     }
+
+    public function testMessage()
+    {
+        $instance = $this->construct(
+            MinLengthRule::class,
+            [
+                10,
+            ]
+        );
+
+        verify($instance->getErrorMessage())->equals('validation.min_length');
+        verify($instance->getErrorParams('test'))->equals([
+            'field_name' => 'test',
+            'min_length' => '10',
+        ]);
+    }
 }

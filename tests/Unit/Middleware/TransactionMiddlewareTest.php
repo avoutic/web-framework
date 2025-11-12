@@ -16,6 +16,13 @@ use WebFramework\Middleware\TransactionMiddleware;
  */
 final class TransactionMiddlewareTest extends Unit
 {
+    public function testConstructor()
+    {
+        $database = $this->makeEmpty(Database::class);
+        $middleware = new TransactionMiddleware($database);
+        verify($middleware)->instanceOf(TransactionMiddleware::class);
+    }
+
     public function testTransactionMiddleware()
     {
         $middleware = $this->make(

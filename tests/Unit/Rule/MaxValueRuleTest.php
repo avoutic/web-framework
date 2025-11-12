@@ -67,4 +67,20 @@ final class MaxValueRuleTest extends Unit
             ->equals(false)
         ;
     }
+
+    public function testMessage()
+    {
+        $instance = $this->construct(
+            MaxValueRule::class,
+            [
+                10,
+            ]
+        );
+
+        verify($instance->getErrorMessage())->equals('validation.max_value');
+        verify($instance->getErrorParams('test'))->equals([
+            'field_name' => 'test',
+            'max_value' => '10',
+        ]);
+    }
 }

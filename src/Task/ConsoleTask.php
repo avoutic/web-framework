@@ -11,6 +11,9 @@
 
 namespace WebFramework\Task;
 
+/**
+ * @codeCoverageIgnore
+ */
 abstract class ConsoleTask implements Task
 {
     abstract public function getCommand(): string;

@@ -15,6 +15,8 @@ namespace WebFramework\Core;
  * Class RuntimeEnvironment.
  *
  * Represents the runtime environment configuration for the application.
+ *
+ * @codeCoverageIgnore
  */
 class RuntimeEnvironment
 {

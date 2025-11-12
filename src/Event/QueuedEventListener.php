@@ -15,6 +15,8 @@ namespace WebFramework\Event;
  * Base class for event listeners that should be queued.
  *
  * @implements EventListener<Event>
+ *
+ * @codeCoverageIgnore
  */
 abstract class QueuedEventListener implements EventListener
 {

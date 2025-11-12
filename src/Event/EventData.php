@@ -11,6 +11,9 @@
 
 namespace WebFramework\Event;
 
+/**
+ * @codeCoverageIgnore
+ */
 class EventData
 {
     /** @var array<class-string<EventListener<Event>>> */

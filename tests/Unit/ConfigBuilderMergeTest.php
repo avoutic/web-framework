@@ -10,7 +10,7 @@ use WebFramework\Config\ConfigBuilder;
  *
  * @covers \WebFramework\Config\ConfigBuilder
  */
-final class ConfigBuilderTest extends Unit
+final class ConfigBuilderMergeTest extends Unit
 {
     public function testMergeConfigEmpty()
     {

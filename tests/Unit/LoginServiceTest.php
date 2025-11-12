@@ -238,4 +238,77 @@ final class LoginServiceTest extends Unit
 
         verify($instance->authenticate($request, $user, ''));
     }
+
+    public function testValidateVerificationExpired()
+    {
+        $user = $this->makeEmpty(User::class, [
+            'getId' => Expected::once(1),
+            'isVerified' => Expected::once(true),
+            'isVerifiedValid' => Expected::once(false),
+        ]);
+
+        $instance = $this->make(
+            LoginService::class,
+            [
+                'blacklistService' => $this->makeEmpty(NullBlacklistService::class),
+                'logger' => $this->makeEmpty(LoggerInterface::class, [
+                    'debug' => Expected::once(),
+                ]),
+                'checkPasswordService' => $this->makeEmpty(
+                    CheckPasswordService::class,
+                    [
+                        'checkPassword' => Expected::once(true),
+                    ],
+                ),
+                'userRepository' => $this->makeEmpty(
+                    UserRepository::class,
+                    [
+                        'getUserByUsername' => $user,
+                    ],
+                ),
+                'validityPeriodDays' => 1,
+            ],
+        );
+
+        $request = $this->makeEmpty(Request::class, ['getAttribute' => '']);
+
+        verify(function () use ($instance, $request) {
+            $instance->validate($request, 'noname', '', true);
+        })
+            ->callableThrows(UserVerificationRequiredException::class)
+        ;
+    }
+
+    public function testAuthenticateVerificationExpired()
+    {
+        $user = $this->makeEmpty(User::class, [
+            'getId' => Expected::once(1),
+            'isVerified' => Expected::once(true),
+            'isVerifiedValid' => Expected::once(false),
+        ]);
+
+        $instance = $this->make(
+            LoginService::class,
+            [
+                'checkPasswordService' => $this->makeEmpty(
+                    CheckPasswordService::class,
+                    [
+                        'checkPassword' => Expected::once(true),
+                    ],
+                ),
+                'logger' => $this->makeEmpty(LoggerInterface::class, [
+                    'debug' => Expected::once(),
+                ]),
+                'validityPeriodDays' => 1,
+            ],
+        );
+
+        $request = $this->makeEmpty(Request::class, ['getAttribute' => '']);
+
+        verify(function () use ($instance, $request, $user) {
+            $instance->authenticate($request, $user, '');
+        })
+            ->callableThrows(UserVerificationRequiredException::class)
+        ;
+    }
 }

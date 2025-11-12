@@ -15,6 +15,8 @@ namespace WebFramework\Security;
  * Class OpensslRandomProvider.
  *
  * Implements the RandomProvider interface using OpenSSL for random number generation.
+ *
+ * @codeCoverageIgnore
  */
 class OpensslRandomProvider implements RandomProvider
 {

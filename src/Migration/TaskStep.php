@@ -16,6 +16,8 @@ use WebFramework\Task\Task;
 
 /**
  * Wraps a Task so it can be executed as part of a migration.
+ *
+ * @codeCoverageIgnore
  */
 final class TaskStep implements MigrationStep
 {

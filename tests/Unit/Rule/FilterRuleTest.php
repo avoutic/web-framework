@@ -67,4 +67,19 @@ final class FilterRuleTest extends Unit
             ->equals(false)
         ;
     }
+
+    public function testMessage()
+    {
+        $instance = $this->construct(
+            FilterRule::class,
+            [
+                '[a-z]+',
+            ]
+        );
+
+        verify($instance->getErrorMessage())->equals('validation.filter');
+        verify($instance->getErrorParams('test'))->equals([
+            'field_name' => 'test',
+        ]);
+    }
 }

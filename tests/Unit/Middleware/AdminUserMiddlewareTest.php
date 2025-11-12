@@ -19,6 +19,13 @@ use WebFramework\Security\UserRightService;
  */
 final class AdminUserMiddlewareTest extends Unit
 {
+    public function testConstructor()
+    {
+        $userRightService = $this->makeEmpty(UserRightService::class);
+        $middleware = new AdminUserMiddleware($userRightService);
+        verify($middleware)->instanceOf(AdminUserMiddleware::class);
+    }
+
     public function testThrowForbiddenExceptionIfUserIsNotAuthenticated()
     {
         $middleware = $this->make(
