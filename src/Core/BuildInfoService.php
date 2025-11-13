@@ -11,6 +11,8 @@
 
 namespace WebFramework\Core;
 
+use Carbon\Carbon;
+
 /**
  * Class BuildInfoService.
  *
@@ -40,7 +42,7 @@ class BuildInfoService
         {
             return [
                 'commit' => null,
-                'timestamp' => date('Y-m-d H:i'),
+                'timestamp' => Carbon::now()->format('Y-m-d H:i'),
             ];
         }
 
