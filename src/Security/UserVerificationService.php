@@ -65,7 +65,6 @@ class UserVerificationService
             $user,
             $action,
             [
-                'action' => $action,
                 'after_verify_data' => $afterVerifyData,
             ]
         );
