@@ -4,6 +4,7 @@
 [![Latest Tag](https://img.shields.io/github/v/tag/avoutic/web-framework)](https://packagist.org/packages/avoutic/web-framework)
 [![License](https://img.shields.io/github/license/avoutic/web-framework)](https://packagist.org/packages/avoutic/web-framework)
 [![GitHub top language](https://img.shields.io/github/languages/top/avoutic/web-framework)](https://github.com/avoutic/web-framework)
+[![Coverage Status](https://coveralls.io/repos/github/avoutic/web-framework/badge.svg)](https://coveralls.io/github/avoutic/web-framework)
 
 **A lightweight, secure-by-default PHP microframework built on Slim – providing Laravel-like features (ORM, authentication, migrations, caching) without the bloat.**
 
