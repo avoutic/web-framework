@@ -74,24 +74,39 @@ class QueueWorker extends ConsoleTask
         ];
     }
 
+    public function getMaxJobs(): ?int
+    {
+        return $this->maxJobs;
+    }
+
     public function setMaxJobs(string $maxJobs): void
     {
-        if (!is_numeric($maxJobs))
+        if (!is_numeric($maxJobs) || $maxJobs < 1)
         {
-            throw new ArgumentParserException('Max jobs must be a number');
+            throw new ArgumentParserException('Max jobs must be a number greater than 0');
         }
 
         $this->maxJobs = (int) $maxJobs;
     }
 
+    public function getMaxRuntime(): ?int
+    {
+        return $this->maxRuntime;
+    }
+
     public function setMaxRuntime(string $maxRuntime): void
     {
-        if (!is_numeric($maxRuntime))
+        if (!is_numeric($maxRuntime) || $maxRuntime < 1)
         {
-            throw new ArgumentParserException('Max runtime must be a number');
+            throw new ArgumentParserException('Max runtime must be a number greater than 0');
         }
 
         $this->maxRuntime = (int) $maxRuntime;
+    }
+
+    public function getQueueName(): ?string
+    {
+        return $this->queueName;
     }
 
     public function setQueueName(string $queueName): void
