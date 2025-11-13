@@ -30,6 +30,7 @@ class ResetPasswordService
      * @param AuthenticationService      $authenticationService      The authentication service
      * @param LoggerInterface            $logger                     The logger service
      * @param PasswordHashService        $passwordHashService        The password hash service
+     * @param RandomProvider             $randomProvider             The random provider service
      * @param SecurityIteratorService    $securityIteratorService    The security iterator service
      * @param UserCodeService            $userCodeService            The user code service
      * @param UserMailer                 $userMailer                 The user mailer service
@@ -40,6 +41,7 @@ class ResetPasswordService
         private AuthenticationService $authenticationService,
         private LoggerInterface $logger,
         private PasswordHashService $passwordHashService,
+        private RandomProvider $randomProvider,
         private SecurityIteratorService $securityIteratorService,
         private UserCodeService $userCodeService,
         private UserMailer $userMailer,
@@ -196,7 +198,7 @@ class ResetPasswordService
 
         // Generate and store password
         //
-        $newPw = bin2hex(substr(openssl_random_pseudo_bytes(24), 0, 10));
+        $newPw = bin2hex(substr($this->randomProvider->getRandom(24), 0, 10));
 
         $this->updatePassword($user, $newPw);
 
