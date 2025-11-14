@@ -1,5 +1,11 @@
 # v11 release
 
+## v11.1
+
+### New features
+
+* `TaskRunnerTask` now supports retry logic with `--attempts` and `--backoff` options for handling task failures.
+
 ## v11.0
 
 ### Breaking changes

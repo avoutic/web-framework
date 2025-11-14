@@ -88,3 +88,32 @@ The WebFramework includes several predefined tasks for common operations. Here a
 - **Purpose**: Runs sanity checks on the application.
 - **Script**: `scripts/sanity_check.php`
 - **Usage**: Run this script to perform sanity checks and ensure the application environment is correct.
+
+### TaskRunnerTask
+
+- **Purpose**: Executes a custom task class from the command line.
+- **Command**: `task:run`
+- **Usage**: Run this command to execute any task that implements the `Task` interface.
+
+#### Options
+
+- `--continuous`: Run the task continuously in a loop
+- `--delay <secs>`: The delay between continuous runs in seconds (default: 1)
+- `--max-runtime <secs>`: The maximum runtime in seconds for continuous execution
+- `--attempts <num>`: The maximum number of attempts if the task fails (default: 1, no retries)
+- `--backoff <secs>`: The backoff delay in seconds between retries (default: 1). The actual delay is multiplied by the attempt number (exponential backoff)
+
+#### Examples
+
+```bash
+# Run a task once
+php scripts/framework.php task:run App\\Task\\MyTask
+
+# Run a task with retry logic (3 attempts with 2 second base backoff)
+php scripts/framework.php task:run --attempts 3 --backoff 2 App\\Task\\MyTask
+
+# Run a task continuously with retry logic
+php scripts/framework.php task:run --continuous --delay 60 --attempts 3 --backoff 5 App\\Task\\MyTask
+```
+
+When using retry logic, if a task throws an exception, it will be retried up to the specified number of attempts. The delay between retries follows an exponential backoff pattern: `backoff * attempt_number`. For example, with `--backoff 2` and `--attempts 3`, the delays will be 2 seconds (after attempt 1), 4 seconds (after attempt 2), and then the final exception will be thrown if attempt 3 also fails.

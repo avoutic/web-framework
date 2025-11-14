@@ -20,6 +20,8 @@ class TaskRunnerTask extends ConsoleTask
     private bool $isContinuous = false;
     private int $delayBetweenRunsInSecs = 1;
     private ?int $maxRuntimeInSecs = null;
+    private int $maxAttempts = 1;
+    private int $backoffInSecs = 1;
 
     public function __construct(
         private readonly TaskRunner $taskRunner,
@@ -52,6 +54,8 @@ class TaskRunnerTask extends ConsoleTask
           --continuous      Run the task continuously
           --delay <secs>    The delay between continuous runs in seconds
           --max-runtime <secs> The maximum runtime in seconds
+          --attempts <num>  The maximum number of attempts (default: 1, no retries)
+          --backoff <secs>  The backoff delay in seconds between retries (default: 1)
         EOF;
     }
 
@@ -68,6 +72,8 @@ class TaskRunnerTask extends ConsoleTask
             new TaskOption('continuous', null, 'Run the task continuously', false, [$this, 'setContinuous']),
             new TaskOption('delay', null, 'The delay between continuous runs in seconds', true, [$this, 'setDelayBetweenRuns']),
             new TaskOption('max-runtime', null, 'The maximum runtime in seconds', true, [$this, 'setMaxRunTime']),
+            new TaskOption('attempts', null, 'The maximum number of attempts', true, [$this, 'setMaxAttempts']),
+            new TaskOption('backoff', null, 'The backoff delay in seconds between retries', true, [$this, 'setBackoff']),
         ];
     }
 
@@ -114,6 +120,36 @@ class TaskRunnerTask extends ConsoleTask
         $this->maxRuntimeInSecs = (int) $secs;
     }
 
+    /**
+     * Set the maximum number of attempts.
+     *
+     * @param string $num The maximum number of attempts
+     */
+    public function setMaxAttempts(string $num): void
+    {
+        if (!is_numeric($num) || (int) $num < 1)
+        {
+            throw new ArgumentParserException('Attempts must be a positive number');
+        }
+
+        $this->maxAttempts = (int) $num;
+    }
+
+    /**
+     * Set the backoff delay between retries.
+     *
+     * @param string $secs The backoff delay in seconds
+     */
+    public function setBackoff(string $secs): void
+    {
+        if (!is_numeric($secs) || (int) $secs < 0)
+        {
+            throw new ArgumentParserException('Backoff must be a non-negative number');
+        }
+
+        $this->backoffInSecs = (int) $secs;
+    }
+
     public function execute(): void
     {
         if ($this->taskClass === null)
@@ -138,7 +174,7 @@ class TaskRunnerTask extends ConsoleTask
 
             while (true)
             {
-                $task->execute();
+                $this->executeWithRetry($task);
 
                 if ($this->maxRuntimeInSecs)
                 {
@@ -153,7 +189,46 @@ class TaskRunnerTask extends ConsoleTask
         }
         else
         {
-            $task->execute();
+            $this->executeWithRetry($task);
         }
+    }
+
+    /**
+     * Execute a task with retry logic.
+     *
+     * @param Task $task The task to execute
+     *
+     * @throws \Throwable If the task fails after all retry attempts
+     */
+    private function executeWithRetry(Task $task): void
+    {
+        $lastException = null;
+
+        for ($attempt = 1; $attempt <= $this->maxAttempts; $attempt++)
+        {
+            try
+            {
+                $task->execute();
+
+                return;
+            }
+            catch (\Throwable $e)
+            {
+                $lastException = $e;
+
+                if ($attempt < $this->maxAttempts)
+                {
+                    $backoffDelay = $this->backoffInSecs * $attempt;
+                    Carbon::sleep($backoffDelay);
+                }
+            }
+        }
+
+        if ($lastException === null)
+        {
+            throw new \RuntimeException('Task execution failed but no exception was captured');
+        }
+
+        throw $lastException;
     }
 }
