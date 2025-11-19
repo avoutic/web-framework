@@ -186,6 +186,14 @@ class TaskRunner
             if (str_starts_with($arg, '--'))
             {
                 $searchValue = substr($arg, 2);
+                $inlineValue = null;
+
+                $equalsPosition = strpos($searchValue, '=');
+                if ($equalsPosition !== false)
+                {
+                    $inlineValue = substr($searchValue, $equalsPosition + 1);
+                    $searchValue = substr($searchValue, 0, $equalsPosition);
+                }
 
                 $option = $this->findOptionByLong($options, $searchValue);
 
@@ -196,16 +204,28 @@ class TaskRunner
 
                 if ($option->hasValue())
                 {
-                    if ($i + 1 >= $argCount)
+                    if ($inlineValue !== null)
                     {
-                        throw new ArgumentParserException("Option {$arg} requires a value");
+                        $option->applyValue($inlineValue);
                     }
+                    else
+                    {
+                        if ($i + 1 >= $argCount)
+                        {
+                            throw new ArgumentParserException("Option {$arg} requires a value");
+                        }
 
-                    $option->applyValue($commandLineArguments[$i + 1]);
-                    $i++;
+                        $option->applyValue($commandLineArguments[$i + 1]);
+                        $i++;
+                    }
                 }
                 else
                 {
+                    if ($inlineValue !== null)
+                    {
+                        throw new ArgumentParserException("Option {$arg} does not accept a value");
+                    }
+
                     $option->trigger();
                 }
             }

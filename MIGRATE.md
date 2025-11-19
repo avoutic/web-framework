@@ -1,5 +1,11 @@
 # v11 release
 
+## v11.1.1
+
+### Bug fixes
+
+* `TaskRunner` long options now accept the `--option=value` form as well as `--option value`.
+
 ## v11.1
 
 ### New features
