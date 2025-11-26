@@ -55,6 +55,7 @@ class DatabaseQueue implements Queue
             'queue_name' => $this->name,
             'job_data' => serialize($job),
             'available_at' => $availableAt->getTimestamp(),
+            'created_at' => Carbon::now()->getTimestamp(),
             'attempts' => 0,
             'max_attempts' => $maxAttempts,
         ]);

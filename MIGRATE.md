@@ -2,6 +2,10 @@
 
 ## v11.2
 
+### Breaking changes
+
+* `QueueJob` entity now uses `int` for `createdAt` field instead of `string` (datetime).
+
 ### New features
 
 * `Queue\DatabaseQueue` now supports a `deleteJobsOnCompletion` parameter to control whether jobs are deleted after completion.

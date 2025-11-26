@@ -31,7 +31,7 @@ class QueueJob extends EntityCore
     protected string $queueName;
     protected string $jobData;
     protected int $availableAt;
-    protected string $createdAt;
+    protected int $createdAt;
     protected int $attempts;
     protected ?int $reservedAt = null;
     protected int $maxAttempts;
@@ -74,12 +74,12 @@ class QueueJob extends EntityCore
         $this->availableAt = $availableAt;
     }
 
-    public function getCreatedAt(): string
+    public function getCreatedAt(): int
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(string $createdAt): void
+    public function setCreatedAt(int $createdAt): void
     {
         $this->createdAt = $createdAt;
     }
