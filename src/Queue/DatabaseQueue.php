@@ -24,6 +24,7 @@ class DatabaseQueue implements Queue
         private LoggerInterface $logger,
         private QueueJobRepository $queueJobRepository,
         private string $name,
+        private bool $deleteJobsOnCompletion = true,
     ) {}
 
     public function dispatch(Job $job, int $delay = 0, int $maxAttempts = 3): void
@@ -125,7 +126,7 @@ class DatabaseQueue implements Queue
     }
 
     /**
-     * Mark a job as successfully processed and delete it.
+     * Mark a job as successfully processed and delete it if $deleteJobsOnCompletion is true.
      */
     public function markJobCompleted(Job $job): void
     {
@@ -156,7 +157,16 @@ class DatabaseQueue implements Queue
             return;
         }
 
-        $this->queueJobRepository->delete($queueJob);
+        if ($this->deleteJobsOnCompletion)
+        {
+            $this->queueJobRepository->delete($queueJob);
+        }
+        else
+        {
+            $queueJob->setCompletedAt(Carbon::now()->getTimestamp());
+            $this->queueJobRepository->save($queueJob);
+        }
+
         unset($this->jobIdToQueueJobId[$jobId]);
 
         $this->logger->debug('Job completed and deleted', [

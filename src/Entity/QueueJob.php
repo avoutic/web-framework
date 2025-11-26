@@ -24,6 +24,7 @@ class QueueJob extends EntityCore
         'max_attempts',
         'error',
         'failed_at',
+        'completed_at',
     ];
 
     protected int $id;
@@ -36,6 +37,7 @@ class QueueJob extends EntityCore
     protected int $maxAttempts;
     protected ?string $error = null;
     protected ?int $failedAt = null;
+    protected ?int $completedAt = null;
 
     public function getId(): int
     {
@@ -130,5 +132,15 @@ class QueueJob extends EntityCore
     public function setFailedAt(?int $failedAt): void
     {
         $this->failedAt = $failedAt;
+    }
+
+    public function getCompletedAt(): ?int
+    {
+        return $this->completedAt;
+    }
+
+    public function setCompletedAt(?int $completedAt): void
+    {
+        $this->completedAt = $completedAt;
     }
 }

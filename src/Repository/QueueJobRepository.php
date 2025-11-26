@@ -38,12 +38,13 @@ class QueueJobRepository extends RepositoryCore
             // 2. Reserved but stale (reserved_at < staleThreshold) - for crash recovery
             // Exclude jobs that have exceeded max_attempts
             $query = <<<'SQL'
-SELECT id, queue_name, job_data, available_at, created_at, attempts, reserved_at, max_attempts, error, failed_at
+SELECT *
 FROM jobs
 WHERE queue_name = ?
   AND available_at <= ?
   AND attempts < max_attempts
   AND (reserved_at IS NULL OR reserved_at < ?)
+  AND completed_at IS NULL
 ORDER BY available_at ASC, id ASC
 LIMIT 1
 FOR UPDATE
@@ -109,7 +110,7 @@ SQL;
     public function countJobsInQueue(string $queueName): int
     {
         // Only count jobs that haven't exceeded max_attempts
-        $query = 'SELECT COUNT(*) as count FROM jobs WHERE queue_name = ? AND attempts < max_attempts';
+        $query = 'SELECT COUNT(*) as count FROM jobs WHERE queue_name = ? AND attempts < max_attempts AND completed_at IS NULL';
         $params = [$queueName];
         $result = $this->database->query($query, $params, 'Failed to count jobs in queue');
 

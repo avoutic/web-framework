@@ -1,5 +1,11 @@
 # v11 release
 
+## v11.2
+
+### New features
+
+* `Queue\DatabaseQueue` now supports a `deleteJobsOnCompletion` parameter to control whether jobs are deleted after completion.
+
 ## v11.1.1
 
 ### Bug fixes
