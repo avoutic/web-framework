@@ -4,7 +4,8 @@
 
 ### Breaking changes
 
-* `QueueJob` entity now uses `int` for `createdAt` field instead of `string` (datetime).
+* `Entity\QueueJob` entity now uses `int` for `createdAt` field instead of `string` (datetime).
+* `Mail\QueuedMailService` now requires a `queueService` parameter instead of a `queue` parameter and allows specifying a queue name.
 
 ### New features
 
