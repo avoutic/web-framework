@@ -84,7 +84,6 @@ class DatabaseQueue implements Queue
         {
             // Corrupted job data - release it back to queue and mark as failed
             $queueJob->setReservedAt(null);
-            $queueJob->setAttempts($queueJob->getAttempts() + 1);
             $errorMessage = sprintf(
                 'Unserialize failed: %s: %s',
                 get_class($e),
@@ -107,7 +106,6 @@ class DatabaseQueue implements Queue
         {
             // Invalid job data - release it back to queue
             $queueJob->setReservedAt(null);
-            $queueJob->setAttempts($queueJob->getAttempts() + 1);
             $errorMessage = 'Invalid job data: unserialized value is not a Job instance';
             $queueJob->setError($errorMessage);
             $this->queueJobRepository->save($queueJob);
@@ -225,11 +223,10 @@ class DatabaseQueue implements Queue
         }
 
         // Check if we've exceeded max attempts
-        if ($currentAttempts >= $maxAttempts - 1)
+        if ($currentAttempts >= $maxAttempts)
         {
             unset($this->jobIdToQueueJobId[$jobId]);
 
-            $queueJob->setAttempts($queueJob->getAttempts() + 1);
             $queueJob->setFailedAt(Carbon::now()->getTimestamp());
 
             // Move to dead letter queue (same table, different queue name)
@@ -242,7 +239,7 @@ class DatabaseQueue implements Queue
                 'deadLetterQueue' => $deadLetterQueueName,
                 'jobId' => $jobId,
                 'jobName' => $job->getJobName(),
-                'attempts' => $currentAttempts + 1,
+                'attempts' => $currentAttempts,
                 'maxAttempts' => $maxAttempts,
                 'error' => $errorMessage,
             ]);
@@ -258,7 +255,6 @@ class DatabaseQueue implements Queue
         $newAvailableAt = Carbon::now()->addSeconds($backoffSeconds)->getTimestamp();
         $queueJob->setReservedAt(null);
         $queueJob->setAvailableAt($newAvailableAt);
-        $queueJob->setAttempts($currentAttempts + 1);
         $queueJob->setError(null);
         $this->queueJobRepository->save($queueJob);
 
@@ -268,7 +264,7 @@ class DatabaseQueue implements Queue
             'queue' => $this->name,
             'jobId' => $jobId,
             'jobName' => $job->getJobName(),
-            'attempts' => $currentAttempts + 1,
+            'attempts' => $currentAttempts,
             'maxAttempts' => $maxAttempts,
             'backoffSeconds' => $backoffSeconds,
             'error' => $errorMessage,

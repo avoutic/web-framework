@@ -32,7 +32,7 @@ class QueueJobRepository extends RepositoryCore
 
         try
         {
-            // Use SELECT FOR UPDATE to lock the row atomically
+            // Use SELECT FOR UPDATE to lock the row atomically, and skip already locked rows.
             // Include jobs that are:
             // 1. Not reserved (reserved_at IS NULL), OR
             // 2. Reserved but stale (reserved_at < staleThreshold) - for crash recovery
@@ -47,7 +47,7 @@ WHERE queue_name = ?
   AND completed_at IS NULL
 ORDER BY available_at ASC, id ASC
 LIMIT 1
-FOR UPDATE
+FOR UPDATE SKIP LOCKED
 SQL;
 
             $params = [$queueName, $now, $staleThreshold];
@@ -61,40 +61,36 @@ SQL;
             }
 
             $queueJob = $this->instantiateEntityFromData($result->fields);
+            $newAttempts = $queueJob->getAttempts() + 1;
+
+            $queueJob->setAttempts($newAttempts);
 
             // If this is a stale job (was reserved but timed out), release it first
             // This handles worker crash recovery - jobs that were locked but never completed
             if ($queueJob->getReservedAt() !== null)
             {
-                $newAttempts = $queueJob->getAttempts() + 1;
-                $maxAttempts = $queueJob->getMaxAttempts();
-
                 // Check if incrementing attempts would exceed max_attempts
                 // If so, mark as failed and move to dead letter queue instead of retrying
-                if ($newAttempts >= $maxAttempts)
+                if ($newAttempts > $queueJob->getMaxAttempts())
                 {
-                    $queueJob->setAttempts($newAttempts);
-                    $queueJob->setReservedAt(null);
                     $queueJob->setFailedAt(Carbon::now()->getTimestamp());
                     $deadLetterQueueName = $queueName.'-failed';
                     $queueJob->setQueueName($deadLetterQueueName);
+
                     $this->save($queueJob);
                     $this->database->commitTransaction();
 
                     return null;
                 }
 
-                // Increment attempts for stale jobs to track recovery attempts
                 // Clear error field on recovery retry
-                $queueJob->setAttempts($newAttempts);
-                $queueJob->setReservedAt(null);
                 $queueJob->setError(null);
             }
 
             // Atomically mark job as reserved
             $queueJob->setReservedAt($now);
-            $this->save($queueJob);
 
+            $this->save($queueJob);
             $this->database->commitTransaction();
 
             return $queueJob;

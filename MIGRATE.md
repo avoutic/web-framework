@@ -1,5 +1,12 @@
 # v11 release
 
+## v11.2.1
+
+### Bug fixes
+
+* `Queue\DatabaseQueue` now uses `SELECT FOR UPDATE SKIP LOCKED` to lock the row atomically, and skip already locked rows.
+* Add index to `jobs` table to speed up job retrieval and reduce lock contention.
+
 ## v11.2
 
 ### Breaking changes
