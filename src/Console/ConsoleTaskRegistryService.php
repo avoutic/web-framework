@@ -23,6 +23,7 @@ use WebFramework\Task\DbMakeMigrationTask;
 use WebFramework\Task\DbMigrateTask;
 use WebFramework\Task\DbStatusTask;
 use WebFramework\Task\DefinitionsShowTask;
+use WebFramework\Task\QueueClear;
 use WebFramework\Task\QueueList;
 use WebFramework\Task\QueueWorker;
 use WebFramework\Task\SanityCheckTask;
@@ -45,6 +46,7 @@ class ConsoleTaskRegistryService
         'db:convert-production' => DbConvertProductionTask::class,
         'db:status' => DbStatusTask::class,
         'db:make' => DbMakeMigrationTask::class,
+        'queue:clear' => QueueClear::class,
         'queue:list' => QueueList::class,
         'queue:worker' => QueueWorker::class,
         'sanity:check' => SanityCheckTask::class,

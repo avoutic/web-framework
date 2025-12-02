@@ -5,6 +5,7 @@
 ### New features
 
 * `Task\QueueWorker` now supports a `--empty-sleep` option to control the number of seconds to sleep when there are no jobs.
+* Add `queue:clear` task to clear a queue.
 
 ## v11.2.1
 
