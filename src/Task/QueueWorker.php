@@ -18,6 +18,7 @@ use WebFramework\Queue\QueueService;
 
 class QueueWorker extends ConsoleTask
 {
+    private int $emptySleep = 1;
     private ?int $maxJobs = null;
     private ?int $maxRuntime = null;
 
@@ -54,6 +55,7 @@ class QueueWorker extends ConsoleTask
         framework queue:worker <queueName> [--max-jobs=<maxJobs>] [--max-runtime=<maxRuntime>]
 
         Options:
+        --empty-sleep=<emptySleep> The number of seconds to sleep when there are no jobs (default: 1)
         --max-jobs=<maxJobs>    The maximum number of jobs to process (default: unlimited)
         --max-runtime=<maxRuntime> The maximum run time of the worker (default: unlimited)
         EOF;
@@ -69,9 +71,20 @@ class QueueWorker extends ConsoleTask
     public function getOptions(): array
     {
         return [
+            new TaskOption('empty-sleep', 'e', 'The number of seconds to sleep when there are no jobs', true, [$this, 'setEmptySleep']),
             new TaskOption('max-jobs', 'm', 'The maximum number of jobs to process', true, [$this, 'setMaxJobs']),
             new TaskOption('max-runtime', 'r', 'The maximum runtime of the worker', true, [$this, 'setMaxRuntime']),
         ];
+    }
+
+    public function getEmptySleep(): ?int
+    {
+        return $this->emptySleep;
+    }
+
+    public function setEmptySleep(string $emptySleep): void
+    {
+        $this->emptySleep = (int) $emptySleep;
     }
 
     public function getMaxJobs(): ?int
@@ -128,11 +141,17 @@ class QueueWorker extends ConsoleTask
 
         while (true)
         {
+            $this->logger->debug('default', 'Popping job from queue', ['queue' => $this->queueName]);
             $job = $queue->popJob();
 
             if ($job === null)
             {
-                Carbon::sleep(5);
+                $this->logger->debug('default', 'No job found, sleeping', [
+                    'queue' => $this->queueName,
+                    'delay' => $this->emptySleep,
+                ]);
+
+                Carbon::sleep($this->emptySleep);
 
                 continue;
             }

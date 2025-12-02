@@ -1,5 +1,11 @@
 # v11 release
 
+## v11.3
+
+### New features
+
+* `Task\QueueWorker` now supports a `--empty-sleep` option to control the number of seconds to sleep when there are no jobs.
+
 ## v11.2.1
 
 ### Bug fixes
