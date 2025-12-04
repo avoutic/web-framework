@@ -13,6 +13,7 @@ namespace WebFramework\Repository;
 
 use WebFramework\Entity\Entity;
 use WebFramework\Entity\EntityCollection;
+use WebFramework\Pagination\Paginator;
 
 /**
  * @template T of Entity
@@ -167,6 +168,27 @@ SQL;
 SQL;
 
         return $this->repository->getPluckFromQuery($query, $params, $column, $key);
+    }
+
+    /**
+     * @return Paginator<T>
+     */
+    public function paginate(int $perPage = 15, int $page = 1): Paginator
+    {
+        $total = $this->count();
+        $lastPage = (int) ceil($total / $perPage);
+
+        // Ensure page is within valid bounds (1 to lastPage, or 1 if empty)
+        $page = max(1, min($page, max(1, $lastPage)));
+
+        $offset = ($page - 1) * $perPage;
+
+        $items = $this->limit($perPage)
+            ->offset($offset)
+            ->execute()
+        ;
+
+        return new Paginator($items, $total, $perPage, $page);
     }
 
     /**
