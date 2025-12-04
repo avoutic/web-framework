@@ -62,15 +62,10 @@ abstract class RepositoryCore
 
     public function exists(int $id): bool
     {
-        $result = $this->database->query('SELECT id FROM '.$this->tableName.
-                                   ' WHERE id = ?', [$id]);
-
-        if ($result->RecordCount() != 1)
-        {
-            return false;
-        }
-
-        return true;
+        return $this->query()
+            ->where(['id' => $id])
+            ->exists()
+        ;
     }
 
     /**
@@ -308,31 +303,10 @@ SQL;
      */
     public function countObjects(array $filter = []): int
     {
-        $params = [];
-        $whereFmt = '';
-
-        if (count($filter))
-        {
-            $filterArray = $this->getFilterArray($filter);
-            $whereFmt = "WHERE {$filterArray['query']}";
-            $params = $filterArray['params'];
-        }
-
-        $query = <<<SQL
-        SELECT COUNT(id) AS cnt
-        FROM {$this->tableName}
-        {$whereFmt}
-SQL;
-
-        $class = static::$entityClass;
-        $result = $this->database->query($query, $params, "Failed to retrieve object ({$class})");
-
-        if ($result->RecordCount() != 1)
-        {
-            throw new \RuntimeException("Failed to count objects ({$class})");
-        }
-
-        return $result->fields['cnt'];
+        return $this->query()
+            ->where($filter)
+            ->count()
+        ;
     }
 
     /**
@@ -340,13 +314,10 @@ SQL;
      */
     public function getObjectById(int $id): ?Entity
     {
-        $data = $this->getFieldsFromDb($id);
-        if ($data === null)
-        {
-            return null;
-        }
-
-        return $this->instantiateEntityFromData($data);
+        return $this->query()
+            ->where(['id' => $id])
+            ->getOne()
+        ;
     }
 
     /**
@@ -414,47 +385,10 @@ SQL;
      */
     public function getObject(array $filter = []): ?Entity
     {
-        $fieldsFmt = implode('`, `', $this->baseFields);
-        $params = [];
-        $whereFmt = '';
-
-        if (count($filter))
-        {
-            $filterArray = $this->getFilterArray($filter);
-            $whereFmt = "WHERE {$filterArray['query']}";
-            $params = $filterArray['params'];
-        }
-
-        $query = <<<SQL
-        SELECT id, `{$fieldsFmt}`
-        FROM {$this->tableName}
-        {$whereFmt}
-SQL;
-
-        $class = static::$entityClass;
-        $result = $this->database->query($query, $params, "Failed to retrieve object ({$class})");
-
-        if ($result->RecordCount() > 1)
-        {
-            throw new \RuntimeException("Non-unique object request ({$class})");
-        }
-
-        if ($result->RecordCount() === 0)
-        {
-            return null;
-        }
-
-        $row = $result->fields;
-        $data = [
-            'id' => $row['id'],
-        ];
-
-        foreach ($this->baseFields as $name)
-        {
-            $data[$name] = $row[$name];
-        }
-
-        return $this->instantiateEntityFromData($data);
+        return $this->query()
+            ->where($filter)
+            ->getOne()
+        ;
     }
 
     /**
@@ -464,54 +398,26 @@ SQL;
      */
     public function getObjects(int $offset = 0, int $results = 10, array $filter = [], string $order = ''): EntityCollection
     {
-        $fieldsFmt = \implode('`, `', $this->baseFields);
-        $params = [];
-        $whereFmt = '';
+        $query = $this->query()
+            ->where($filter)
+        ;
 
-        if (count($filter))
+        if (strlen($order))
         {
-            $filterArray = $this->getFilterArray($filter);
-            $whereFmt = "WHERE {$filterArray['query']}";
-            $params = $filterArray['params'];
+            $query = $query->orderBy($order);
         }
-
-        $orderFmt = (strlen($order)) ? "ORDER BY {$order}" : '';
-        $limitFmt = '';
 
         if ($results != -1)
         {
-            $limitFmt = 'LIMIT ?,?';
-            $params[] = (int) $offset;
-            $params[] = (int) $results;
+            $query = $query->limit($results);
         }
 
-        $query = <<<SQL
-        SELECT id, `{$fieldsFmt}`
-        FROM {$this->tableName}
-        {$whereFmt}
-        {$orderFmt}
-        {$limitFmt}
-SQL;
-
-        $class = static::$entityClass;
-        $result = $this->database->query($query, $params, "Failed to retrieve objects ({$class})");
-
-        $info = [];
-        foreach ($result as $k => $row)
+        if ($offset !== 0)
         {
-            $data = [
-                'id' => $row['id'],
-            ];
-
-            foreach ($this->baseFields as $name)
-            {
-                $data[$name] = $row[$name];
-            }
-
-            $info[] = $this->instantiateEntityFromData($data);
+            $query = $query->offset($offset);
         }
 
-        return new EntityCollection($info);
+        return $query->execute();
     }
 
     /**
@@ -540,6 +446,80 @@ SQL;
         }
 
         return new EntityCollection($info);
+    }
+
+    /**
+     * @param array<null|bool|float|int|string> $params
+     */
+    public function getFromQueryCount(string $query, array $params): int
+    {
+        $class = static::$entityClass;
+        $result = $this->database->query($query, $params, "Failed to retrieve object count ({$class})");
+
+        if ($result->RecordCount() != 1)
+        {
+            throw new \RuntimeException("Failed to count objects ({$class})");
+        }
+
+        return $result->fields['total'];
+    }
+
+    /**
+     * Execute a batch update query.
+     *
+     * @param string                            $query  The SQL update query
+     * @param array<null|bool|float|int|string> $params The parameters
+     *
+     * @return int The number of affected rows
+     */
+    public function updateFromQuery(string $query, array $params): int
+    {
+        $class = static::$entityClass;
+        $this->database->query($query, $params, "Failed to batch update objects ({$class})");
+
+        return $this->database->affectedRows();
+    }
+
+    /**
+     * Execute a batch delete query.
+     *
+     * @param string                            $query  The SQL delete query
+     * @param array<null|bool|float|int|string> $params The parameters
+     *
+     * @return int The number of affected rows
+     */
+    public function deleteFromQuery(string $query, array $params): int
+    {
+        $class = static::$entityClass;
+        $this->database->query($query, $params, "Failed to batch delete objects ({$class})");
+
+        return $this->database->affectedRows();
+    }
+
+    /**
+     * @param array<null|bool|float|int|string> $params
+     *
+     * @return array<int|string, mixed>
+     */
+    public function getPluckFromQuery(string $query, array $params, string $column, ?string $key = null): array
+    {
+        $class = static::$entityClass;
+        $result = $this->database->query($query, $params, "Failed to pluck fields ({$class})");
+
+        $data = [];
+        foreach ($result as $row)
+        {
+            if ($key !== null)
+            {
+                $data[$row[$key]] = $row[$column];
+            }
+            else
+            {
+                $data[] = $row[$column];
+            }
+        }
+
+        return $data;
     }
 
     /**
@@ -724,5 +704,17 @@ SQL;
             static fn (string $field): string => sprintf('%s.%s AS `%s.%s`', $alias, $field, $alias, $field),
             $fields
         );
+    }
+
+    /**
+     * Begin a fluent query builder.
+     *
+     * @param array<string, mixed> $filter Initial filter criteria
+     *
+     * @return RepositoryQuery<T>
+     */
+    public function query(array $filter = []): RepositoryQuery
+    {
+        return new RepositoryQuery($this, $this->tableName, $this->baseFields, $filter);
     }
 }

@@ -5,6 +5,7 @@
 ### New features
 
 * `Database\Database` now supports `affectedRows()` method to get the number of affected rows by the last query.
+* `Repository\RepositoryQuery` provides a fluent interface for building queries, supporting filtering, limit, offset, ordering, locking for update, chunking, deleting, updating and pagination.
 
 ## v11.3.1
 
