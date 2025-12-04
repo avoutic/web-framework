@@ -54,10 +54,69 @@ abstract class RepositoryCore
         $this->tableName = $class::getTableName();
     }
 
-    // Convert snake_case to camelCase
-    private function snakeToCamel(string $input): string
+    /**
+     * Begin a fluent query builder.
+     *
+     * @param array<string, mixed> $filter Initial filter criteria
+     *
+     * @return RepositoryQuery<T>
+     */
+    public function query(array $filter = []): RepositoryQuery
     {
-        return lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $input))));
+        return new RepositoryQuery($this, $this->tableName, $this->baseFields, $filter);
+    }
+
+    /**
+     * @param array<null|array{string, null|array<bool|float|int|string>|bool|float|int|string}|bool|float|int|string> $filter
+     *
+     * @return ?T
+     */
+    public function getObject(array $filter = []): ?Entity
+    {
+        return $this->query()
+            ->where($filter)
+            ->getOne()
+        ;
+    }
+
+    /**
+     * @param array<null|array{string, null|array<bool|float|int|string>|bool|float|int|string}|bool|float|int|string> $filter
+     *
+     * @return EntityCollection<T>
+     */
+    public function getObjects(int $offset = 0, int $results = 10, array $filter = [], string $order = ''): EntityCollection
+    {
+        $query = $this->query()
+            ->where($filter)
+        ;
+
+        if (strlen($order))
+        {
+            $query = $query->orderBy($order);
+        }
+
+        if ($results != -1)
+        {
+            $query = $query->limit($results);
+        }
+
+        if ($offset !== 0)
+        {
+            $query = $query->offset($offset);
+        }
+
+        return $query->execute();
+    }
+
+    /**
+     * @return ?T
+     */
+    public function getObjectById(int $id): ?Entity
+    {
+        return $this->query()
+            ->where(['id' => $id])
+            ->getOne()
+        ;
     }
 
     public function exists(int $id): bool
@@ -69,114 +128,61 @@ abstract class RepositoryCore
     }
 
     /**
-     * Get the entity fields as an array.
-     *
-     * @param T    $entity    The entity to get fields from
-     * @param bool $includeId Whether to include the ID field
-     *
-     * @return array<string> The entity fields
-     *
-     * @throws \InvalidArgumentException If the provided entity is not of the correct type
+     * @param array<null|array{string, null|array<bool|float|int|string>|bool|float|int|string}|bool|float|int|string> $filter
      */
-    public function getEntityFields(Entity $entity, bool $includeId = true): array
+    public function countObjects(array $filter = []): int
     {
-        $providedClass = get_class($entity);
-        $staticClass = static::$entityClass;
-
-        if (!($entity instanceof $staticClass))
-        {
-            throw new \InvalidArgumentException("Provided {$providedClass} is not an {$staticClass}");
-        }
-
-        $reflection = new \ReflectionClass($entity);
-
-        $info = [];
-
-        if ($includeId)
-        {
-            $property = $reflection->getProperty('id');
-            $property->setAccessible(true);
-
-            $info['id'] = $property->getValue($entity);
-        }
-
-        foreach ($this->baseFields as $name)
-        {
-            $property = $reflection->getProperty($this->snakeToCamel($name));
-            $property->setAccessible(true);
-
-            // Skip uninitialized values
-            //
-            if (!$property->isInitialized($entity))
-            {
-                continue;
-            }
-
-            $info[$name] = $property->getValue($entity);
-        }
-
-        return $info;
+        return $this->query()
+            ->where($filter)
+            ->count()
+        ;
     }
 
     /**
-     * Get the fields of an entity from the database.
+     * Create a new entity in the database.
      *
-     * @param int $id The ID of the entity
+     * @param array<null|bool|float|int|string> $data The data to create the entity with
      *
-     * @return null|array<string> The entity fields or null if not found
+     * @return T The created entity
      *
-     * @throws \RuntimeException If multiple entities are found for the given ID
+     * @throws \RuntimeException If there's an error during the creation
      */
-    public function getFieldsFromDb(int $id): ?array
+    public function create(array $data): Entity
     {
-        $fieldsFmt = implode('`, `', $this->baseFields);
+        $query = '';
+        $params = [];
 
-        $query = <<<SQL
-        SELECT `{$fieldsFmt}`
-        FROM {$this->tableName}
-        WHERE id = ?
+        if (count($data) == 0)
+        {
+            $query = <<<SQL
+        INSERT INTO {$this->tableName}
+        VALUES()
 SQL;
-
-        $params = [$id];
-
-        $result = $this->database->query($query, $params, "Failed to retrieve base fields for {$this->tableName}");
-
-        if ($result->RecordCount() === 0)
+        }
+        else
         {
-            return null;
+            $setArray = $this->getSetFmt($data);
+            $params = $setArray['params'];
+
+            $query = <<<SQL
+        INSERT INTO {$this->tableName}
+        SET {$setArray['query']}
+SQL;
         }
 
-        if ($result->RecordCount() !== 1)
+        $class = static::$entityClass;
+        $result = $this->database->insertQuery($query, $params, "Failed to create object ({$class})");
+
+        // Cannot use the given data to instantiate because it missed database defaults or
+        // fields updated or filled by triggers. So instantiate from scratch.
+        //
+        $obj = $this->getObjectById($result);
+        if ($obj === null)
         {
-            throw new \RuntimeException("Failed to select single item for {$id} in {$this->tableName}");
+            throw new \RuntimeException("Failed to retrieve newly created object ({$class})");
         }
 
-        $row = $result->fields;
-        $data = [
-            'id' => $id,
-        ];
-
-        foreach ($this->baseFields as $name)
-        {
-            $data[$name] = $row[$name];
-        }
-
-        return $data;
-    }
-
-    /**
-     * Get the changed fields of an entity.
-     *
-     * @param T $entity The entity to check for changes
-     *
-     * @return array<string, mixed> The changed fields
-     */
-    public function getChangedFields(Entity $entity): array
-    {
-        $currentData = $this->getEntityFields($entity, false);
-        $originalData = $entity->getOriginalValues();
-
-        return array_diff_assoc($currentData, $originalData);
+        return $obj;
     }
 
     /**
@@ -252,75 +258,6 @@ SQL;
     }
 
     /**
-     * Create a new entity in the database.
-     *
-     * @param array<null|bool|float|int|string> $data The data to create the entity with
-     *
-     * @return T The created entity
-     *
-     * @throws \RuntimeException If there's an error during the creation
-     */
-    public function create(array $data): Entity
-    {
-        $query = '';
-        $params = [];
-
-        if (count($data) == 0)
-        {
-            $query = <<<SQL
-        INSERT INTO {$this->tableName}
-        VALUES()
-SQL;
-        }
-        else
-        {
-            $setArray = $this->getSetFmt($data);
-            $params = $setArray['params'];
-
-            $query = <<<SQL
-        INSERT INTO {$this->tableName}
-        SET {$setArray['query']}
-SQL;
-        }
-
-        $class = static::$entityClass;
-        $result = $this->database->insertQuery($query, $params, "Failed to create object ({$class})");
-
-        // Cannot use the given data to instantiate because it missed database defaults or
-        // fields updated or filled by triggers. So instantiate from scratch.
-        //
-        $obj = $this->getObjectById($result);
-        if ($obj === null)
-        {
-            throw new \RuntimeException("Failed to retrieve newly created object ({$class})");
-        }
-
-        return $obj;
-    }
-
-    /**
-     * @param array<null|array{string, null|array<bool|float|int|string>|bool|float|int|string}|bool|float|int|string> $filter
-     */
-    public function countObjects(array $filter = []): int
-    {
-        return $this->query()
-            ->where($filter)
-            ->count()
-        ;
-    }
-
-    /**
-     * @return ?T
-     */
-    public function getObjectById(int $id): ?Entity
-    {
-        return $this->query()
-            ->where(['id' => $id])
-            ->getOne()
-        ;
-    }
-
-    /**
      * @param array<string, mixed> $data
      * @param null|string          $prefix Optional alias prefix used in the result set
      *
@@ -376,48 +313,129 @@ SQL;
         return $entity;
     }
 
-    // Helper retrieval functions
-    //
     /**
-     * @param array<null|array{string, null|array<bool|float|int|string>|bool|float|int|string}|bool|float|int|string> $filter
+     * Get the entity fields as an array.
      *
-     * @return ?T
+     * @param T    $entity    The entity to get fields from
+     * @param bool $includeId Whether to include the ID field
+     *
+     * @return array<string> The entity fields
+     *
+     * @throws \InvalidArgumentException If the provided entity is not of the correct type
      */
-    public function getObject(array $filter = []): ?Entity
+    public function getEntityFields(Entity $entity, bool $includeId = true): array
     {
-        return $this->query()
-            ->where($filter)
-            ->getOne()
-        ;
+        $providedClass = get_class($entity);
+        $staticClass = static::$entityClass;
+
+        if (!($entity instanceof $staticClass))
+        {
+            throw new \InvalidArgumentException("Provided {$providedClass} is not an {$staticClass}");
+        }
+
+        $reflection = new \ReflectionClass($entity);
+
+        $info = [];
+
+        if ($includeId)
+        {
+            $property = $reflection->getProperty('id');
+            $property->setAccessible(true);
+
+            $info['id'] = $property->getValue($entity);
+        }
+
+        foreach ($this->baseFields as $name)
+        {
+            $property = $reflection->getProperty($this->snakeToCamel($name));
+            $property->setAccessible(true);
+
+            // Skip uninitialized values
+            //
+            if (!$property->isInitialized($entity))
+            {
+                continue;
+            }
+
+            $info[$name] = $property->getValue($entity);
+        }
+
+        return $info;
     }
 
     /**
-     * @param array<null|array{string, null|array<bool|float|int|string>|bool|float|int|string}|bool|float|int|string> $filter
+     * Get the changed fields of an entity.
      *
-     * @return EntityCollection<T>
+     * @param T $entity The entity to check for changes
+     *
+     * @return array<string, mixed> The changed fields
      */
-    public function getObjects(int $offset = 0, int $results = 10, array $filter = [], string $order = ''): EntityCollection
+    public function getChangedFields(Entity $entity): array
     {
-        $query = $this->query()
-            ->where($filter)
-        ;
+        $currentData = $this->getEntityFields($entity, false);
+        $originalData = $entity->getOriginalValues();
 
-        if (strlen($order))
+        return array_diff_assoc($currentData, $originalData);
+    }
+
+    /**
+     * Get the fields of an entity from the database.
+     *
+     * @param int $id The ID of the entity
+     *
+     * @return null|array<string> The entity fields or null if not found
+     *
+     * @throws \RuntimeException If multiple entities are found for the given ID
+     */
+    public function getFieldsFromDb(int $id): ?array
+    {
+        $fieldsFmt = implode('`, `', $this->baseFields);
+
+        $query = <<<SQL
+        SELECT `{$fieldsFmt}`
+        FROM {$this->tableName}
+        WHERE id = ?
+SQL;
+
+        $params = [$id];
+
+        $result = $this->database->query($query, $params, "Failed to retrieve base fields for {$this->tableName}");
+
+        if ($result->RecordCount() === 0)
         {
-            $query = $query->orderBy($order);
+            return null;
         }
 
-        if ($results != -1)
+        if ($result->RecordCount() !== 1)
         {
-            $query = $query->limit($results);
+            throw new \RuntimeException("Failed to select single item for {$id} in {$this->tableName}");
         }
 
-        if ($offset !== 0)
+        $row = $result->fields;
+        $data = [
+            'id' => $id,
+        ];
+
+        foreach ($this->baseFields as $name)
         {
-            $query = $query->offset($offset);
+            $data[$name] = $row[$name];
         }
 
-        return $query->execute();
+        return $data;
+    }
+
+    /**
+     * @return array<string>
+     */
+    public function getAliasedFields(string $alias, bool $includeId = true): array
+    {
+        $fields = $includeId ? ['id'] : [];
+        $fields = array_merge($fields, $this->baseFields);
+
+        return array_map(
+            static fn (string $field): string => sprintf('%s.%s AS `%s.%s`', $alias, $field, $alias, $field),
+            $fields
+        );
     }
 
     /**
@@ -692,29 +710,9 @@ SQL;
         ];
     }
 
-    /**
-     * @return array<string>
-     */
-    public function getAliasedFields(string $alias, bool $includeId = true): array
+    // Convert snake_case to camelCase
+    private function snakeToCamel(string $input): string
     {
-        $fields = $includeId ? ['id'] : [];
-        $fields = array_merge($fields, $this->baseFields);
-
-        return array_map(
-            static fn (string $field): string => sprintf('%s.%s AS `%s.%s`', $alias, $field, $alias, $field),
-            $fields
-        );
-    }
-
-    /**
-     * Begin a fluent query builder.
-     *
-     * @param array<string, mixed> $filter Initial filter criteria
-     *
-     * @return RepositoryQuery<T>
-     */
-    public function query(array $filter = []): RepositoryQuery
-    {
-        return new RepositoryQuery($this, $this->tableName, $this->baseFields, $filter);
+        return lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $input))));
     }
 }
