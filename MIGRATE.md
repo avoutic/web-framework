@@ -1,5 +1,11 @@
 # v11 release
 
+## v11.4
+
+### New features
+
+* `Database\Database` now supports `affectedRows()` method to get the number of affected rows by the last query.
+
 ## v11.3.1
 
 ### Bug fixes

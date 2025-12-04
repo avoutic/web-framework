@@ -59,6 +59,16 @@ class NullDatabase implements Database
     }
 
     /**
+     * Get the number of affected rows by the last query.
+     *
+     * @return int The number of affected rows
+     */
+    public function affectedRows(): int
+    {
+        return 0;
+    }
+
+    /**
      * Check if a table exists in the database.
      *
      * @param string $tableName The name of the table to check

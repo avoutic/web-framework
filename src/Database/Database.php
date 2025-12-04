@@ -52,6 +52,13 @@ interface Database
     public function getLastError(): string;
 
     /**
+     * Get the number of affected rows by the last query.
+     *
+     * @return int The number of affected rows
+     */
+    public function affectedRows(): int;
+
+    /**
      * Check if a table exists in the database.
      *
      * @param string $tableName The name of the table to check
