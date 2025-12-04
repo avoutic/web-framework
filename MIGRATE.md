@@ -1,5 +1,11 @@
 # v11 release
 
+## v11.3.1
+
+### Bug fixes
+
+* `SanityCheck\SanityCheckRunner` now catches exceptions when setting the checked value to prevent race conditions.
+
 ## v11.3
 
 ### New features

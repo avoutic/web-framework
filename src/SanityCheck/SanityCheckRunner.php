@@ -167,7 +167,14 @@ class SanityCheckRunner
         //
         if ($commit !== null)
         {
-            $this->storedValuesService->setValue('sanity_check.checked_'.$commit, '1');
+            try
+            {
+                $this->storedValuesService->setValue('sanity_check.checked_'.$commit, '1');
+            }
+            catch (\Throwable)
+            {
+                // Ignore race conditions
+            }
         }
     }
 
