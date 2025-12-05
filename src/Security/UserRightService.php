@@ -58,20 +58,21 @@ class UserRightService
             throw new \InvalidArgumentException('Right unknown');
         }
 
-        $userRight = $this->userRightRepository->getObject([
-            'user_id' => $user->getId(),
-            'right_id' => $right->getId(),
-        ]);
+        $userRight = $this->userRightRepository->query()
+            ->where([
+                'user_id' => $user->getId(),
+                'right_id' => $right->getId(),
+            ])
+            ->getOne()
+        ;
 
-        if ($userRight !== null)
+        if ($userRight === null)
         {
-            return;
+            $this->userRightRepository->create([
+                'user_id' => $user->getId(),
+                'right_id' => $right->getId(),
+            ]);
         }
-
-        $this->userRightRepository->create([
-            'user_id' => $user->getId(),
-            'right_id' => $right->getId(),
-        ]);
     }
 
     /**
@@ -95,10 +96,13 @@ class UserRightService
             throw new \InvalidArgumentException('Right unknown');
         }
 
-        $userRight = $this->userRightRepository->getObject([
-            'user_id' => $user->getId(),
-            'right_id' => $right->getId(),
-        ]);
+        $userRight = $this->userRightRepository->query()
+            ->where([
+                'user_id' => $user->getId(),
+                'right_id' => $right->getId(),
+            ])
+            ->getOne()
+        ;
 
         if ($userRight === null)
         {
@@ -125,10 +129,13 @@ class UserRightService
             return false;
         }
 
-        $userRight = $this->userRightRepository->getObject([
-            'user_id' => $user->getId(),
-            'right_id' => $right->getId(),
-        ]);
+        $userRight = $this->userRightRepository->query()
+            ->where([
+                'user_id' => $user->getId(),
+                'right_id' => $right->getId(),
+            ])
+            ->getOne()
+        ;
 
         return ($userRight !== null);
     }

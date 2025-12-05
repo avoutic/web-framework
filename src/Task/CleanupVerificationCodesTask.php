@@ -13,7 +13,7 @@ namespace WebFramework\Task;
 
 use Carbon\Carbon;
 use WebFramework\Core\BootstrapService;
-use WebFramework\Database\Database;
+use WebFramework\Repository\VerificationCodeRepository;
 
 /**
  * Class CleanupVerificationCodesTask.
@@ -25,13 +25,13 @@ class CleanupVerificationCodesTask extends ConsoleTask
     /**
      * CleanupVerificationCodesTask constructor.
      *
-     * @param BootstrapService $bootstrapService The bootstrap service
-     * @param Database         $database         The database service
-     * @param resource         $outputStream     The output stream
+     * @param BootstrapService           $bootstrapService           The bootstrap service
+     * @param VerificationCodeRepository $verificationCodeRepository The verification code repository
+     * @param resource                   $outputStream               The output stream
      */
     public function __construct(
         private BootstrapService $bootstrapService,
-        private Database $database,
+        private VerificationCodeRepository $verificationCodeRepository,
         private $outputStream = STDOUT
     ) {}
 
@@ -70,17 +70,24 @@ class CleanupVerificationCodesTask extends ConsoleTask
         $this->bootstrapService->skipSanityChecks();
         $this->bootstrapService->bootstrap();
 
-        $now = Carbon::now()->getTimestamp();
-        $sevenDaysAgo = Carbon::now()->subDays(7)->getTimestamp();
+        $now = Carbon::now();
+        $sevenDaysAgo = Carbon::now()->subDays(7);
 
         // Delete expired codes and codes that have been used for more than 7 days
-        $query = <<<'SQL'
-        DELETE FROM verification_codes
-        WHERE expires_at < ? OR
-              (used_at IS NOT NULL AND used_at < ?)
-SQL;
-
-        $this->database->query($query, [$now, $sevenDaysAgo], 'Failed to cleanup verification codes');
+        $this->verificationCodeRepository->query()
+            ->where([
+                'OR' => [
+                    'expires_at' => ['<', $now->getTimestamp()],
+                    [
+                        'used_at' => [
+                            ['IS NOT', null],
+                            ['<', $sevenDaysAgo->getTimestamp()],
+                        ],
+                    ],
+                ],
+            ])
+            ->delete()
+        ;
 
         $this->write('Cleaned up verification code(s).'.PHP_EOL);
     }

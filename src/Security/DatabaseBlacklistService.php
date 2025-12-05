@@ -13,7 +13,6 @@ namespace WebFramework\Security;
 
 use Carbon\Carbon;
 use Psr\Log\LoggerInterface;
-use WebFramework\Database\Database;
 use WebFramework\Repository\BlacklistEntryRepository;
 
 /**
@@ -26,7 +25,6 @@ class DatabaseBlacklistService implements BlacklistService
     /**
      * DatabaseBlacklistService constructor.
      *
-     * @param Database                 $database                 The database service
      * @param BlacklistEntryRepository $blacklistEntryRepository The blacklist entry repository
      * @param LoggerInterface          $logger                   The logger service
      * @param int                      $storePeriod              The period to store blacklist entries (in seconds)
@@ -34,7 +32,6 @@ class DatabaseBlacklistService implements BlacklistService
      * @param int                      $triggerPeriod            The period to consider for blacklisting (in seconds)
      */
     public function __construct(
-        private Database $database,
         private BlacklistEntryRepository $blacklistEntryRepository,
         private LoggerInterface $logger,
         private int $storePeriod,
@@ -49,14 +46,14 @@ class DatabaseBlacklistService implements BlacklistService
     {
         $this->logger->debug('Cleaning up blacklist entries');
 
-        $query = <<<'SQL'
-        DELETE FROM blacklist_entries
-        WHERE timestamp < ?
-SQL;
+        $cutoff = Carbon::now()->subSeconds($this->storePeriod);
 
-        $cutoff = Carbon::now()->subSeconds($this->storePeriod)->getTimestamp();
-
-        $result = $this->database->query($query, [$cutoff], 'Failed to clean up blacklist entries');
+        $this->blacklistEntryRepository->query()
+            ->where([
+                'timestamp' => ['<', $cutoff->getTimestamp()],
+            ])
+            ->delete()
+        ;
     }
 
     /**
@@ -93,30 +90,35 @@ SQL;
     public function isBlacklisted(string $ip, ?int $userId): bool
     {
         $cutoff = Carbon::now()->subSeconds($this->triggerPeriod)->getTimestamp();
-        $params = [$cutoff, $ip];
-        $userFmt = '';
+        $total = 0;
 
         if ($userId != null)
         {
-            $params[] = $userId;
-            $userFmt = 'OR user_id = ?';
+            $total = $this->blacklistEntryRepository->query()
+                ->where([
+                    'timestamp' => ['>', $cutoff],
+                    'OR' => [
+                        'ip' => $ip,
+                        'user_id' => $userId,
+                    ],
+                ])
+                ->sum('severity')
+            ;
+        }
+        else
+        {
+            $total = $this->blacklistEntryRepository->query()
+                ->where([
+                    'timestamp' => ['>', $cutoff],
+                    'ip' => $ip,
+                ])
+                ->sum('severity')
+            ;
         }
 
-        $query = <<<SQL
-        SELECT SUM(severity) AS total
-        FROM blacklist_entries
-        WHERE timestamp > ? AND
-              (
-                 ip = ?
-                {$userFmt}
-              )
-SQL;
+        $isBlacklisted = $total > $this->threshold;
 
-        $result = $this->database->query($query, $params, 'Failed to sum blacklist entries');
-
-        $isBlacklisted = $result->fields['total'] > $this->threshold;
-
-        $this->logger->debug('Is blacklisted', ['ip' => $ip, 'user_id' => $userId, 'is_blacklisted' => $isBlacklisted, 'total' => $result->fields['total']]);
+        $this->logger->debug('Is blacklisted', ['ip' => $ip, 'user_id' => $userId, 'is_blacklisted' => $isBlacklisted, 'total' => $total]);
 
         return $isBlacklisted;
     }

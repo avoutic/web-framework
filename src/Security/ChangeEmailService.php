@@ -70,9 +70,12 @@ class ChangeEmailService
     {
         if ($this->uniqueIdentifier == 'email')
         {
-            $count = $this->userRepository->countObjects(['email' => $email]);
+            $exists = $this->userRepository->query()
+                ->where(['email' => $email])
+                ->exists()
+            ;
 
-            if ($count > 0)
+            if ($exists)
             {
                 $this->logger->debug('E-mail address already exists', ['email' => $email]);
 
@@ -112,9 +115,12 @@ class ChangeEmailService
     {
         if ($this->uniqueIdentifier == 'email')
         {
-            $count = $this->userRepository->countObjects(['email' => $email]);
+            $exists = $this->userRepository->query()
+                ->where(['email' => $email])
+                ->exists()
+            ;
 
-            if ($count > 0)
+            if ($exists)
             {
                 $this->logger->debug('E-mail address already exists', ['email' => $email]);
 

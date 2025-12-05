@@ -37,30 +37,32 @@ class QueueJobRepository extends RepositoryCore
             // 1. Not reserved (reserved_at IS NULL), OR
             // 2. Reserved but stale (reserved_at < staleThreshold) - for crash recovery
             // Exclude jobs that have exceeded max_attempts
-            $query = <<<'SQL'
-SELECT *
-FROM jobs
-WHERE queue_name = ?
-  AND available_at <= ?
-  AND attempts < max_attempts
-  AND (reserved_at IS NULL OR reserved_at < ?)
-  AND completed_at IS NULL
-ORDER BY available_at ASC, id ASC
-LIMIT 1
-FOR UPDATE SKIP LOCKED
-SQL;
+            $queueJob = $this->query()
+                ->where([
+                    'queue_name' => $queueName,
+                    'available_at' => ['<=', $now],
+                    'attempts' => ['<', new Column('max_attempts')],
+                    'reserved_at' => [
+                        'OR' => [
+                            null,
+                            ['<', $staleThreshold],
+                        ],
+                    ],
+                    'completed_at' => null,
+                ])
+                ->orderByAsc('available_at')
+                ->orderByAsc('id')
+                ->lockForUpdate(true)
+                ->first()
+            ;
 
-            $params = [$queueName, $now, $staleThreshold];
-            $result = $this->database->query($query, $params, 'Failed to retrieve next job');
-
-            if ($result->RecordCount() === 0)
+            if ($queueJob === null)
             {
                 $this->database->commitTransaction();
 
                 return null;
             }
 
-            $queueJob = $this->instantiateEntityFromData($result->fields);
             $newAttempts = $queueJob->getAttempts() + 1;
 
             $queueJob->setAttempts($newAttempts);
@@ -106,23 +108,23 @@ SQL;
     public function countJobsInQueue(string $queueName): int
     {
         // Only count jobs that haven't exceeded max_attempts
-        $query = 'SELECT COUNT(*) as count FROM jobs WHERE queue_name = ? AND attempts < max_attempts AND completed_at IS NULL';
-        $params = [$queueName];
-        $result = $this->database->query($query, $params, 'Failed to count jobs in queue');
-
-        if ($result->RecordCount() === 0)
-        {
-            return 0;
-        }
-
-        return (int) $result->fields['count'];
+        return $this->query()
+            ->where([
+                'queue_name' => $queueName,
+                'attempts' => ['<', new Column('max_attempts')],
+                'completed_at' => null,
+            ])
+            ->count()
+        ;
     }
 
     public function clearQueue(string $queueName): void
     {
-        $query = 'DELETE FROM jobs WHERE queue_name = ?';
-        $params = [$queueName];
-
-        $this->database->query($query, $params, 'Failed to clear queue');
+        $this->query()
+            ->where([
+                'queue_name' => $queueName,
+            ])
+            ->delete()
+        ;
     }
 }

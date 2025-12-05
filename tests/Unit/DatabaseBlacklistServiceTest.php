@@ -4,9 +4,8 @@ namespace Tests\Unit;
 
 use Codeception\Test\Unit;
 use Psr\Log\LoggerInterface;
-use WebFramework\Database\Database;
-use WebFramework\Database\DatabaseResultWrapper;
 use WebFramework\Repository\BlacklistEntryRepository;
+use WebFramework\Repository\RepositoryQuery;
 use WebFramework\Security\DatabaseBlacklistService;
 
 /**
@@ -22,21 +21,20 @@ final class DatabaseBlacklistServiceTest extends Unit
             DatabaseBlacklistService::class,
             [
                 $this->makeEmpty(
-                    Database::class,
+                    BlacklistEntryRepository::class,
                     [
                         'query' => $this->makeEmpty(
-                            DatabaseResultWrapper::class,
+                            RepositoryQuery::class,
                             [
-                                'fields' => [
-                                    'total' => 0,
-                                ],
+                                'where' => $this->makeEmpty(
+                                    RepositoryQuery::class,
+                                    [
+                                        'sum' => 9,
+                                    ]
+                                ),
                             ]
                         ),
-                    ],
-                ),
-                $this->make(
-                    BlacklistEntryRepository::class,
-                    [],
+                    ]
                 ),
                 $this->makeEmpty(LoggerInterface::class),
                 'storePeriod' => 1000,
@@ -55,22 +53,21 @@ final class DatabaseBlacklistServiceTest extends Unit
         $instance = $this->construct(
             DatabaseBlacklistService::class,
             [
-                $this->makeEmpty(
-                    Database::class,
+                $this->make(
+                    BlacklistEntryRepository::class,
                     [
                         'query' => $this->makeEmpty(
-                            DatabaseResultWrapper::class,
+                            RepositoryQuery::class,
                             [
-                                'fields' => [
-                                    'total' => 20,
-                                ],
+                                'where' => $this->makeEmpty(
+                                    RepositoryQuery::class,
+                                    [
+                                        'sum' => 11,
+                                    ]
+                                ),
                             ]
                         ),
                     ],
-                ),
-                $this->make(
-                    BlacklistEntryRepository::class,
-                    [],
                 ),
                 $this->makeEmpty(LoggerInterface::class),
                 'storePeriod' => 1000,

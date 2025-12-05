@@ -33,7 +33,10 @@ class UserRepository extends RepositoryCore
      */
     public function getUserByUsername(string $username): ?User
     {
-        return $this->getObject(['username' => $username]);
+        return $this->query()
+            ->where(['username' => $username])
+            ->getOne()
+        ;
     }
 
     /**
@@ -45,7 +48,10 @@ class UserRepository extends RepositoryCore
      */
     public function getUserByEmail(string $email): ?User
     {
-        return $this->getObject(['email' => $email]);
+        return $this->query()
+            ->where(['email' => $email])
+            ->getOne()
+        ;
     }
 
     /**
@@ -59,33 +65,12 @@ class UserRepository extends RepositoryCore
      */
     public function searchUsers(string $string): EntityCollection
     {
-        $query = <<<'SQL'
-        SELECT id
-        FROM users
-        WHERE id = ? OR
-              username LIKE ? OR
-              email LIKE ?
-SQL;
-
-        $result = $this->database->query($query, [
-            $string,
-            "%{$string}%",
-            "%{$string}%",
-        ], 'Failed to search users');
-
-        $data = [];
-        foreach ($result as $row)
-        {
-            $user = $this->getObjectById($row['id']);
-
-            if ($user === null)
-            {
-                throw new \RuntimeException('Failed to retrieve user');
-            }
-
-            $data[] = $user;
-        }
-
-        return new EntityCollection($data);
+        return $this->query()->where([
+            'OR' => [
+                'id' => $string,
+                'username' => ['LIKE', "%{$string}%"],
+                'email' => ['LIKE', "%{$string}%"],
+            ],
+        ])->execute();
     }
 }

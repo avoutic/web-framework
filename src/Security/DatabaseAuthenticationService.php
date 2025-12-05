@@ -15,7 +15,6 @@ use Carbon\Carbon;
 use Odan\Session\SessionInterface;
 use Odan\Session\SessionManagerInterface;
 use Psr\Log\LoggerInterface;
-use WebFramework\Database\Database;
 use WebFramework\Entity\Session;
 use WebFramework\Entity\User;
 use WebFramework\Repository\SessionRepository;
@@ -34,7 +33,6 @@ class DatabaseAuthenticationService implements AuthenticationService
     /**
      * DatabaseAuthenticationService constructor.
      *
-     * @param Database                $database              The database service
      * @param LoggerInterface         $logger                The logger service
      * @param SessionInterface        $browserSession        The browser session service
      * @param SessionManagerInterface $browserSessionManager The browser session manager
@@ -43,7 +41,6 @@ class DatabaseAuthenticationService implements AuthenticationService
      * @param int                     $sessionTimeout        The session timeout in seconds
      */
     public function __construct(
-        private Database $database,
         private LoggerInterface $logger,
         private SessionInterface $browserSession,
         private SessionManagerInterface $browserSessionManager,
@@ -59,16 +56,14 @@ class DatabaseAuthenticationService implements AuthenticationService
     {
         $this->logger->debug('Cleaning up expired sessions');
 
-        $timestamp = Carbon::now();
+        $cutoff = Carbon::now()->subSeconds($this->sessionTimeout);
 
-        $query = <<<'SQL'
-        DELETE FROM sessions
-        WHERE ADDDATE(last_active, INTERVAL ? SECOND) < ?
-SQL;
-
-        $params = [$this->sessionTimeout, $timestamp];
-
-        $this->database->query($query, $params);
+        $this->sessionRepository->query()
+            ->where([
+                'last_active' => ['<', $cutoff->getTimestamp()],
+            ])
+            ->delete()
+        ;
     }
 
     /**
@@ -104,7 +99,12 @@ SQL;
 
         $this->sessionChecked = false;
 
-        $result = $this->database->query('DELETE FROM sessions WHERE user_id = ?', [$userId], 'Failed to delete all sessions for user');
+        $this->sessionRepository->query()
+            ->where([
+                'user_id' => $userId,
+            ])
+            ->delete()
+        ;
     }
 
     /**

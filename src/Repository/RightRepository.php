@@ -32,6 +32,9 @@ class RightRepository extends RepositoryCore
      */
     public function getRightByShortName(string $shortName): ?Right
     {
-        return $this->getObject(['short_name' => $shortName]);
+        return $this->query()
+            ->where(['short_name' => $shortName])
+            ->getOne()
+        ;
     }
 }

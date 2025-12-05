@@ -15,6 +15,7 @@ use WebFramework\Exception\CodeVerificationException;
 use WebFramework\Exception\DuplicateEmailException;
 use WebFramework\Exception\WrongAccountException;
 use WebFramework\Mail\UserMailer;
+use WebFramework\Repository\RepositoryQuery;
 use WebFramework\Repository\UserRepository;
 use WebFramework\Repository\VerificationCodeRepository;
 use WebFramework\Security\AuthenticationService;
@@ -86,7 +87,15 @@ final class ChangeEmailServiceTest extends Unit
         $userRepository = $this->makeEmpty(
             UserRepository::class,
             [
-                'countObjects' => Expected::once(0),
+                'query' => Expected::once(function () {
+                    return $this->makeEmpty(RepositoryQuery::class, [
+                        'where' => Expected::once(function () {
+                            return $this->makeEmpty(RepositoryQuery::class, [
+                                'exists' => Expected::once(false),
+                            ]);
+                        }),
+                    ]);
+                }),
                 'save' => Expected::once(),
             ],
         );
@@ -125,7 +134,15 @@ final class ChangeEmailServiceTest extends Unit
         $userRepository = $this->makeEmpty(
             UserRepository::class,
             [
-                'countObjects' => Expected::once(1),
+                'query' => Expected::once(function () {
+                    return $this->makeEmpty(RepositoryQuery::class, [
+                        'where' => Expected::once(function () {
+                            return $this->makeEmpty(RepositoryQuery::class, [
+                                'exists' => Expected::once(true),
+                            ]);
+                        }),
+                    ]);
+                }),
             ],
         );
 
@@ -191,7 +208,15 @@ final class ChangeEmailServiceTest extends Unit
         $userRepository = $this->makeEmpty(
             UserRepository::class,
             [
-                'countObjects' => Expected::once(0),
+                'query' => Expected::once(function () {
+                    return $this->makeEmpty(RepositoryQuery::class, [
+                        'where' => Expected::once(function () {
+                            return $this->makeEmpty(RepositoryQuery::class, [
+                                'exists' => Expected::once(false),
+                            ]);
+                        }),
+                    ]);
+                }),
             ],
         );
 
@@ -226,7 +251,15 @@ final class ChangeEmailServiceTest extends Unit
         $userRepository = $this->makeEmpty(
             UserRepository::class,
             [
-                'countObjects' => Expected::once(1),
+                'query' => Expected::once(function () {
+                    return $this->makeEmpty(RepositoryQuery::class, [
+                        'where' => Expected::once(function () {
+                            return $this->makeEmpty(RepositoryQuery::class, [
+                                'exists' => Expected::once(true),
+                            ]);
+                        }),
+                    ]);
+                }),
             ],
         );
 

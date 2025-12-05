@@ -17,16 +17,24 @@ class TestRepository extends RepositoryCore
 
     public function getTestEntityByName(string $name): ?TestEntity
     {
-        return $this->getObject(['name' => $name]);
+        return $this->query()
+            ->where(['name' => $name])
+            ->getOne()
+        ;
     }
 
     public function getTestEntityByEmail(string $email): ?TestEntity
     {
-        return $this->getObject(['email' => $email]);
+        return $this->query()
+            ->where(['email' => $email])
+            ->getOne()
+        ;
     }
 
     public function getActiveEntities(): array
     {
-        return $this->getObjects(['active' => true]);
+        return $this->query()
+            ->where(['active' => true])
+            ->execute();
     }
 }

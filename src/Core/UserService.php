@@ -77,9 +77,15 @@ class UserService
         //
         if ($this->uniqueIdentifier == 'email')
         {
-            return $this->userRepository->countObjects(['email' => $username]) === 0;
+            return $this->userRepository
+                ->query(['email' => $username])
+                ->exists() === false
+            ;
         }
 
-        return $this->userRepository->countObjects(['username' => $username]) === 0;
+        return $this->userRepository
+            ->query(['username' => $username])
+            ->exists() === false
+        ;
     }
 }

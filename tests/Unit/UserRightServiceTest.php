@@ -8,6 +8,7 @@ use Psr\Log\LoggerInterface;
 use WebFramework\Entity\Right;
 use WebFramework\Entity\User;
 use WebFramework\Entity\UserRight;
+use WebFramework\Repository\RepositoryQuery;
 use WebFramework\Repository\RightRepository;
 use WebFramework\Repository\UserRightRepository;
 use WebFramework\Security\UserRightService;
@@ -75,7 +76,15 @@ final class UserRightServiceTest extends Unit
                 'userRightRepository' => $this->make(
                     UserRightRepository::class,
                     [
-                        'getObject' => Expected::once(null),
+                        'query' => Expected::once(function () {
+                            return $this->makeEmpty(RepositoryQuery::class, [
+                                'where' => Expected::once(function () {
+                                    return $this->makeEmpty(RepositoryQuery::class, [
+                                        'getOne' => Expected::once(null),
+                                    ]);
+                                }),
+                            ]);
+                        }),
                         'create' => Expected::once($this->makeEmpty(
                             UserRight::class,
                         )),
@@ -114,9 +123,17 @@ final class UserRightServiceTest extends Unit
                 'userRightRepository' => $this->make(
                     UserRightRepository::class,
                     [
-                        'getObject' => Expected::once($this->makeEmpty(
-                            UserRight::class,
-                        )),
+                        'query' => Expected::once(function () {
+                            return $this->makeEmpty(RepositoryQuery::class, [
+                                'where' => Expected::once(function () {
+                                    return $this->makeEmpty(RepositoryQuery::class, [
+                                        'getOne' => Expected::once($this->makeEmpty(
+                                            UserRight::class,
+                                        )),
+                                    ]);
+                                }),
+                            ]);
+                        }),
                         'create' => Expected::never(),
                     ],
                 ),
@@ -189,9 +206,17 @@ final class UserRightServiceTest extends Unit
                 'userRightRepository' => $this->make(
                     UserRightRepository::class,
                     [
-                        'getObject' => Expected::once($this->makeEmpty(
-                            UserRight::class,
-                        )),
+                        'query' => Expected::once(function () {
+                            return $this->makeEmpty(RepositoryQuery::class, [
+                                'where' => Expected::once(function () {
+                                    return $this->makeEmpty(RepositoryQuery::class, [
+                                        'getOne' => Expected::once($this->makeEmpty(
+                                            UserRight::class,
+                                        )),
+                                    ]);
+                                }),
+                            ]);
+                        }),
                         'delete' => Expected::once(),
                     ],
                 ),
@@ -228,7 +253,15 @@ final class UserRightServiceTest extends Unit
                 'userRightRepository' => $this->make(
                     UserRightRepository::class,
                     [
-                        'getObject' => Expected::once(null),
+                        'query' => Expected::once(function () {
+                            return $this->makeEmpty(RepositoryQuery::class, [
+                                'where' => Expected::once(function () {
+                                    return $this->makeEmpty(RepositoryQuery::class, [
+                                        'getOne' => Expected::once(null),
+                                    ]);
+                                }),
+                            ]);
+                        }),
                         'delete' => Expected::never(),
                     ],
                 ),
@@ -293,9 +326,17 @@ final class UserRightServiceTest extends Unit
                 'userRightRepository' => $this->make(
                     UserRightRepository::class,
                     [
-                        'getObject' => Expected::once($this->makeEmpty(
-                            UserRight::class,
-                        )),
+                        'query' => Expected::once(function () {
+                            return $this->makeEmpty(RepositoryQuery::class, [
+                                'where' => Expected::once(function () {
+                                    return $this->makeEmpty(RepositoryQuery::class, [
+                                        'getOne' => Expected::once($this->makeEmpty(
+                                            UserRight::class,
+                                        )),
+                                    ]);
+                                }),
+                            ]);
+                        }),
                     ],
                 ),
             ],
@@ -332,7 +373,15 @@ final class UserRightServiceTest extends Unit
                 'userRightRepository' => $this->make(
                     UserRightRepository::class,
                     [
-                        'getObject' => Expected::once(null),
+                        'query' => Expected::once(function () {
+                            return $this->makeEmpty(RepositoryQuery::class, [
+                                'where' => Expected::once(function () {
+                                    return $this->makeEmpty(RepositoryQuery::class, [
+                                        'getOne' => Expected::once(null),
+                                    ]);
+                                }),
+                            ]);
+                        }),
                     ],
                 ),
             ],
