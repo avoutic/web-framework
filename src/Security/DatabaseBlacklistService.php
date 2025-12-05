@@ -92,29 +92,24 @@ class DatabaseBlacklistService implements BlacklistService
         $cutoff = Carbon::now()->subSeconds($this->triggerPeriod)->getTimestamp();
         $total = 0;
 
-        if ($userId != null)
-        {
-            $total = $this->blacklistEntryRepository->query()
-                ->where([
-                    'timestamp' => ['>', $cutoff],
+        $total = $this->blacklistEntryRepository->query()
+            ->where([
+                'timestamp' => ['>', $cutoff],
+            ])
+            ->when($userId !== null, function ($query) use ($ip, $userId) {
+                return $query->where([
                     'OR' => [
                         'ip' => $ip,
                         'user_id' => $userId,
                     ],
-                ])
-                ->sum('severity')
-            ;
-        }
-        else
-        {
-            $total = $this->blacklistEntryRepository->query()
-                ->where([
-                    'timestamp' => ['>', $cutoff],
+                ]);
+            }, function ($query) use ($ip) {
+                return $query->where([
                     'ip' => $ip,
-                ])
-                ->sum('severity')
-            ;
-        }
+                ]);
+            })
+            ->sum('severity')
+        ;
 
         $isBlacklisted = $total > $this->threshold;
 

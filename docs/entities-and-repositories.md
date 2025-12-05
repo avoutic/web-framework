@@ -120,6 +120,26 @@ $jobs = $jobRepository->query()
 // Result: attempts < max_attempts
 ~~~
 
+#### Conditional Clauses
+You can conditionally add clauses to the query using the `when` method. This is useful for building queries based on dynamic input without breaking the fluent chain.
+
+~~~php
+<?php
+
+$repository->query()
+    ->where(['active' => true])
+    ->when($searchQuery, function ($query, $searchQuery) {
+        return $query->whereLike('name', "%{$searchQuery}%");
+    })
+    ->when($sortBy, function ($query, $sortBy) {
+        return $query->orderBy($sortBy);
+    }, function ($query) {
+        // Default sort if $sortBy is false/null
+        return $query->orderBy('created_at');
+    })
+    ->execute();
+~~~
+
 #### Multiple Conditions per Field
 You can apply multiple conditions to a single field by passing an array of conditions:
 

@@ -11,6 +11,7 @@
 * Database filtering now supports multiple conditions on the same field.
 * Fluent query builder now supports aggregate functions: `count()`, `min()`, `max()`, `sum()`, `avg()`.
 * Fluent query builder now supports grouping: `groupBy()`.
+* Fluent query builder now supports conditional clauses: `when()`.
 
 ## v11.3.1
 

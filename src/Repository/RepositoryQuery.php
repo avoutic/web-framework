@@ -60,6 +60,99 @@ class RepositoryQuery
     }
 
     /**
+     * @param array<mixed> $values
+     *
+     * @return RepositoryQuery<T>
+     */
+    public function whereIn(string $column, array $values): self
+    {
+        return $this->where([$column => ['IN', $values]]);
+    }
+
+    /**
+     * @param array<mixed> $values
+     *
+     * @return RepositoryQuery<T>
+     */
+    public function whereNotIn(string $column, array $values): self
+    {
+        return $this->where([$column => ['NOT IN', $values]]);
+    }
+
+    /**
+     * @return RepositoryQuery<T>
+     */
+    public function whereNull(string $column): self
+    {
+        return $this->where([$column => null]);
+    }
+
+    /**
+     * @return RepositoryQuery<T>
+     */
+    public function whereNotNull(string $column): self
+    {
+        return $this->where([$column => ['!=', null]]);
+    }
+
+    /**
+     * @param mixed $min
+     * @param mixed $max
+     *
+     * @return RepositoryQuery<T>
+     */
+    public function whereBetween(string $column, $min, $max): self
+    {
+        return $this->where([$column => ['BETWEEN', $min, $max]]);
+    }
+
+    /**
+     * @param mixed $min
+     * @param mixed $max
+     *
+     * @return RepositoryQuery<T>
+     */
+    public function whereNotBetween(string $column, $min, $max): self
+    {
+        return $this->where([$column => ['NOT BETWEEN', $min, $max]]);
+    }
+
+    /**
+     * @return RepositoryQuery<T>
+     */
+    public function whereLike(string $column, string $pattern): self
+    {
+        return $this->where([$column => ['LIKE', $pattern]]);
+    }
+
+    /**
+     * @return RepositoryQuery<T>
+     */
+    public function whereNotLike(string $column, string $pattern): self
+    {
+        return $this->where([$column => ['NOT LIKE', $pattern]]);
+    }
+
+    /**
+     * @param mixed $value
+     *
+     * @return RepositoryQuery<T>
+     */
+    public function when($value, callable $callback, ?callable $default = null): self
+    {
+        if ($value)
+        {
+            $callback($this, $value);
+        }
+        elseif ($default)
+        {
+            $default($this, $value);
+        }
+
+        return $this;
+    }
+
+    /**
      * @return RepositoryQuery<T>
      */
     public function limit(int $limit): self
