@@ -254,23 +254,6 @@ final class RepositoryCoreTest extends Unit
         ;
     }
 
-    public function testGetFilterArrayAdvancedOperatorUnknown2ValueOperator()
-    {
-        $instance = $this->make(
-            UserRepository::class,
-        );
-
-        verify(function () use ($instance) {
-            $instance->getFilterArray(
-                [
-                    'key1' => ['UNKNOWN', 'val1', 'val2'],
-                ]
-            );
-        })
-            ->callableThrows(\RuntimeException::class, 'Invalid filter definition')
-        ;
-    }
-
     public function testGetFilterArrayIllegalAdvancedOperator()
     {
         $instance = $this->make(
@@ -339,7 +322,7 @@ final class RepositoryCoreTest extends Unit
             ]
         ))
             ->equals([
-                'query' => '((`key1` = ?) OR (`key2` = ?))',
+                'query' => '(`key1` = ? OR `key2` = ?)',
                 'params' => [
                     'val1',
                     'val2',
@@ -366,6 +349,169 @@ final class RepositoryCoreTest extends Unit
                 'query' => '`key1` IS NOT NULL AND `key1` < ?',
                 'params' => [
                     'val1',
+                ],
+            ])
+        ;
+    }
+
+    public function testGetFilterArrayMultipleConditionsNull()
+    {
+        $instance = $this->make(
+            UserRepository::class,
+        );
+
+        verify($instance->getFilterArray(
+            [
+                'key1' => [
+                    null,
+                    ['<', 'val1'],
+                ],
+            ]
+        ))
+            ->equals([
+                'query' => '`key1` IS NULL AND `key1` < ?',
+                'params' => [
+                    'val1',
+                ],
+            ])
+        ;
+    }
+
+    public function testGetFilterArrayMultipleConditionsColumn()
+    {
+        $instance = $this->make(
+            UserRepository::class,
+        );
+
+        verify($instance->getFilterArray(
+            [
+                'key1' => [
+                    null,
+                    new Column('key2'),
+                    ['<', new Column('key3')],
+                ],
+            ]
+        ))
+            ->equals([
+                'query' => '`key1` IS NULL AND `key1` = `key2` AND `key1` < `key3`',
+                'params' => [],
+            ])
+        ;
+    }
+
+    public function testGetFilterArrayMultiConditionsOrNested()
+    {
+        $instance = $this->make(
+            UserRepository::class,
+        );
+
+        verify($instance->getFilterArray(
+            [
+                'key1' => [
+                    ['!=', new Column('key2')],
+                    'OR' => [
+                        'key1.1' => 'val1_1',
+                        'key1.2' => 'val1_2',
+                    ],
+                    null,
+                ],
+            ]
+        ))
+            ->equals([
+                'query' => '`key1` != `key2` AND (`key1.1` = ? OR `key1.2` = ?) AND `key1` IS NULL',
+                'params' => [
+                    'val1_1',
+                    'val1_2',
+                ],
+            ])
+        ;
+    }
+
+    public function testGetFilterArrayOrMultiple()
+    {
+        $instance = $this->make(
+            UserRepository::class,
+        );
+
+        verify($instance->getFilterArray(
+            [
+                'OR' => [
+                    'key1' => [
+                        ['=', 'val1'],
+                        null,
+                    ],
+                    'key2' => [
+                        'teststring',
+                        ['BETWEEN', 'val2', 'val3'],
+                    ],
+                    'key3' => [
+                        ['IN', ['val4', 'val5']],
+                        ['NOT IN', ['val6', 'val7']],
+                    ],
+                ],
+            ]
+        ))
+            ->equals([
+                'query' => '((`key1` = ? AND `key1` IS NULL) OR (`key2` = ? AND `key2` BETWEEN ? AND ?) OR (`key3` IN (?, ?) AND `key3` NOT IN (?, ?)))',
+                'params' => [
+                    'val1',
+                    'teststring',
+                    'val2',
+                    'val3',
+                    'val4',
+                    'val5',
+                    'val6',
+                    'val7',
+                ],
+            ])
+        ;
+    }
+
+    public function testGetFilterArrayOrOrNested()
+    {
+        $instance = $this->make(
+            UserRepository::class,
+        );
+
+        verify($instance->getFilterArray(
+            [
+                'OR' => [
+                    'key1' => [
+                        'OR' => [
+                            'key1.1' => 'val1_1',
+                            'key1.2' => 'val1_2',
+                        ],
+                        null,
+                    ],
+                    'key2' => [
+                        'OR' => [
+                            'key2.1' => 'val2_1',
+                            'key2.2' => 'val2_2',
+                        ],
+                    ],
+                    'key3' => [
+                        ['!=', null],
+                        'OR' => [
+                            'key3.1' => 'val3_1',
+                            'val3_2',
+                        ],
+                    ],
+                    'key4' => 15,
+                    'key5' => null,
+                    'key6' => ['BETWEEN', new Column('key7'), new Column('key8')],
+                ],
+            ]
+        ))
+            ->equals([
+                'query' => '(((`key1.1` = ? OR `key1.2` = ?) AND `key1` IS NULL) OR ((`key2.1` = ? OR `key2.2` = ?)) OR (`key3` IS NOT NULL AND (`key3.1` = ? OR `key3` = ?)) OR `key4` = ? OR `key5` IS NULL OR (`key6` BETWEEN `key7` AND `key8`))',
+                'params' => [
+                    'val1_1',
+                    'val1_2',
+                    'val2_1',
+                    'val2_2',
+                    'val3_1',
+                    'val3_2',
+                    15,
                 ],
             ])
         ;

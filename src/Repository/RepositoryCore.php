@@ -37,6 +37,12 @@ abstract class RepositoryCore
     /** @var string The table name associated with this repository */
     private string $tableName;
 
+    private const OPERATORS = [
+        '=', '!=', '<', '>', '<=', '>=', '<>',
+        'IN', 'NOT IN', 'BETWEEN', 'NOT BETWEEN',
+        'LIKE', 'NOT LIKE',
+    ];
+
     /**
      * RepositoryCore constructor.
      *
@@ -616,12 +622,23 @@ SQL;
                 }
 
                 $orQueries = [];
-                foreach ($definition as $orFilter)
+                foreach ($definition as $orKey => $orFilter)
                 {
+                    if (is_string($orKey))
+                    {
+                        $orFilter = [$orKey => $orFilter];
+                    }
+
                     $result = $this->getFilterArray($orFilter);
                     if ($result['query'] !== '')
                     {
-                        $orQueries[] = "({$result['query']})";
+                        $orQuery = $result['query'];
+                        if (str_contains($orQuery, ' AND ') || str_contains($orQuery, ' OR '))
+                        {
+                            $orQuery = "({$orQuery})";
+                        }
+
+                        $orQueries[] = $orQuery;
                         $params = array_merge($params, $result['params']);
                     }
                 }
@@ -640,15 +657,27 @@ SQL;
 
             if (is_array($definition))
             {
-                if (isset($definition['OR']) && is_array($definition['OR']))
+                if (isset($definition['OR']) && count($definition) === 1)
                 {
-                    $orFmts = [];
-                    foreach ($definition['OR'] as $orCond)
+                    if (!is_array($definition['OR']))
                     {
-                        $subResult = $this->getFilterArray([$key => $orCond]);
+                        throw new \RuntimeException('Invalid OR filter definition');
+                    }
+
+                    $orFmts = [];
+                    foreach ($definition['OR'] as $orKey => $orCond)
+                    {
+                        $targetKey = is_string($orKey) ? $orKey : $key;
+                        $subResult = $this->getFilterArray([$targetKey => $orCond]);
                         if ($subResult['query'] !== '')
                         {
-                            $orFmts[] = $subResult['query'];
+                            $subQuery = $subResult['query'];
+                            if (str_contains($subQuery, ' AND ') || str_contains($subQuery, ' OR '))
+                            {
+                                $subQuery = "({$subQuery})";
+                            }
+
+                            $orFmts[] = $subQuery;
                             $params = array_merge($params, $subResult['params']);
                         }
                     }
@@ -666,12 +695,21 @@ SQL;
                 }
 
                 // Support for multiple conditions on the same field
-                if (isset($definition[0]) && is_array($definition[0]))
-                {
-                    $subFmts = [];
-                    foreach ($definition as $subDef)
+                if (!isset($definition[0])
+                    || !is_string($definition[0])
+                    || !in_array(strtoupper($definition[0]), self::OPERATORS, true)
+                ) {
+                    if (empty($definition))
                     {
-                        $subResult = $this->getFilterArray([$key => $subDef]);
+                        throw new \RuntimeException('Invalid filter definition');
+                    }
+
+                    $subFmts = [];
+                    foreach ($definition as $k => $subDef)
+                    {
+                        $subFilter = ($k === 'OR') ? ['OR' => $subDef] : $subDef;
+
+                        $subResult = $this->getFilterArray([$key => $subFilter]);
                         if ($subResult['query'] !== '')
                         {
                             $subFmts[] = $subResult['query'];
