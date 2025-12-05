@@ -665,6 +665,24 @@ SQL;
                     continue;
                 }
 
+                // Support for multiple conditions on the same field
+                if (isset($definition[0]) && is_array($definition[0]))
+                {
+                    $subFmts = [];
+                    foreach ($definition as $subDef)
+                    {
+                        $subResult = $this->getFilterArray([$key => $subDef]);
+                        if ($subResult['query'] !== '')
+                        {
+                            $subFmts[] = $subResult['query'];
+                            $params = array_merge($params, $subResult['params']);
+                        }
+                    }
+                    $filterFmt .= implode(' AND ', $subFmts);
+
+                    continue;
+                }
+
                 if (count($definition) === 3)
                 {
                     $operator = $definition[0];

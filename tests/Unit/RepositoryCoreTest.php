@@ -348,6 +348,29 @@ final class RepositoryCoreTest extends Unit
         ;
     }
 
+    public function testGetFilterArrayMultipleConditions()
+    {
+        $instance = $this->make(
+            UserRepository::class,
+        );
+
+        verify($instance->getFilterArray(
+            [
+                'key1' => [
+                    ['!=', null],
+                    ['<', 'val1'],
+                ],
+            ]
+        ))
+            ->equals([
+                'query' => '`key1` IS NOT NULL AND `key1` < ?',
+                'params' => [
+                    'val1',
+                ],
+            ])
+        ;
+    }
+
     public function testInstantiateEntityFromDataWithPrefix()
     {
         $instance = $this->construct(
