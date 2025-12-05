@@ -5,7 +5,6 @@ namespace Tests\Unit\RepositoryQuery;
 use Carbon\Carbon;
 use Codeception\Test\Unit;
 use Tests\Support\TestRepository;
-use WebFramework\Entity\EntityCollection;
 use WebFramework\Repository\Column;
 use WebFramework\Repository\RepositoryQuery;
 
@@ -98,22 +97,10 @@ SQL;
 
     public function testOrFilter()
     {
-        $capturedQuery = null;
-        $capturedParams = null;
-
-        $repository = $this->make(TestRepository::class, [
-            'getFromQuery' => function (string $query, array $params) use (&$capturedQuery, &$capturedParams) {
-                $capturedQuery = $query;
-                $capturedParams = $params;
-
-                return $this->makeEmpty(EntityCollection::class, []);
-            },
-        ]);
-
         $instance = $this->make(
             RepositoryQuery::class,
             [
-                'repository' => $repository,
+                'repository' => $this->make(TestRepository::class, []),
                 'tableName' => 'test_entities',
                 'baseFields' => ['name', 'email', 'age', 'active', 'secret_field', 'created_at'],
             ],
@@ -126,7 +113,7 @@ SQL;
             ],
         ]);
 
-        $instance->execute();
+        [$capturedQuery, $capturedParams] = $instance->toSql();
 
         $expectedQuery = <<<'SQL'
         SELECT id, `name`, `email`, `age`, `active`, `secret_field`, `created_at`
@@ -143,22 +130,10 @@ SQL;
 
     public function testComplexQuery()
     {
-        $capturedQuery = null;
-        $capturedParams = null;
-
-        $repository = $this->make(TestRepository::class, [
-            'getFromQuery' => function (string $query, array $params) use (&$capturedQuery, &$capturedParams) {
-                $capturedQuery = $query;
-                $capturedParams = $params;
-
-                return $this->makeEmpty(EntityCollection::class, []);
-            },
-        ]);
-
         $instance = $this->make(
             RepositoryQuery::class,
             [
-                'repository' => $repository,
+                'repository' => $this->make(TestRepository::class, []),
                 'tableName' => 'jobs',
                 'baseFields' => ['queue_name', 'available_at', 'attempts', 'reserved_at', 'completed_at'],
             ],
@@ -183,8 +158,9 @@ SQL;
             ->orderByAsc('available_at')
             ->orderByAsc('id')
             ->lockForUpdate(true)
-            ->first()
         ;
+
+        [$capturedQuery, $capturedParams] = $instance->toSql();
 
         $expectedQuery = <<<'SQL'
         SELECT id, `queue_name`, `available_at`, `attempts`, `reserved_at`, `completed_at`
@@ -195,7 +171,6 @@ SQL;
               (`reserved_at` IS NULL OR `reserved_at` < ?) AND
               `completed_at` IS NULL
         ORDER BY `available_at` ASC, `id` ASC
-        LIMIT ?
         FOR UPDATE SKIP LOCKED
 SQL;
 
@@ -203,6 +178,104 @@ SQL;
             preg_replace('/\s+/', ' ', trim($expectedQuery)),
             preg_replace('/\s+/', ' ', trim($capturedQuery))
         );
-        self::assertSame(['test_queue', $now, $staleThreshold, 1], $capturedParams);
+        self::assertSame(['test_queue', $now, $staleThreshold], $capturedParams);
+    }
+
+    public function testWhenQueryTruthy()
+    {
+        $instance = $this->make(
+            RepositoryQuery::class,
+            [
+                'repository' => $this->make(TestRepository::class, []),
+                'tableName' => 'test_entities',
+                'baseFields' => ['name', 'email', 'age', 'active', 'secret_field', 'created_at'],
+            ],
+        );
+
+        $cutoff = Carbon::now()->subSeconds(100)->getTimestamp();
+        $userId = 1;
+        $ip = '127.0.0.1';
+
+        $query = $instance
+            ->where([
+                'timestamp' => ['>', $cutoff],
+            ])
+            ->when($userId !== null, function ($query) use ($ip, $userId) {
+                return $query->where([
+                    'OR' => [
+                        'ip' => $ip,
+                        'user_id' => $userId,
+                    ],
+                ]);
+            }, function ($query) use ($ip) {
+                return $query->where([
+                    'ip' => $ip,
+                ]);
+            })
+        ;
+
+        [$capturedQuery, $capturedParams] = $query->toSql();
+
+        $expectedQuery = <<<'SQL'
+        SELECT id, `name`, `email`, `age`, `active`, `secret_field`, `created_at`
+        FROM test_entities
+        WHERE `timestamp` > ? AND
+              (`ip` = ? OR `user_id` = ?)
+SQL;
+
+        self::assertSame(
+            preg_replace('/\s+/', ' ', trim($expectedQuery)),
+            preg_replace('/\s+/', ' ', trim($capturedQuery))
+        );
+        self::assertSame([$cutoff, $ip, $userId], $capturedParams);
+    }
+
+    public function testWhenQueryFalsy()
+    {
+        $instance = $this->make(
+            RepositoryQuery::class,
+            [
+                'repository' => $this->make(TestRepository::class, []),
+                'tableName' => 'test_entities',
+                'baseFields' => ['name', 'email', 'age', 'active', 'secret_field', 'created_at'],
+            ],
+        );
+
+        $cutoff = Carbon::now()->subSeconds(100)->getTimestamp();
+        $userId = null;
+        $ip = '127.0.0.1';
+
+        $query = $instance
+            ->where([
+                'timestamp' => ['>', $cutoff],
+            ])
+            ->when($userId !== null, function ($query) use ($ip, $userId) {
+                return $query->where([
+                    'OR' => [
+                        'ip' => $ip,
+                        'user_id' => $userId,
+                    ],
+                ]);
+            }, function ($query) use ($ip) {
+                return $query->where([
+                    'ip' => $ip,
+                ]);
+            })
+        ;
+
+        [$capturedQuery, $capturedParams] = $query->toSql();
+
+        $expectedQuery = <<<'SQL'
+        SELECT id, `name`, `email`, `age`, `active`, `secret_field`, `created_at`
+        FROM test_entities
+        WHERE `timestamp` > ? AND
+              `ip` = ?
+SQL;
+
+        self::assertSame(
+            preg_replace('/\s+/', ' ', trim($expectedQuery)),
+            preg_replace('/\s+/', ' ', trim($capturedQuery))
+        );
+        self::assertSame([$cutoff, $ip], $capturedParams);
     }
 }

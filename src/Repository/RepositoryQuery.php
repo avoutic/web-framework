@@ -220,9 +220,9 @@ class RepositoryQuery
     }
 
     /**
-     * @return EntityCollection<T>
+     * @return array{0: string, 1: array<mixed>}
      */
-    public function execute(): EntityCollection
+    public function toSql(): array
     {
         $fieldsFmt = implode('`, `', $this->baseFields);
 
@@ -239,7 +239,7 @@ class RepositoryQuery
             }
         }
 
-        $query = <<<SQL
+        $sql = <<<SQL
         SELECT id, `{$fieldsFmt}`
         FROM {$this->tableName}
         {$clauses['where']}
@@ -248,6 +248,58 @@ class RepositoryQuery
         {$clauses['limit']}
         {$lockFmt}
 SQL;
+
+        return [$sql, $params];
+    }
+
+    /**
+     * @param array<null|bool|float|int|string> $values
+     *
+     * @return array{0: string, 1: array<mixed>}
+     */
+    public function toUpdateSql(array $values): array
+    {
+        $setArray = $this->repository->getSetFmt($values);
+        $setFmt = $setArray['query'];
+
+        $clauses = $this->buildClauses(false);
+        $params = array_merge($setArray['params'], $clauses['whereParams'], $clauses['limitParams']);
+
+        $sql = <<<SQL
+        UPDATE {$this->tableName}
+        SET {$setFmt}
+        {$clauses['where']}
+        {$clauses['order']}
+        {$clauses['limit']}
+SQL;
+
+        return [$sql, $params];
+    }
+
+    /**
+     * @return array{0: string, 1: array<mixed>}
+     */
+    public function toDeleteSql(): array
+    {
+        $clauses = $this->buildClauses(false);
+        $params = array_merge($clauses['whereParams'], $clauses['limitParams']);
+
+        $sql = <<<SQL
+        DELETE FROM {$this->tableName}
+        {$clauses['where']}
+        {$clauses['order']}
+        {$clauses['limit']}
+SQL;
+
+        return [$sql, $params];
+    }
+
+    /**
+     * @return EntityCollection<T>
+     */
+    public function execute(): EntityCollection
+    {
+        [$query, $params] = $this->toSql();
 
         return $this->repository->getFromQuery($query, $params);
     }
@@ -468,19 +520,7 @@ SQL;
             throw new \RuntimeException('Grouping not supported in UPDATE');
         }
 
-        $setArray = $this->repository->getSetFmt($values);
-        $setFmt = $setArray['query'];
-
-        $clauses = $this->buildClauses(false);
-        $params = array_merge($setArray['params'], $clauses['whereParams'], $clauses['limitParams']);
-
-        $query = <<<SQL
-        UPDATE {$this->tableName}
-        SET {$setFmt}
-        {$clauses['where']}
-        {$clauses['order']}
-        {$clauses['limit']}
-SQL;
+        [$query, $params] = $this->toUpdateSql($values);
 
         return $this->repository->updateFromQuery($query, $params);
     }
@@ -497,15 +537,7 @@ SQL;
             throw new \RuntimeException('Grouping not supported in DELETE');
         }
 
-        $clauses = $this->buildClauses(false);
-        $params = array_merge($clauses['whereParams'], $clauses['limitParams']);
-
-        $query = <<<SQL
-        DELETE FROM {$this->tableName}
-        {$clauses['where']}
-        {$clauses['order']}
-        {$clauses['limit']}
-SQL;
+        [$query, $params] = $this->toDeleteSql();
 
         return $this->repository->deleteFromQuery($query, $params);
     }

@@ -12,6 +12,7 @@
 * Fluent query builder now supports aggregate functions: `count()`, `min()`, `max()`, `sum()`, `avg()`.
 * Fluent query builder now supports grouping: `groupBy()`.
 * Fluent query builder now supports conditional clauses: `when()`.
+* Fluent query builder now supports to SQL methods: `toSql()`, `toUpdateSql()`, `toDeleteSql()`.
 
 ## v11.3.1
 
