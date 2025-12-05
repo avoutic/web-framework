@@ -31,9 +31,9 @@ class RepositoryQuery
     private bool $skipLocked = false;
 
     /**
-     * @param RepositoryCore<T>                                                                                        $repository
-     * @param array<string>                                                                                            $baseFields
-     * @param array<null|array{string, null|array<bool|float|int|string>|bool|float|int|string}|bool|float|int|string> $filter
+     * @param RepositoryCore<T>    $repository
+     * @param array<string>        $baseFields
+     * @param array<string, mixed> $filter
      */
     public function __construct(
         private RepositoryCore $repository,
@@ -45,7 +45,7 @@ class RepositoryQuery
     }
 
     /**
-     * @param array<null|array{string, null|array<bool|float|int|string>|bool|float|int|string}|bool|float|int|string> $filter
+     * @param array<string, mixed> $filter
      *
      * @return RepositoryQuery<T>
      */

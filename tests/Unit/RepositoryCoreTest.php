@@ -324,6 +324,30 @@ final class RepositoryCoreTest extends Unit
         ;
     }
 
+    public function testGetFilterArrayOr()
+    {
+        $instance = $this->make(
+            UserRepository::class,
+        );
+
+        verify($instance->getFilterArray(
+            [
+                'OR' => [
+                    ['key1' => 'val1'],
+                    ['key2' => 'val2'],
+                ],
+            ]
+        ))
+            ->equals([
+                'query' => '((`key1` = ?) OR (`key2` = ?))',
+                'params' => [
+                    'val1',
+                    'val2',
+                ],
+            ])
+        ;
+    }
+
     public function testInstantiateEntityFromDataWithPrefix()
     {
         $instance = $this->construct(

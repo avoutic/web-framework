@@ -7,6 +7,7 @@
 * `Database\Database` now supports `affectedRows()` method to get the number of affected rows by the last query.
 * `Repository\RepositoryQuery` provides a fluent interface for building queries, supporting filtering, limit, offset, ordering, locking for update, chunking, deleting, updating and pagination.
 * Database filtering now supports filtering with `Column` objects.
+* Database filtering now supports 'OR' conditions.
 
 ## v11.3.1
 

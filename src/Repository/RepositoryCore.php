@@ -67,7 +67,7 @@ abstract class RepositoryCore
     }
 
     /**
-     * @param array<null|array{string, null|array<bool|float|int|string>|bool|float|int|string}|bool|float|int|string> $filter
+     * @param array<string, mixed> $filter
      *
      * @return ?T
      */
@@ -80,7 +80,7 @@ abstract class RepositoryCore
     }
 
     /**
-     * @param array<null|array{string, null|array<bool|float|int|string>|bool|float|int|string}|bool|float|int|string> $filter
+     * @param array<string, mixed> $filter
      *
      * @return EntityCollection<T>
      */
@@ -128,7 +128,7 @@ abstract class RepositoryCore
     }
 
     /**
-     * @param array<null|array{string, null|array<bool|float|int|string>|bool|float|int|string}|bool|float|int|string> $filter
+     * @param array<string, mixed> $filter
      */
     public function countObjects(array $filter = []): int
     {
@@ -587,7 +587,7 @@ SQL;
     }
 
     /**
-     * @param array<null|array{string, null|array<bool|float|int|string>|bool|float|int|string}|bool|float|int|string> $filter
+     * @param array<string, mixed> $filter
      *
      * @return array{query: string, params: array<bool|float|int|string>}
      */
@@ -608,8 +608,63 @@ SQL;
                 $first = false;
             }
 
+            if ($key === 'OR')
+            {
+                if (!is_array($definition))
+                {
+                    throw new \RuntimeException('Invalid OR filter definition');
+                }
+
+                $orQueries = [];
+                foreach ($definition as $orFilter)
+                {
+                    $result = $this->getFilterArray($orFilter);
+                    if ($result['query'] !== '')
+                    {
+                        $orQueries[] = "({$result['query']})";
+                        $params = array_merge($params, $result['params']);
+                    }
+                }
+
+                if (count($orQueries) > 0)
+                {
+                    $filterFmt .= '('.implode(' OR ', $orQueries).')';
+                }
+                else
+                {
+                    $filterFmt .= '0';
+                }
+
+                continue;
+            }
+
             if (is_array($definition))
             {
+                if (isset($definition['OR']) && is_array($definition['OR']))
+                {
+                    $orFmts = [];
+                    foreach ($definition['OR'] as $orCond)
+                    {
+                        $subResult = $this->getFilterArray([$key => $orCond]);
+                        if ($subResult['query'] !== '')
+                        {
+                            $orFmts[] = $subResult['query'];
+                            $params = array_merge($params, $subResult['params']);
+                        }
+                    }
+
+                    if (count($orFmts) > 0)
+                    {
+                        $filterFmt .= '('.implode(' OR ', $orFmts).')';
+                    }
+                    else
+                    {
+                        $filterFmt .= '0';
+                    }
+
+                    continue;
+                }
+
                 if (count($definition) === 3)
                 {
                     $operator = $definition[0];
