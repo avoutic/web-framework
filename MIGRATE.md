@@ -9,6 +9,7 @@
 * Database filtering now supports filtering with `Column` objects.
 * Database filtering now supports 'OR' conditions.
 * Database filtering now supports multiple conditions on the same field.
+* Fluent query builder now supports aggregate functions: `count()`, `min()`, `max()`, `sum()`, `avg()`.
 
 ## v11.3.1
 

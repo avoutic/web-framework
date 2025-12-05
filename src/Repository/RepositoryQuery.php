@@ -213,15 +213,46 @@ SQL;
 
     public function count(): int
     {
+        return (int) ($this->aggregate('COUNT', '*') ?? 0);
+    }
+
+    public function min(string $column): float|int|null
+    {
+        return $this->aggregate('MIN', $column);
+    }
+
+    public function max(string $column): float|int|null
+    {
+        return $this->aggregate('MAX', $column);
+    }
+
+    public function sum(string $column): float|int|null
+    {
+        return $this->aggregate('SUM', $column);
+    }
+
+    public function avg(string $column): float|int|null
+    {
+        return $this->aggregate('AVG', $column);
+    }
+
+    private function aggregate(string $function, string $column): float|int|null
+    {
         $clauses = $this->buildClauses(false);
 
+        $select = "`{$column}`";
+        if ($column === '*')
+        {
+            $select = '*';
+        }
+
         $query = <<<SQL
-        SELECT COUNT(id) AS `total`
+        SELECT {$function}({$select}) AS `aggregate`
         FROM {$this->tableName}
         {$clauses['where']}
 SQL;
 
-        return $this->repository->getFromQueryCount($query, $clauses['whereParams']);
+        return $this->repository->getAggregateFromQuery($query, $clauses['whereParams']);
     }
 
     public function exists(): bool

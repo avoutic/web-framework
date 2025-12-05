@@ -469,17 +469,17 @@ SQL;
     /**
      * @param array<null|bool|float|int|string> $params
      */
-    public function getFromQueryCount(string $query, array $params): int
+    public function getAggregateFromQuery(string $query, array $params): float|int|null
     {
         $class = static::$entityClass;
-        $result = $this->database->query($query, $params, "Failed to retrieve object count ({$class})");
+        $result = $this->database->query($query, $params, "Failed to retrieve aggregate value ({$class})");
 
         if ($result->RecordCount() != 1)
         {
-            throw new \RuntimeException("Failed to count objects ({$class})");
+            throw new \RuntimeException("Failed to retrieve aggregate value ({$class})");
         }
 
-        return $result->fields['total'];
+        return $result->fields['aggregate'];
     }
 
     /**
