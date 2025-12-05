@@ -2,7 +2,7 @@
 
 This document provides a guide for developers on how to use the database in the WebFramework. It covers the basic operations, including executing queries, inserting data, and managing transactions.
 
-In most cases, you should use [Entities and Repositories](./entities-and-repositories.md) to interact with the database. But there are multiple cases where you might want to interact with the database directly.
+In most cases, you should use [Entities and Repositories](./entities-and-repositories.md) to interact with the database. The repository provides a [Fluent Query Builder](./entities-and-repositories.md#fluent-query-builder) that allows you to construct complex queries without writing SQL. But there are multiple cases where you might want to interact with the database directly.
 
 ## Overview
 
