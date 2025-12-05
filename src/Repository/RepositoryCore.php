@@ -614,20 +614,32 @@ SQL;
                 {
                     $operator = $definition[0];
 
-                    if ($operator === 'BETWEEN')
+                    if ($operator === 'BETWEEN' || $operator === 'NOT BETWEEN')
                     {
-                        $filterFmt .= "`{$key}` BETWEEN ? AND ?";
-                        $params[] = $definition[1];
-                        $params[] = $definition[2];
+                        $v1 = $definition[1];
+                        $v2 = $definition[2];
 
-                        continue;
-                    }
+                        $p1 = '?';
+                        if ($v1 instanceof Column)
+                        {
+                            $p1 = "`{$v1->name}`";
+                        }
+                        else
+                        {
+                            $params[] = $v1;
+                        }
 
-                    if ($operator === 'NOT BETWEEN')
-                    {
-                        $filterFmt .= "`{$key}` NOT BETWEEN ? AND ?";
-                        $params[] = $definition[1];
-                        $params[] = $definition[2];
+                        $p2 = '?';
+                        if ($v2 instanceof Column)
+                        {
+                            $p2 = "`{$v2->name}`";
+                        }
+                        else
+                        {
+                            $params[] = $v2;
+                        }
+
+                        $filterFmt .= "`{$key}` {$operator} {$p1} AND {$p2}";
 
                         continue;
                     }
@@ -657,6 +669,13 @@ SQL;
 
                     $value = $definition[1];
 
+                    if ($value instanceof Column)
+                    {
+                        $filterFmt .= "`{$key}` {$operator} `{$value->name}`";
+
+                        continue;
+                    }
+
                     // Mysqli does not accept empty for false, so force to zero
                     //
                     if ($value === false)
@@ -685,6 +704,13 @@ SQL;
             }
 
             $value = $definition;
+
+            if ($value instanceof Column)
+            {
+                $filterFmt .= "`{$key}` = `{$value->name}`";
+
+                continue;
+            }
 
             // Mysqli does not accept empty for false, so force to zero
             //

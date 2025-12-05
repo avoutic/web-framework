@@ -5,6 +5,7 @@ namespace Tests\Unit;
 use Codeception\Test\Unit;
 use Psr\Container\ContainerInterface as Container;
 use WebFramework\Database\Database;
+use WebFramework\Repository\Column;
 use WebFramework\Repository\UserRepository;
 
 /**
@@ -284,6 +285,42 @@ final class RepositoryCoreTest extends Unit
             );
         })
             ->callableThrows(\RuntimeException::class, 'Invalid filter definition')
+        ;
+    }
+
+    public function testGetFilterArrayColumnComparison()
+    {
+        $instance = $this->make(
+            UserRepository::class,
+        );
+
+        verify($instance->getFilterArray(
+            [
+                'key1' => new Column('key2'),
+            ]
+        ))
+            ->equals([
+                'query' => '`key1` = `key2`',
+                'params' => [],
+            ])
+        ;
+    }
+
+    public function testGetFilterArrayColumnComparisonWithOperator()
+    {
+        $instance = $this->make(
+            UserRepository::class,
+        );
+
+        verify($instance->getFilterArray(
+            [
+                'key1' => ['>', new Column('key2')],
+            ]
+        ))
+            ->equals([
+                'query' => '`key1` > `key2`',
+                'params' => [],
+            ])
         ;
     }
 

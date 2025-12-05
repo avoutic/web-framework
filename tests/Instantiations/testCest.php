@@ -16,6 +16,7 @@ use WebFramework\Event\UserVerified;
 use WebFramework\Migration\QueryStep;
 use WebFramework\Migration\TaskStep;
 use WebFramework\Queue\DatabaseQueue;
+use WebFramework\Repository\Column;
 use WebFramework\Repository\RepositoryCore;
 use WebFramework\Repository\RepositoryQuery;
 use WebFramework\SanityCheck\SanityCheckBase;
@@ -77,6 +78,7 @@ class testCest
         // Queue
         DatabaseQueue::class,
         // Repository
+        Column::class,
         RepositoryCore::class,
         RepositoryQuery::class,
         // SanityCheck
