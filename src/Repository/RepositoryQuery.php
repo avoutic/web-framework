@@ -26,6 +26,9 @@ class RepositoryQuery
     private ?int $offset = null;
 
     /** @var array<string> */
+    private array $group = [];
+
+    /** @var array<string> */
     private array $order = [];
     private bool $lockForUpdate = false;
     private bool $skipLocked = false;
@@ -72,6 +75,16 @@ class RepositoryQuery
     public function offset(int $offset): self
     {
         $this->offset = $offset;
+
+        return $this;
+    }
+
+    /**
+     * @return RepositoryQuery<T>
+     */
+    public function groupBy(string $group): self
+    {
+        $this->group[] = "`{$group}`";
 
         return $this;
     }
@@ -137,6 +150,7 @@ class RepositoryQuery
         SELECT id, `{$fieldsFmt}`
         FROM {$this->tableName}
         {$clauses['where']}
+        {$clauses['group']}
         {$clauses['order']}
         {$clauses['limit']}
         {$lockFmt}
@@ -163,6 +177,7 @@ SQL;
         SELECT {$select}
         FROM {$this->tableName}
         {$clauses['where']}
+        {$clauses['group']}
         {$clauses['order']}
         {$clauses['limit']}
 SQL;
@@ -250,6 +265,7 @@ SQL;
         SELECT {$function}({$select}) AS `aggregate`
         FROM {$this->tableName}
         {$clauses['where']}
+        {$clauses['group']}
 SQL;
 
         return $this->repository->getAggregateFromQuery($query, $clauses['whereParams']);
@@ -354,6 +370,11 @@ SQL;
             throw new \RuntimeException('Offset not supported in UPDATE');
         }
 
+        if (count($this->group) > 0)
+        {
+            throw new \RuntimeException('Grouping not supported in UPDATE');
+        }
+
         $setArray = $this->repository->getSetFmt($values);
         $setFmt = $setArray['query'];
 
@@ -378,6 +399,11 @@ SQL;
             throw new \RuntimeException('Offset not supported in DELETE');
         }
 
+        if (count($this->group) > 0)
+        {
+            throw new \RuntimeException('Grouping not supported in DELETE');
+        }
+
         $clauses = $this->buildClauses(false);
         $params = array_merge($clauses['whereParams'], $clauses['limitParams']);
 
@@ -394,6 +420,7 @@ SQL;
     /**
      * @return array{
      *   where: string,
+     *   group: string,
      *   order: string,
      *   limit: string,
      *   whereParams: array<mixed>,
@@ -413,6 +440,7 @@ SQL;
             $whereParams = $filterArray['params'];
         }
 
+        $groupFmt = (count($this->group)) ? 'GROUP BY '.implode(', ', $this->group) : '';
         $orderFmt = (count($this->order)) ? 'ORDER BY '.implode(', ', $this->order) : '';
         $limitParams = [];
         $limitFmt = '';
@@ -434,6 +462,7 @@ SQL;
 
         return [
             'where' => $whereFmt,
+            'group' => $groupFmt,
             'order' => $orderFmt,
             'limit' => $limitFmt,
             'whereParams' => $whereParams,

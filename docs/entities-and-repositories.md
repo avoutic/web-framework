@@ -290,6 +290,19 @@ $latestUser = $userRepository->query()
     ->first();
 ~~~
 
+### Grouping Results
+
+You can group results by one or more columns using the `groupBy` method. This is often used in conjunction with aggregate functions.
+
+~~~php
+<?php
+
+// Using aggregates with grouping
+$totalCreditsByStatus = $userRepository->query()
+    ->groupBy('status')
+    ->sum('credits');
+~~~
+
 ## Working with EntityCollection
 
 `EntityCollection` is a specialized class for handling collections of entities. It implements both `Iterator` and `Countable` interfaces, providing several advantages over regular arrays:
