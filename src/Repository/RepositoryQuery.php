@@ -32,6 +32,7 @@ class RepositoryQuery
     private array $order = [];
     private bool $lockForUpdate = false;
     private bool $skipLocked = false;
+    private bool $distinct = false;
 
     /**
      * @param RepositoryCore<T>    $repository
@@ -220,6 +221,16 @@ class RepositoryQuery
     }
 
     /**
+     * @return RepositoryQuery<T>
+     */
+    public function distinct(): self
+    {
+        $this->distinct = true;
+
+        return $this;
+    }
+
+    /**
      * @return array{0: string, 1: array<mixed>}
      */
     public function toSql(): array
@@ -239,8 +250,10 @@ class RepositoryQuery
             }
         }
 
+        $distinct = $this->distinct ? 'DISTINCT ' : '';
+
         $sql = <<<SQL
-        SELECT id, `{$fieldsFmt}`
+        SELECT {$distinct}id, `{$fieldsFmt}`
         FROM {$this->tableName}
         {$clauses['where']}
         {$clauses['group']}
@@ -305,6 +318,37 @@ SQL;
     }
 
     /**
+     * @param array<string> $columns The columns to select
+     * @param ?string       $key     The key to use for the array, if any
+     *
+     * @return array<int|string, array<string, mixed>>
+     */
+    public function select(array $columns, ?string $key = null): array
+    {
+        $clauses = $this->buildClauses();
+        $params = array_merge($clauses['whereParams'], $clauses['limitParams']);
+
+        $select = '`'.implode('`, `', $columns).'`';
+        if ($key !== null)
+        {
+            $select = "`{$key}`, ".$select;
+        }
+
+        $distinct = $this->distinct ? 'DISTINCT ' : '';
+
+        $query = <<<SQL
+        SELECT {$distinct}{$select}
+        FROM {$this->tableName}
+        {$clauses['where']}
+        {$clauses['group']}
+        {$clauses['order']}
+        {$clauses['limit']}
+SQL;
+
+        return $this->repository->getSelectFromQuery($query, $params, $columns, $key);
+    }
+
+    /**
      * @return array<int|string, mixed>
      */
     public function pluck(string $column, ?string $key = null): array
@@ -318,8 +362,10 @@ SQL;
             $select = "`{$key}`, `{$column}`";
         }
 
+        $distinct = $this->distinct ? 'DISTINCT ' : '';
+
         $query = <<<SQL
-        SELECT {$select}
+        SELECT {$distinct}{$select}
         FROM {$this->tableName}
         {$clauses['where']}
         {$clauses['group']}
@@ -328,6 +374,16 @@ SQL;
 SQL;
 
         return $this->repository->getPluckFromQuery($query, $params, $column, $key);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function value(string $column)
+    {
+        $result = $this->limit(1)->pluck($column);
+
+        return $result[0] ?? null;
     }
 
     /**
@@ -406,8 +462,14 @@ SQL;
             $select = '*';
         }
 
+        $distinct = '';
+        if ($this->distinct && $function === 'COUNT')
+        {
+            $distinct = 'DISTINCT ';
+        }
+
         $query = <<<SQL
-        SELECT {$function}({$select}) AS `aggregate`
+        SELECT {$function}({$distinct}{$select}) AS `aggregate`
         FROM {$this->tableName}
         {$clauses['where']}
         {$clauses['group']}
@@ -495,9 +557,34 @@ SQL;
     /**
      * @return ?T
      */
+    public function find(int $id): ?Entity
+    {
+        return $this->where(['id' => $id])->first();
+    }
+
+    /**
+     * @return ?T
+     */
     public function first(): ?Entity
     {
         return $this->limit(1)->getOne();
+    }
+
+    /**
+     * @return T
+     *
+     * @throws \RuntimeException If no result is found
+     */
+    public function firstOrFail(): Entity
+    {
+        $result = $this->first();
+
+        if ($result === null)
+        {
+            throw new \RuntimeException('No results found.');
+        }
+
+        return $result;
     }
 
     /**

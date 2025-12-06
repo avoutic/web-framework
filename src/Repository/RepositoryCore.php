@@ -522,6 +522,40 @@ SQL;
 
     /**
      * @param array<null|bool|float|int|string> $params
+     * @param array<string>                     $columns The columns to select
+     * @param ?string                           $key     The key to use for the array, if any
+     *
+     * @return array<int|string, array<string, mixed>>
+     */
+    public function getSelectFromQuery(string $query, array $params, array $columns, ?string $key = null): array
+    {
+        $class = static::$entityClass;
+        $result = $this->database->query($query, $params, "Failed to select fields ({$class})");
+
+        $data = [];
+        foreach ($result as $row)
+        {
+            $rowData = [];
+            foreach ($columns as $column)
+            {
+                $rowData[$column] = $row[$column];
+            }
+
+            if ($key !== null)
+            {
+                $data[$row[$key]] = $rowData;
+            }
+            else
+            {
+                $data[] = $rowData;
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * @param array<null|bool|float|int|string> $params
      *
      * @return array<int|string, mixed>
      */

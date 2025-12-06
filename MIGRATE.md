@@ -13,6 +13,7 @@
 * Fluent query builder now supports grouping: `groupBy()`.
 * Fluent query builder now supports conditional clauses: `when()`.
 * Fluent query builder now supports to SQL methods: `toSql()`, `toUpdateSql()`, `toDeleteSql()`.
+* Fluent query builder now supports: `firstOrFail()`, `find()`, `select()`, `distinct()`, `value()`.
 
 ## v11.3.1
 
