@@ -146,15 +146,15 @@ You can conditionally add clauses to the query using the `when` method. This is 
 
 $repository->query()
     ->where(['active' => true])
-    ->when($searchQuery, function ($query, $searchQuery) {
-        return $query->whereLike('name', "%{$searchQuery}%");
-    })
-    ->when($sortBy, function ($query, $sortBy) {
-        return $query->orderBy($sortBy);
-    }, function ($query) {
-        // Default sort if $sortBy is false/null
-        return $query->orderBy('created_at');
-    })
+    ->when(
+        $searchQuery,
+        fn ($query) => $query->whereLike('name', "%{$searchQuery}%"),
+    )
+    ->when(
+        $sortBy,
+        fn ($query) => $query->orderBy($sortBy),
+        fn ($query) => $query->orderBy('created_at'),
+    )
     ->execute();
 ~~~
 

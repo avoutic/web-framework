@@ -77,12 +77,24 @@ abstract class RepositoryCore
      *
      * @return ?T
      */
-    public function getObject(array $filter = []): ?Entity
+    public function findOneBy(array $filter = []): ?Entity
     {
-        return $this->query()
-            ->where($filter)
+        return $this
+            ->query($filter)
             ->getOne()
         ;
+    }
+
+    /**
+     * @deprecated use findOneBy() instead
+     *
+     * @param array<string, mixed> $filter
+     *
+     * @return ?T
+     */
+    public function getObject(array $filter = []): ?Entity
+    {
+        return $this->findOneBy($filter);
     }
 
     /**
@@ -90,45 +102,55 @@ abstract class RepositoryCore
      *
      * @return EntityCollection<T>
      */
-    public function getObjects(int $offset = 0, int $results = 10, array $filter = [], string $order = ''): EntityCollection
+    public function findBy(array $filter = [], ?string $order = null, ?int $limit = null, ?int $offset = null): EntityCollection
     {
-        $query = $this->query()
-            ->where($filter)
+        $query = $this
+            ->query($filter)
+            ->when($order, fn ($query) => $query->orderBy($order))
+            ->when($limit, fn ($query) => $query->limit($limit))
+            ->when($offset, fn ($query) => $query->offset($offset))
         ;
-
-        if (strlen($order))
-        {
-            $query = $query->orderBy($order);
-        }
-
-        if ($results != -1)
-        {
-            $query = $query->limit($results);
-        }
-
-        if ($offset !== 0)
-        {
-            $query = $query->offset($offset);
-        }
 
         return $query->execute();
     }
 
     /**
+     * @deprecated use findBy() instead
+     *
+     * @param array<string, mixed> $filter
+     *
+     * @return EntityCollection<T>
+     */
+    public function getObjects(int $offset = 0, int $results = 10, array $filter = [], string $order = ''): EntityCollection
+    {
+        return $this->findBy($filter, $order ?: null, $results == -1 ? null : $results, $offset ?: null);
+    }
+
+    /**
+     * @return ?T
+     */
+    public function find(int $id): ?Entity
+    {
+        return $this
+            ->query()
+            ->find($id)
+        ;
+    }
+
+    /**
+     * @deprecated use find() instead
+     *
      * @return ?T
      */
     public function getObjectById(int $id): ?Entity
     {
-        return $this->query()
-            ->where(['id' => $id])
-            ->getOne()
-        ;
+        return $this->find($id);
     }
 
     public function exists(int $id): bool
     {
-        return $this->query()
-            ->where(['id' => $id])
+        return $this
+            ->query(['id' => $id])
             ->exists()
         ;
     }
@@ -136,12 +158,22 @@ abstract class RepositoryCore
     /**
      * @param array<string, mixed> $filter
      */
-    public function countObjects(array $filter = []): int
+    public function count(array $filter = []): int
     {
-        return $this->query()
-            ->where($filter)
+        return $this
+            ->query($filter)
             ->count()
         ;
+    }
+
+    /**
+     * @deprecated use count() instead
+     *
+     * @param array<string, mixed> $filter
+     */
+    public function countObjects(array $filter = []): int
+    {
+        return $this->count($filter);
     }
 
     /**
@@ -182,7 +214,7 @@ SQL;
         // Cannot use the given data to instantiate because it missed database defaults or
         // fields updated or filled by triggers. So instantiate from scratch.
         //
-        $obj = $this->getObjectById($result);
+        $obj = $this->find($result);
         if ($obj === null)
         {
             throw new \RuntimeException("Failed to retrieve newly created object ({$class})");
