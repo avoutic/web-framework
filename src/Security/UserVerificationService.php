@@ -137,7 +137,7 @@ class UserVerificationService
         }
 
         $flowData = $verificationCode->getFlowData();
-        $user = $this->userRepository->getObjectById($verificationCode->getUserId());
+        $user = $this->userRepository->find($verificationCode->getUserId());
 
         if ($user === null)
         {

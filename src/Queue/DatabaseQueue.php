@@ -142,7 +142,7 @@ class DatabaseQueue implements Queue
         }
 
         $queueJobId = $this->jobIdToQueueJobId[$jobId];
-        $queueJob = $this->queueJobRepository->getObjectById($queueJobId);
+        $queueJob = $this->queueJobRepository->find($queueJobId);
 
         if ($queueJob === null)
         {
@@ -193,7 +193,7 @@ class DatabaseQueue implements Queue
         }
 
         $queueJobId = $this->jobIdToQueueJobId[$jobId];
-        $queueJob = $this->queueJobRepository->getObjectById($queueJobId);
+        $queueJob = $this->queueJobRepository->find($queueJobId);
 
         if ($queueJob === null)
         {

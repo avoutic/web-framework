@@ -112,7 +112,7 @@ class VerifyResend
         // Get user and flow data before invalidating
         $action = $verificationCode->getAction();
         $flowData = $verificationCode->getFlowData();
-        $user = $this->userRepository->getObjectById($verificationCode->getUserId());
+        $user = $this->userRepository->find($verificationCode->getUserId());
         if ($user === null)
         {
             throw new \RuntimeException('User not found');

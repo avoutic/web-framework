@@ -200,18 +200,18 @@ SQL;
             ->where([
                 'timestamp' => ['>', $cutoff],
             ])
-            ->when($userId !== null, function ($query) use ($ip, $userId) {
-                return $query->where([
+            ->when(
+                $userId !== null,
+                fn ($query) => $query->where([
                     'OR' => [
                         'ip' => $ip,
                         'user_id' => $userId,
                     ],
-                ]);
-            }, function ($query) use ($ip) {
-                return $query->where([
+                ]),
+                fn ($query) => $query->where([
                     'ip' => $ip,
-                ]);
-            })
+                ]),
+            )
         ;
 
         [$capturedQuery, $capturedParams] = $query->toSql();
@@ -249,18 +249,18 @@ SQL;
             ->where([
                 'timestamp' => ['>', $cutoff],
             ])
-            ->when($userId !== null, function ($query) use ($ip, $userId) {
-                return $query->where([
+            ->when(
+                $userId !== null,
+                fn ($query) => $query->where([
                     'OR' => [
                         'ip' => $ip,
                         'user_id' => $userId,
                     ],
-                ]);
-            }, function ($query) use ($ip) {
-                return $query->where([
+                ]),
+                fn ($query) => $query->where([
                     'ip' => $ip,
-                ]);
-            })
+                ]),
+            )
         ;
 
         [$capturedQuery, $capturedParams] = $query->toSql();

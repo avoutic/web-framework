@@ -179,7 +179,7 @@ class UserCodeService
         $verificationCode->markAsCorrect();
         $this->verificationCodeRepository->save($verificationCode);
 
-        $user = $this->userRepository->getObjectById($verificationCode->getUserId());
+        $user = $this->userRepository->find($verificationCode->getUserId());
         if ($user === null)
         {
             $this->logger->error('User not found for verification code', [

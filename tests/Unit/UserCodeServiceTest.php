@@ -204,7 +204,7 @@ final class UserCodeServiceTest extends Unit
         ]);
 
         $userRepository = $this->make(UserRepository::class, [
-            'getObjectById' => Expected::once(null),
+            'find' => Expected::once(null),
         ]);
 
         $instance = $this->make(
@@ -249,7 +249,7 @@ final class UserCodeServiceTest extends Unit
         ]);
 
         $userRepository = $this->make(UserRepository::class, [
-            'getObjectById' => Expected::once($user),
+            'find' => Expected::once($user),
         ]);
 
         $instance = $this->make(

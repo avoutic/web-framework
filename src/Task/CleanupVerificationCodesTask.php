@@ -74,8 +74,8 @@ class CleanupVerificationCodesTask extends ConsoleTask
         $sevenDaysAgo = Carbon::now()->subDays(7);
 
         // Delete expired codes and codes that have been used for more than 7 days
-        $this->verificationCodeRepository->query()
-            ->where([
+        $this->verificationCodeRepository
+            ->query([
                 'OR' => [
                     'expires_at' => ['<', $now->getTimestamp()],
                     [

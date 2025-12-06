@@ -58,12 +58,11 @@ class UserRightService
             throw new \InvalidArgumentException('Right unknown');
         }
 
-        $userRight = $this->userRightRepository->query()
-            ->where([
+        $userRight = $this->userRightRepository
+            ->findOneBy([
                 'user_id' => $user->getId(),
                 'right_id' => $right->getId(),
             ])
-            ->getOne()
         ;
 
         if ($userRight === null)
@@ -96,13 +95,10 @@ class UserRightService
             throw new \InvalidArgumentException('Right unknown');
         }
 
-        $userRight = $this->userRightRepository->query()
-            ->where([
-                'user_id' => $user->getId(),
-                'right_id' => $right->getId(),
-            ])
-            ->getOne()
-        ;
+        $userRight = $this->userRightRepository->findOneBy([
+            'user_id' => $user->getId(),
+            'right_id' => $right->getId(),
+        ]);
 
         if ($userRight === null)
         {
@@ -129,13 +125,10 @@ class UserRightService
             return false;
         }
 
-        $userRight = $this->userRightRepository->query()
-            ->where([
-                'user_id' => $user->getId(),
-                'right_id' => $right->getId(),
-            ])
-            ->getOne()
-        ;
+        $userRight = $this->userRightRepository->findOneBy([
+            'user_id' => $user->getId(),
+            'right_id' => $right->getId(),
+        ]);
 
         return ($userRight !== null);
     }

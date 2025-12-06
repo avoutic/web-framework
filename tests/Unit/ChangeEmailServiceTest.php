@@ -89,11 +89,7 @@ final class ChangeEmailServiceTest extends Unit
             [
                 'query' => Expected::once(function () {
                     return $this->makeEmpty(RepositoryQuery::class, [
-                        'where' => Expected::once(function () {
-                            return $this->makeEmpty(RepositoryQuery::class, [
-                                'exists' => Expected::once(false),
-                            ]);
-                        }),
+                        'exists' => Expected::once(false),
                     ]);
                 }),
                 'save' => Expected::once(),
@@ -136,11 +132,7 @@ final class ChangeEmailServiceTest extends Unit
             [
                 'query' => Expected::once(function () {
                     return $this->makeEmpty(RepositoryQuery::class, [
-                        'where' => Expected::once(function () {
-                            return $this->makeEmpty(RepositoryQuery::class, [
-                                'exists' => Expected::once(true),
-                            ]);
-                        }),
+                        'exists' => Expected::once(true),
                     ]);
                 }),
             ],
@@ -210,11 +202,7 @@ final class ChangeEmailServiceTest extends Unit
             [
                 'query' => Expected::once(function () {
                     return $this->makeEmpty(RepositoryQuery::class, [
-                        'where' => Expected::once(function () {
-                            return $this->makeEmpty(RepositoryQuery::class, [
-                                'exists' => Expected::once(false),
-                            ]);
-                        }),
+                        'exists' => Expected::once(false),
                     ]);
                 }),
             ],
@@ -253,11 +241,7 @@ final class ChangeEmailServiceTest extends Unit
             [
                 'query' => Expected::once(function () {
                     return $this->makeEmpty(RepositoryQuery::class, [
-                        'where' => Expected::once(function () {
-                            return $this->makeEmpty(RepositoryQuery::class, [
-                                'exists' => Expected::once(true),
-                            ]);
-                        }),
+                        'exists' => Expected::once(true),
                     ]);
                 }),
             ],
@@ -307,7 +291,7 @@ final class ChangeEmailServiceTest extends Unit
         $userRepository = $this->makeEmpty(
             UserRepository::class,
             [
-                'getObjectById' => Expected::once($user),
+                'find' => Expected::once($user),
                 'save' => Expected::once(),
             ],
         );
@@ -452,7 +436,7 @@ final class ChangeEmailServiceTest extends Unit
         $userRepository = $this->makeEmpty(
             UserRepository::class,
             [
-                'getObjectById' => Expected::once($codeUser),
+                'find' => Expected::once($codeUser),
             ],
         );
 
@@ -512,7 +496,7 @@ final class ChangeEmailServiceTest extends Unit
         $userRepository = $this->makeEmpty(
             UserRepository::class,
             [
-                'getObjectById' => Expected::once($user),
+                'find' => Expected::once($user),
             ],
         );
 
@@ -569,7 +553,7 @@ final class ChangeEmailServiceTest extends Unit
         $userRepository = $this->makeEmpty(
             UserRepository::class,
             [
-                'getObjectById' => Expected::once($user),
+                'find' => Expected::once($user),
             ],
         );
 

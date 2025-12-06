@@ -70,7 +70,7 @@ class GetUser
 
     public function __invoke(Request $request, Response $response, array $routeParams): ResponseInterface
     {
-        $user = $this->repository->getObjectById($routeParams['id']);
+        $user = $this->repository->find($routeParams['id']);
         return $response->withJson($user);
     }
 }

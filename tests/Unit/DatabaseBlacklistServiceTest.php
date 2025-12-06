@@ -64,15 +64,10 @@ final class DatabaseBlacklistServiceTest extends Unit
                         'query' => $this->makeEmpty(
                             RepositoryQuery::class,
                             [
-                                'where' => $this->makeEmpty(
+                                'when' => $this->makeEmpty(
                                     RepositoryQuery::class,
                                     [
-                                        'when' => $this->makeEmpty(
-                                            RepositoryQuery::class,
-                                            [
-                                                'sum' => 11,
-                                            ]
-                                        ),
+                                        'sum' => 11,
                                     ]
                                 ),
                             ]

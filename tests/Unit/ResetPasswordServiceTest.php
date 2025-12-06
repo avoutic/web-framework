@@ -159,7 +159,7 @@ final class ResetPasswordServiceTest extends Unit
         $userRepository = $this->makeEmpty(
             UserRepository::class,
             [
-                'getObjectById' => Expected::once($user),
+                'find' => Expected::once($user),
                 'save' => Expected::never(),
             ],
         );
@@ -394,7 +394,7 @@ final class ResetPasswordServiceTest extends Unit
         $userRepository = $this->makeEmpty(
             UserRepository::class,
             [
-                'getObjectById' => Expected::once(null),
+                'find' => Expected::once(null),
             ],
         );
 
@@ -442,7 +442,7 @@ final class ResetPasswordServiceTest extends Unit
         $userRepository = $this->makeEmpty(
             UserRepository::class,
             [
-                'getObjectById' => Expected::once($user),
+                'find' => Expected::once($user),
             ],
         );
 

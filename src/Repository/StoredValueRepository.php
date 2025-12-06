@@ -33,13 +33,12 @@ class StoredValueRepository extends RepositoryCore
      */
     public function getValuesByModule(string $module): EntityCollection
     {
-        return $this->query()
-            ->where([
+        return $this->findBy(
+            [
                 'module' => $module,
-            ])
-            ->orderByAsc('name')
-            ->execute()
-        ;
+            ],
+            'name ASC',
+        );
     }
 
     /**
@@ -52,12 +51,9 @@ class StoredValueRepository extends RepositoryCore
      */
     public function getValue(string $module, string $name): ?StoredValue
     {
-        return $this->query()
-            ->where([
-                'module' => $module,
-                'name' => $name,
-            ])
-            ->getOne()
-        ;
+        return $this->findOneBy([
+            'module' => $module,
+            'name' => $name,
+        ]);
     }
 }

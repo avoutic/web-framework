@@ -33,10 +33,9 @@ class UserRepository extends RepositoryCore
      */
     public function getUserByUsername(string $username): ?User
     {
-        return $this->query()
-            ->where(['username' => $username])
-            ->getOne()
-        ;
+        return $this->findOneBy([
+            'username' => $username,
+        ]);
     }
 
     /**
@@ -48,10 +47,9 @@ class UserRepository extends RepositoryCore
      */
     public function getUserByEmail(string $email): ?User
     {
-        return $this->query()
-            ->where(['email' => $email])
-            ->getOne()
-        ;
+        return $this->findOneBy([
+            'email' => $email,
+        ]);
     }
 
     /**
@@ -65,12 +63,12 @@ class UserRepository extends RepositoryCore
      */
     public function searchUsers(string $string): EntityCollection
     {
-        return $this->query()->where([
+        return $this->findBy([
             'OR' => [
                 'id' => $string,
                 'username' => ['LIKE', "%{$string}%"],
                 'email' => ['LIKE', "%{$string}%"],
             ],
-        ])->execute();
+        ]);
     }
 }

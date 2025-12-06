@@ -48,8 +48,8 @@ class DatabaseBlacklistService implements BlacklistService
 
         $cutoff = Carbon::now()->subSeconds($this->storePeriod);
 
-        $this->blacklistEntryRepository->query()
-            ->where([
+        $this->blacklistEntryRepository
+            ->query([
                 'timestamp' => ['<', $cutoff->getTimestamp()],
             ])
             ->delete()
@@ -92,22 +92,22 @@ class DatabaseBlacklistService implements BlacklistService
         $cutoff = Carbon::now()->subSeconds($this->triggerPeriod)->getTimestamp();
         $total = 0;
 
-        $total = $this->blacklistEntryRepository->query()
-            ->where([
+        $total = $this->blacklistEntryRepository
+            ->query([
                 'timestamp' => ['>', $cutoff],
             ])
-            ->when($userId !== null, function ($query) use ($ip, $userId) {
-                return $query->where([
+            ->when(
+                $userId !== null,
+                fn ($query) => $query->where([
                     'OR' => [
                         'ip' => $ip,
                         'user_id' => $userId,
                     ],
-                ]);
-            }, function ($query) use ($ip) {
-                return $query->where([
+                ]),
+                fn ($query) => $query->where([
                     'ip' => $ip,
-                ]);
-            })
+                ]),
+            )
             ->sum('severity')
         ;
 

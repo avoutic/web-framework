@@ -8,7 +8,6 @@ use Psr\Log\LoggerInterface;
 use WebFramework\Entity\Right;
 use WebFramework\Entity\User;
 use WebFramework\Entity\UserRight;
-use WebFramework\Repository\RepositoryQuery;
 use WebFramework\Repository\RightRepository;
 use WebFramework\Repository\UserRightRepository;
 use WebFramework\Security\UserRightService;
@@ -76,14 +75,8 @@ final class UserRightServiceTest extends Unit
                 'userRightRepository' => $this->make(
                     UserRightRepository::class,
                     [
-                        'query' => Expected::once(function () {
-                            return $this->makeEmpty(RepositoryQuery::class, [
-                                'where' => Expected::once(function () {
-                                    return $this->makeEmpty(RepositoryQuery::class, [
-                                        'getOne' => Expected::once(null),
-                                    ]);
-                                }),
-                            ]);
+                        'findOneBy' => Expected::once(function () {
+                            return null;
                         }),
                         'create' => Expected::once($this->makeEmpty(
                             UserRight::class,
@@ -123,15 +116,9 @@ final class UserRightServiceTest extends Unit
                 'userRightRepository' => $this->make(
                     UserRightRepository::class,
                     [
-                        'query' => Expected::once(function () {
-                            return $this->makeEmpty(RepositoryQuery::class, [
-                                'where' => Expected::once(function () {
-                                    return $this->makeEmpty(RepositoryQuery::class, [
-                                        'getOne' => Expected::once($this->makeEmpty(
-                                            UserRight::class,
-                                        )),
-                                    ]);
-                                }),
+                        'findOneBy' => Expected::once(function () {
+                            return $this->makeEmpty(UserRight::class, [
+                                'id' => 1,
                             ]);
                         }),
                         'create' => Expected::never(),
@@ -206,15 +193,9 @@ final class UserRightServiceTest extends Unit
                 'userRightRepository' => $this->make(
                     UserRightRepository::class,
                     [
-                        'query' => Expected::once(function () {
-                            return $this->makeEmpty(RepositoryQuery::class, [
-                                'where' => Expected::once(function () {
-                                    return $this->makeEmpty(RepositoryQuery::class, [
-                                        'getOne' => Expected::once($this->makeEmpty(
-                                            UserRight::class,
-                                        )),
-                                    ]);
-                                }),
+                        'findOneBy' => Expected::once(function () {
+                            return $this->makeEmpty(UserRight::class, [
+                                'id' => 1,
                             ]);
                         }),
                         'delete' => Expected::once(),
@@ -253,14 +234,8 @@ final class UserRightServiceTest extends Unit
                 'userRightRepository' => $this->make(
                     UserRightRepository::class,
                     [
-                        'query' => Expected::once(function () {
-                            return $this->makeEmpty(RepositoryQuery::class, [
-                                'where' => Expected::once(function () {
-                                    return $this->makeEmpty(RepositoryQuery::class, [
-                                        'getOne' => Expected::once(null),
-                                    ]);
-                                }),
-                            ]);
+                        'findOneBy' => Expected::once(function () {
+                            return null;
                         }),
                         'delete' => Expected::never(),
                     ],
@@ -326,15 +301,9 @@ final class UserRightServiceTest extends Unit
                 'userRightRepository' => $this->make(
                     UserRightRepository::class,
                     [
-                        'query' => Expected::once(function () {
-                            return $this->makeEmpty(RepositoryQuery::class, [
-                                'where' => Expected::once(function () {
-                                    return $this->makeEmpty(RepositoryQuery::class, [
-                                        'getOne' => Expected::once($this->makeEmpty(
-                                            UserRight::class,
-                                        )),
-                                    ]);
-                                }),
+                        'findOneBy' => Expected::once(function () {
+                            return $this->makeEmpty(UserRight::class, [
+                                'id' => 1,
                             ]);
                         }),
                     ],
@@ -373,14 +342,8 @@ final class UserRightServiceTest extends Unit
                 'userRightRepository' => $this->make(
                     UserRightRepository::class,
                     [
-                        'query' => Expected::once(function () {
-                            return $this->makeEmpty(RepositoryQuery::class, [
-                                'where' => Expected::once(function () {
-                                    return $this->makeEmpty(RepositoryQuery::class, [
-                                        'getOne' => Expected::once(null),
-                                    ]);
-                                }),
-                            ]);
+                        'findOneBy' => Expected::once(function () {
+                            return null;
                         }),
                     ],
                 ),

@@ -34,14 +34,13 @@ class StoredUserValueRepository extends RepositoryCore
      */
     public function getValuesByUserAndModule(int $userId, string $module): EntityCollection
     {
-        return $this->query()
-            ->where([
+        return $this->findBy(
+            [
                 'user_id' => $userId,
                 'module' => $module,
-            ])
-            ->orderByAsc('name')
-            ->execute()
-        ;
+            ],
+            'name ASC',
+        );
     }
 
     /**
@@ -55,13 +54,10 @@ class StoredUserValueRepository extends RepositoryCore
      */
     public function getValue(int $userId, string $module, string $name): ?StoredUserValue
     {
-        return $this->query()
-            ->where([
-                'user_id' => $userId,
-                'module' => $module,
-                'name' => $name,
-            ])
-            ->getOne()
-        ;
+        return $this->findOneBy([
+            'user_id' => $userId,
+            'module' => $module,
+            'name' => $name,
+        ]);
     }
 }

@@ -37,8 +37,8 @@ class QueueJobRepository extends RepositoryCore
             // 1. Not reserved (reserved_at IS NULL), OR
             // 2. Reserved but stale (reserved_at < staleThreshold) - for crash recovery
             // Exclude jobs that have exceeded max_attempts
-            $queueJob = $this->query()
-                ->where([
+            $queueJob = $this
+                ->query([
                     'queue_name' => $queueName,
                     'available_at' => ['<=', $now],
                     'attempts' => ['<', new Column('max_attempts')],
@@ -108,8 +108,8 @@ class QueueJobRepository extends RepositoryCore
     public function countJobsInQueue(string $queueName): int
     {
         // Only count jobs that haven't exceeded max_attempts
-        return $this->query()
-            ->where([
+        return $this
+            ->query([
                 'queue_name' => $queueName,
                 'attempts' => ['<', new Column('max_attempts')],
                 'completed_at' => null,
@@ -120,10 +120,9 @@ class QueueJobRepository extends RepositoryCore
 
     public function clearQueue(string $queueName): void
     {
-        $this->query()
-            ->where([
-                'queue_name' => $queueName,
-            ])
+        $this->query([
+            'queue_name' => $queueName,
+        ])
             ->delete()
         ;
     }

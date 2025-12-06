@@ -155,7 +155,7 @@ class ResetPasswordService
             throw new CodeVerificationException();
         }
 
-        $user = $this->userRepository->getObjectById($verificationCode->getUserId());
+        $user = $this->userRepository->find($verificationCode->getUserId());
         if ($user === null)
         {
             throw new CodeVerificationException();

@@ -58,8 +58,8 @@ class DatabaseAuthenticationService implements AuthenticationService
 
         $cutoff = Carbon::now()->subSeconds($this->sessionTimeout);
 
-        $this->sessionRepository->query()
-            ->where([
+        $this->sessionRepository
+            ->query([
                 'last_active' => ['<', $cutoff->getTimestamp()],
             ])
             ->delete()
@@ -99,8 +99,8 @@ class DatabaseAuthenticationService implements AuthenticationService
 
         $this->sessionChecked = false;
 
-        $this->sessionRepository->query()
-            ->where([
+        $this->sessionRepository
+            ->query([
                 'user_id' => $userId,
             ])
             ->delete()
@@ -164,7 +164,7 @@ class DatabaseAuthenticationService implements AuthenticationService
         // Retrieve and check database session
         //
         $sessionId = $this->browserSession->get('db_session_id');
-        $session = $this->sessionRepository->getObjectById($sessionId);
+        $session = $this->sessionRepository->find($sessionId);
         if ($session === null)
         {
             $this->logger->debug('No database session found, logging out');
@@ -283,7 +283,7 @@ class DatabaseAuthenticationService implements AuthenticationService
         $sessionId = $this->browserSession->get('db_session_id');
         if ($sessionId !== null)
         {
-            $session = $this->sessionRepository->getObjectById($sessionId);
+            $session = $this->sessionRepository->find($sessionId);
             if ($session !== null)
             {
                 $this->sessionRepository->delete($session);
@@ -330,7 +330,7 @@ class DatabaseAuthenticationService implements AuthenticationService
 
         if ($this->authenticatedUser === null)
         {
-            $this->authenticatedUser = $this->userRepository->getObjectById($userId);
+            $this->authenticatedUser = $this->userRepository->find($userId);
             if ($this->authenticatedUser === null)
             {
                 $this->logger->notice('User not present', ['user_id' => $userId]);

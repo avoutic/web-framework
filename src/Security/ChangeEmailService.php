@@ -70,8 +70,8 @@ class ChangeEmailService
     {
         if ($this->uniqueIdentifier == 'email')
         {
-            $exists = $this->userRepository->query()
-                ->where(['email' => $email])
+            $exists = $this->userRepository
+                ->query(['email' => $email])
                 ->exists()
             ;
 
@@ -115,8 +115,8 @@ class ChangeEmailService
     {
         if ($this->uniqueIdentifier == 'email')
         {
-            $exists = $this->userRepository->query()
-                ->where(['email' => $email])
+            $exists = $this->userRepository
+                ->query(['email' => $email])
                 ->exists()
             ;
 
@@ -207,7 +207,7 @@ class ChangeEmailService
             throw new CodeVerificationException();
         }
 
-        $codeUser = $this->userRepository->getObjectById($verificationCode->getUserId());
+        $codeUser = $this->userRepository->find($verificationCode->getUserId());
         if ($codeUser === null)
         {
             throw new CodeVerificationException();

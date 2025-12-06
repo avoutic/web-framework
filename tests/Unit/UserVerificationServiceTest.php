@@ -115,7 +115,7 @@ final class UserVerificationServiceTest extends Unit
         $userRepository = $this->makeEmpty(
             UserRepository::class,
             [
-                'getObjectById' => Expected::once($user),
+                'find' => Expected::once($user),
                 'save' => Expected::once(),
             ],
         );
@@ -183,7 +183,7 @@ final class UserVerificationServiceTest extends Unit
         $userRepository = $this->makeEmpty(
             UserRepository::class,
             [
-                'getObjectById' => Expected::once($user),
+                'find' => Expected::once($user),
                 'save' => Expected::once(),
             ],
         );
@@ -412,7 +412,7 @@ final class UserVerificationServiceTest extends Unit
         $userRepository = $this->makeEmpty(
             UserRepository::class,
             [
-                'getObjectById' => Expected::once(null),
+                'find' => Expected::once(null),
             ],
         );
 
@@ -463,7 +463,7 @@ final class UserVerificationServiceTest extends Unit
         $userRepository = $this->makeEmpty(
             UserRepository::class,
             [
-                'getObjectById' => Expected::once($user),
+                'find' => Expected::once($user),
                 'save' => Expected::once(),
             ],
         );

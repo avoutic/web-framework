@@ -31,12 +31,11 @@ Repositories provide several methods for retrieving entities from the database. 
 ~~~php
 <?php
 
-$user = $userRepository->getObjectById($userId);  // Returns User|null
+$user = $userRepository->find($userId);  // Returns User|null
 
 // Similar to the above, but using the fluent query builder
 $user = $userRepository
-    ->query()
-    ->where(['id' => $userId])
+    ->query(['id' => $userId])
     ->getOne();
 ~~~
 
@@ -47,12 +46,11 @@ This method takes a single filter as an array. If multiple objects are found, th
 ~~~php
 <?php
 
-$user = $userRepository->getObject(['email' => $email]);  // Returns User|null
+$user = $userRepository->findOneBy(['email' => $email]);  // Returns User|null
 
 // Similar to the above, but using the fluent query builder
 $user = $userRepository
-    ->query()
-    ->where(['email' => $email])
+    ->query(['email' => $email])
     ->getOne();
 ~~~
 
@@ -73,13 +71,26 @@ The filter is a key-value pair array where the key is the field name and the val
 <?php
 
 // Returns EntityCollection<User>
-$users = $userRepository->getObjects(0, 10, [
+$users = $userRepository->findBy([
         'email' => $email,
         'active' => true,
         'last_login' => [ '>', strtotime('-1 month') ],
     ],
-    'order' => 'username ASC',
+    'username ASC',
+    10,
+    0,
 );
+
+// Similar to the above, but using the fluent query builder
+$users = $userRepository
+    ->query([
+        'email' => $email,
+        'active' => true,
+        'last_login' => [ '>', strtotime('-1 month') ]
+    ])
+    ->orderBy('username ASC')
+    ->limit(10)
+    ->execute();
 ~~~
 
 ### Advanced Filtering
@@ -110,15 +121,13 @@ You can use the `OR` key to create (nested) OR conditions:
 ~~~php
 <?php
 
-$users = $userRepository->query()
-    ->where([
+$users = $userRepository->findBy([
         'active' => true,
         'OR' => [
             ['role' => 'admin'],
             ['role' => 'manager']
         ]
-    ])
-    ->execute();
+    ]);
 // Result: active = 1 AND (role = 'admin' OR role = 'manager')
 ~~~
 
@@ -130,11 +139,9 @@ You can compare a field against another column using the `Column` class:
 
 use WebFramework\Repository\Column;
 
-$jobs = $jobRepository->query()
-    ->where([
-        'attempts' => ['<', new Column('max_attempts')]
-    ])
-    ->execute();
+$jobs = $jobRepository->findBy([
+    'attempts' => ['<', new Column('max_attempts')]
+]);
 // Result: attempts < max_attempts
 ~~~
 
@@ -144,8 +151,8 @@ You can conditionally add clauses to the query using the `when` method. This is 
 ~~~php
 <?php
 
-$repository->query()
-    ->where(['active' => true])
+$repository
+    ->query(['active' => true])
     ->when(
         $searchQuery,
         fn ($query) => $query->whereLike('name', "%{$searchQuery}%"),
@@ -164,14 +171,12 @@ You can apply multiple conditions to a single field by passing an array of condi
 ~~~php
 <?php
 
-$items = $repository->query()
-    ->where([
-        'reserved_at' => [
-            ['!=', null],
-            ['<', $time]
-        ]
-    ])
-    ->execute();
+$items = $repository->findBy([
+    'reserved_at' => [
+        ['!=', null],
+        ['<', $time]
+    ]
+]);
 // Result: reserved_at IS NOT NULL AND reserved_at < ?
 ~~~
 
@@ -181,29 +186,25 @@ You can also use OR logic within a single field definition:
 ~~~php
 <?php
 
-$items = $repository->query()
-    ->where([
-        'status' => [
-            'OR' => [
-                'pending',
-                'failed'
-            ]
+$items = $repository->findBy([
+    'status' => [
+        'OR' => [
+            'pending',
+            'failed'
         ]
-    ])
-    ->execute();
+    ]
+]);
 // Result: (status = 'pending' OR status = 'failed')
 
 // Or with complex conditions:
-$items = $repository->query()
-    ->where([
-        'reserved_at' => [
-            'OR' => [
-                null,
-                ['<', $time]
-            ]
+$items = $repository->findBy([
+    'reserved_at' => [
+        'OR' => [
+            null,
+            ['<', $time]
         ]
-    ])
-    ->execute();
+    ]
+]);
 // Result: (reserved_at IS NULL OR reserved_at < ?)
 ~~~
 
@@ -230,7 +231,7 @@ $params = [1];
 $users = $userRepository->getFromQuery($query, $params);
 ~~~
 
-### Custom Queries retrieving different Entity types
+### Custom Queries retrieving more than one Entity type
 
 Sometimes you are able to retrieve two types of entities from a single query. For example, you might want to retrieve a user and their roles from a single query.
 
@@ -267,8 +268,8 @@ The query builder provides a `paginate` method to paginate results. This method 
 <?php
 
 // Get page 1 with 20 items per page
-$paginator = $userRepository->query()
-    ->where(['active' => true])
+$paginator = $userRepository
+    ->query(['active' => true])
     ->orderBy('created_at DESC')
     ->paginate(20, 1);
 
@@ -285,8 +286,8 @@ If you need to process a large number of entities, you can use the `chunk` metho
 ~~~php
 <?php
 
-$userRepository->query()
-    ->where(['active' => true])
+$userRepository
+    ->query(['active' => true])
     ->chunk(100, function(EntityCollection $users) {
         foreach ($users as $user) {
             // Process user
@@ -305,13 +306,13 @@ If you only need to retrieve a single column's value (or a key-value pair) from 
 <?php
 
 // Returns array of emails: ['user1@example.com', 'user2@example.com', ...]
-$emails = $userRepository->query()
-    ->where(['active' => true])
+$emails = $userRepository
+    ->query(['active' => true])
     ->pluck('email');
 
 // Returns associative array where id is key and username is value: [1 => 'user1', 2 => 'user2', ...]
-$usernames = $userRepository->query()
-    ->where(['active' => true])
+$usernames = $userRepository
+    ->query(['active' => true])
     ->pluck('username', 'id');
 ~~~
 
@@ -322,8 +323,8 @@ To retrieve the first result of a query, you can use the `first` method. This is
 ~~~php
 <?php
 
-$latestUser = $userRepository->query()
-    ->where(['active' => true])
+$latestUser = $userRepository
+    ->query(['active' => true])
     ->orderBy('created_at DESC')
     ->first();
 ~~~
@@ -333,8 +334,8 @@ To retrieve the first result or throw an exception if not found:
 ~~~php
 <?php
 
-$user = $userRepository->query()
-    ->where(['id' => 1])
+$user = $userRepository
+    ->query(['id' => 1])
     ->firstOrFail(); // Throws RuntimeException if not found
 ~~~
 
@@ -345,7 +346,7 @@ The `find` method is a shortcut for retrieving an entity by its primary key:
 ~~~php
 <?php
 
-$user = $userRepository->query()->find(1);
+$user = $userRepository->find(1);
 ~~~
 
 ### Retrieving a Single Value
@@ -355,8 +356,8 @@ If you only need a single scalar value from the first result:
 ~~~php
 <?php
 
-$email = $userRepository->query()
-    ->where(['id' => 1])
+$email = $userRepository
+    ->query(['id' => 1])
     ->value('email');
 // Returns "user@example.com" or null
 ~~~
@@ -368,10 +369,10 @@ To select only specific columns instead of the full entity (returns an array of 
 ~~~php
 <?php
 
-// Returns: [['id' => 1, 'username' => '...'], ['id' => 2, 'username' => '...']]
-$users = $userRepository->query()
-    ->select(['id', 'username'])
-    ->where(['active' => true])
+// Returns: [['id' => 1, 'username' => '...', 'email' => '...'], ['id' => 2, 'username' => '...', 'email' => '...']]
+$users = $userRepository
+    ->query(['active' => true])
+    ->select(['id', 'username', 'email'])
     ->execute();
 ~~~
 
@@ -382,7 +383,8 @@ To retrieve unique results:
 ~~~php
 <?php
 
-$statuses = $userRepository->query()
+$statuses = $userRepository
+    ->query()
     ->distinct()
     ->pluck('status');
 ~~~
@@ -395,7 +397,8 @@ You can group results by one or more columns using the `groupBy` method. This is
 <?php
 
 // Using aggregates with grouping
-$totalCreditsByStatus = $userRepository->query()
+$totalCreditsByStatus = $userRepository
+    ->query()
     ->groupBy('status')
     ->sum('credits');
 ~~~
@@ -416,7 +419,8 @@ $totalCreditsByStatus = $userRepository->query()
 ~~~php
 <?php
 
-$users = $userRepository->query()
+$users = $userRepository
+        ->query()
         ->limit(10)
         ->execute()
 ;
@@ -486,8 +490,8 @@ class UserService
 
     public function deactivateInactiveUsers(int $daysInactive): void
     {
-        $inactiveUsers = $this->userRepository->query()
-            ->where([
+        $inactiveUsers = $this->userRepository
+            ->query([
                 'last_login' => [ '<', strtotime("-{$daysInactive} days") ],
             ])
             ->execute()
@@ -515,8 +519,8 @@ To update multiple records at once:
 ~~~php
 <?php
 
-$affectedRows = $userRepository->query()
-    ->where([
+$affectedRows = $userRepository
+    ->query([
         'active' => true,
         'last_login' => [ '<', strtotime('-1 year') ],
     ])
@@ -530,8 +534,8 @@ To delete multiple records at once:
 ~~~php
 <?php
 
-$affectedRows = $userRepository->query()
-    ->where([
+$affectedRows = $userRepository
+    ->query([
         'active' => false,
     ])
     ->delete();
@@ -545,17 +549,17 @@ You can inspect the generated SQL and parameters using the following methods:
 <?php
 
 // Get SQL string and parameters
-[$sql, $params] = $userRepository->query()
-    ->where(['active' => true])
+[$sql, $params] = $userRepository
+    ->query(['active' => true])
     ->toSql();
 
 // Get UPDATE SQL
-[$sql, $params] = $userRepository->query()
-    ->where(['id' => 1])
+[$sql, $params] = $userRepository
+    ->query(['id' => 1])
     ->toUpdateSql(['active' => false]);
 
 // Get DELETE SQL
-[$sql, $params] = $userRepository->query()
-    ->where(['id' => 1])
+[$sql, $params] = $userRepository
+    ->query(['id' => 1])
     ->toDeleteSql();
 ~~~

@@ -32,10 +32,9 @@ class VerificationCodeRepository extends RepositoryCore
      */
     public function getByGuid(string $guid): ?VerificationCode
     {
-        return $this->query()
-            ->where(['guid' => $guid])
-            ->getOne()
-        ;
+        return $this->findOneBy([
+            'guid' => $guid,
+        ]);
     }
 
     /**

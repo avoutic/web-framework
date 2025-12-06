@@ -118,7 +118,7 @@ class CarRepository extends RepositoryCore
      */
     public function getCarByMakeAndModel(string $make, string $model): ?Car
     {
-        return $this->getObject(['make' => $make, 'model' => $model]);
+        return $this->findOneBy(['make' => $make, 'model' => $model]);
     }
 
     /**
@@ -130,34 +130,13 @@ class CarRepository extends RepositoryCore
      */
     public function searchCars(string $string): EntityCollection
     {
-        $query = <<<'SQL'
-        SELECT id
-        FROM cars
-        WHERE make LIKE ? OR
-              model LIKE ? OR
-              color LIKE ?
-SQL;
-
-        $result = $this->database->query($query, [
-            "%{$string}%",
-            "%{$string}%",
-            "%{$string}%",
-        ], 'Failed to search cars');
-
-        $data = [];
-        foreach ($result as $row)
-        {
-            $car = $this->getObjectById($row['id']);
-
-            if ($car === null)
-            {
-                throw new \RuntimeException('Failed to retrieve car');
-            }
-
-            $data[] = $car;
-        }
-
-        return new EntityCollection($data);
+        return $this->findBy([
+            'OR' => [
+                'make' => ['LIKE', "%{$string}%"],
+                'model' => ['LIKE', "%{$string}%"],
+                'color' => ['LIKE', "%{$string}%"],
+            ]
+        ]);
     }
 }
 ~~~
