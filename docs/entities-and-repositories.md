@@ -86,8 +86,26 @@ $users = $userRepository->getObjects(0, 10, [
 
 The repository supports advanced filtering options including OR conditions, column comparisons, and nested logic.
 
-#### Nested OR Conditions
-You can use the `OR` key to create nested OR conditions:
+#### Fluent Where Helpers
+In addition to the array-based `where` method, several fluent helpers are available for common conditions:
+
+~~~php
+<?php
+
+$users = $userRepository->query()
+    ->whereIn('role', ['admin', 'manager'])
+    ->whereNotIn('status', ['banned', 'deleted'])
+    ->whereNull('deleted_at')
+    ->whereNotNull('verified_at')
+    ->whereBetween('age', 18, 65)
+    ->whereNotBetween('score', 0, 10)
+    ->whereLike('username', 'admin%')
+    ->whereNotLike('email', '%@temp.com')
+    ->execute();
+~~~
+
+#### OR Conditions
+You can use the `OR` key to create (nested) OR conditions:
 
 ~~~php
 <?php
@@ -310,6 +328,65 @@ $latestUser = $userRepository->query()
     ->first();
 ~~~
 
+To retrieve the first result or throw an exception if not found:
+
+~~~php
+<?php
+
+$user = $userRepository->query()
+    ->where(['id' => 1])
+    ->firstOrFail(); // Throws RuntimeException if not found
+~~~
+
+### Finding by ID
+
+The `find` method is a shortcut for retrieving an entity by its primary key:
+
+~~~php
+<?php
+
+$user = $userRepository->query()->find(1);
+~~~
+
+### Retrieving a Single Value
+
+If you only need a single scalar value from the first result:
+
+~~~php
+<?php
+
+$email = $userRepository->query()
+    ->where(['id' => 1])
+    ->value('email');
+// Returns "user@example.com" or null
+~~~
+
+### Selecting Specific Columns
+
+To select only specific columns instead of the full entity (returns an array of arrays):
+
+~~~php
+<?php
+
+// Returns: [['id' => 1, 'username' => '...'], ['id' => 2, 'username' => '...']]
+$users = $userRepository->query()
+    ->select(['id', 'username'])
+    ->where(['active' => true])
+    ->execute();
+~~~
+
+### Distinct Results
+
+To retrieve unique results:
+
+~~~php
+<?php
+
+$statuses = $userRepository->query()
+    ->distinct()
+    ->pluck('status');
+~~~
+
 ### Grouping Results
 
 You can group results by one or more columns using the `groupBy` method. This is often used in conjunction with aggregate functions.
@@ -458,4 +535,27 @@ $affectedRows = $userRepository->query()
         'active' => false,
     ])
     ->delete();
+~~~
+
+## Debugging
+
+You can inspect the generated SQL and parameters using the following methods:
+
+~~~php
+<?php
+
+// Get SQL string and parameters
+[$sql, $params] = $userRepository->query()
+    ->where(['active' => true])
+    ->toSql();
+
+// Get UPDATE SQL
+[$sql, $params] = $userRepository->query()
+    ->where(['id' => 1])
+    ->toUpdateSql(['active' => false]);
+
+// Get DELETE SQL
+[$sql, $params] = $userRepository->query()
+    ->where(['id' => 1])
+    ->toDeleteSql();
 ~~~

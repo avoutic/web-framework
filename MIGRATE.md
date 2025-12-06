@@ -5,15 +5,8 @@
 ### New features
 
 * `Database\Database` now supports `affectedRows()` method to get the number of affected rows by the last query.
-* `Repository\RepositoryQuery` provides a fluent interface for building queries, supporting filtering, limit, offset, ordering, locking for update, chunking, deleting, updating and pagination.
-* Database filtering now supports filtering with `Column` objects.
-* Database filtering now supports 'OR' conditions.
-* Database filtering now supports multiple conditions on the same field.
-* Fluent query builder now supports aggregate functions: `count()`, `min()`, `max()`, `sum()`, `avg()`.
-* Fluent query builder now supports grouping: `groupBy()`.
-* Fluent query builder now supports conditional clauses: `when()`.
-* Fluent query builder now supports to SQL methods: `toSql()`, `toUpdateSql()`, `toDeleteSql()`.
-* Fluent query builder now supports: `firstOrFail()`, `find()`, `select()`, `distinct()`, `value()`.
+* `Repository\RepositoryQuery` provides a fluent interface for building queries, supporting filtering, limit, offset, ordering, grouping, distinct, aggregate functions, exists, conditional clauses, locking for update, chunking, deleting, updating, pagination and debugging.
+* Database filtering now supports filtering with `Column` objects, 'OR' conditions and multiple conditions on the same field.
 
 ## v11.3.1
 
