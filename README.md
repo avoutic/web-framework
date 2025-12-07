@@ -65,12 +65,12 @@ use WebFramework\Repository\UserRepository;
 class GetUser
 {
     public function __construct(
-        private Repository $repository,
+        private UserRepository $userRepository,
     ) {}
 
     public function __invoke(Request $request, Response $response, array $routeParams): ResponseInterface
     {
-        $user = $this->repository->find($routeParams['id']);
+        $user = $this->userRepository->find($routeParams['id']);
         return $response->withJson($user);
     }
 }
@@ -164,11 +164,31 @@ WebFramework is open-source software licensed under the [MIT license](LICENSE).
 
 Contributions are welcome! Whether you're fixing bugs, adding features, or improving documentation, your help makes WebFramework better for everyone.
 
-- **Report Issues**: Found a bug? [Open an issue](https://github.com/avoutic/web-framework/issues) on GitHub
-- **Submit Pull Requests**: Have a fix or feature? [Submit a PR](https://github.com/avoutic/web-framework/pulls)
+Before opening an issue or pull request, please read [CONTRIBUTING.md](CONTRIBUTING.md).
+
+- **Report issues:** Found a bug or have a small improvement? [Open an issue](https://github.com/avoutic/web-framework/issues).
+- **Design first for larger changes:** For larger features or architectural changes, start with a “design” issue so we can discuss the approach before implementation.
+- **Workflow:** Fork the repository, create a feature branch from `main`, then open a pull request back to `main`.
 - **Improve Documentation**: Help make the docs better by submitting improvements
 - **Share Your Experience**: Built something cool with WebFramework? Let us know!
+- **Code style:** Use the existing `php-cs-fixer` configuration before submitting.
+- **Tests:** For new features and bug fixes, add tests where they help prevent regressions and run:
+  ```sh
+  vendor/bin/phpstan
+  vendor/bin/codecept run
+  ```
 
+By submitting a contribution, you agree that your work is licensed under the MIT License, in line with the project’s license.
+
+This project follows the [Contributor Covenant Code of Conduct](https://www.contributor-covenant.org/version/2/1/code_of_conduct/).
+
+## Security
+
+If you discover a security vulnerability, **do not** open a public issue.
+
+Instead, report it via [GitHub Security Advisories](https://github.com/avoutic/web-framework/security/advisories) so we can coordinate a fix.
+
+For full details, including response timelines and supported versions, see [SECURITY.md](SECURITY.md).
 
 ## Community & Support
 

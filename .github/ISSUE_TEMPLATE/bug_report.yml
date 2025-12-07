@@ -1,0 +1,74 @@
+name: Bug Report
+description: Report a reproducible bug in the Web Framework
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug. Please provide enough detail so the issue can be reproduced and fixed efficiently.
+
+        **Do not report security vulnerabilities here.**
+        Security issues must be reported via GitHub Security Advisories.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: A clear and concise description of the bug.
+      placeholder: What went wrong?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reliably reproduce the behavior.
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What you expected to happen.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened.
+    validations:
+      required: true
+
+  - type: input
+    id: framework_version
+    attributes:
+      label: Framework Version
+      description: Version or commit SHA where the bug occurs.
+      placeholder: e.g. v1.2.0 or main@abcdef
+    validations:
+      required: true
+
+  - type: input
+    id: php_version
+    attributes:
+      label: PHP Version
+      placeholder: e.g. PHP 8.2.5
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / Error Output
+      description: Relevant logs, stack traces, or error output.
+      render: shell

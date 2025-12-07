@@ -1,0 +1,60 @@
+name: Feature Request
+description: Suggest an enhancement or new feature
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a feature.
+
+        For **larger or architectural changes**, please start with a design discussion before implementation.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: What problem does this feature solve?
+      placeholder: I'm trying to...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed Solution
+      description: Describe the solution you'd like to see.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Describe alternatives or workarounds you've considered.
+    validations:
+      required: false
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope and Impact
+      description: |
+        How would this change affect:
+        - existing users
+        - backward compatibility
+        - documentation
+        - maintenance complexity
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Confirmation
+      options:
+        - label: I have checked that this feature does not already exist.
+          required: true
+        - label: I understand that larger features may require a design discussion before approval.
+          required: true
