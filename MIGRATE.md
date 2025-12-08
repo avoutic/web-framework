@@ -6,6 +6,7 @@
 
 * Introduce `findOrFail()`, `inRandomOrder()` and `selectOne()` method to `RepositoryQuery`.
 * Introduce `findOrFail()` method to `RepositoryCore`.
+* Introduce `Database\Lock` class to manage database locks.
 
 ## v11.4
 

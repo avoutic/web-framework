@@ -7,6 +7,7 @@ use Tests\Support\InstantiationTester;
 use Tests\Support\TaskRunnerTrait;
 use WebFramework\Config\ConfigBuilder;
 use WebFramework\Database\DatabaseResultWrapper;
+use WebFramework\Database\Lock;
 use WebFramework\Event\QueuedEventListener;
 use WebFramework\Event\UserEmailChanged;
 use WebFramework\Event\UserLoggedIn;
@@ -65,6 +66,7 @@ class testCest
         ConfigBuilder::class,
         // Database
         DatabaseResultWrapper::class,
+        Lock::class,
         // Event
         QueuedEventListener::class,
         UserEmailChanged::class,

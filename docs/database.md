@@ -121,3 +121,69 @@ class OrderService
 ~~~
 
 In this example, the `OrderService` uses a transaction to ensure that both the order and its items are inserted into the database atomically. If an error occurs, the transaction is rolled back.
+
+## Database Locks
+
+The `Lock` class allows you to acquire named locks using the database (MySQL `GET_LOCK`). This is useful for synchronizing operations across distributed systems or processes.
+
+### Example: Using Locks
+
+You can manually acquire and release locks:
+
+~~~php
+<?php
+
+use WebFramework\Database\Database;
+use WebFramework\Database\Lock;
+
+class CronService
+{
+    public function __construct(
+        private Database $database,
+    ) {}
+
+    public function runDailyTask(): void
+    {
+        $lock = new Lock($this->database, 'daily_task_lock');
+
+        // Try to acquire lock with 0 seconds wait
+        if ($lock->lock(0)) {
+            try {
+                // Perform critical task
+                $this->performTask();
+            } finally {
+                $lock->release();
+            }
+        }
+    }
+}
+~~~
+
+### Example: Using the block method
+
+The `block()` method simplifies locking by handling acquisition and release automatically:
+
+~~~php
+<?php
+
+use WebFramework\Database\Database;
+use WebFramework\Database\Lock;
+
+class ImportService
+{
+    public function __construct(
+        private Database $database,
+    ) {}
+
+    public function importData(): void
+    {
+        $lock = new Lock($this->database, 'data_import');
+
+        // Waits up to 10 seconds for the lock
+        $lock->block(function () {
+            // This code runs only if lock is acquired
+            $this->processImport();
+        }, 10);
+    }
+}
+~~~
