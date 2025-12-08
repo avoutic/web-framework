@@ -452,9 +452,9 @@ SQL;
         return $collection->current();
     }
 
-    public function count(): int
+    public function count(?string $column = null): int
     {
-        return (int) ($this->aggregate('COUNT', '*') ?? 0);
+        return (int) ($this->aggregate('COUNT', $column ?? '*') ?? 0);
     }
 
     public function min(string $column): float|int|null

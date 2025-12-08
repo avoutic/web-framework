@@ -482,6 +482,18 @@ foreach ($users as $user) {
 $userCount = $users->count();
 ~~~
 
+Or to count distinct values in a column:
+
+~~~php
+<?php
+
+$userCount = $this->userRepository
+    ->query()
+    ->distinct()
+    ->count('username');
+// Returns the number of unique usernames
+~~~
+
 #### Converting to Array
 You can convert an EntityCollection to an array in two ways:
 

@@ -7,6 +7,7 @@
 * Introduce `findOrFail()`, `inRandomOrder()` and `selectOne()` method to `RepositoryQuery`.
 * Introduce `findOrFail()` method to `RepositoryCore`.
 * Introduce `Database\Lock` class to manage database locks.
+* Have `count()` method in `RepositoryQuery` accept a `column` parameter to count distinct values in a column.
 
 ## v11.4
 
