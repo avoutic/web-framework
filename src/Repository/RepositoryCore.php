@@ -147,6 +147,19 @@ abstract class RepositoryCore
         return $this->find($id);
     }
 
+    /**
+     * @return T
+     *
+     * @throws \RuntimeException If no result is found
+     */
+    public function findOrFail(int $id): Entity
+    {
+        return $this
+            ->query()
+            ->findOrFail($id)
+        ;
+    }
+
     public function exists(int $id): bool
     {
         return $this

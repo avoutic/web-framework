@@ -212,6 +212,14 @@ class RepositoryQuery
     /**
      * @return RepositoryQuery<T>
      */
+    public function inRandomOrder(): self
+    {
+        return $this->orderBy('RAND()');
+    }
+
+    /**
+     * @return RepositoryQuery<T>
+     */
     public function lockForUpdate(bool $skipLocked = false): self
     {
         $this->lockForUpdate = true;
@@ -346,6 +354,23 @@ SQL;
 SQL;
 
         return $this->repository->getSelectFromQuery($query, $params, $columns, $key);
+    }
+
+    /**
+     * @param array<string> $columns The columns to select
+     *
+     * @return ?array<string, mixed>
+     */
+    public function selectOne(array $columns): ?array
+    {
+        $result = $this->limit(1)->select($columns);
+
+        if (count($result) === 0)
+        {
+            return null;
+        }
+
+        return reset($result);
     }
 
     /**
@@ -560,6 +585,16 @@ SQL;
     public function find(int $id): ?Entity
     {
         return $this->where(['id' => $id])->first();
+    }
+
+    /**
+     * @return T
+     *
+     * @throws \RuntimeException If no result is found
+     */
+    public function findOrFail(int $id): Entity
+    {
+        return $this->where(['id' => $id])->firstOrFail();
     }
 
     /**

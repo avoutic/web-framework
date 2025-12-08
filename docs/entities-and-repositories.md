@@ -95,7 +95,7 @@ $users = $userRepository
 
 ### Advanced Filtering
 
-The repository supports advanced filtering options including OR conditions, column comparisons, and nested logic.
+The repository supports advanced filtering options including OR conditions, column comparisons, and nested logic. To start a fluent query builder, you can use the `query` method, which takes an optional array of filter conditions (similar to the `where()` method).
 
 #### Fluent Where Helpers
 In addition to the array-based `where` method, several fluent helpers are available for common conditions:
@@ -206,6 +206,31 @@ $items = $repository->findBy([
     ]
 ]);
 // Result: (reserved_at IS NULL OR reserved_at < ?)
+~~~
+
+#### Ordering
+You can order the results by a column using the `orderBy` method.
+
+~~~php
+<?php
+
+$users = $userRepository->query()->orderBy('username ASC')->execute();
+~~~
+
+or using the `orderByAsc` and `orderByDesc` methods:
+
+~~~php
+<?php
+
+$users = $userRepository->query()->orderByAsc('username')->execute();
+~~~
+
+or using the `inRandomOrder` method:
+
+~~~php
+<?php
+
+$users = $userRepository->query()->inRandomOrder()->execute();
 ~~~
 
 ### Custom Queries retrieving a collection of Entities
@@ -349,6 +374,15 @@ The `find` method is a shortcut for retrieving an entity by its primary key:
 $user = $userRepository->find(1);
 ~~~
 
+or using the `findOrFail` method, which throws a `RuntimeException` if the entity is not found:
+
+~~~php
+<?php
+
+$user = $userRepository->findOrFail(1);
+// Throws RuntimeException if not found
+~~~
+
 ### Retrieving a Single Value
 
 If you only need a single scalar value from the first result:
@@ -374,6 +408,17 @@ $users = $userRepository
     ->query(['active' => true])
     ->select(['id', 'username', 'email'])
     ->execute();
+~~~
+
+To retrieve only the values of the first result:
+
+~~~php
+<?php
+
+// Returns: ['id' => 1, 'username' => '...', 'email' => '...']
+$user = $userRepository
+    ->query(['id' => 1])
+    ->selectOne(['id', 'username', 'email']);
 ~~~
 
 ### Distinct Results

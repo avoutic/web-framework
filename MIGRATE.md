@@ -1,5 +1,12 @@
 # v11 release
 
+## v11.5
+
+### New features
+
+* Introduce `findOrFail()`, `inRandomOrder()` and `selectOne()` method to `RepositoryQuery`.
+* Introduce `findOrFail()` method to `RepositoryCore`.
+
 ## v11.4
 
 ### New features
