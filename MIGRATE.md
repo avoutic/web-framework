@@ -1,5 +1,11 @@
 # v11 release
 
+## v11.6
+
+### New features
+
+* Introduce `findOneByOrFail()` method to `RepositoryCore`.
+
 ## v11.5
 
 ### New features

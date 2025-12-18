@@ -100,6 +100,19 @@ abstract class RepositoryCore
     /**
      * @param array<string, mixed> $filter
      *
+     * @return T
+     */
+    public function findOneByOrFail(array $filter = []): Entity
+    {
+        return $this
+            ->query($filter)
+            ->firstOrFail()
+        ;
+    }
+
+    /**
+     * @param array<string, mixed> $filter
+     *
      * @return EntityCollection<T>
      */
     public function findBy(array $filter = [], ?string $order = null, ?int $limit = null, ?int $offset = null): EntityCollection
