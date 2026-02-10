@@ -89,7 +89,8 @@ class DatabaseManager
             }
 
             $handler = $this->getHandler($action['type']);
-            $steps[] = $handler->buildStep($action);
+            $stepOrSteps = $handler->buildStep($action);
+            $steps = array_merge($steps, is_array($stepOrSteps) ? $stepOrSteps : [$stepOrSteps]);
         }
 
         if ($dryRun)

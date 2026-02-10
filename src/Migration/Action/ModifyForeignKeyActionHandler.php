@@ -21,7 +21,10 @@ final class ModifyForeignKeyActionHandler extends AbstractActionHandler
         return 'modify_foreign_key';
     }
 
-    public function buildStep(array $action): MigrationStep
+    /**
+     * @return array<MigrationStep>
+     */
+    public function buildStep(array $action): array
     {
         $tableName = $this->requireTableName($action);
 
@@ -49,8 +52,15 @@ final class ModifyForeignKeyActionHandler extends AbstractActionHandler
         $onDelete = isset($action['on_delete']) ? 'ON DELETE '.$action['on_delete'] : '';
         $onUpdate = isset($action['on_update']) ? 'ON UPDATE '.$action['on_update'] : '';
 
-        $addPart = sprintf(
-            'ADD CONSTRAINT `%s` FOREIGN KEY (`%s`) REFERENCES `%s` (`%s`) %s %s',
+        $dropQuery = sprintf(
+            "ALTER TABLE `%s`\n    DROP FOREIGN KEY `%s`",
+            $tableName,
+            $constraintName
+        );
+
+        $addQuery = sprintf(
+            "ALTER TABLE `%s`\n    ADD CONSTRAINT `%s` FOREIGN KEY (`%s`) REFERENCES `%s` (`%s`) %s %s",
+            $tableName,
             $constraintName,
             $action['column'],
             $action['foreign_table'],
@@ -59,13 +69,9 @@ final class ModifyForeignKeyActionHandler extends AbstractActionHandler
             $onUpdate
         );
 
-        $query = sprintf(
-            "ALTER TABLE `%s`\n    DROP FOREIGN KEY `%s`,\n    %s",
-            $tableName,
-            $constraintName,
-            trim($addPart)
-        );
-
-        return new QueryStep($query, []);
+        return [
+            new QueryStep($dropQuery, []),
+            new QueryStep(trim($addQuery), []),
+        ];
     }
 }

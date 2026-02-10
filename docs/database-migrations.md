@@ -483,7 +483,7 @@ return [
 
 ## Modify Foreign Key
 
-Modifies an existing foreign key constraint (e.g. change referenced table, `ON DELETE`/`ON UPDATE` behaviour). Implemented as drop then add with new options.
+Modifies an existing foreign key constraint (e.g. change referenced table, `ON DELETE`/`ON UPDATE` behaviour). Executed as two separate statements: first DROP FOREIGN KEY, then ADD CONSTRAINT (databases do not allow drop and add in a single ALTER TABLE).
 
 ### Fields
 - `type` (required): Must be "modify_foreign_key"

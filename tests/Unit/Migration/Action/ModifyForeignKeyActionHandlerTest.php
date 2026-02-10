@@ -20,7 +20,7 @@ final class ModifyForeignKeyActionHandlerTest extends Unit
         verify($handler->getType())->equals('modify_foreign_key');
     }
 
-    public function testBuildStepWithValidAction()
+    public function testBuildStepWithValidActionReturnsTwoSteps()
     {
         $handler = new ModifyForeignKeyActionHandler();
         $action = [
@@ -33,16 +33,21 @@ final class ModifyForeignKeyActionHandlerTest extends Unit
             'on_update' => 'CASCADE',
         ];
 
-        $step = $handler->buildStep($action);
-        verify($step)->instanceOf(QueryStep::class);
-        verify($step->getQuery())->stringContainsString('ALTER TABLE `orders`');
-        verify($step->getQuery())->stringContainsString('DROP FOREIGN KEY `orders_fk_user_id`');
-        verify($step->getQuery())->stringContainsString('ADD CONSTRAINT `orders_fk_user_id`');
-        verify($step->getQuery())->stringContainsString('FOREIGN KEY (`user_id`)');
-        verify($step->getQuery())->stringContainsString('REFERENCES `users` (`id`)');
-        verify($step->getQuery())->stringContainsString('ON DELETE SET NULL');
-        verify($step->getQuery())->stringContainsString('ON UPDATE CASCADE');
-        verify($step->getParams())->equals([]);
+        $steps = $handler->buildStep($action);
+        verify($steps)->isArray();
+        verify($steps)->arrayCount(2);
+        verify($steps[0])->instanceOf(QueryStep::class);
+        verify($steps[1])->instanceOf(QueryStep::class);
+        verify($steps[0]->getQuery())->stringContainsString('ALTER TABLE `orders`');
+        verify($steps[0]->getQuery())->stringContainsString('DROP FOREIGN KEY `orders_fk_user_id`');
+        verify($steps[1]->getQuery())->stringContainsString('ALTER TABLE `orders`');
+        verify($steps[1]->getQuery())->stringContainsString('ADD CONSTRAINT `orders_fk_user_id`');
+        verify($steps[1]->getQuery())->stringContainsString('FOREIGN KEY (`user_id`)');
+        verify($steps[1]->getQuery())->stringContainsString('REFERENCES `users` (`id`)');
+        verify($steps[1]->getQuery())->stringContainsString('ON DELETE SET NULL');
+        verify($steps[1]->getQuery())->stringContainsString('ON UPDATE CASCADE');
+        verify($steps[0]->getParams())->equals([]);
+        verify($steps[1]->getParams())->equals([]);
     }
 
     public function testBuildStepThrowsExceptionWhenTableNameMissing()

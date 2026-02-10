@@ -25,6 +25,8 @@ interface ActionHandler
 
     /**
      * @param array<string, mixed> $action
+     *
+     * @return array<MigrationStep>|MigrationStep
      */
-    public function buildStep(array $action): MigrationStep;
+    public function buildStep(array $action): array|MigrationStep;
 }
