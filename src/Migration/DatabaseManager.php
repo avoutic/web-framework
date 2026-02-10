@@ -16,10 +16,13 @@ use WebFramework\Database\Database;
 use WebFramework\Migration\Action\ActionHandler;
 use WebFramework\Migration\Action\AddColumnActionHandler;
 use WebFramework\Migration\Action\AddConstraintActionHandler;
+use WebFramework\Migration\Action\AddForeignKeyActionHandler;
 use WebFramework\Migration\Action\CreateTableActionHandler;
 use WebFramework\Migration\Action\CreateTriggerActionHandler;
+use WebFramework\Migration\Action\DropForeignKeyActionHandler;
 use WebFramework\Migration\Action\InsertRowActionHandler;
 use WebFramework\Migration\Action\ModifyColumnTypeActionHandler;
+use WebFramework\Migration\Action\ModifyForeignKeyActionHandler;
 use WebFramework\Migration\Action\RawQueryActionHandler;
 use WebFramework\Migration\Action\RenameColumnActionHandler;
 use WebFramework\Migration\Action\RenameTableActionHandler;
@@ -43,8 +46,11 @@ class DatabaseManager
         'create_trigger' => CreateTriggerActionHandler::class,
         'add_column' => AddColumnActionHandler::class,
         'add_constraint' => AddConstraintActionHandler::class,
+        'add_foreign_key' => AddForeignKeyActionHandler::class,
+        'drop_foreign_key' => DropForeignKeyActionHandler::class,
         'insert_row' => InsertRowActionHandler::class,
         'modify_column_type' => ModifyColumnTypeActionHandler::class,
+        'modify_foreign_key' => ModifyForeignKeyActionHandler::class,
         'rename_column' => RenameColumnActionHandler::class,
         'rename_table' => RenameTableActionHandler::class,
         'raw_query' => RawQueryActionHandler::class,

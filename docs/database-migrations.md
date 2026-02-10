@@ -394,6 +394,144 @@ return [
 ];
 ~~~
 
+## Add Foreign Key
+
+Adds a foreign key constraint to an existing column.
+
+### Fields
+- `type` (required): Must be "add_foreign_key"
+- `table_name` (required): The name of the table to alter
+- `column` (required): The column name in this table that references the foreign table
+- `constraint_name` (optional): The name of the foreign key constraint; if omitted, a name is generated (e.g. from table and column)
+- `foreign_table` (required): The referenced table name
+- `foreign_field` (required): The referenced column name (usually `id`)
+- `on_delete` (optional): Action on delete (e.g. `CASCADE`, `SET NULL`, `RESTRICT`)
+- `on_update` (optional): Action on update (e.g. `CASCADE`, `SET NULL`, `RESTRICT`)
+
+### Example
+
+~~~php
+<?php
+
+return [
+    'up' => [
+        'actions' => [
+            [
+                'type' => 'add_foreign_key',
+                'table_name' => 'orders',
+                'column' => 'user_id',
+                'foreign_table' => 'users',
+                'foreign_field' => 'id',
+                'on_delete' => 'CASCADE',
+                'on_update' => 'CASCADE',
+                'constraint_name' => 'orders_fk_user_id',
+            ],
+        ],
+    ],
+    'down' => [
+        'actions' => [
+            [
+                'type' => 'drop_foreign_key',
+                'table_name' => 'orders',
+                'constraint_name' => 'orders_fk_user_id',
+            ],
+        ],
+    ],
+];
+~~~
+
+## Drop Foreign Key
+
+Drops a foreign key constraint from a table.
+
+### Fields
+- `type` (required): Must be "drop_foreign_key"
+- `table_name` (required): The name of the table to alter
+- `constraint_name` (required): The name of the foreign key constraint to drop
+
+### Example
+
+~~~php
+<?php
+
+return [
+    'up' => [
+        'actions' => [
+            [
+                'type' => 'drop_foreign_key',
+                'table_name' => 'orders',
+                'constraint_name' => 'orders_fk_user_id',
+            ],
+        ],
+    ],
+    'down' => [
+        'actions' => [
+            [
+                'type' => 'add_foreign_key',
+                'table_name' => 'orders',
+                'constraint_name' => 'orders_fk_user_id',
+                'column' => 'user_id',
+                'foreign_table' => 'users',
+                'foreign_field' => 'id',
+                'on_delete' => 'CASCADE',
+                'on_update' => 'CASCADE',
+            ],
+        ],
+    ],
+];
+~~~
+
+## Modify Foreign Key
+
+Modifies an existing foreign key constraint (e.g. change referenced table, `ON DELETE`/`ON UPDATE` behaviour). Implemented as drop then add with new options.
+
+### Fields
+- `type` (required): Must be "modify_foreign_key"
+- `table_name` (required): The name of the table to alter
+- `constraint_name` (required): The name of the existing foreign key constraint
+- `column` (required): The column name in this table that references the foreign table
+- `foreign_table` (required): The referenced table name
+- `foreign_field` (required): The referenced column name (usually `id`)
+- `on_delete` (optional): Action on delete (e.g. `CASCADE`, `SET NULL`, `RESTRICT`)
+- `on_update` (optional): Action on update (e.g. `CASCADE`, `SET NULL`, `RESTRICT`)
+
+### Example
+
+~~~php
+<?php
+
+return [
+    'up' => [
+        'actions' => [
+            [
+                'type' => 'modify_foreign_key',
+                'table_name' => 'orders',
+                'constraint_name' => 'orders_fk_user_id',
+                'column' => 'user_id',
+                'foreign_table' => 'users',
+                'foreign_field' => 'id',
+                'on_delete' => 'SET NULL',
+                'on_update' => 'CASCADE',
+            ],
+        ],
+    ],
+    'down' => [
+        'actions' => [
+            [
+                'type' => 'modify_foreign_key',
+                'table_name' => 'orders',
+                'constraint_name' => 'orders_fk_user_id',
+                'column' => 'user_id',
+                'foreign_table' => 'users',
+                'foreign_field' => 'id',
+                'on_delete' => 'CASCADE',
+                'on_update' => 'CASCADE',
+            ],
+        ],
+    ],
+];
+~~~
+
 ## Insert Row
 
 Inserts a new row into a table.

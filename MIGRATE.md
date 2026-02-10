@@ -1,5 +1,11 @@
 # v11 release
 
+## v11.7
+
+### New features
+
+* Introduce `add_foreign_key` and `drop_foreign_key` and `modify_foreign_key` migration actions.
+
 ## v11.6
 
 ### New features
