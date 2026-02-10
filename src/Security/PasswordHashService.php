@@ -165,6 +165,13 @@ class PasswordHashService
      */
     public function checkPassword(string $passwordHash, string $password): bool
     {
+        // Empty hashes are used to indicate blocked accounts
+        if ($passwordHash === '')
+        {
+            // No need for constant time comparison
+            return false;
+        }
+
         $hashed = $this->getHashes($passwordHash, $password);
 
         // Slow compare (time-constant)
