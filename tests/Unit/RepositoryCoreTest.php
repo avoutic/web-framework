@@ -4,7 +4,10 @@ namespace Tests\Unit;
 
 use Codeception\Test\Unit;
 use Psr\Container\ContainerInterface as Container;
+use Tests\Support\TestEntity;
+use Tests\Support\TestRepository;
 use WebFramework\Database\Database;
+use WebFramework\Database\DatabaseResultWrapper;
 use WebFramework\Repository\Column;
 use WebFramework\Repository\UserRepository;
 
@@ -599,5 +602,194 @@ final class RepositoryCoreTest extends Unit
                 'email' => 'tester@example.com',
             ])
         ;
+    }
+
+    public function testSaveRevertedValueAfterSaveIsPersisted()
+    {
+        $queries = [];
+
+        $instance = $this->construct(
+            TestRepository::class,
+            [
+                $this->makeEmpty(Container::class),
+                $this->makeEmptyDatabase($queries),
+            ]
+        );
+
+        $entity = $instance->instantiateEntityFromData([
+            'id' => 42,
+            'name' => 'original',
+            'email' => 'tester@example.com',
+            'age' => 30,
+            'active' => true,
+            'secret_field' => 'secret',
+            'created_at' => 1000,
+        ]);
+
+        $entity->setName('changed');
+        $instance->save($entity);
+
+        $entity->setName('original');
+        $instance->save($entity);
+
+        verify(count($queries))
+            ->equals(2)
+        ;
+
+        verify($this->normalizeQuery($queries[0]['query']))
+            ->equals('UPDATE test_entities SET `name` = ? WHERE id = ?')
+        ;
+
+        verify($queries[0]['params'])
+            ->equals(['changed', 42])
+        ;
+
+        verify($this->normalizeQuery($queries[1]['query']))
+            ->equals('UPDATE test_entities SET `name` = ? WHERE id = ?')
+        ;
+
+        verify($queries[1]['params'])
+            ->equals(['original', 42])
+        ;
+    }
+
+    public function testSaveUnchangedEntityAfterUpdateDoesNotQueryAgain()
+    {
+        $queries = [];
+
+        $instance = $this->construct(
+            TestRepository::class,
+            [
+                $this->makeEmpty(Container::class),
+                $this->makeEmptyDatabase($queries),
+            ]
+        );
+
+        $entity = $instance->instantiateEntityFromData([
+            'id' => 42,
+            'name' => 'original',
+            'email' => 'tester@example.com',
+            'age' => 30,
+            'active' => true,
+            'secret_field' => 'secret',
+            'created_at' => 1000,
+        ]);
+
+        $entity->setName('changed');
+        $instance->save($entity);
+        $instance->save($entity);
+
+        verify(count($queries))
+            ->equals(1)
+        ;
+    }
+
+    public function testSaveAfterCreateDoesNotUpdateWhenUnchanged()
+    {
+        $queries = [];
+
+        $createdEntity = new TestEntity();
+        $createdEntity->setObjectId(42);
+
+        $instance = $this->construct(
+            TestRepository::class,
+            [
+                $this->makeEmpty(Container::class),
+                $this->makeEmptyDatabase($queries),
+            ],
+            [
+                'create' => fn (array $data) => $createdEntity,
+            ]
+        );
+
+        $entity = new TestEntity();
+        $entity->setName('tester');
+        $entity->setEmail('tester@example.com');
+        $entity->setAge(30);
+        $entity->setActive(true);
+        $entity->setSecretField('secret');
+        $entity->setCreatedAt(1000);
+
+        $instance->save($entity);
+
+        verify($entity->getId())
+            ->equals(42)
+        ;
+
+        $instance->save($entity);
+
+        verify($queries)
+            ->equals([])
+        ;
+    }
+
+    public function testSaveAfterCreateOnlyUpdatesChangedField()
+    {
+        $queries = [];
+
+        $createdEntity = new TestEntity();
+        $createdEntity->setObjectId(42);
+
+        $instance = $this->construct(
+            TestRepository::class,
+            [
+                $this->makeEmpty(Container::class),
+                $this->makeEmptyDatabase($queries),
+            ],
+            [
+                'create' => fn (array $data) => $createdEntity,
+            ]
+        );
+
+        $entity = new TestEntity();
+        $entity->setName('tester');
+        $entity->setEmail('tester@example.com');
+        $entity->setAge(30);
+        $entity->setActive(true);
+        $entity->setSecretField('secret');
+        $entity->setCreatedAt(1000);
+
+        $instance->save($entity);
+
+        $entity->setName('renamed');
+        $instance->save($entity);
+
+        verify(count($queries))
+            ->equals(1)
+        ;
+
+        verify($this->normalizeQuery($queries[0]['query']))
+            ->equals('UPDATE test_entities SET `name` = ? WHERE id = ?')
+        ;
+
+        verify($queries[0]['params'])
+            ->equals(['renamed', 42])
+        ;
+    }
+
+    /**
+     * Create a Database stub that records every query it receives.
+     *
+     * @param array<int, array{query: string, params: array<mixed>}> $queries
+     */
+    private function makeEmptyDatabase(array &$queries): Database
+    {
+        $result = $this->makeEmpty(DatabaseResultWrapper::class);
+
+        return $this->makeEmpty(Database::class, [
+            'query' => function (string $query, array $params) use (&$queries, $result) {
+                $queries[] = [
+                    'query' => $query,
+                    'params' => $params,
+                ];
+
+                return $result;
+            },
+        ]);
+    }
+
+    private function normalizeQuery(string $query): string
+    {
+        return preg_replace('/\s+/', ' ', trim($query));
     }
 }

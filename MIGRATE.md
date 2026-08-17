@@ -1,5 +1,11 @@
 # v11 release
 
+## Unreleased
+
+### Bug fixes
+
+* `Repository\RepositoryCore::save()` now refreshes the original values of an entity after a successful insert or update, so a field that is changed back to the value it was loaded with is persisted instead of silently dropped.
+
 ## v11.7
 
 ### New features

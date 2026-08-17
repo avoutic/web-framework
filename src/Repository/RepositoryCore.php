@@ -277,10 +277,20 @@ SQL;
                 $property->setValue($entity, $fieldValue);
             }
 
+            // The values the entity holds are the values that were just sent to
+            // the database, plus the additional id fields that were read back, so
+            // they become the new baseline for change tracking. A trigger or a
+            // column coercion can still make the stored row differ, but that is not
+            // something this entity knows about, and rewriting our own values over
+            // it on the next save would only make it worse.
+            //
+            $this->refreshOriginalValues($entity, $this->getEntityFields($entity, false));
+
             return;
         }
 
-        $data = $this->getChangedFields($entity);
+        $currentFields = $this->getEntityFields($entity, false);
+        $data = $this->diffWithOriginalValues($entity, $currentFields);
 
         if (count($data) === 0)
         {
@@ -302,6 +312,12 @@ SQL;
 
         $class = static::$entityClass;
         $this->database->query($query, $params, "Failed to update object ({$class})");
+
+        // The update succeeded, so the current values are the new baseline. Without
+        // this the entity would keep comparing against the values it was loaded with,
+        // and changing a field back to its loaded value would not be persisted.
+        //
+        $this->refreshOriginalValues($entity, $currentFields);
     }
 
     /**
@@ -436,10 +452,36 @@ SQL;
      */
     public function getChangedFields(Entity $entity): array
     {
-        $currentData = $this->getEntityFields($entity, false);
-        $originalData = $entity->getOriginalValues();
+        return $this->diffWithOriginalValues($entity, $this->getEntityFields($entity, false));
+    }
 
-        return array_diff_assoc($currentData, $originalData);
+    /**
+     * Compare already retrieved entity fields against the original values of an entity.
+     *
+     * @param T                    $entity        The entity to check for changes
+     * @param array<string, mixed> $currentFields The current fields of that entity
+     *
+     * @return array<string, mixed> The changed fields
+     */
+    private function diffWithOriginalValues(Entity $entity, array $currentFields): array
+    {
+        return array_diff_assoc($currentFields, $entity->getOriginalValues());
+    }
+
+    /**
+     * Make the given fields the new baseline for change tracking of an entity.
+     *
+     * The id key is kept, because instantiateEntityFromData() records it as well.
+     *
+     * @param T                    $entity        The entity to update the baseline for
+     * @param array<string, mixed> $currentFields The fields that are now stored in the database
+     */
+    private function refreshOriginalValues(Entity $entity, array $currentFields): void
+    {
+        $entity->setOriginalValues(array_merge(
+            ['id' => $entity->getId()],
+            $currentFields,
+        ));
     }
 
     /**
