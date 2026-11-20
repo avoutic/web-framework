@@ -277,6 +277,8 @@ SQL;
                 $property->setValue($entity, $fieldValue);
             }
 
+            $entity->setOriginalValues($this->getEntityFields($entity));
+
             return;
         }
 
@@ -302,6 +304,10 @@ SQL;
 
         $class = static::$entityClass;
         $this->database->query($query, $params, "Failed to update object ({$class})");
+
+        // What was written is now the known state, so it is not written again
+        //
+        $entity->setOriginalValues(array_merge($entity->getOriginalValues(), $data));
     }
 
     /**
@@ -360,16 +366,38 @@ SQL;
         {
             $fieldKey = $prefixFmt.$name;
 
-            if (!isset($data[$fieldKey]))
+            // Fields that are not part of the result row are left alone. A field that is
+            // present with a NULL value is part of the entity state
+            //
+            if (!array_key_exists($fieldKey, $data))
             {
                 continue;
             }
 
             $property = $reflection->getProperty($this->snakeToCamel($name));
             $property->setAccessible(true);
-            $property->setValue($entity, $data[$fieldKey]);
 
-            $originalValues[$name] = $data[$fieldKey];
+            $value = $data[$fieldKey];
+            $type = $property->getType();
+            $allowsNull = ($type === null || $type->allowsNull());
+
+            if ($value !== null || $allowsNull)
+            {
+                $property->setValue($entity, $value);
+            }
+
+            // For a NULL value on a property that cannot hold NULL, the default of the
+            // property is kept. Without a default the field stays uninitialized
+            //
+            if (!$property->isInitialized($entity))
+            {
+                continue;
+            }
+
+            // Snapshot the value as the entity holds it (after type coercion), so it
+            // can be compared strictly when determining what changed
+            //
+            $originalValues[$name] = $property->getValue($entity);
         }
 
         $entity->setOriginalValues($originalValues);
@@ -430,6 +458,9 @@ SQL;
     /**
      * Get the changed fields of an entity.
      *
+     * A field is changed when its value is not identical to the value in the snapshot
+     * taken when the entity was loaded or last saved, or when it is not in that snapshot.
+     *
      * @param T $entity The entity to check for changes
      *
      * @return array<string, mixed> The changed fields
@@ -439,7 +470,19 @@ SQL;
         $currentData = $this->getEntityFields($entity, false);
         $originalData = $entity->getOriginalValues();
 
-        return array_diff_assoc($currentData, $originalData);
+        $changed = [];
+
+        foreach ($currentData as $name => $value)
+        {
+            // Strict comparison, so a change between NULL, '', 0 and false is a change
+            //
+            if (!array_key_exists($name, $originalData) || $originalData[$name] !== $value)
+            {
+                $changed[$name] = $value;
+            }
+        }
+
+        return $changed;
     }
 
     /**
