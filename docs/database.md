@@ -122,6 +122,44 @@ class OrderService
 
 In this example, the `OrderService` uses a transaction to ensure that both the order and its items are inserted into the database atomically. If an error occurs, the transaction is rolled back.
 
+## Handling Query Errors
+
+A failed query results in a `WebFramework\Exception\DatabaseException`. It extends `\RuntimeException` and carries the error details of the database driver, so you do not have to parse error messages:
+
+- `getErrorCode()`: the error number of the driver (for MySQL for example `1062`), or `null`
+- `getSqlState()`: the SQLSTATE of the error, or `null`
+- `getDriverMessage()`: the error message of the driver
+- `getPrevious()`: the exception of the driver, if it threw one
+- `isDuplicateKey()`, `isLockTimeout()`, `isDeadlock()`: the kind of error, as classified by the driver
+
+### Example: Handling a Duplicate Key
+
+~~~php
+<?php
+
+use WebFramework\Exception\DatabaseException;
+
+try
+{
+    $this->database->insertQuery(
+        'INSERT INTO subscriptions (email) VALUES (?)',
+        [$email],
+        'Failed to insert subscription',
+    );
+}
+catch (DatabaseException $e)
+{
+    if (!$e->isDuplicateKey())
+    {
+        throw $e;
+    }
+
+    // Already subscribed
+}
+~~~
+
+The details are filled in by the database module. The `web-framework-mysql` module provides them from its first release for WebFramework 12.
+
 ## Database Locks
 
 The `Lock` class allows you to acquire named locks using the database (MySQL `GET_LOCK`). This is useful for synchronizing operations across distributed systems or processes.

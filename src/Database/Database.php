@@ -11,6 +11,8 @@
 
 namespace WebFramework\Database;
 
+use WebFramework\Exception\DatabaseException;
+
 /**
  * Interface Database.
  *
@@ -27,7 +29,8 @@ interface Database
      *
      * @return DatabaseResultWrapper The result of the query
      *
-     * @throws \RuntimeException If the query fails
+     * @throws DatabaseException If the query fails. Implementations should throw this
+     *                           exception (a RuntimeException) with the driver error details
      */
     public function query(string $queryStr, array $valueArray, string $exceptionMessage = ''): DatabaseResultWrapper;
 
@@ -40,7 +43,8 @@ interface Database
      *
      * @return int The ID of the last inserted row
      *
-     * @throws \RuntimeException If the query fails
+     * @throws DatabaseException If the query fails. Implementations should throw this
+     *                           exception (a RuntimeException) with the driver error details
      */
     public function insertQuery(string $query, array $params, string $exceptionMessage = ''): int;
 
