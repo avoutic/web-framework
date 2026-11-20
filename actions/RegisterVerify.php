@@ -17,9 +17,10 @@ use Slim\Http\Response;
 use Slim\Http\ServerRequest as Request;
 use WebFramework\Config\ConfigService;
 use WebFramework\Exception\CodeVerificationException;
+use WebFramework\Exception\LoginRefusedException;
 use WebFramework\Http\ResponseEmitter;
-use WebFramework\Security\AuthenticationService;
 use WebFramework\Security\Extension\RegisterExtensionInterface;
+use WebFramework\Security\LoginService;
 use WebFramework\Security\UserVerificationService;
 
 /**
@@ -32,14 +33,15 @@ class RegisterVerify
     /**
      * RegisterVerify constructor.
      *
-     * @param AuthenticationService   $authenticationService   The authentication service
-     * @param ConfigService           $configService           The configuration service
-     * @param ResponseEmitter         $responseEmitter         The response emitter
-     * @param UserVerificationService $userVerificationService The user verification service
+     * @param ConfigService              $configService           The configuration service
+     * @param LoginService               $loginService            The login service
+     * @param RegisterExtensionInterface $registerExtension       The register extension
+     * @param ResponseEmitter            $responseEmitter         The response emitter
+     * @param UserVerificationService    $userVerificationService The user verification service
      */
     public function __construct(
-        protected AuthenticationService $authenticationService,
         protected ConfigService $configService,
+        protected LoginService $loginService,
         protected RegisterExtensionInterface $registerExtension,
         protected ResponseEmitter $responseEmitter,
         protected UserVerificationService $userVerificationService,
@@ -72,7 +74,7 @@ class RegisterVerify
         {
             ['user' => $user, 'after_verify_data' => $afterVerifyData] = $this->userVerificationService->handleData($request, $guid, 'register');
 
-            $this->authenticationService->authenticate($user);
+            $this->loginService->completeLogin($request, $user);
 
             $this->registerExtension->postVerify($user, $afterVerifyData);
 
@@ -81,6 +83,15 @@ class RegisterVerify
                 [],
                 'success',
                 'verify.success',
+            );
+        }
+        catch (LoginRefusedException $e)
+        {
+            return $this->responseEmitter->buildRedirect(
+                $this->configService->get('actions.login.location'),
+                [],
+                'error',
+                'login.refused',
             );
         }
         catch (CodeVerificationException $e)

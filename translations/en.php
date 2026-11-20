@@ -32,6 +32,8 @@ return [
         'captcha_incorrect' => 'The CAPTCHA code entered was incorrect',
         'captcha_required' => 'CAPTCHA required',
         'captcha_required_extra' => 'Due to possible brute force attacks on this username, filling in a CAPTCHA is required for checking the password',
+        'refused' => 'Login not allowed',
+        'refused_extra' => 'This account cannot be logged in at the moment.',
         'success' => 'Login successful',
         'username_mismatch' => 'Username and password do not match',
         'username_mismatch_extra' => 'Please check if you entered the combination correctly.',

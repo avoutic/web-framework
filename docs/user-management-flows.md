@@ -69,9 +69,10 @@ The registration flow allows new users to create accounts with email verificatio
 1. Extracts user and flow from `guid` via `UserVerificationService::handleData()`
 2. Verifies flow is 'register'
 3. Sets user as verified (if not already verified)
-4. Authenticates user via `AuthenticationService::authenticate()`
+4. Completes the login via `LoginService::completeLogin()`, which calls `LoginExtensionInterface::preAuthenticate()`, creates the session and dispatches the `UserLoggedIn` event
 5. Calls `RegisterExtensionInterface::postVerify()` hook (extensible for custom logic)
 6. Redirects to `actions.register.return_page`
+7. If `preAuthenticate()` returns false, no session is created, `postVerify()` is not called and the user is redirected to the login page with the `login.refused` message. The user stays verified
 
 **Customization**: Implement `RegisterExtensionInterface` and configure it in dependency injection to add custom logic.
 
@@ -89,13 +90,14 @@ The login flow handles user authentication, including cases where users need to 
 3. Checks if user is verified and verification hasn't expired
 4. If user not verified → throws `UserVerificationRequiredException`
 5. Calls `LoginExtensionInterface::customValueCheck()` for custom validation
-6. If checks pass, authenticates user and redirects and dispatches `UserLoggedIn` event
+6. If checks pass, completes the login via `LoginService::completeLogin()`, which calls `LoginExtensionInterface::preAuthenticate()`, creates the session and dispatches the `UserLoggedIn` event, then redirects. If `preAuthenticate()` returns false, the form is shown again with the `login.refused` message
 7. If user not verified, generates verification code entry and sends verification email
 8. Redirects to Verify page with `guid` parameter
 
 **Extension Hooks**:
 - `getCustomParams()`: Add custom template parameters
-- `customValueCheck()`: Perform additional validation checks before authentication
+- `customValueCheck()`: Perform additional validation checks before authentication (password login form only)
+- `preAuthenticate()`: Last check right before a session is created. Runs on every login path: password login, LoginVerify and RegisterVerify. Return false to refuse the login
 
 **Configuration**:
 - `actions.login.default_return_page`: Default page after successful login
@@ -126,8 +128,9 @@ The login flow handles user authentication, including cases where users need to 
 **Process**:
 1. Extracts user, flow, and after_verify_data from `guid`
 2. Verifies flow is 'login'
-3. Authenticates user via `AuthenticationService::authenticate()`
+3. Completes the login via `LoginService::completeLogin()`, which calls `LoginExtensionInterface::preAuthenticate()`, creates the session and dispatches the `UserLoggedIn` event
 4. Redirects to `after_verify_data['return_page']` with `return_query` parameters
+5. If `preAuthenticate()` returns false, no session is created and the user is redirected to the login page with the `login.refused` message
 
 ## Flow 3: Password Reset
 
@@ -393,6 +396,7 @@ return [
 #### LoginExtensionInterface
 - `getCustomParams(Request $request): array` - Add custom template parameters
 - `customValueCheck(Request $request, User $user): bool` - Perform additional validation before authentication
+- `preAuthenticate(Request $request, User $user): bool` - Allow or refuse the login right before a session is created, on every login path
 
 #### ChangeEmailExtensionInterface
 - `getCustomParams(Request $request): array` - Add custom template parameters
