@@ -11,6 +11,7 @@
 
 namespace WebFramework\Security;
 
+use Carbon\Carbon;
 use Psr\Log\LoggerInterface;
 use Slim\Http\ServerRequest as Request;
 use WebFramework\Entity\User;
@@ -101,25 +102,20 @@ class LoginService
     }
 
     /**
-     * Authenticate a user.
+     * Authenticate a user whose credentials have been checked with validate().
      *
-     * @param User   $user     The user to authenticate
-     * @param string $password The password to verify
+     * This does not check the password. It checks that the user is verified and then
+     * completes the login.
+     *
+     * @param Request $request The current request
+     * @param User    $user    The user to authenticate
      *
      * @throws AccountDisabledException          If the account is disabled
-     * @throws InvalidPasswordException          If the password is incorrect
      * @throws LoginRefusedException             If the login extension refuses the login
      * @throws UserVerificationRequiredException If the user is not verified
      */
-    public function authenticate(Request $request, User $user, string $password): void
+    public function authenticate(Request $request, User $user): void
     {
-        if (!$this->checkPasswordService->checkPassword($user, $password))
-        {
-            $this->logger->debug('Invalid password', ['user_id' => $user->getId()]);
-
-            throw new InvalidPasswordException();
-        }
-
         if (!$user->isVerified())
         {
             $this->logger->debug('User not verified', ['user_id' => $user->getId()]);
@@ -161,6 +157,12 @@ class LoginService
         }
 
         $this->authenticationService->authenticate($user);
+
+        // Record the login here, where the session is created, so refused logins
+        // do not count as account activity. This also resets the failed login counter
+        //
+        $user->setLastLogin(Carbon::now()->getTimestamp());
+        $this->userRepository->save($user);
 
         $this->eventService->dispatch(new UserLoggedIn($request, $user));
     }

@@ -17,12 +17,12 @@ use WebFramework\Security\PasswordHashService;
  */
 final class CheckPasswordServiceTest extends Unit
 {
-    public function testCheckPasswordWithCorrectPassword()
+    public function testCheckPasswordWithCorrectPasswordHasNoSideEffects()
     {
         $user = $this->makeEmpty(User::class, [
             'getSolidPassword' => Expected::once('sha256:1000:salt123:hash123'),
             'setSolidPassword' => Expected::never(),
-            'setLastLogin' => Expected::once(),
+            'setLastLogin' => Expected::never(),
             'incrementFailedLogin' => Expected::never(),
         ]);
 
@@ -32,7 +32,7 @@ final class CheckPasswordServiceTest extends Unit
         ]);
 
         $userRepository = $this->makeEmpty(UserRepository::class, [
-            'save' => Expected::once(),
+            'save' => Expected::never(),
         ]);
 
         $logger = $this->makeEmpty(LoggerInterface::class);
@@ -72,7 +72,7 @@ final class CheckPasswordServiceTest extends Unit
             'setSolidPassword' => Expected::once(function ($generatedHash) use ($newHash) {
                 verify($generatedHash)->equals($newHash);
             }),
-            'setLastLogin' => Expected::once(),
+            'setLastLogin' => Expected::never(),
         ]);
 
         $passwordHashService = $this->makeEmpty(PasswordHashService::class, [

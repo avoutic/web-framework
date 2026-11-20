@@ -128,7 +128,7 @@ class Login
                 {
                     // Authenticate user
                     //
-                    $this->loginService->authenticate($request, $user, $filtered['password']);
+                    $this->loginService->authenticate($request, $user);
 
                     return $this->redirect($request, 'success', 'login.success');
                 }

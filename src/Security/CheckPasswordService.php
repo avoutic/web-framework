@@ -11,7 +11,6 @@
 
 namespace WebFramework\Security;
 
-use Carbon\Carbon;
 use Psr\Log\LoggerInterface;
 use WebFramework\Entity\User;
 use WebFramework\Repository\UserRepository;
@@ -38,6 +37,10 @@ class CheckPasswordService
 
     /**
      * Check if the provided password is correct for the given user.
+     *
+     * A wrong password increments the failed login counter of the user. A correct password
+     * has no side effects, apart from migrating the stored hash when needed. The last login
+     * is recorded where the session is created, in LoginService::completeLogin().
      *
      * @param User   $user     The user to check the password for
      * @param string $password The password to check
@@ -69,10 +72,8 @@ class CheckPasswordService
 
             $newHash = $this->passwordHashService->generateHash($password);
             $user->setSolidPassword($newHash);
+            $this->userRepository->save($user);
         }
-
-        $user->setLastLogin(Carbon::now()->getTimestamp());
-        $this->userRepository->save($user);
 
         return true;
     }

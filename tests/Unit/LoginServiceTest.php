@@ -121,32 +121,6 @@ final class LoginServiceTest extends Unit
         ;
     }
 
-    public function testAuthenticateWrongPassword()
-    {
-        $instance = $this->make(
-            LoginService::class,
-            [
-                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
-                'checkPasswordService' => $this->makeEmpty(
-                    CheckPasswordService::class,
-                    [
-                        'checkPassword' => Expected::once(false),
-                    ],
-                ),
-                'logger' => $this->makeEmpty(LoggerInterface::class),
-            ],
-        );
-
-        $request = $this->makeEmpty(Request::class, ['getAttribute' => '']);
-        $user = $this->makeEmpty(User::class);
-
-        verify(function () use ($instance, $request, $user) {
-            $instance->authenticate($request, $user, '');
-        })
-            ->callableThrows(InvalidPasswordException::class)
-        ;
-    }
-
     public function testAuthenticateNotVerified()
     {
         $user = $this->makeEmpty(User::class, ['isVerified' => Expected::once(false)]);
@@ -158,7 +132,7 @@ final class LoginServiceTest extends Unit
                 'checkPasswordService' => $this->makeEmpty(
                     CheckPasswordService::class,
                     [
-                        'checkPassword' => Expected::once(true),
+                        'checkPassword' => Expected::never(),
                     ],
                 ),
                 'logger' => $this->makeEmpty(LoggerInterface::class),
@@ -168,7 +142,7 @@ final class LoginServiceTest extends Unit
         $request = $this->makeEmpty(Request::class, ['getAttribute' => '']);
 
         verify(function () use ($instance, $request, $user) {
-            $instance->authenticate($request, $user, '');
+            $instance->authenticate($request, $user);
         })
             ->callableThrows(UserVerificationRequiredException::class)
         ;
@@ -179,18 +153,19 @@ final class LoginServiceTest extends Unit
         $user = $this->makeEmpty(User::class, [
             'isVerified' => Expected::once(true),
             'isVerifiedValid' => Expected::once(true),
+            'setLastLogin' => Expected::once(),
         ]);
 
         $instance = $this->make(
             LoginService::class,
             [
+                'userRepository' => $this->makeEmpty(UserRepository::class, [
+                    'save' => Expected::once(),
+                ]),
                 'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
-                'checkPasswordService' => $this->makeEmpty(
-                    CheckPasswordService::class,
-                    [
-                        'checkPassword' => Expected::once(true),
-                    ],
-                ),
+                'checkPasswordService' => $this->makeEmpty(CheckPasswordService::class, [
+                    'checkPassword' => Expected::never(),
+                ]),
                 'authenticationService' => $this->makeEmpty(
                     NullAuthenticationService::class,
                     [
@@ -215,7 +190,7 @@ final class LoginServiceTest extends Unit
 
         $request = $this->makeEmpty(Request::class, ['getAttribute' => '']);
 
-        verify($instance->authenticate($request, $user, ''));
+        verify($instance->authenticate($request, $user));
     }
 
     public function testAuthenticateRefusedByExtension()
@@ -230,12 +205,9 @@ final class LoginServiceTest extends Unit
             LoginService::class,
             [
                 'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
-                'checkPasswordService' => $this->makeEmpty(
-                    CheckPasswordService::class,
-                    [
-                        'checkPassword' => Expected::once(true),
-                    ],
-                ),
+                'checkPasswordService' => $this->makeEmpty(CheckPasswordService::class, [
+                    'checkPassword' => Expected::never(),
+                ]),
                 'authenticationService' => $this->makeEmpty(
                     NullAuthenticationService::class,
                     [
@@ -262,7 +234,7 @@ final class LoginServiceTest extends Unit
         $request = $this->makeEmpty(Request::class, ['getAttribute' => '']);
 
         verify(function () use ($instance, $request, $user) {
-            $instance->authenticate($request, $user, '');
+            $instance->authenticate($request, $user);
         })
             ->callableThrows(LoginRefusedException::class)
         ;
@@ -270,11 +242,18 @@ final class LoginServiceTest extends Unit
 
     public function testCompleteLoginAllowed()
     {
-        $user = $this->makeEmpty(User::class);
+        $user = $this->makeEmpty(User::class, [
+            'setLastLogin' => Expected::once(function ($timestamp) {
+                verify($timestamp)->greaterThan(0);
+            }),
+        ]);
 
         $instance = $this->make(
             LoginService::class,
             [
+                'userRepository' => $this->makeEmpty(UserRepository::class, [
+                    'save' => Expected::once(),
+                ]),
                 'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
                 'authenticationService' => $this->makeEmpty(
                     NullAuthenticationService::class,
@@ -306,11 +285,15 @@ final class LoginServiceTest extends Unit
     {
         $user = $this->makeEmpty(User::class, [
             'getId' => 1,
+            'setLastLogin' => Expected::never(),
         ]);
 
         $instance = $this->make(
             LoginService::class,
             [
+                'userRepository' => $this->makeEmpty(UserRepository::class, [
+                    'save' => Expected::never(),
+                ]),
                 'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
                 'authenticationService' => $this->makeEmpty(
                     NullAuthenticationService::class,
@@ -357,12 +340,9 @@ final class LoginServiceTest extends Unit
             LoginService::class,
             [
                 'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
-                'checkPasswordService' => $this->makeEmpty(
-                    CheckPasswordService::class,
-                    [
-                        'checkPassword' => Expected::once(true),
-                    ],
-                ),
+                'checkPasswordService' => $this->makeEmpty(CheckPasswordService::class, [
+                    'checkPassword' => Expected::never(),
+                ]),
                 'logger' => $this->makeEmpty(LoggerInterface::class, [
                     'debug' => Expected::once(),
                 ]),
@@ -373,7 +353,7 @@ final class LoginServiceTest extends Unit
         $request = $this->makeEmpty(Request::class, ['getAttribute' => '']);
 
         verify(function () use ($instance, $request, $user) {
-            $instance->authenticate($request, $user, '');
+            $instance->authenticate($request, $user);
         })
             ->callableThrows(UserVerificationRequiredException::class)
         ;
@@ -412,11 +392,17 @@ final class LoginServiceTest extends Unit
 
     public function testCompleteLoginDisabledAccount()
     {
-        $user = $this->makeEmpty(User::class, ['getId' => 1]);
+        $user = $this->makeEmpty(User::class, [
+            'getId' => 1,
+            'setLastLogin' => Expected::never(),
+        ]);
 
         $instance = $this->make(
             LoginService::class,
             [
+                'userRepository' => $this->makeEmpty(UserRepository::class, [
+                    'save' => Expected::never(),
+                ]),
                 'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => false]),
                 'authenticationService' => $this->makeEmpty(NullAuthenticationService::class, [
                     'authenticate' => Expected::never(),
