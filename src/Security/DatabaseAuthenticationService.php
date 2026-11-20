@@ -233,20 +233,22 @@ class DatabaseAuthenticationService implements AuthenticationService
 
         // Update timestamp only once every 5 minutes
         //
-        if ($current->diffInMinutes($lastActiveTimestamp) < 5)
+        // (Carbon 3 diffs are signed: diff from the earlier to the later timestamp)
+        //
+        if ($lastActiveTimestamp->diffInMinutes($current) < 5)
         {
             return;
         }
 
         $this->logger->debug('Extending database session', ['session_id' => $session->getId()]);
 
-        $timestamp = Carbon::now();
+        $timestamp = $current->format('Y-m-d H:i:s');
         $session->setLastActive($timestamp);
 
         // Restart session every 4 hours
         //
         $startTimestamp = new Carbon($session->getStart());
-        if ($current->diffInHours($startTimestamp) > 4)
+        if ($startTimestamp->diffInHours($current) > 4)
         {
             $this->logger->debug('Regenerating browser session ID');
 
