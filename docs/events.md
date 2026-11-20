@@ -164,14 +164,16 @@ Here are real examples from the WebFramework showing how events are used in prac
 
 ### User Login Events
 
-When a user successfully logs in, the framework dispatches a `UserLoggedIn` event:
+When a user successfully logs in, the framework dispatches a `UserLoggedIn` event. This happens in `LoginService::completeLogin()`, the single place where a login results in a session:
 
 ~~~php
 <?php
 
 $this->authenticationService->authenticate($user);
-$this->eventService->dispatch(new UserLoggedIn($user));
+$this->eventService->dispatch(new UserLoggedIn($request, $user));
 ~~~
+
+Code that needs to log a user in should call `LoginService::completeLogin()` instead of repeating these two calls.
 
 ### Password Change Events
 

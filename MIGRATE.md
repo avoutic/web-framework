@@ -5,11 +5,12 @@
 * `LoginExtensionInterface` has a new method `preAuthenticate(Request $request, User $user): bool`. Implementations that do not extend `NullLoginExtension` must add it. Return `true` to keep the current behavior.
 * `LoginService` has a new constructor parameter `LoginExtensionInterface $loginExtension`. Autowired definitions need no change.
 * The `LoginVerify` and `RegisterVerify` actions take `LoginService` instead of `AuthenticationService` in their constructor. Subclasses must be adapted. Subclasses that only existed to add a check before authentication can be replaced by `preAuthenticate()`.
+* `UserLoggedIn` is now also dispatched after login verification (`LoginVerify`) and registration verification (`RegisterVerify`). Apps that dispatched it themselves on those paths, or did login bookkeeping elsewhere to work around the gap, must remove that to avoid duplicate handling.
+* `LoginService::authenticate()` can now throw `LoginRefusedException` when `preAuthenticate()` refuses the login. Custom login actions or endpoints that call it must catch this exception.
 
 ## New features
 
 * Introduce `LoginService::completeLogin()` as the single place where a login results in a session. It calls `LoginExtensionInterface::preAuthenticate()`, authenticates the user and dispatches `UserLoggedIn`. It throws `LoginRefusedException` when the extension refuses the login.
-* `UserLoggedIn` is now also dispatched after login verification (`LoginVerify`) and registration verification (`RegisterVerify`).
 * New translation keys `login.refused` and `login.refused_extra`.
 
 # v11 release

@@ -90,7 +90,7 @@ The login flow handles user authentication, including cases where users need to 
 3. Checks if user is verified and verification hasn't expired
 4. If user not verified → throws `UserVerificationRequiredException`
 5. Calls `LoginExtensionInterface::customValueCheck()` for custom validation
-6. If checks pass, completes the login via `LoginService::completeLogin()`, which calls `LoginExtensionInterface::preAuthenticate()`, creates the session and dispatches the `UserLoggedIn` event, then redirects. If `preAuthenticate()` returns false, the form is shown again with the `login.refused` message
+6. If checks pass, calls `LoginService::authenticate()`, which re-checks the password and verification and then completes the login via `LoginService::completeLogin()`. That calls `LoginExtensionInterface::preAuthenticate()`, creates the session and dispatches the `UserLoggedIn` event, then redirects. If `preAuthenticate()` returns false, the form is shown again with the `login.refused` message
 7. If user not verified, generates verification code entry and sends verification email
 8. Redirects to Verify page with `guid` parameter
 
