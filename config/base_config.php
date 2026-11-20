@@ -45,6 +45,7 @@ return [
             'code_length' => 6,             // Length of verification code (default: 6)
             'code_expiry_minutes' => 15,    // Minutes until code expires (default: 15)
             'max_attempts' => 5,            // Maximum verification attempts per code (default: 5)
+            'resend_cooldown_seconds' => 60, // Seconds before a new code can be requested (default: 60)
         ],
     ],
     // Action classes to execute for showing graceful error pages

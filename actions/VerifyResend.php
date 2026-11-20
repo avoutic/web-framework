@@ -69,6 +69,7 @@ class VerifyResend
      * @return ResponseInterface The response
      *
      * @uses config actions.login.location
+     * @uses config security.email_verification.resend_cooldown_seconds
      * @uses config actions.verify.location
      */
     public function __invoke(Request $request, Response $response, array $routeArgs): ResponseInterface
@@ -92,15 +93,12 @@ class VerifyResend
             }
         }
 
-        // Check 60-second cooldown
-        $createdAt = $verificationCode->getCreatedAt();
-        $now = Carbon::now()->getTimestamp();
-        $secondsSinceCreation = $now - $createdAt;
+        // Check resend cooldown
+        $cooldownSeconds = (int) $this->configService->get('security.email_verification.resend_cooldown_seconds');
+        $secondsSinceCreation = Carbon::now()->getTimestamp() - $verificationCode->getCreatedAt();
 
-        if ($secondsSinceCreation < 60)
+        if ($secondsSinceCreation < $cooldownSeconds)
         {
-            $remainingSeconds = 60 - $secondsSinceCreation;
-
             return $this->responseEmitter->buildQueryRedirect(
                 $this->configService->get('actions.verify.location'),
                 [],

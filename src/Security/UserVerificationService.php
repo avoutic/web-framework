@@ -106,45 +106,7 @@ class UserVerificationService
     {
         $this->logger->debug('Handling verification data', ['guid' => $guid]);
 
-        $verificationCode = $this->verificationCodeRepository->getByGuid($guid);
-
-        if ($verificationCode === null)
-        {
-            throw new CodeVerificationException();
-        }
-
-        // Verify the code was actually verified (marked as correct) and hasn't expired
-        if (!$verificationCode->isCorrect())
-        {
-            $this->logger->debug('Verification code not yet correct', ['guid' => $guid]);
-
-            throw new CodeVerificationException();
-        }
-
-        if ($verificationCode->isExpired())
-        {
-            $this->logger->debug('Verification code expired', ['guid' => $guid]);
-
-            throw new CodeVerificationException();
-        }
-
-        // Prevent replay attacks - check if code has already been invalidated or processed
-        if ($verificationCode->isInvalidated() || $verificationCode->isProcessed())
-        {
-            $this->logger->warning('Verification code already invalidated or processed (replay attempt)', ['guid' => $guid]);
-
-            throw new CodeVerificationException();
-        }
-
-        if ($verificationCode->getAction() !== $action)
-        {
-            $this->logger->error('Invalid action for verification code', [
-                'guid' => $guid,
-                'action' => $verificationCode->getAction(),
-            ]);
-
-            throw new CodeVerificationException();
-        }
+        $verificationCode = $this->userCodeService->getRedeemableCode($guid, $action);
 
         $flowData = $verificationCode->getFlowData();
         $user = $this->userRepository->find($verificationCode->getUserId());

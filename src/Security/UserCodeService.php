@@ -14,6 +14,7 @@ namespace WebFramework\Security;
 use Carbon\Carbon;
 use Psr\Log\LoggerInterface;
 use WebFramework\Entity\User;
+use WebFramework\Entity\VerificationCode;
 use WebFramework\Exception\CodeVerificationException;
 use WebFramework\Exception\InvalidCodeException;
 use WebFramework\Repository\UserRepository;
@@ -79,6 +80,65 @@ class UserCodeService
         }
 
         return $verificationCode->getAction();
+    }
+
+    /**
+     * Get a verification code that is ready to be redeemed for an action, without consuming it.
+     *
+     * Redeemable means: the code exists, was entered correctly, has not expired, has not
+     * been invalidated or processed, and belongs to the given action. The code is not
+     * marked as processed. That is up to the caller, once it has acted on the code.
+     *
+     * @param string $guid   The GUID of the verification code
+     * @param string $action The action the code must belong to
+     *
+     * @return VerificationCode The redeemable verification code
+     *
+     * @throws CodeVerificationException If the code is not redeemable for the action
+     */
+    public function getRedeemableCode(string $guid, string $action): VerificationCode
+    {
+        $verificationCode = $this->verificationCodeRepository->getByGuid($guid);
+
+        if ($verificationCode === null)
+        {
+            throw new CodeVerificationException();
+        }
+
+        // Verify the code was actually verified (marked as correct) and hasn't expired
+        if (!$verificationCode->isCorrect())
+        {
+            $this->logger->debug('Verification code not yet correct', ['guid' => $guid]);
+
+            throw new CodeVerificationException();
+        }
+
+        if ($verificationCode->isExpired())
+        {
+            $this->logger->debug('Verification code expired', ['guid' => $guid]);
+
+            throw new CodeVerificationException();
+        }
+
+        // Prevent replay attacks - check if code has already been invalidated or processed
+        if ($verificationCode->isInvalidated() || $verificationCode->isProcessed())
+        {
+            $this->logger->warning('Verification code already invalidated or processed (replay attempt)', ['guid' => $guid]);
+
+            throw new CodeVerificationException();
+        }
+
+        if ($verificationCode->getAction() !== $action)
+        {
+            $this->logger->error('Invalid action for verification code', [
+                'guid' => $guid,
+                'action' => $verificationCode->getAction(),
+            ]);
+
+            throw new CodeVerificationException();
+        }
+
+        return $verificationCode;
     }
 
     /**

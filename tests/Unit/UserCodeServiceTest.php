@@ -317,4 +317,110 @@ final class UserCodeServiceTest extends Unit
 
         verify($instance->getActionByGuid('invalid-guid'))->null();
     }
+
+    /**
+     * @param array<string, mixed> $properties
+     */
+    private function buildServiceWithCode(?array $properties): UserCodeService
+    {
+        Carbon::setTestNow('2025-01-01 12:00:00');
+
+        $code = null;
+        if ($properties !== null)
+        {
+            $code = $this->make(VerificationCode::class, array_merge([
+                'guid' => 'test-guid-123',
+                'action' => 'register',
+                'correctAt' => Carbon::now()->getTimestamp(),
+                'expiresAt' => Carbon::now()->addMinutes(15)->getTimestamp(),
+            ], $properties));
+        }
+
+        return $this->make(
+            UserCodeService::class,
+            [
+                'logger' => $this->makeEmpty(LoggerInterface::class),
+                'verificationCodeRepository' => $this->makeEmpty(VerificationCodeRepository::class, [
+                    'getByGuid' => Expected::once($code),
+                    'save' => Expected::never(),
+                ]),
+            ],
+        );
+    }
+
+    public function testGetRedeemableCodeReturnsCodeWithoutConsumingIt()
+    {
+        $service = $this->buildServiceWithCode([]);
+
+        $code = $service->getRedeemableCode('test-guid-123', 'register');
+
+        verify($code->getGuid())->equals('test-guid-123');
+        verify($code->isProcessed())->false();
+    }
+
+    public function testGetRedeemableCodeThrowsWhenNotFound()
+    {
+        $service = $this->buildServiceWithCode(null);
+
+        verify(function () use ($service) {
+            $service->getRedeemableCode('test-guid-123', 'register');
+        })
+            ->callableThrows(CodeVerificationException::class)
+        ;
+    }
+
+    public function testGetRedeemableCodeThrowsWhenNotCorrect()
+    {
+        $service = $this->buildServiceWithCode(['correctAt' => null]);
+
+        verify(function () use ($service) {
+            $service->getRedeemableCode('test-guid-123', 'register');
+        })
+            ->callableThrows(CodeVerificationException::class)
+        ;
+    }
+
+    public function testGetRedeemableCodeThrowsWhenExpired()
+    {
+        $service = $this->buildServiceWithCode(['expiresAt' => 1]);
+
+        verify(function () use ($service) {
+            $service->getRedeemableCode('test-guid-123', 'register');
+        })
+            ->callableThrows(CodeVerificationException::class)
+        ;
+    }
+
+    public function testGetRedeemableCodeThrowsWhenInvalidated()
+    {
+        $service = $this->buildServiceWithCode(['invalidatedAt' => 1]);
+
+        verify(function () use ($service) {
+            $service->getRedeemableCode('test-guid-123', 'register');
+        })
+            ->callableThrows(CodeVerificationException::class)
+        ;
+    }
+
+    public function testGetRedeemableCodeThrowsWhenProcessed()
+    {
+        $service = $this->buildServiceWithCode(['processedAt' => 1]);
+
+        verify(function () use ($service) {
+            $service->getRedeemableCode('test-guid-123', 'register');
+        })
+            ->callableThrows(CodeVerificationException::class)
+        ;
+    }
+
+    public function testGetRedeemableCodeThrowsWhenActionMismatch()
+    {
+        $service = $this->buildServiceWithCode([]);
+
+        verify(function () use ($service) {
+            $service->getRedeemableCode('test-guid-123', 'reset_password');
+        })
+            ->callableThrows(CodeVerificationException::class)
+        ;
+    }
 }

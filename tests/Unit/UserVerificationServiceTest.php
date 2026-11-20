@@ -139,6 +139,10 @@ final class UserVerificationServiceTest extends Unit
             UserVerificationService::class,
             [
                 'verificationCodeRepository' => $verificationCodeRepository,
+                'userCodeService' => $this->make(UserCodeService::class, [
+                    'verificationCodeRepository' => $verificationCodeRepository,
+                    'logger' => $this->makeEmpty(LoggerInterface::class),
+                ]),
                 'userRepository' => $userRepository,
                 'eventService' => $eventService,
                 'logger' => $logger,
@@ -182,11 +186,17 @@ final class UserVerificationServiceTest extends Unit
             'getFlowData' => ['after_verify_data' => $codeAfterVerifyData],
         ]);
 
+        $verificationCodeRepository = $this->makeEmpty(VerificationCodeRepository::class, [
+            'getByGuid' => $verificationCode,
+        ]);
+
         return $this->make(
             UserVerificationService::class,
             [
-                'verificationCodeRepository' => $this->makeEmpty(VerificationCodeRepository::class, [
-                    'getByGuid' => $verificationCode,
+                'verificationCodeRepository' => $verificationCodeRepository,
+                'userCodeService' => $this->make(UserCodeService::class, [
+                    'verificationCodeRepository' => $verificationCodeRepository,
+                    'logger' => $this->makeEmpty(LoggerInterface::class),
                 ]),
                 'userRepository' => $this->makeEmpty(UserRepository::class, [
                     'find' => $user,
@@ -297,6 +307,10 @@ final class UserVerificationServiceTest extends Unit
             UserVerificationService::class,
             [
                 'verificationCodeRepository' => $verificationCodeRepository,
+                'userCodeService' => $this->make(UserCodeService::class, [
+                    'verificationCodeRepository' => $verificationCodeRepository,
+                    'logger' => $this->makeEmpty(LoggerInterface::class),
+                ]),
                 'userRepository' => $userRepository,
                 'eventService' => $eventService,
                 'logger' => $logger,
@@ -330,6 +344,10 @@ final class UserVerificationServiceTest extends Unit
             UserVerificationService::class,
             [
                 'verificationCodeRepository' => $verificationCodeRepository,
+                'userCodeService' => $this->make(UserCodeService::class, [
+                    'verificationCodeRepository' => $verificationCodeRepository,
+                    'logger' => $this->makeEmpty(LoggerInterface::class),
+                ]),
                 'logger' => $this->makeEmpty(LoggerInterface::class),
             ],
         );
@@ -358,6 +376,10 @@ final class UserVerificationServiceTest extends Unit
             UserVerificationService::class,
             [
                 'verificationCodeRepository' => $verificationCodeRepository,
+                'userCodeService' => $this->make(UserCodeService::class, [
+                    'verificationCodeRepository' => $verificationCodeRepository,
+                    'logger' => $this->makeEmpty(LoggerInterface::class),
+                ]),
                 'logger' => $this->makeEmpty(LoggerInterface::class),
             ],
         );
@@ -387,6 +409,10 @@ final class UserVerificationServiceTest extends Unit
             UserVerificationService::class,
             [
                 'verificationCodeRepository' => $verificationCodeRepository,
+                'userCodeService' => $this->make(UserCodeService::class, [
+                    'verificationCodeRepository' => $verificationCodeRepository,
+                    'logger' => $this->makeEmpty(LoggerInterface::class),
+                ]),
                 'logger' => $this->makeEmpty(LoggerInterface::class),
             ],
         );
@@ -417,6 +443,10 @@ final class UserVerificationServiceTest extends Unit
             UserVerificationService::class,
             [
                 'verificationCodeRepository' => $verificationCodeRepository,
+                'userCodeService' => $this->make(UserCodeService::class, [
+                    'verificationCodeRepository' => $verificationCodeRepository,
+                    'logger' => $this->makeEmpty(LoggerInterface::class),
+                ]),
                 'logger' => $this->makeEmpty(LoggerInterface::class),
             ],
         );
@@ -448,6 +478,10 @@ final class UserVerificationServiceTest extends Unit
             UserVerificationService::class,
             [
                 'verificationCodeRepository' => $verificationCodeRepository,
+                'userCodeService' => $this->make(UserCodeService::class, [
+                    'verificationCodeRepository' => $verificationCodeRepository,
+                    'logger' => $this->makeEmpty(LoggerInterface::class),
+                ]),
                 'logger' => $this->makeEmpty(LoggerInterface::class),
             ],
         );
@@ -484,6 +518,10 @@ final class UserVerificationServiceTest extends Unit
             UserVerificationService::class,
             [
                 'verificationCodeRepository' => $verificationCodeRepository,
+                'userCodeService' => $this->make(UserCodeService::class, [
+                    'verificationCodeRepository' => $verificationCodeRepository,
+                    'logger' => $logger,
+                ]),
                 'logger' => $logger,
             ],
         );
@@ -525,6 +563,10 @@ final class UserVerificationServiceTest extends Unit
             UserVerificationService::class,
             [
                 'verificationCodeRepository' => $verificationCodeRepository,
+                'userCodeService' => $this->make(UserCodeService::class, [
+                    'verificationCodeRepository' => $verificationCodeRepository,
+                    'logger' => $this->makeEmpty(LoggerInterface::class),
+                ]),
                 'userRepository' => $userRepository,
                 'logger' => $this->makeEmpty(LoggerInterface::class),
             ],
@@ -577,6 +619,10 @@ final class UserVerificationServiceTest extends Unit
             UserVerificationService::class,
             [
                 'verificationCodeRepository' => $verificationCodeRepository,
+                'userCodeService' => $this->make(UserCodeService::class, [
+                    'verificationCodeRepository' => $verificationCodeRepository,
+                    'logger' => $this->makeEmpty(LoggerInterface::class),
+                ]),
                 'userRepository' => $userRepository,
                 'logger' => $this->makeEmpty(LoggerInterface::class),
             ],

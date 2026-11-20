@@ -330,6 +330,10 @@ final class ChangeEmailServiceTest extends Unit
             [
                 'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
                 'verificationCodeRepository' => $verificationCodeRepository,
+                'userCodeService' => $this->make(UserCodeService::class, [
+                    'verificationCodeRepository' => $verificationCodeRepository,
+                    'logger' => $this->makeEmpty(LoggerInterface::class),
+                ]),
                 'userRepository' => $userRepository,
                 'securityIteratorService' => $securityIteratorService,
                 'authenticationService' => $authenticationService,
@@ -365,6 +369,10 @@ final class ChangeEmailServiceTest extends Unit
             [
                 'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
                 'verificationCodeRepository' => $verificationCodeRepository,
+                'userCodeService' => $this->make(UserCodeService::class, [
+                    'verificationCodeRepository' => $verificationCodeRepository,
+                    'logger' => $this->makeEmpty(LoggerInterface::class),
+                ]),
                 'logger' => $this->makeEmpty(LoggerInterface::class),
             ],
         );
@@ -401,6 +409,10 @@ final class ChangeEmailServiceTest extends Unit
             [
                 'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
                 'verificationCodeRepository' => $verificationCodeRepository,
+                'userCodeService' => $this->make(UserCodeService::class, [
+                    'verificationCodeRepository' => $verificationCodeRepository,
+                    'logger' => $this->makeEmpty(LoggerInterface::class),
+                ]),
                 'logger' => $this->makeEmpty(LoggerInterface::class),
             ],
         );
@@ -462,6 +474,10 @@ final class ChangeEmailServiceTest extends Unit
             [
                 'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
                 'verificationCodeRepository' => $verificationCodeRepository,
+                'userCodeService' => $this->make(UserCodeService::class, [
+                    'verificationCodeRepository' => $verificationCodeRepository,
+                    'logger' => $this->makeEmpty(LoggerInterface::class),
+                ]),
                 'userRepository' => $userRepository,
                 'authenticationService' => $authenticationService,
                 'logger' => $this->makeEmpty(LoggerInterface::class),
@@ -523,6 +539,10 @@ final class ChangeEmailServiceTest extends Unit
             [
                 'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
                 'verificationCodeRepository' => $verificationCodeRepository,
+                'userCodeService' => $this->make(UserCodeService::class, [
+                    'verificationCodeRepository' => $verificationCodeRepository,
+                    'logger' => $this->makeEmpty(LoggerInterface::class),
+                ]),
                 'userRepository' => $userRepository,
                 'securityIteratorService' => $securityIteratorService,
                 'logger' => $this->makeEmpty(LoggerInterface::class),
@@ -581,6 +601,10 @@ final class ChangeEmailServiceTest extends Unit
             [
                 'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
                 'verificationCodeRepository' => $verificationCodeRepository,
+                'userCodeService' => $this->make(UserCodeService::class, [
+                    'verificationCodeRepository' => $verificationCodeRepository,
+                    'logger' => $this->makeEmpty(LoggerInterface::class),
+                ]),
                 'userRepository' => $userRepository,
                 'securityIteratorService' => $securityIteratorService,
                 'logger' => $this->makeEmpty(LoggerInterface::class),

@@ -307,6 +307,7 @@ return [
             'code_length' => 6,             // Length of verification code
             'code_expiry_minutes' => 15,    // Minutes until code expires
             'max_attempts' => 5,           // Maximum verification attempts per code
+            'resend_cooldown_seconds' => 60, // Seconds before a new code can be requested
         ],
         'validity_period_days' => 365,      // Email verification validity period
     ],

@@ -28,6 +28,8 @@
 * Introduce `LoginService::completeLogin()` as the single place where a login results in a session. It calls `LoginExtensionInterface::preAuthenticate()`, authenticates the user and dispatches `UserLoggedIn`. It throws `LoginRefusedException` when the extension refuses the login.
 * `UserVerificationService::handleData()` returns an extra `first_verification` flag that tells whether this call verified the user for the first time, and `post_verify_data` with the registration after verify data on first verification.
 * Introduce `Security\AccountStatusChecker` with `DefaultAccountStatusChecker` and `NullAccountStatusChecker`, and `AccountDisabledException`. Use it for anything that is a property of the account (disabled, suspended, pending approval). Use `LoginExtensionInterface::preAuthenticate()` for checks that depend on the request.
+* Introduce `UserCodeService::getRedeemableCode(string $guid, string $action)`, which returns a verification code that is ready to be redeemed for an action without consuming it, or throws `CodeVerificationException`. `UserVerificationService::handleData()`, `ResetPasswordService::handleData()` and `ChangeEmailService::handleData()` now use it instead of each carrying a copy of the checks. Custom actions can use it to check a code before acting on it.
+* New config option `security.email_verification.resend_cooldown_seconds` (default: 60) for the time before `VerifyResend` sends a new code. It replaces the hardcoded 60 seconds.
 * New translation keys `login.refused`, `login.refused_extra`, `login.account_disabled` and `login.account_disabled_extra`.
 
 # v11 release
