@@ -18,6 +18,7 @@
     * cannot change its password or email. `ChangePasswordService::changePassword()`, `ChangeEmailService::sendChangeEmailVerify()` and `ChangeEmailService::handleData()` throw `AccountDisabledException`.
 * If your application has accounts with an empty password hash that must stay usable (for example accounts that get their first password through the password reset flow), bind `Security\AccountStatusChecker` to `Security\NullAccountStatusChecker` or to your own implementation.
 * `LoginService`, `ResetPasswordService`, `ChangePasswordService`, `ChangeEmailService`, `AuthenticationMiddleware` and the `VerifyResend` action have a new constructor parameter `AccountStatusChecker $accountStatusChecker`. Autowired definitions need no change.
+* `LoginService::validate()` no longer checks whether the user is verified and no longer throws `UserVerificationRequiredException`. That check now only happens in `LoginService::authenticate()`. In the `Login` action this means `LoginExtensionInterface::customValueCheck()` now also runs for unverified users, before a verification code is sent. Code that calls `validate()` on its own and relied on it to detect unverified users must call `authenticate()` or check `User::isVerified()` itself.
 * `LoginService::authenticate()` can now throw `LoginRefusedException` when `preAuthenticate()` refuses the login. Custom login actions or endpoints that call it must catch this exception.
 
 ## New features

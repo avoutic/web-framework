@@ -58,15 +58,19 @@ class LoginService
     /**
      * Validate login credentials.
      *
+     * This only checks the credentials and the account status. Whether the user is
+     * verified is checked in authenticate(), so callers can run their own checks
+     * (such as LoginExtensionInterface::customValueCheck()) before a verification
+     * code is sent.
+     *
      * @param Request $request  The request object
      * @param string  $username The username or email
      * @param string  $password The password
      *
      * @return User The user if validation is successful
      *
-     * @throws AccountDisabledException          If the account is disabled
-     * @throws InvalidPasswordException          If the credentials are invalid
-     * @throws UserVerificationRequiredException If the user is not verified
+     * @throws AccountDisabledException If the account is disabled
+     * @throws InvalidPasswordException If the credentials are invalid
      */
     public function validate(Request $request, string $username, string $password): User
     {
@@ -89,23 +93,9 @@ class LoginService
             throw new InvalidPasswordException();
         }
 
-        // Before the verification checks, so a disabled account is not sent a verification code
+        // Here already, so a disabled account is never sent a verification code
         //
         $this->requireEnabledAccount($user);
-
-        if (!$user->isVerified())
-        {
-            $this->logger->debug('User not verified', ['user_id' => $user->getId()]);
-
-            throw new UserVerificationRequiredException($user);
-        }
-
-        if (!$user->isVerifiedValid($this->validityPeriodDays))
-        {
-            $this->logger->debug('User verification expired', ['user_id' => $user->getId()]);
-
-            throw new UserVerificationRequiredException($user);
-        }
 
         return $user;
     }

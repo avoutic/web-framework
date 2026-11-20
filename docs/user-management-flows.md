@@ -86,17 +86,17 @@ The login flow handles user authentication, including cases where users need to 
 
 **Process**:
 1. User submits credentials (username/email, password)
-2. Validates credentials via `LoginService::validate()`
-3. Checks if user is verified and verification hasn't expired
-4. If user not verified → throws `UserVerificationRequiredException`
-5. Calls `LoginExtensionInterface::customValueCheck()` for custom validation
-6. If checks pass, calls `LoginService::authenticate()`, which re-checks the password and verification and then completes the login via `LoginService::completeLogin()`. That calls `LoginExtensionInterface::preAuthenticate()`, creates the session and dispatches the `UserLoggedIn` event, then redirects. If `preAuthenticate()` returns false, the form is shown again with the `login.refused` message
+2. Validates credentials and account status via `LoginService::validate()`
+3. Calls `LoginExtensionInterface::customValueCheck()` for custom validation
+4. If checks pass, calls `LoginService::authenticate()`, which checks if user is verified and verification hasn't expired
+5. If user not verified → throws `UserVerificationRequiredException`. This happens after `customValueCheck()`, so the extension can prevent a verification code from being sent
+6. Otherwise `LoginService::authenticate()` completes the login via `LoginService::completeLogin()`. That calls `LoginExtensionInterface::preAuthenticate()`, creates the session and dispatches the `UserLoggedIn` event, then redirects. If `preAuthenticate()` returns false, the form is shown again with the `login.refused` message
 7. If user not verified, generates verification code entry and sends verification email
 8. Redirects to Verify page with `guid` parameter
 
 **Extension Hooks**:
 - `getCustomParams()`: Add custom template parameters
-- `customValueCheck()`: Perform additional validation checks before authentication (password login form only)
+- `customValueCheck()`: Perform additional validation checks before authentication and before a verification code is sent (password login form only)
 - `preAuthenticate()`: Last check right before a session is created. Runs on every login path: password login, LoginVerify and RegisterVerify. Return false to refuse the login
 
 **Configuration**:

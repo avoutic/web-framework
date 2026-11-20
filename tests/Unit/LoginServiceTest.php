@@ -85,49 +85,11 @@ final class LoginServiceTest extends Unit
         ;
     }
 
-    public function testValidateNotVerified()
-    {
-        $instance = $this->make(
-            LoginService::class,
-            [
-                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
-                'blacklistService' => $this->makeEmpty(NullBlacklistService::class),
-                'logger' => $this->makeEmpty(LoggerInterface::class),
-                'checkPasswordService' => $this->makeEmpty(
-                    CheckPasswordService::class,
-                    [
-                        'checkPassword' => Expected::once(true),
-                    ],
-                ),
-                'userRepository' => $this->makeEmpty(
-                    UserRepository::class,
-                    [
-                        'getUserByUsername' => $this->makeEmpty(
-                            User::class,
-                            [
-                                'isVerified' => Expected::once(false),
-                            ],
-                        ),
-                    ],
-                ),
-                'captchaRequired' => Expected::never(),
-            ],
-        );
-
-        $request = $this->makeEmpty(Request::class, ['getAttribute' => '']);
-
-        verify(function () use ($instance, $request) {
-            $instance->validate($request, 'noname', '', true);
-        })
-            ->callableThrows(UserVerificationRequiredException::class)
-        ;
-    }
-
-    public function testValidateSuccess()
+    public function testValidateSuccessDoesNotCheckVerification()
     {
         $user = $this->makeEmpty(User::class, [
-            'isVerified' => Expected::once(true),
-            'isVerifiedValid' => Expected::once(true),
+            'isVerified' => Expected::never(),
+            'isVerifiedValid' => Expected::never(),
         ]);
 
         $instance = $this->make(
@@ -380,47 +342,6 @@ final class LoginServiceTest extends Unit
             $instance->completeLogin($request, $user);
         })
             ->callableThrows(LoginRefusedException::class)
-        ;
-    }
-
-    public function testValidateVerificationExpired()
-    {
-        $user = $this->makeEmpty(User::class, [
-            'getId' => Expected::once(1),
-            'isVerified' => Expected::once(true),
-            'isVerifiedValid' => Expected::once(false),
-        ]);
-
-        $instance = $this->make(
-            LoginService::class,
-            [
-                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
-                'blacklistService' => $this->makeEmpty(NullBlacklistService::class),
-                'logger' => $this->makeEmpty(LoggerInterface::class, [
-                    'debug' => Expected::once(),
-                ]),
-                'checkPasswordService' => $this->makeEmpty(
-                    CheckPasswordService::class,
-                    [
-                        'checkPassword' => Expected::once(true),
-                    ],
-                ),
-                'userRepository' => $this->makeEmpty(
-                    UserRepository::class,
-                    [
-                        'getUserByUsername' => $user,
-                    ],
-                ),
-                'validityPeriodDays' => 1,
-            ],
-        );
-
-        $request = $this->makeEmpty(Request::class, ['getAttribute' => '']);
-
-        verify(function () use ($instance, $request) {
-            $instance->validate($request, 'noname', '', true);
-        })
-            ->callableThrows(UserVerificationRequiredException::class)
         ;
     }
 
