@@ -16,6 +16,7 @@ use Slim\Exception\HttpNotFoundException;
 use Slim\Http\Response;
 use Slim\Http\ServerRequest as Request;
 use WebFramework\Config\ConfigService;
+use WebFramework\Exception\AccountDisabledException;
 use WebFramework\Exception\CodeVerificationException;
 use WebFramework\Exception\DuplicateEmailException;
 use WebFramework\Exception\WrongAccountException;
@@ -92,6 +93,15 @@ class ChangeEmailVerify
                 [],
                 'error',
                 'change_email.code_expired',
+            );
+        }
+        catch (AccountDisabledException $e)
+        {
+            return $this->responseEmitter->buildRedirect(
+                $this->configService->get('actions.login.location'),
+                [],
+                'error',
+                'login.account_disabled',
             );
         }
         catch (WrongAccountException $e)

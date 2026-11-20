@@ -14,6 +14,7 @@ namespace WebFramework\Security;
 use Psr\Log\LoggerInterface;
 use Slim\Http\ServerRequest as Request;
 use WebFramework\Entity\User;
+use WebFramework\Exception\AccountDisabledException;
 use WebFramework\Exception\CodeVerificationException;
 use WebFramework\Mail\UserMailer;
 use WebFramework\Repository\UserRepository;
@@ -27,6 +28,7 @@ class ResetPasswordService
     /**
      * ResetPasswordService constructor.
      *
+     * @param AccountStatusChecker       $accountStatusChecker       The account status checker
      * @param AuthenticationService      $authenticationService      The authentication service
      * @param LoggerInterface            $logger                     The logger service
      * @param PasswordHashService        $passwordHashService        The password hash service
@@ -38,6 +40,7 @@ class ResetPasswordService
      * @param VerificationCodeRepository $verificationCodeRepository The verification code repository
      */
     public function __construct(
+        private AccountStatusChecker $accountStatusChecker,
         private AuthenticationService $authenticationService,
         private LoggerInterface $logger,
         private PasswordHashService $passwordHashService,
@@ -76,9 +79,18 @@ class ResetPasswordService
      * @param User $user The user requesting a password reset
      *
      * @return string The GUID for the password reset
+     *
+     * @throws AccountDisabledException If the account is disabled
      */
     public function sendPasswordResetMail(User $user): string
     {
+        if (!$this->accountStatusChecker->isEnabled($user))
+        {
+            $this->logger->debug('Not sending password reset mail for disabled account', ['user_id' => $user->getId()]);
+
+            throw new AccountDisabledException($user);
+        }
+
         $this->logger->debug('Sending password reset mail', ['user_id' => $user->getId()]);
 
         $securityIterator = $this->securityIteratorService->incrementFor($user);
@@ -109,6 +121,7 @@ class ResetPasswordService
      * @param Request $request The request that triggered the event
      * @param string  $guid    The GUID of the verification code (already verified)
      *
+     * @throws AccountDisabledException  If the account is disabled
      * @throws CodeVerificationException If the code is invalid or expired
      */
     public function handleData(Request $request, string $guid): void
@@ -159,6 +172,15 @@ class ResetPasswordService
         if ($user === null)
         {
             throw new CodeVerificationException();
+        }
+
+        // A password reset must not re-enable a disabled account
+        //
+        if (!$this->accountStatusChecker->isEnabled($user))
+        {
+            $this->logger->debug('Not resetting password for disabled account', ['user_id' => $user->getId()]);
+
+            throw new AccountDisabledException($user);
         }
 
         $flowData = $verificationCode->getFlowData();

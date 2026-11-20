@@ -15,6 +15,7 @@ use Psr\Http\Message\ResponseInterface;
 use Slim\Http\Response;
 use Slim\Http\ServerRequest as Request;
 use WebFramework\Config\ConfigService;
+use WebFramework\Exception\AccountDisabledException;
 use WebFramework\Exception\InvalidPasswordException;
 use WebFramework\Exception\PasswordMismatchException;
 use WebFramework\Exception\ValidationException;
@@ -121,6 +122,15 @@ class ChangePassword
             $this->messageService->addErrors($e->getErrors());
 
             return $this->renderer->render($request, $response, $this->templateName, $params);
+        }
+        catch (AccountDisabledException $e)
+        {
+            return $this->responseEmitter->buildRedirect(
+                $this->configService->get('actions.login.location'),
+                [],
+                'error',
+                'login.account_disabled',
+            );
         }
         catch (PasswordMismatchException $e)
         {

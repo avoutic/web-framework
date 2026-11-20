@@ -15,6 +15,7 @@ use Psr\Http\Message\ResponseInterface;
 use Slim\Http\Response;
 use Slim\Http\ServerRequest as Request;
 use WebFramework\Config\ConfigService;
+use WebFramework\Exception\AccountDisabledException;
 use WebFramework\Exception\CodeVerificationException;
 use WebFramework\Http\ResponseEmitter;
 use WebFramework\Security\ResetPasswordService;
@@ -66,6 +67,15 @@ class ResetPasswordVerify
                 [],
                 'success',
                 'reset_password.success',
+            );
+        }
+        catch (AccountDisabledException $e)
+        {
+            return $this->responseEmitter->buildRedirect(
+                $this->configService->get('actions.login.location'),
+                [],
+                'error',
+                'login.account_disabled',
             );
         }
         catch (CodeVerificationException $e)

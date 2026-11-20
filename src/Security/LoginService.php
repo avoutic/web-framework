@@ -16,6 +16,7 @@ use Slim\Http\ServerRequest as Request;
 use WebFramework\Entity\User;
 use WebFramework\Event\EventService;
 use WebFramework\Event\UserLoggedIn;
+use WebFramework\Exception\AccountDisabledException;
 use WebFramework\Exception\InvalidPasswordException;
 use WebFramework\Exception\LoginRefusedException;
 use WebFramework\Exception\UserVerificationRequiredException;
@@ -32,6 +33,7 @@ class LoginService
     /**
      * LoginService constructor.
      *
+     * @param AccountStatusChecker    $accountStatusChecker  The account status checker
      * @param AuthenticationService   $authenticationService The authentication service
      * @param BlacklistService        $blacklistService      The blacklist service
      * @param CheckPasswordService    $checkPasswordService  The password checking service
@@ -42,6 +44,7 @@ class LoginService
      * @param int                     $validityPeriodDays    The number of days that email verification remains valid
      */
     public function __construct(
+        private AccountStatusChecker $accountStatusChecker,
         private AuthenticationService $authenticationService,
         private BlacklistService $blacklistService,
         private CheckPasswordService $checkPasswordService,
@@ -61,6 +64,7 @@ class LoginService
      *
      * @return User The user if validation is successful
      *
+     * @throws AccountDisabledException          If the account is disabled
      * @throws InvalidPasswordException          If the credentials are invalid
      * @throws UserVerificationRequiredException If the user is not verified
      */
@@ -85,6 +89,10 @@ class LoginService
             throw new InvalidPasswordException();
         }
 
+        // Before the verification checks, so a disabled account is not sent a verification code
+        //
+        $this->requireEnabledAccount($user);
+
         if (!$user->isVerified())
         {
             $this->logger->debug('User not verified', ['user_id' => $user->getId()]);
@@ -108,6 +116,7 @@ class LoginService
      * @param User   $user     The user to authenticate
      * @param string $password The password to verify
      *
+     * @throws AccountDisabledException          If the account is disabled
      * @throws InvalidPasswordException          If the password is incorrect
      * @throws LoginRefusedException             If the login extension refuses the login
      * @throws UserVerificationRequiredException If the user is not verified
@@ -147,10 +156,13 @@ class LoginService
      * @param Request $request The current request
      * @param User    $user    The user to log in
      *
-     * @throws LoginRefusedException If the login extension refuses the login
+     * @throws AccountDisabledException If the account is disabled
+     * @throws LoginRefusedException    If the login extension refuses the login
      */
     public function completeLogin(Request $request, User $user): void
     {
+        $this->requireEnabledAccount($user);
+
         if (!$this->loginExtension->preAuthenticate($request, $user))
         {
             $this->logger->debug('Login refused by extension', ['user_id' => $user->getId()]);
@@ -161,5 +173,18 @@ class LoginService
         $this->authenticationService->authenticate($user);
 
         $this->eventService->dispatch(new UserLoggedIn($request, $user));
+    }
+
+    /**
+     * @throws AccountDisabledException If the account is disabled
+     */
+    private function requireEnabledAccount(User $user): void
+    {
+        if (!$this->accountStatusChecker->isEnabled($user))
+        {
+            $this->logger->debug('Account disabled', ['user_id' => $user->getId()]);
+
+            throw new AccountDisabledException($user);
+        }
     }
 }

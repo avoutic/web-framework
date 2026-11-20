@@ -16,6 +16,7 @@ use Slim\Exception\HttpNotFoundException;
 use Slim\Http\Response;
 use Slim\Http\ServerRequest as Request;
 use WebFramework\Config\ConfigService;
+use WebFramework\Exception\AccountDisabledException;
 use WebFramework\Exception\CodeVerificationException;
 use WebFramework\Exception\LoginRefusedException;
 use WebFramework\Http\ResponseEmitter;
@@ -94,6 +95,15 @@ class LoginVerify
                 $afterVerifyData['return_query'] ?? [],
                 'success',
                 'verify.success',
+            );
+        }
+        catch (AccountDisabledException $e)
+        {
+            return $this->responseEmitter->buildRedirect(
+                $this->configService->get('actions.login.location'),
+                [],
+                'error',
+                'login.account_disabled',
             );
         }
         catch (LoginRefusedException $e)

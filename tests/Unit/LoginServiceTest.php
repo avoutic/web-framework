@@ -8,10 +8,12 @@ use Psr\Log\LoggerInterface;
 use Slim\Http\ServerRequest as Request;
 use WebFramework\Entity\User;
 use WebFramework\Event\EventService;
+use WebFramework\Exception\AccountDisabledException;
 use WebFramework\Exception\InvalidPasswordException;
 use WebFramework\Exception\LoginRefusedException;
 use WebFramework\Exception\UserVerificationRequiredException;
 use WebFramework\Repository\UserRepository;
+use WebFramework\Security\AccountStatusChecker;
 use WebFramework\Security\CheckPasswordService;
 use WebFramework\Security\Extension\LoginExtensionInterface;
 use WebFramework\Security\LoginService;
@@ -30,6 +32,7 @@ final class LoginServiceTest extends Unit
         $instance = $this->make(
             LoginService::class,
             [
+                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
                 'blacklistService' => $this->makeEmpty(NullBlacklistService::class),
                 'logger' => $this->makeEmpty(LoggerInterface::class),
                 'userRepository' => $this->makeEmpty(
@@ -55,6 +58,7 @@ final class LoginServiceTest extends Unit
         $instance = $this->make(
             LoginService::class,
             [
+                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
                 'blacklistService' => $this->makeEmpty(NullBlacklistService::class),
                 'logger' => $this->makeEmpty(LoggerInterface::class),
                 'checkPasswordService' => $this->makeEmpty(
@@ -86,6 +90,7 @@ final class LoginServiceTest extends Unit
         $instance = $this->make(
             LoginService::class,
             [
+                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
                 'blacklistService' => $this->makeEmpty(NullBlacklistService::class),
                 'logger' => $this->makeEmpty(LoggerInterface::class),
                 'checkPasswordService' => $this->makeEmpty(
@@ -128,6 +133,7 @@ final class LoginServiceTest extends Unit
         $instance = $this->make(
             LoginService::class,
             [
+                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
                 'blacklistService' => $this->makeEmpty(NullBlacklistService::class),
                 'logger' => $this->makeEmpty(LoggerInterface::class),
                 'checkPasswordService' => $this->makeEmpty(
@@ -158,6 +164,7 @@ final class LoginServiceTest extends Unit
         $instance = $this->make(
             LoginService::class,
             [
+                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
                 'checkPasswordService' => $this->makeEmpty(
                     CheckPasswordService::class,
                     [
@@ -185,6 +192,7 @@ final class LoginServiceTest extends Unit
         $instance = $this->make(
             LoginService::class,
             [
+                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
                 'checkPasswordService' => $this->makeEmpty(
                     CheckPasswordService::class,
                     [
@@ -214,6 +222,7 @@ final class LoginServiceTest extends Unit
         $instance = $this->make(
             LoginService::class,
             [
+                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
                 'checkPasswordService' => $this->makeEmpty(
                     CheckPasswordService::class,
                     [
@@ -258,6 +267,7 @@ final class LoginServiceTest extends Unit
         $instance = $this->make(
             LoginService::class,
             [
+                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
                 'checkPasswordService' => $this->makeEmpty(
                     CheckPasswordService::class,
                     [
@@ -303,6 +313,7 @@ final class LoginServiceTest extends Unit
         $instance = $this->make(
             LoginService::class,
             [
+                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
                 'authenticationService' => $this->makeEmpty(
                     NullAuthenticationService::class,
                     [
@@ -338,6 +349,7 @@ final class LoginServiceTest extends Unit
         $instance = $this->make(
             LoginService::class,
             [
+                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
                 'authenticationService' => $this->makeEmpty(
                     NullAuthenticationService::class,
                     [
@@ -382,6 +394,7 @@ final class LoginServiceTest extends Unit
         $instance = $this->make(
             LoginService::class,
             [
+                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
                 'blacklistService' => $this->makeEmpty(NullBlacklistService::class),
                 'logger' => $this->makeEmpty(LoggerInterface::class, [
                     'debug' => Expected::once(),
@@ -422,6 +435,7 @@ final class LoginServiceTest extends Unit
         $instance = $this->make(
             LoginService::class,
             [
+                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
                 'checkPasswordService' => $this->makeEmpty(
                     CheckPasswordService::class,
                     [
@@ -441,6 +455,67 @@ final class LoginServiceTest extends Unit
             $instance->authenticate($request, $user, '');
         })
             ->callableThrows(UserVerificationRequiredException::class)
+        ;
+    }
+
+    public function testValidateDisabledAccount()
+    {
+        $user = $this->makeEmpty(User::class, [
+            'getId' => 1,
+            'isVerified' => Expected::never(),
+        ]);
+
+        $instance = $this->make(
+            LoginService::class,
+            [
+                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => false]),
+                'blacklistService' => $this->makeEmpty(NullBlacklistService::class),
+                'logger' => $this->makeEmpty(LoggerInterface::class),
+                'checkPasswordService' => $this->makeEmpty(CheckPasswordService::class, [
+                    'checkPassword' => Expected::once(true),
+                ]),
+                'userRepository' => $this->makeEmpty(UserRepository::class, [
+                    'getUserByUsername' => $user,
+                ]),
+            ],
+        );
+
+        $request = $this->makeEmpty(Request::class, ['getAttribute' => '']);
+
+        verify(function () use ($instance, $request) {
+            $instance->validate($request, 'noname', 'secret');
+        })
+            ->callableThrows(AccountDisabledException::class)
+        ;
+    }
+
+    public function testCompleteLoginDisabledAccount()
+    {
+        $user = $this->makeEmpty(User::class, ['getId' => 1]);
+
+        $instance = $this->make(
+            LoginService::class,
+            [
+                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => false]),
+                'authenticationService' => $this->makeEmpty(NullAuthenticationService::class, [
+                    'authenticate' => Expected::never(),
+                ]),
+                'eventService' => $this->makeEmpty(EventService::class, [
+                    'dispatch' => Expected::never(),
+                ]),
+                'logger' => $this->makeEmpty(LoggerInterface::class),
+                'loginExtension' => $this->makeEmpty(LoginExtensionInterface::class, [
+                    'preAuthenticate' => Expected::never(),
+                ]),
+            ],
+        );
+
+        $request = $this->makeEmpty(Request::class, ['getAttribute' => '']);
+
+        verify(function () use ($instance, $request, $user) {
+            $instance->completeLogin($request, $user);
+        })
+            ->callableThrows(AccountDisabledException::class)
         ;
     }
 }

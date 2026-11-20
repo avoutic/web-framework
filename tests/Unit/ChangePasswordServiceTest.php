@@ -10,10 +10,12 @@ use Slim\Http\ServerRequest as Request;
 use WebFramework\Entity\User;
 use WebFramework\Event\EventService;
 use WebFramework\Event\UserPasswordChanged;
+use WebFramework\Exception\AccountDisabledException;
 use WebFramework\Exception\InvalidPasswordException;
 use WebFramework\Exception\PasswordMismatchException;
 use WebFramework\Exception\WeakPasswordException;
 use WebFramework\Repository\UserRepository;
+use WebFramework\Security\AccountStatusChecker;
 use WebFramework\Security\AuthenticationService;
 use WebFramework\Security\ChangePasswordService;
 use WebFramework\Security\PasswordHashService;
@@ -42,6 +44,7 @@ final class ChangePasswordServiceTest extends Unit
         $service = $this->make(
             ChangePasswordService::class,
             [
+                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
                 'passwordHashService' => $passwordHashService,
             ],
         );
@@ -87,6 +90,7 @@ final class ChangePasswordServiceTest extends Unit
         $service = $this->make(
             ChangePasswordService::class,
             [
+                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
                 'passwordHashService' => $passwordHashService,
             ],
         );
@@ -147,6 +151,7 @@ final class ChangePasswordServiceTest extends Unit
         $service = $this->make(
             ChangePasswordService::class,
             [
+                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
                 'passwordHashService' => $passwordHashService,
                 'userRepository' => $userRepository,
                 'eventService' => $eventService,
@@ -193,6 +198,7 @@ final class ChangePasswordServiceTest extends Unit
         $service = $this->make(
             ChangePasswordService::class,
             [
+                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
                 'passwordHashService' => $passwordHashService,
                 'logger' => $this->makeEmpty(LoggerInterface::class),
             ],
@@ -203,5 +209,35 @@ final class ChangePasswordServiceTest extends Unit
         verify(function () use ($service, $request, $user) {
             $service->changePassword($request, $user, 'wrongpassword', 'newpassword123');
         })->callableThrows(InvalidPasswordException::class);
+    }
+
+    public function testChangePasswordRefusesDisabledAccount()
+    {
+        $user = $this->makeEmpty(User::class, [
+            'getId' => 1,
+            'getSolidPassword' => 'sha256:1000:salt123:hash123',
+            'setSolidPassword' => Expected::never(),
+        ]);
+
+        $service = $this->make(
+            ChangePasswordService::class,
+            [
+                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => false]),
+                'logger' => $this->makeEmpty(LoggerInterface::class),
+                'passwordHashService' => $this->makeEmpty(PasswordHashService::class, [
+                    'checkPassword' => true,
+                    'generateHash' => Expected::never(),
+                ]),
+                'userRepository' => $this->makeEmpty(UserRepository::class, [
+                    'save' => Expected::never(),
+                ]),
+            ],
+        );
+
+        verify(function () use ($service, $user) {
+            $service->changePassword($this->makeEmpty(Request::class), $user, 'oldpassword', 'newpassword123');
+        })
+            ->callableThrows(AccountDisabledException::class)
+        ;
     }
 }

@@ -9,6 +9,7 @@ use Slim\Http\ServerRequest as Request;
 use WebFramework\Actions\LoginVerify;
 use WebFramework\Config\ConfigService;
 use WebFramework\Entity\User;
+use WebFramework\Exception\AccountDisabledException;
 use WebFramework\Exception\LoginRefusedException;
 use WebFramework\Http\ResponseEmitter;
 use WebFramework\Security\Extension\RegisterExtensionInterface;
@@ -159,6 +160,45 @@ final class LoginVerifyTest extends Unit
                     'user' => $user,
                     'after_verify_data' => [],
                     'first_verification' => true,
+                    'post_verify_data' => [],
+                ]),
+            ]),
+        );
+
+        verify($instance($request, $response, []))->same($response);
+    }
+
+    public function testDisabledAccountRedirectsToLoginWithError()
+    {
+        $user = $this->makeEmpty(User::class);
+        $request = $this->makeEmpty(Request::class, ['getParam' => 'guid']);
+        $response = $this->makeEmpty(Response::class);
+
+        $instance = new LoginVerify(
+            configService: $this->makeEmpty(ConfigService::class, ['get' => '/login']),
+            loginService: $this->makeEmpty(LoginService::class, [
+                'completeLogin' => Expected::once(function () use ($user) {
+                    throw new AccountDisabledException($user);
+                }),
+            ]),
+            registerExtension: $this->makeEmpty(RegisterExtensionInterface::class, [
+                'postVerify' => Expected::never(),
+            ]),
+            responseEmitter: $this->makeEmpty(ResponseEmitter::class, [
+                'buildQueryRedirect' => Expected::never(),
+                'buildRedirect' => Expected::once(function ($template, $values, $type, $message) use ($response) {
+                    verify($template)->equals('/login');
+                    verify($type)->equals('error');
+                    verify($message)->equals('login.account_disabled');
+
+                    return $response;
+                }),
+            ]),
+            userVerificationService: $this->makeEmpty(UserVerificationService::class, [
+                'handleData' => Expected::once([
+                    'user' => $user,
+                    'after_verify_data' => [],
+                    'first_verification' => false,
                     'post_verify_data' => [],
                 ]),
             ]),

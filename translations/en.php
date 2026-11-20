@@ -28,6 +28,8 @@ return [
         'csrf_missing' => 'CSRF token is missing',
     ],
     'login' => [
+        'account_disabled' => 'Account disabled',
+        'account_disabled_extra' => 'This account has been disabled.',
         'already_authenticated' => 'Already logged in',
         'captcha_incorrect' => 'The CAPTCHA code entered was incorrect',
         'captcha_required' => 'CAPTCHA required',

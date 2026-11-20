@@ -16,6 +16,7 @@ use Slim\Http\ServerRequest as Request;
 use WebFramework\Entity\User;
 use WebFramework\Event\EventService;
 use WebFramework\Event\UserEmailChanged;
+use WebFramework\Exception\AccountDisabledException;
 use WebFramework\Exception\CodeVerificationException;
 use WebFramework\Exception\DuplicateEmailException;
 use WebFramework\Exception\WrongAccountException;
@@ -33,6 +34,7 @@ class ChangeEmailService
     /**
      * ChangeEmailService constructor.
      *
+     * @param AccountStatusChecker       $accountStatusChecker       The account status checker
      * @param AuthenticationService      $authenticationService      The authentication service
      * @param EventService               $eventService               The event service
      * @param LoggerInterface            $logger                     The logger service
@@ -45,6 +47,7 @@ class ChangeEmailService
      * @param string                     $uniqueIdentifier           The unique identifier type ('email' or 'username')
      */
     public function __construct(
+        private AccountStatusChecker $accountStatusChecker,
         private AuthenticationService $authenticationService,
         private EventService $eventService,
         private LoggerInterface $logger,
@@ -109,10 +112,13 @@ class ChangeEmailService
      *
      * @return string The GUID for passing to the verify action
      *
-     * @throws DuplicateEmailException If the email already exists and is the unique identifier
+     * @throws AccountDisabledException If the account is disabled
+     * @throws DuplicateEmailException  If the email already exists and is the unique identifier
      */
     public function sendChangeEmailVerify(User $user, string $email): string
     {
+        $this->requireEnabledAccount($user);
+
         if ($this->uniqueIdentifier == 'email')
         {
             $exists = $this->userRepository
@@ -160,11 +166,14 @@ class ChangeEmailService
      * @param User    $user    The user verifying the email change
      * @param string  $guid    The GUID of the verification code (already verified)
      *
+     * @throws AccountDisabledException  If the account is disabled
      * @throws CodeVerificationException If the data is invalid
      * @throws WrongAccountException     If the code doesn't match the current user
      */
     public function handleData(Request $request, User $user, string $guid): void
     {
+        $this->requireEnabledAccount($user);
+
         $this->logger->debug('Handling change email data', ['guid' => $guid]);
 
         $verificationCode = $this->verificationCodeRepository->getByGuid($guid);
@@ -257,5 +266,18 @@ class ChangeEmailService
         //
         $this->authenticationService->invalidateSessions($user->getId());
         $this->authenticationService->authenticate($user);
+    }
+
+    /**
+     * @throws AccountDisabledException If the account is disabled
+     */
+    private function requireEnabledAccount(User $user): void
+    {
+        if (!$this->accountStatusChecker->isEnabled($user))
+        {
+            $this->logger->debug('Not changing email for disabled account', ['user_id' => $user->getId()]);
+
+            throw new AccountDisabledException($user);
+        }
     }
 }

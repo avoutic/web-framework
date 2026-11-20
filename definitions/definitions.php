@@ -152,6 +152,7 @@ return [
     Security\ChangeEmailService::class => DI\autowire()
         ->constructorParameter('codeExpiryMinutes', DI\get('security.email_verification.code_expiry_minutes'))
         ->constructorParameter('uniqueIdentifier', DI\get('authenticator.unique_identifier')),
+    Security\AccountStatusChecker::class => DI\autowire(Security\DefaultAccountStatusChecker::class),
     Security\ConfigService::class => DI\autowire()
         ->constructorParameter('authDir', DI\get('security.auth_dir')),
 

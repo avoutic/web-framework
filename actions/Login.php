@@ -16,6 +16,7 @@ use Slim\Http\Response;
 use Slim\Http\ServerRequest as Request;
 use WebFramework\Config\ConfigService;
 use WebFramework\Entity\User;
+use WebFramework\Exception\AccountDisabledException;
 use WebFramework\Exception\InvalidPasswordException;
 use WebFramework\Exception\LoginRefusedException;
 use WebFramework\Exception\UserVerificationRequiredException;
@@ -136,6 +137,10 @@ class Login
         catch (InvalidPasswordException $e)
         {
             $this->messageService->add('error', 'login.username_mismatch');
+        }
+        catch (AccountDisabledException $e)
+        {
+            $this->messageService->add('error', 'login.account_disabled');
         }
         catch (LoginRefusedException $e)
         {

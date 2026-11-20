@@ -9,10 +9,12 @@ use Psr\Log\LoggerInterface;
 use Slim\Http\ServerRequest as Request;
 use WebFramework\Entity\User;
 use WebFramework\Entity\VerificationCode;
+use WebFramework\Exception\AccountDisabledException;
 use WebFramework\Exception\CodeVerificationException;
 use WebFramework\Mail\UserMailer;
 use WebFramework\Repository\UserRepository;
 use WebFramework\Repository\VerificationCodeRepository;
+use WebFramework\Security\AccountStatusChecker;
 use WebFramework\Security\AuthenticationService;
 use WebFramework\Security\PasswordHashService;
 use WebFramework\Security\RandomProvider;
@@ -60,6 +62,7 @@ final class ResetPasswordServiceTest extends Unit
         $service = $this->make(
             ResetPasswordService::class,
             [
+                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
                 'passwordHashService' => $passwordHashService,
                 'userRepository' => $userRepository,
                 'securityIteratorService' => $securityIteratorService,
@@ -117,6 +120,7 @@ final class ResetPasswordServiceTest extends Unit
         $service = $this->make(
             ResetPasswordService::class,
             [
+                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
                 'userCodeService' => $userCodeService,
                 'securityIteratorService' => $securityIteratorService,
                 'userMailer' => $userMailer,
@@ -181,6 +185,7 @@ final class ResetPasswordServiceTest extends Unit
         $service = $this->make(
             ResetPasswordService::class,
             [
+                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
                 'verificationCodeRepository' => $verificationCodeRepository,
                 'userRepository' => $userRepository,
                 'securityIteratorService' => $securityIteratorService,
@@ -207,6 +212,7 @@ final class ResetPasswordServiceTest extends Unit
         $service = $this->make(
             ResetPasswordService::class,
             [
+                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
                 'verificationCodeRepository' => $verificationCodeRepository,
                 'logger' => $this->makeEmpty(LoggerInterface::class),
             ],
@@ -235,6 +241,7 @@ final class ResetPasswordServiceTest extends Unit
         $service = $this->make(
             ResetPasswordService::class,
             [
+                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
                 'verificationCodeRepository' => $verificationCodeRepository,
                 'logger' => $this->makeEmpty(LoggerInterface::class),
             ],
@@ -264,6 +271,7 @@ final class ResetPasswordServiceTest extends Unit
         $service = $this->make(
             ResetPasswordService::class,
             [
+                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
                 'verificationCodeRepository' => $verificationCodeRepository,
                 'logger' => $this->makeEmpty(LoggerInterface::class),
             ],
@@ -294,6 +302,7 @@ final class ResetPasswordServiceTest extends Unit
         $service = $this->make(
             ResetPasswordService::class,
             [
+                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
                 'verificationCodeRepository' => $verificationCodeRepository,
                 'logger' => $this->makeEmpty(LoggerInterface::class),
             ],
@@ -325,6 +334,7 @@ final class ResetPasswordServiceTest extends Unit
         $service = $this->make(
             ResetPasswordService::class,
             [
+                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
                 'verificationCodeRepository' => $verificationCodeRepository,
                 'logger' => $this->makeEmpty(LoggerInterface::class),
             ],
@@ -361,6 +371,7 @@ final class ResetPasswordServiceTest extends Unit
         $service = $this->make(
             ResetPasswordService::class,
             [
+                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
                 'verificationCodeRepository' => $verificationCodeRepository,
                 'logger' => $logger,
             ],
@@ -401,6 +412,7 @@ final class ResetPasswordServiceTest extends Unit
         $service = $this->make(
             ResetPasswordService::class,
             [
+                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
                 'verificationCodeRepository' => $verificationCodeRepository,
                 'userRepository' => $userRepository,
                 'logger' => $this->makeEmpty(LoggerInterface::class),
@@ -456,6 +468,7 @@ final class ResetPasswordServiceTest extends Unit
         $service = $this->make(
             ResetPasswordService::class,
             [
+                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
                 'verificationCodeRepository' => $verificationCodeRepository,
                 'userRepository' => $userRepository,
                 'securityIteratorService' => $securityIteratorService,
@@ -501,6 +514,7 @@ final class ResetPasswordServiceTest extends Unit
         $service = $this->make(
             ResetPasswordService::class,
             [
+                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
                 'randomProvider' => $randomProvider,
                 'userMailer' => $userMailer,
                 'logger' => $this->makeEmpty(LoggerInterface::class),
@@ -514,5 +528,70 @@ final class ResetPasswordServiceTest extends Unit
         $result = $service->sendNewPassword($user);
 
         verify($result)->true();
+    }
+
+    public function testSendPasswordResetMailRefusesDisabledAccount()
+    {
+        $user = $this->makeEmpty(User::class, ['getId' => 1]);
+
+        $service = $this->make(
+            ResetPasswordService::class,
+            [
+                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => false]),
+                'logger' => $this->makeEmpty(LoggerInterface::class),
+                'securityIteratorService' => $this->makeEmpty(SecurityIteratorService::class, [
+                    'incrementFor' => Expected::never(),
+                ]),
+                'userCodeService' => $this->makeEmpty(UserCodeService::class, [
+                    'generateVerificationCodeEntry' => Expected::never(),
+                ]),
+                'userMailer' => $this->makeEmpty(UserMailer::class, [
+                    'passwordReset' => Expected::never(),
+                ]),
+            ],
+        );
+
+        verify(function () use ($service, $user) {
+            $service->sendPasswordResetMail($user);
+        })
+            ->callableThrows(AccountDisabledException::class)
+        ;
+    }
+
+    public function testHandleDataRefusesDisabledAccount()
+    {
+        $user = $this->makeEmpty(User::class, ['getId' => 1]);
+
+        $verificationCode = $this->makeEmpty(VerificationCode::class, [
+            'isCorrect' => true,
+            'isExpired' => false,
+            'isInvalidated' => false,
+            'isProcessed' => false,
+            'getAction' => 'reset_password',
+            'getUserId' => 1,
+            'markAsProcessed' => Expected::never(),
+        ]);
+
+        $service = $this->make(
+            ResetPasswordService::class,
+            [
+                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => false]),
+                'logger' => $this->makeEmpty(LoggerInterface::class),
+                'userRepository' => $this->makeEmpty(UserRepository::class, [
+                    'find' => $user,
+                    'save' => Expected::never(),
+                ]),
+                'verificationCodeRepository' => $this->makeEmpty(VerificationCodeRepository::class, [
+                    'getByGuid' => $verificationCode,
+                    'save' => Expected::never(),
+                ]),
+            ],
+        );
+
+        verify(function () use ($service) {
+            $service->handleData($this->makeEmpty(Request::class), 'test-guid-123');
+        })
+            ->callableThrows(AccountDisabledException::class)
+        ;
     }
 }

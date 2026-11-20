@@ -11,6 +11,7 @@ use WebFramework\Entity\User;
 use WebFramework\Entity\VerificationCode;
 use WebFramework\Event\EventService;
 use WebFramework\Event\UserEmailChanged;
+use WebFramework\Exception\AccountDisabledException;
 use WebFramework\Exception\CodeVerificationException;
 use WebFramework\Exception\DuplicateEmailException;
 use WebFramework\Exception\WrongAccountException;
@@ -18,6 +19,7 @@ use WebFramework\Mail\UserMailer;
 use WebFramework\Repository\RepositoryQuery;
 use WebFramework\Repository\UserRepository;
 use WebFramework\Repository\VerificationCodeRepository;
+use WebFramework\Security\AccountStatusChecker;
 use WebFramework\Security\AuthenticationService;
 use WebFramework\Security\ChangeEmailService;
 use WebFramework\Security\SecurityIteratorService;
@@ -59,6 +61,7 @@ final class ChangeEmailServiceTest extends Unit
         $service = $this->make(
             ChangeEmailService::class,
             [
+                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
                 'userRepository' => $userRepository,
                 'eventService' => $eventService,
                 'logger' => $this->makeEmpty(LoggerInterface::class),
@@ -106,6 +109,7 @@ final class ChangeEmailServiceTest extends Unit
         $service = $this->make(
             ChangeEmailService::class,
             [
+                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
                 'userRepository' => $userRepository,
                 'eventService' => $eventService,
                 'logger' => $this->makeEmpty(LoggerInterface::class),
@@ -141,6 +145,7 @@ final class ChangeEmailServiceTest extends Unit
         $service = $this->make(
             ChangeEmailService::class,
             [
+                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
                 'userRepository' => $userRepository,
                 'logger' => $this->makeEmpty(LoggerInterface::class),
                 'uniqueIdentifier' => 'email',
@@ -211,6 +216,7 @@ final class ChangeEmailServiceTest extends Unit
         $service = $this->make(
             ChangeEmailService::class,
             [
+                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
                 'userCodeService' => $userCodeService,
                 'securityIteratorService' => $securityIteratorService,
                 'userMailer' => $userMailer,
@@ -250,6 +256,7 @@ final class ChangeEmailServiceTest extends Unit
         $service = $this->make(
             ChangeEmailService::class,
             [
+                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
                 'userRepository' => $userRepository,
                 'logger' => $this->makeEmpty(LoggerInterface::class),
                 'uniqueIdentifier' => 'email',
@@ -321,6 +328,7 @@ final class ChangeEmailServiceTest extends Unit
         $service = $this->make(
             ChangeEmailService::class,
             [
+                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
                 'verificationCodeRepository' => $verificationCodeRepository,
                 'userRepository' => $userRepository,
                 'securityIteratorService' => $securityIteratorService,
@@ -355,6 +363,7 @@ final class ChangeEmailServiceTest extends Unit
         $service = $this->make(
             ChangeEmailService::class,
             [
+                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
                 'verificationCodeRepository' => $verificationCodeRepository,
                 'logger' => $this->makeEmpty(LoggerInterface::class),
             ],
@@ -390,6 +399,7 @@ final class ChangeEmailServiceTest extends Unit
         $service = $this->make(
             ChangeEmailService::class,
             [
+                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
                 'verificationCodeRepository' => $verificationCodeRepository,
                 'logger' => $this->makeEmpty(LoggerInterface::class),
             ],
@@ -450,6 +460,7 @@ final class ChangeEmailServiceTest extends Unit
         $service = $this->make(
             ChangeEmailService::class,
             [
+                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
                 'verificationCodeRepository' => $verificationCodeRepository,
                 'userRepository' => $userRepository,
                 'authenticationService' => $authenticationService,
@@ -510,6 +521,7 @@ final class ChangeEmailServiceTest extends Unit
         $service = $this->make(
             ChangeEmailService::class,
             [
+                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
                 'verificationCodeRepository' => $verificationCodeRepository,
                 'userRepository' => $userRepository,
                 'securityIteratorService' => $securityIteratorService,
@@ -567,6 +579,7 @@ final class ChangeEmailServiceTest extends Unit
         $service = $this->make(
             ChangeEmailService::class,
             [
+                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
                 'verificationCodeRepository' => $verificationCodeRepository,
                 'userRepository' => $userRepository,
                 'securityIteratorService' => $securityIteratorService,
@@ -579,5 +592,50 @@ final class ChangeEmailServiceTest extends Unit
         verify(function () use ($service, $request, $user) {
             $service->handleData($request, $user, 'test-guid-123');
         })->callableThrows(CodeVerificationException::class);
+    }
+
+    public function testSendChangeEmailVerifyRefusesDisabledAccount()
+    {
+        $user = $this->makeEmpty(User::class, ['getId' => 1]);
+
+        $service = $this->make(
+            ChangeEmailService::class,
+            [
+                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => false]),
+                'logger' => $this->makeEmpty(LoggerInterface::class),
+                'userCodeService' => $this->makeEmpty(UserCodeService::class, [
+                    'generateVerificationCodeEntry' => Expected::never(),
+                ]),
+                'uniqueIdentifier' => 'username',
+            ],
+        );
+
+        verify(function () use ($service, $user) {
+            $service->sendChangeEmailVerify($user, 'new@example.com');
+        })
+            ->callableThrows(AccountDisabledException::class)
+        ;
+    }
+
+    public function testHandleDataRefusesDisabledAccount()
+    {
+        $user = $this->makeEmpty(User::class, ['getId' => 1]);
+
+        $service = $this->make(
+            ChangeEmailService::class,
+            [
+                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => false]),
+                'logger' => $this->makeEmpty(LoggerInterface::class),
+                'verificationCodeRepository' => $this->makeEmpty(VerificationCodeRepository::class, [
+                    'getByGuid' => Expected::never(),
+                ]),
+            ],
+        );
+
+        verify(function () use ($service, $user) {
+            $service->handleData($this->makeEmpty(Request::class), $user, 'test-guid-123');
+        })
+            ->callableThrows(AccountDisabledException::class)
+        ;
     }
 }

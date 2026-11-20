@@ -15,6 +15,7 @@ use Psr\Http\Message\ResponseInterface;
 use Slim\Http\Response;
 use Slim\Http\ServerRequest as Request;
 use WebFramework\Config\ConfigService;
+use WebFramework\Exception\AccountDisabledException;
 use WebFramework\Exception\DuplicateEmailException;
 use WebFramework\Exception\ValidationException;
 use WebFramework\Http\ResponseEmitter;
@@ -118,6 +119,15 @@ class ChangeEmail
         catch (ValidationException $e)
         {
             $this->messageService->addErrors($e->getErrors());
+        }
+        catch (AccountDisabledException $e)
+        {
+            return $this->responseEmitter->buildRedirect(
+                $this->configService->get('actions.login.location'),
+                [],
+                'error',
+                'login.account_disabled',
+            );
         }
         catch (DuplicateEmailException $e)
         {

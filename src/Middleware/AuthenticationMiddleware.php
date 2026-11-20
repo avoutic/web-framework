@@ -15,28 +15,46 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use WebFramework\Security\AccountStatusChecker;
 use WebFramework\Security\AuthenticationService;
 
 /**
  * Middleware to check if the user is authenticated.
  *
  * Adds the 'is_authenticated', 'authenticated_user', and 'authenticated_user_id' attributes to the request.
+ *
+ * A logged in user whose account is disabled loses all sessions and is treated as not authenticated.
  */
 class AuthenticationMiddleware implements MiddlewareInterface
 {
     public function __construct(
+        private AccountStatusChecker $accountStatusChecker,
         private AuthenticationService $authenticationService,
     ) {}
 
     public function process(Request $request, RequestHandlerInterface $handler): Response
     {
         $isAuthenticated = $this->authenticationService->isAuthenticated();
-
-        $request = $request->withAttribute('is_authenticated', $isAuthenticated);
+        $authenticatedUser = null;
 
         if ($isAuthenticated)
         {
             $authenticatedUser = $this->authenticationService->getAuthenticatedUser();
+
+            if (!$this->accountStatusChecker->isEnabled($authenticatedUser))
+            {
+                $this->authenticationService->invalidateSessions($authenticatedUser->getId());
+                $this->authenticationService->deauthenticate();
+
+                $isAuthenticated = false;
+                $authenticatedUser = null;
+            }
+        }
+
+        $request = $request->withAttribute('is_authenticated', $isAuthenticated);
+
+        if ($authenticatedUser !== null)
+        {
             $request = $request
                 ->withAttribute('authenticated_user', $authenticatedUser)
                 ->withAttribute('authenticated_user_id', $authenticatedUser->getId())

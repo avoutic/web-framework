@@ -15,6 +15,7 @@ use Psr\Http\Message\ResponseInterface;
 use Slim\Http\Response;
 use Slim\Http\ServerRequest as Request;
 use WebFramework\Config\ConfigService;
+use WebFramework\Exception\AccountDisabledException;
 use WebFramework\Exception\ValidationException;
 use WebFramework\Http\ResponseEmitter;
 use WebFramework\Presentation\MessageService;
@@ -110,7 +111,16 @@ class ResetPassword
                 }
                 else
                 {
-                    $guid = $this->resetPasswordService->sendPasswordResetMail($user);
+                    try
+                    {
+                        $guid = $this->resetPasswordService->sendPasswordResetMail($user);
+                    }
+                    catch (AccountDisabledException $e)
+                    {
+                        // Don't reveal that the account is disabled - same response as for
+                        // an unknown user
+                        $guid = $this->uuidProvider->generate();
+                    }
                 }
 
                 return $this->responseEmitter->buildQueryRedirect(

@@ -21,6 +21,7 @@ use WebFramework\Config\ConfigService;
 use WebFramework\Http\ResponseEmitter;
 use WebFramework\Repository\UserRepository;
 use WebFramework\Repository\VerificationCodeRepository;
+use WebFramework\Security\AccountStatusChecker;
 use WebFramework\Security\AuthenticationService;
 use WebFramework\Security\ChangeEmailService;
 use WebFramework\Security\ResetPasswordService;
@@ -36,6 +37,7 @@ class VerifyResend
     /**
      * Verify constructor.
      *
+     * @param AccountStatusChecker       $accountStatusChecker       The account status checker
      * @param AuthenticationService      $authenticationService      The authentication service
      * @param ChangeEmailService         $changeEmailService         The change email service
      * @param ConfigService              $configService              The configuration service
@@ -46,6 +48,7 @@ class VerifyResend
      * @param VerificationCodeRepository $verificationCodeRepository The verification code repository
      */
     public function __construct(
+        private AccountStatusChecker $accountStatusChecker,
         private AuthenticationService $authenticationService,
         private ChangeEmailService $changeEmailService,
         private ConfigService $configService,
@@ -65,7 +68,7 @@ class VerifyResend
      *
      * @return ResponseInterface The response
      *
-     * @uses config actions.verify.location
+     * @uses config actions.login.location
      * @uses config actions.verify.location
      */
     public function __invoke(Request $request, Response $response, array $routeArgs): ResponseInterface
@@ -116,6 +119,36 @@ class VerifyResend
         if ($user === null)
         {
             throw new \RuntimeException('User not found');
+        }
+
+        // A disabled account is not sent new login or password reset codes. Registration
+        // codes are still sent, so an account that is disabled until approval can verify
+        // its email address. Change email requires a logged in, and thus enabled, user
+        if (!$this->accountStatusChecker->isEnabled($user))
+        {
+            if ($action === 'login')
+            {
+                return $this->responseEmitter->buildRedirect(
+                    $this->configService->get('actions.login.location'),
+                    [],
+                    'error',
+                    'login.account_disabled',
+                );
+            }
+
+            if ($action === 'reset_password')
+            {
+                // Don't reveal that the account is disabled - same response as a resend
+                return $this->responseEmitter->buildQueryRedirect(
+                    $this->configService->get('actions.verify.location'),
+                    [],
+                    [
+                        'guid' => $verificationCode->getGuid(),
+                    ],
+                    'success',
+                    'verify.code_resent',
+                );
+            }
         }
 
         // Invalidate old code

@@ -434,6 +434,41 @@ All flows include multiple security features:
 - Codes are single-use only
 - The small code space (6 characters) would be brute-forceable regardless of hashing
 
+## Account Status
+
+Whether an account may be used is decided by `WebFramework\Security\AccountStatusChecker`:
+
+~~~php
+<?php
+
+interface AccountStatusChecker
+{
+    public function isEnabled(User $user): bool;
+}
+~~~
+
+The default implementation, `DefaultAccountStatusChecker`, treats an account with an empty password hash as disabled. `NullAccountStatusChecker` treats every account as enabled. Bind your own implementation in your definitions to support states such as suspended or pending approval:
+
+~~~php
+<?php
+
+return [
+    WebFramework\Security\AccountStatusChecker::class => DI\autowire(App\Security\MyAccountStatusChecker::class),
+];
+~~~
+
+The checker is consulted in these places:
+
+- **Login**: `LoginService::validate()` (after the password check, so a disabled account is not sent a verification code) and `LoginService::completeLogin()`, which covers password login, LoginVerify and RegisterVerify. The user sees the `login.account_disabled` message
+- **Every request**: `AuthenticationMiddleware` invalidates all sessions of a disabled account and treats the request as not authenticated
+- **Password reset**: no reset mail is sent and a reset code cannot be redeemed. The ResetPassword action responds as it does for an unknown user, so it does not reveal that the account is disabled
+- **Resending codes**: VerifyResend does not send new login or password reset codes. Registration codes are still sent, so an account that is disabled until approval can verify its email address
+- **Change password and change email**: refused with `AccountDisabledException`
+
+Services signal a disabled account with `WebFramework\Exception\AccountDisabledException`.
+
+Use `AccountStatusChecker` for anything that is a property of the account. Use `LoginExtensionInterface::preAuthenticate()` for checks that depend on the request, such as IP or device rules.
+
 ## Events
 
 The following events are dispatched during user management flows:

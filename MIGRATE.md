@@ -10,13 +10,22 @@
 * `LoginVerify` has a new constructor parameter `RegisterExtensionInterface $registerExtension`.
 * `RegisterService` and `UserVerificationService` have a new constructor parameter `StoredUserValuesService $storedUserValuesService`. Autowired definitions need no change.
 * The data from `RegisterExtensionInterface::getAfterVerifyData()` is now stored as JSON with the user (stored user value `registration.after_verify_data`) until the user is verified for the first time, so it must be JSON serializable. Unlike verification codes, it is not removed by `CleanupVerificationCodesTask`; it stays until the user verifies. Users that registered before the upgrade and are still unverified get the data from their register code when they verify through `RegisterVerify`, and an empty array when they verify through `LoginVerify`.
+* Accounts now have a status, decided by the new `Security\AccountStatusChecker` interface (`isEnabled(User $user): bool`). The default binding, `DefaultAccountStatusChecker`, treats an account with an empty password hash as disabled, following the existing convention for blocked accounts. A disabled account:
+    * cannot log in. `LoginService::validate()`, `LoginService::authenticate()` and `LoginService::completeLogin()` throw `AccountDisabledException`. Custom login actions or endpoints that call them must catch this exception.
+    * loses all its sessions on its next request. `AuthenticationMiddleware` invalidates them and treats the request as not authenticated.
+    * cannot reset its password. `ResetPasswordService::sendPasswordResetMail()` and `ResetPasswordService::handleData()` throw `AccountDisabledException`. This closes the hole where a blocked account could unblock itself with a password reset.
+    * is not sent new login or password reset codes by `VerifyResend`. Registration codes are still sent, so an account that is disabled until approval can verify its email address.
+    * cannot change its password or email. `ChangePasswordService::changePassword()`, `ChangeEmailService::sendChangeEmailVerify()` and `ChangeEmailService::handleData()` throw `AccountDisabledException`.
+* If your application has accounts with an empty password hash that must stay usable (for example accounts that get their first password through the password reset flow), bind `Security\AccountStatusChecker` to `Security\NullAccountStatusChecker` or to your own implementation.
+* `LoginService`, `ResetPasswordService`, `ChangePasswordService`, `ChangeEmailService`, `AuthenticationMiddleware` and the `VerifyResend` action have a new constructor parameter `AccountStatusChecker $accountStatusChecker`. Autowired definitions need no change.
 * `LoginService::authenticate()` can now throw `LoginRefusedException` when `preAuthenticate()` refuses the login. Custom login actions or endpoints that call it must catch this exception.
 
 ## New features
 
 * Introduce `LoginService::completeLogin()` as the single place where a login results in a session. It calls `LoginExtensionInterface::preAuthenticate()`, authenticates the user and dispatches `UserLoggedIn`. It throws `LoginRefusedException` when the extension refuses the login.
 * `UserVerificationService::handleData()` returns an extra `first_verification` flag that tells whether this call verified the user for the first time, and `post_verify_data` with the registration after verify data on first verification.
-* New translation keys `login.refused` and `login.refused_extra`.
+* Introduce `Security\AccountStatusChecker` with `DefaultAccountStatusChecker` and `NullAccountStatusChecker`, and `AccountDisabledException`. Use it for anything that is a property of the account (disabled, suspended, pending approval). Use `LoginExtensionInterface::preAuthenticate()` for checks that depend on the request.
+* New translation keys `login.refused`, `login.refused_extra`, `login.account_disabled` and `login.account_disabled_extra`.
 
 # v11 release
 

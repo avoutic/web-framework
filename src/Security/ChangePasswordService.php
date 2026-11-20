@@ -16,6 +16,7 @@ use Slim\Http\ServerRequest as Request;
 use WebFramework\Entity\User;
 use WebFramework\Event\EventService;
 use WebFramework\Event\UserPasswordChanged;
+use WebFramework\Exception\AccountDisabledException;
 use WebFramework\Exception\InvalidPasswordException;
 use WebFramework\Exception\PasswordMismatchException;
 use WebFramework\Exception\WeakPasswordException;
@@ -31,6 +32,7 @@ class ChangePasswordService
     /**
      * ChangePasswordService constructor.
      *
+     * @param AccountStatusChecker    $accountStatusChecker    The account status checker
      * @param AuthenticationService   $authenticationService   The authentication service
      * @param EventService            $eventService            The event service
      * @param LoggerInterface         $logger                  The logger service
@@ -39,6 +41,7 @@ class ChangePasswordService
      * @param SecurityIteratorService $securityIteratorService The security iterator service
      */
     public function __construct(
+        private AccountStatusChecker $accountStatusChecker,
         private AuthenticationService $authenticationService,
         private EventService $eventService,
         private LoggerInterface $logger,
@@ -86,6 +89,7 @@ class ChangePasswordService
      * @param string $oldPassword The current password
      * @param string $newPassword The new password
      *
+     * @throws AccountDisabledException If the account is disabled
      * @throws WeakPasswordException    If the new password is too weak
      * @throws InvalidPasswordException If the old password is incorrect
      */
@@ -103,6 +107,15 @@ class ChangePasswordService
             $this->logger->debug('Invalid current password', ['user_id' => $user->getId()]);
 
             throw new InvalidPasswordException('The old password does not match the current password');
+        }
+
+        // A disabled account does not get its password changed or a fresh session
+        //
+        if (!$this->accountStatusChecker->isEnabled($user))
+        {
+            $this->logger->debug('Not changing password for disabled account', ['user_id' => $user->getId()]);
+
+            throw new AccountDisabledException($user);
         }
 
         // Change password
