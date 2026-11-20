@@ -19,6 +19,7 @@ use WebFramework\Config\ConfigService;
 use WebFramework\Exception\CodeVerificationException;
 use WebFramework\Exception\LoginRefusedException;
 use WebFramework\Http\ResponseEmitter;
+use WebFramework\Security\Extension\RegisterExtensionInterface;
 use WebFramework\Security\LoginService;
 use WebFramework\Security\UserVerificationService;
 
@@ -32,14 +33,16 @@ class LoginVerify
     /**
      * LoginVerify constructor.
      *
-     * @param ConfigService           $configService           The configuration service
-     * @param LoginService            $loginService            The login service
-     * @param ResponseEmitter         $responseEmitter         The response emitter
-     * @param UserVerificationService $userVerificationService The user verification service
+     * @param ConfigService              $configService           The configuration service
+     * @param LoginService               $loginService            The login service
+     * @param RegisterExtensionInterface $registerExtension       The register extension
+     * @param ResponseEmitter            $responseEmitter         The response emitter
+     * @param UserVerificationService    $userVerificationService The user verification service
      */
     public function __construct(
         protected ConfigService $configService,
         protected LoginService $loginService,
+        protected RegisterExtensionInterface $registerExtension,
         protected ResponseEmitter $responseEmitter,
         protected UserVerificationService $userVerificationService,
     ) {}
@@ -68,7 +71,20 @@ class LoginVerify
 
         try
         {
-            ['user' => $user, 'after_verify_data' => $afterVerifyData] = $this->userVerificationService->handleData($request, $guid, 'login');
+            [
+                'user' => $user,
+                'after_verify_data' => $afterVerifyData,
+                'first_verification' => $firstVerification,
+            ] = $this->userVerificationService->handleData($request, $guid, 'login');
+
+            // The user never completed registration verification and is verified through
+            // a login code instead. The data from getAfterVerifyData() is tied to the
+            // register code and not available here
+            //
+            if ($firstVerification)
+            {
+                $this->registerExtension->postVerify($user, []);
+            }
 
             $this->loginService->completeLogin($request, $user);
 

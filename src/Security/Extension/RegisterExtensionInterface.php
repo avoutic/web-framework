@@ -55,10 +55,18 @@ interface RegisterExtensionInterface
     public function postCreate(Request $request, User $user): void;
 
     /**
-     * Called after email verification with the data from getAfterVerifyData().
+     * Called exactly once per user, when the user is verified for the first time.
      *
-     * @param User         $user              The user to post verify
-     * @param array<mixed> $afterVerifyParams Additional parameters
+     * When the first verification happens through the registration flow, the data from
+     * getAfterVerifyData() is passed. When it happens through the login flow (the user
+     * never completed registration verification), an empty array is passed.
+     *
+     * It is not called for register codes redeemed by an already verified user, and it
+     * is called before the login is completed, so also when the login is refused by
+     * LoginExtensionInterface::preAuthenticate().
+     *
+     * @param User         $user              The user that was verified
+     * @param array<mixed> $afterVerifyParams The data from getAfterVerifyData(), or an empty array
      */
     public function postVerify(User $user, array $afterVerifyParams): void;
 }

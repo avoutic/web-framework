@@ -151,6 +151,7 @@ final class UserVerificationServiceTest extends Unit
         verify($result)->equals([
             'user' => $user,
             'after_verify_data' => ['redirect' => '/dashboard'],
+            'first_verification' => true,
         ]);
     }
 
@@ -210,6 +211,7 @@ final class UserVerificationServiceTest extends Unit
         $result = $service->handleData($request, 'test-guid-123', 'register');
 
         verify($result['user'])->equals($user);
+        verify($result['first_verification'])->false();
     }
 
     public function testHandleDataThrowsExceptionWhenVerificationCodeNotFound()

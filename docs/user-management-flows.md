@@ -39,7 +39,7 @@ The registration flow allows new users to create accounts with email verificatio
 - `customValueCheck()`: Perform additional validation checks
 - `getAfterVerifyData()`: Provide data to pass through verification
 - `postCreate()`: Execute logic after user creation
-- `postVerify()`: Execute logic after verification (called in RegisterVerify)
+- `postVerify()`: Execute logic once, when the user is verified for the first time (called in RegisterVerify, or in LoginVerify with an empty array when the first verification happens through a login code)
 
 **Configuration**:
 - `actions.register.return_page`: Page to redirect after successful registration verification
@@ -69,10 +69,10 @@ The registration flow allows new users to create accounts with email verificatio
 1. Extracts user and flow from `guid` via `UserVerificationService::handleData()`
 2. Verifies flow is 'register'
 3. Sets user as verified (if not already verified)
-4. Completes the login via `LoginService::completeLogin()`, which calls `LoginExtensionInterface::preAuthenticate()`, creates the session and dispatches the `UserLoggedIn` event
-5. Calls `RegisterExtensionInterface::postVerify()` hook (extensible for custom logic)
+4. If this verified the user for the first time, calls `RegisterExtensionInterface::postVerify()` hook (extensible for custom logic). It is skipped for an already verified user, for example with a stale resent code
+5. Completes the login via `LoginService::completeLogin()`, which calls `LoginExtensionInterface::preAuthenticate()`, creates the session and dispatches the `UserLoggedIn` event
 6. Redirects to `actions.register.return_page`
-7. If `preAuthenticate()` returns false, no session is created, `postVerify()` is not called and the user is redirected to the login page with the `login.refused` message. The user stays verified
+7. If `preAuthenticate()` returns false, no session is created and the user is redirected to the login page with the `login.refused` message. The user stays verified and `postVerify()` has already run
 
 **Customization**: Implement `RegisterExtensionInterface` and configure it in dependency injection to add custom logic.
 
@@ -128,9 +128,10 @@ The login flow handles user authentication, including cases where users need to 
 **Process**:
 1. Extracts user, flow, and after_verify_data from `guid`
 2. Verifies flow is 'login'
-3. Completes the login via `LoginService::completeLogin()`, which calls `LoginExtensionInterface::preAuthenticate()`, creates the session and dispatches the `UserLoggedIn` event
-4. Redirects to `after_verify_data['return_page']` with `return_query` parameters
-5. If `preAuthenticate()` returns false, no session is created and the user is redirected to the login page with the `login.refused` message
+3. If this verified the user for the first time (the user never completed registration verification), calls `RegisterExtensionInterface::postVerify()` with an empty array
+4. Completes the login via `LoginService::completeLogin()`, which calls `LoginExtensionInterface::preAuthenticate()`, creates the session and dispatches the `UserLoggedIn` event
+5. Redirects to `after_verify_data['return_page']` with `return_query` parameters
+6. If `preAuthenticate()` returns false, no session is created and the user is redirected to the login page with the `login.refused` message
 
 ## Flow 3: Password Reset
 
@@ -391,7 +392,7 @@ return [
 - `customValueCheck(Request $request): bool` - Perform additional validation before user creation
 - `getAfterVerifyData(Request $request): array` - Provide data to pass through verification
 - `postCreate(Request $request, User $user): void` - Execute logic after user creation
-- `postVerify(User $user, array $afterVerifyParams): void` - Execute logic after verification
+- `postVerify(User $user, array $afterVerifyParams): void` - Execute logic once, on the user's first verification, whichever flow caused it
 
 #### LoginExtensionInterface
 - `getCustomParams(Request $request): array` - Add custom template parameters

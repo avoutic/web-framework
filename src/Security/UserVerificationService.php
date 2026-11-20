@@ -88,7 +88,8 @@ class UserVerificationService
      * @param string  $guid    The GUID of the verification code
      * @param string  $action  The action to handle the verification data for
      *
-     * @return array{user: User, after_verify_data: array<mixed>} The user and after verify data
+     * @return array{user: User, after_verify_data: array<mixed>, first_verification: bool} The user, the after verify data
+     *                                                                                      and whether this call verified the user for the first time
      *
      * @throws CodeVerificationException If the code is invalid
      */
@@ -144,7 +145,9 @@ class UserVerificationService
             throw new CodeVerificationException();
         }
 
-        if (!$user->isVerified())
+        $firstVerification = !$user->isVerified();
+
+        if ($firstVerification)
         {
             $this->logger->info('Setting user to verified', ['user_id' => $user->getId()]);
 
@@ -168,6 +171,7 @@ class UserVerificationService
         return [
             'user' => $user,
             'after_verify_data' => $flowData['after_verify_data'] ?? [],
+            'first_verification' => $firstVerification,
         ];
     }
 }

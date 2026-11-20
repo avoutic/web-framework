@@ -72,11 +72,21 @@ class RegisterVerify
 
         try
         {
-            ['user' => $user, 'after_verify_data' => $afterVerifyData] = $this->userVerificationService->handleData($request, $guid, 'register');
+            [
+                'user' => $user,
+                'after_verify_data' => $afterVerifyData,
+                'first_verification' => $firstVerification,
+            ] = $this->userVerificationService->handleData($request, $guid, 'register');
+
+            // Only on first verification, and before completing the login, so a refused
+            // login does not skip it
+            //
+            if ($firstVerification)
+            {
+                $this->registerExtension->postVerify($user, $afterVerifyData);
+            }
 
             $this->loginService->completeLogin($request, $user);
-
-            $this->registerExtension->postVerify($user, $afterVerifyData);
 
             return $this->responseEmitter->buildRedirect(
                 $this->configService->get('actions.register.return_page'),

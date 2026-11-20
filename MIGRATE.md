@@ -6,11 +6,14 @@
 * `LoginService` has a new constructor parameter `LoginExtensionInterface $loginExtension`. Autowired definitions need no change.
 * The `LoginVerify` and `RegisterVerify` actions take `LoginService` instead of `AuthenticationService` in their constructor. Subclasses must be adapted. Subclasses that only existed to add a check before authentication can be replaced by `preAuthenticate()`.
 * `UserLoggedIn` is now also dispatched after login verification (`LoginVerify`) and registration verification (`RegisterVerify`). Apps that dispatched it themselves on those paths, or did login bookkeeping elsewhere to work around the gap, must remove that to avoid duplicate handling.
+* `RegisterExtensionInterface::postVerify()` is now called exactly once per user, on first verification, whichever flow caused it. It is no longer called when an already verified user redeems a register code (for example a stale resend). It is now also called from `LoginVerify`, with an empty array, when a user is verified for the first time through a login code. It runs before the login is completed, so also when `preAuthenticate()` refuses the login.
+* `LoginVerify` has a new constructor parameter `RegisterExtensionInterface $registerExtension`.
 * `LoginService::authenticate()` can now throw `LoginRefusedException` when `preAuthenticate()` refuses the login. Custom login actions or endpoints that call it must catch this exception.
 
 ## New features
 
 * Introduce `LoginService::completeLogin()` as the single place where a login results in a session. It calls `LoginExtensionInterface::preAuthenticate()`, authenticates the user and dispatches `UserLoggedIn`. It throws `LoginRefusedException` when the extension refuses the login.
+* `UserVerificationService::handleData()` returns an extra `first_verification` flag that tells whether this call verified the user for the first time.
 * New translation keys `login.refused` and `login.refused_extra`.
 
 # v11 release

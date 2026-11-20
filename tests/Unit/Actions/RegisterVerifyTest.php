@@ -37,7 +37,10 @@ final class RegisterVerifyTest extends Unit
                 }),
             ]),
             registerExtension: $this->makeEmpty(RegisterExtensionInterface::class, [
-                'postVerify' => Expected::once(),
+                'postVerify' => Expected::once(function ($passedUser, $params) {
+                    verify($passedUser)->instanceOf(User::class);
+                    verify($params)->equals(['plan' => 'pro']);
+                }),
             ]),
             responseEmitter: $this->makeEmpty(ResponseEmitter::class, [
                 'buildRedirect' => Expected::once(function ($template, $values, $type, $message) use ($response) {
@@ -51,7 +54,8 @@ final class RegisterVerifyTest extends Unit
             userVerificationService: $this->makeEmpty(UserVerificationService::class, [
                 'handleData' => Expected::once([
                     'user' => $user,
-                    'after_verify_data' => [],
+                    'after_verify_data' => ['plan' => 'pro'],
+                    'first_verification' => true,
                 ]),
             ]),
         );
@@ -59,7 +63,7 @@ final class RegisterVerifyTest extends Unit
         verify($instance($request, $response, []))->same($response);
     }
 
-    public function testRefusedLoginSkipsPostVerifyAndRedirectsToLoginWithError()
+    public function testRefusedLoginStillCallsPostVerifyAndRedirectsToLoginWithError()
     {
         $user = $this->makeEmpty(User::class);
         $request = $this->makeEmpty(Request::class, ['getParam' => 'guid']);
@@ -73,7 +77,10 @@ final class RegisterVerifyTest extends Unit
                 }),
             ]),
             registerExtension: $this->makeEmpty(RegisterExtensionInterface::class, [
-                'postVerify' => Expected::never(),
+                'postVerify' => Expected::once(function ($passedUser, $params) {
+                    verify($passedUser)->instanceOf(User::class);
+                    verify($params)->equals(['plan' => 'pro']);
+                }),
             ]),
             responseEmitter: $this->makeEmpty(ResponseEmitter::class, [
                 'buildRedirect' => Expected::once(function ($template, $values, $type, $message) use ($response) {
@@ -87,7 +94,37 @@ final class RegisterVerifyTest extends Unit
             userVerificationService: $this->makeEmpty(UserVerificationService::class, [
                 'handleData' => Expected::once([
                     'user' => $user,
-                    'after_verify_data' => [],
+                    'after_verify_data' => ['plan' => 'pro'],
+                    'first_verification' => true,
+                ]),
+            ]),
+        );
+
+        verify($instance($request, $response, []))->same($response);
+    }
+
+    public function testAlreadyVerifiedUserSkipsPostVerify()
+    {
+        $user = $this->makeEmpty(User::class);
+        $request = $this->makeEmpty(Request::class, ['getParam' => 'guid']);
+        $response = $this->makeEmpty(Response::class);
+
+        $instance = new RegisterVerify(
+            configService: $this->makeEmpty(ConfigService::class, ['get' => '/welcome']),
+            loginService: $this->makeEmpty(LoginService::class, [
+                'completeLogin' => Expected::once(),
+            ]),
+            registerExtension: $this->makeEmpty(RegisterExtensionInterface::class, [
+                'postVerify' => Expected::never(),
+            ]),
+            responseEmitter: $this->makeEmpty(ResponseEmitter::class, [
+                'buildRedirect' => Expected::once($response),
+            ]),
+            userVerificationService: $this->makeEmpty(UserVerificationService::class, [
+                'handleData' => Expected::once([
+                    'user' => $user,
+                    'after_verify_data' => ['plan' => 'pro'],
+                    'first_verification' => false,
                 ]),
             ]),
         );
