@@ -54,8 +54,9 @@ final class RegisterVerifyTest extends Unit
             userVerificationService: $this->makeEmpty(UserVerificationService::class, [
                 'handleData' => Expected::once([
                     'user' => $user,
-                    'after_verify_data' => ['plan' => 'pro'],
+                    'after_verify_data' => ['plan' => 'stale'],
                     'first_verification' => true,
+                    'post_verify_data' => ['plan' => 'pro'],
                 ]),
             ]),
         );
@@ -94,8 +95,9 @@ final class RegisterVerifyTest extends Unit
             userVerificationService: $this->makeEmpty(UserVerificationService::class, [
                 'handleData' => Expected::once([
                     'user' => $user,
-                    'after_verify_data' => ['plan' => 'pro'],
+                    'after_verify_data' => ['plan' => 'stale'],
                     'first_verification' => true,
+                    'post_verify_data' => ['plan' => 'pro'],
                 ]),
             ]),
         );
@@ -125,6 +127,7 @@ final class RegisterVerifyTest extends Unit
                     'user' => $user,
                     'after_verify_data' => ['plan' => 'pro'],
                     'first_verification' => false,
+                    'post_verify_data' => [],
                 ]),
             ]),
         );

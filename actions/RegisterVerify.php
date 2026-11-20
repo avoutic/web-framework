@@ -74,8 +74,8 @@ class RegisterVerify
         {
             [
                 'user' => $user,
-                'after_verify_data' => $afterVerifyData,
                 'first_verification' => $firstVerification,
+                'post_verify_data' => $postVerifyData,
             ] = $this->userVerificationService->handleData($request, $guid, 'register');
 
             // Only on first verification, and before completing the login, so a refused
@@ -83,7 +83,7 @@ class RegisterVerify
             //
             if ($firstVerification)
             {
-                $this->registerExtension->postVerify($user, $afterVerifyData);
+                $this->registerExtension->postVerify($user, $postVerifyData);
             }
 
             $this->loginService->completeLogin($request, $user);

@@ -15,6 +15,7 @@ use WebFramework\Exception\UsernameUnavailableException;
 use WebFramework\Exception\WeakPasswordException;
 use WebFramework\Security\RegisterService;
 use WebFramework\Security\UserVerificationService;
+use WebFramework\Support\StoredUserValuesService;
 
 /**
  * @internal
@@ -125,6 +126,9 @@ final class RegisterServiceTest extends Unit
                 'userVerificationService' => $userVerificationService,
                 'eventService' => $eventService,
                 'logger' => $logger,
+                'storedUserValuesService' => $this->makeEmpty(StoredUserValuesService::class, [
+                    'setValue' => Expected::never(),
+                ]),
             ],
         );
 
@@ -136,5 +140,40 @@ final class RegisterServiceTest extends Unit
             'user' => $user,
             'guid' => 'test-guid-123',
         ]);
+    }
+
+    public function testRegisterStoresAfterVerifyDataWithUser()
+    {
+        $user = $this->makeEmpty(User::class, [
+            'getId' => 7,
+        ]);
+
+        $instance = $this->make(
+            RegisterService::class,
+            [
+                'userService' => $this->makeEmpty(UserService::class, [
+                    'createUser' => $user,
+                ]),
+                'userVerificationService' => $this->makeEmpty(UserVerificationService::class, [
+                    'sendVerifyMail' => Expected::once(function ($passedUser, $action, $afterVerifyData) {
+                        verify($action)->equals('register');
+                        verify($afterVerifyData)->equals(['newsletter' => true]);
+
+                        return 'test-guid-123';
+                    }),
+                ]),
+                'eventService' => $this->makeEmpty(EventService::class),
+                'logger' => $this->makeEmpty(LoggerInterface::class),
+                'storedUserValuesService' => $this->makeEmpty(StoredUserValuesService::class, [
+                    'setValue' => Expected::once(function ($userId, $name, $value) {
+                        verify($userId)->equals(7);
+                        verify($name)->equals('registration.after_verify_data');
+                        verify(json_decode($value, true))->equals(['newsletter' => true]);
+                    }),
+                ]),
+            ],
+        );
+
+        $instance->register($this->makeEmpty(Request::class), 'testuser', 'test@example.com', 'password123', ['newsletter' => true]);
     }
 }

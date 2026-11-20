@@ -21,6 +21,7 @@ use WebFramework\Event\UserRegistered;
 use WebFramework\Exception\PasswordMismatchException;
 use WebFramework\Exception\UsernameUnavailableException;
 use WebFramework\Exception\WeakPasswordException;
+use WebFramework\Support\StoredUserValuesService;
 
 /**
  * Handles user registration operations.
@@ -32,12 +33,14 @@ class RegisterService
      *
      * @param EventService            $eventService            The event service
      * @param LoggerInterface         $logger                  The logger service
+     * @param StoredUserValuesService $storedUserValuesService The stored user values service
      * @param UserService             $userService             The user service
      * @param UserVerificationService $userVerificationService The user verification service
      */
     public function __construct(
         private EventService $eventService,
         private LoggerInterface $logger,
+        private StoredUserValuesService $storedUserValuesService,
         private UserService $userService,
         private UserVerificationService $userVerificationService,
     ) {}
@@ -75,6 +78,9 @@ class RegisterService
     /**
      * Register a new user.
      *
+     * The after verification parameters are stored with the user until the user is
+     * verified for the first time, so they are available whichever flow verifies the user.
+     *
      * @param string       $username          The username
      * @param string       $email             The email address
      * @param string       $password          The password
@@ -87,6 +93,15 @@ class RegisterService
         $this->logger->info('Registering new user', ['username' => $username, 'email' => $email]);
 
         $user = $this->userService->createUser($username, $password, $email, Carbon::now()->getTimestamp());
+
+        if (count($afterVerifyParams))
+        {
+            $this->storedUserValuesService->setValue(
+                $user->getId(),
+                UserVerificationService::AFTER_VERIFY_DATA_KEY,
+                json_encode($afterVerifyParams, JSON_THROW_ON_ERROR),
+            );
+        }
 
         $guid = $this->userVerificationService->sendVerifyMail($user, 'register', $afterVerifyParams);
 

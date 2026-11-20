@@ -40,6 +40,9 @@ interface RegisterExtensionInterface
     /**
      * Get additional data to be passed after verification.
      *
+     * The data is stored as JSON with the user until first verification, so it must be
+     * JSON serializable.
+     *
      * @param Request $request The current request
      *
      * @return array<mixed> Additional data
@@ -57,16 +60,16 @@ interface RegisterExtensionInterface
     /**
      * Called exactly once per user, when the user is verified for the first time.
      *
-     * When the first verification happens through the registration flow, the data from
-     * getAfterVerifyData() is passed. When it happens through the login flow (the user
-     * never completed registration verification), an empty array is passed.
+     * The data from getAfterVerifyData() is stored with the user at registration and
+     * passed here, whether the first verification happens through the registration flow
+     * or through the login flow (the user never completed registration verification).
      *
      * It is not called for register codes redeemed by an already verified user, and it
      * is called before the login is completed, so also when the login is refused by
      * LoginExtensionInterface::preAuthenticate().
      *
      * @param User         $user              The user that was verified
-     * @param array<mixed> $afterVerifyParams The data from getAfterVerifyData(), or an empty array
+     * @param array<mixed> $afterVerifyParams The data from getAfterVerifyData()
      */
     public function postVerify(User $user, array $afterVerifyParams): void;
 }

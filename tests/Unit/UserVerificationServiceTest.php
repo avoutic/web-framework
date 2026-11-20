@@ -17,6 +17,7 @@ use WebFramework\Repository\UserRepository;
 use WebFramework\Repository\VerificationCodeRepository;
 use WebFramework\Security\UserCodeService;
 use WebFramework\Security\UserVerificationService;
+use WebFramework\Support\StoredUserValuesService;
 
 /**
  * @internal
@@ -141,6 +142,10 @@ final class UserVerificationServiceTest extends Unit
                 'userRepository' => $userRepository,
                 'eventService' => $eventService,
                 'logger' => $logger,
+                'storedUserValuesService' => $this->makeEmpty(StoredUserValuesService::class, [
+                    'valueExists' => Expected::once(false),
+                    'deleteValue' => Expected::never(),
+                ]),
             ],
         );
 
@@ -148,11 +153,103 @@ final class UserVerificationServiceTest extends Unit
 
         $result = $service->handleData($request, 'test-guid-123', 'register');
 
+        // Without stored registration data, the register code's own data is used
         verify($result)->equals([
             'user' => $user,
             'after_verify_data' => ['redirect' => '/dashboard'],
             'first_verification' => true,
+            'post_verify_data' => ['redirect' => '/dashboard'],
         ]);
+    }
+
+    /**
+     * @param array<mixed> $codeAfterVerifyData
+     */
+    private function buildServiceForFirstVerification(string $action, array $codeAfterVerifyData, ?string $storedValue): UserVerificationService
+    {
+        $user = $this->makeEmpty(User::class, [
+            'getId' => 1,
+            'isVerified' => false,
+        ]);
+
+        $verificationCode = $this->makeEmpty(VerificationCode::class, [
+            'isCorrect' => true,
+            'isExpired' => false,
+            'isInvalidated' => false,
+            'isProcessed' => false,
+            'getAction' => $action,
+            'getUserId' => 1,
+            'getFlowData' => ['after_verify_data' => $codeAfterVerifyData],
+        ]);
+
+        return $this->make(
+            UserVerificationService::class,
+            [
+                'verificationCodeRepository' => $this->makeEmpty(VerificationCodeRepository::class, [
+                    'getByGuid' => $verificationCode,
+                ]),
+                'userRepository' => $this->makeEmpty(UserRepository::class, [
+                    'find' => $user,
+                ]),
+                'eventService' => $this->makeEmpty(EventService::class),
+                'logger' => $this->makeEmpty(LoggerInterface::class),
+                'storedUserValuesService' => $this->makeEmpty(StoredUserValuesService::class, [
+                    'valueExists' => $storedValue !== null,
+                    'getValue' => function ($userId, $name) use ($storedValue) {
+                        verify($userId)->equals(1);
+                        verify($name)->equals('registration.after_verify_data');
+
+                        return $storedValue ?? '';
+                    },
+                    'deleteValue' => ($storedValue !== null)
+                        ? Expected::once(function ($userId, $name) {
+                            verify($userId)->equals(1);
+                            verify($name)->equals('registration.after_verify_data');
+                        })
+                        : Expected::never(),
+                ]),
+            ],
+        );
+    }
+
+    public function testFirstVerificationThroughRegisterCodeUsesStoredRegistrationData()
+    {
+        $service = $this->buildServiceForFirstVerification('register', ['newsletter' => false], '{"newsletter":true}');
+
+        $result = $service->handleData($this->makeEmpty(Request::class), 'test-guid-123', 'register');
+
+        verify($result['first_verification'])->true();
+        verify($result['post_verify_data'])->equals(['newsletter' => true]);
+    }
+
+    public function testFirstVerificationThroughLoginCodeUsesStoredRegistrationData()
+    {
+        $service = $this->buildServiceForFirstVerification('login', ['return_page' => '/'], '{"newsletter":true}');
+
+        $result = $service->handleData($this->makeEmpty(Request::class), 'test-guid-123', 'login');
+
+        verify($result['first_verification'])->true();
+        verify($result['after_verify_data'])->equals(['return_page' => '/']);
+        verify($result['post_verify_data'])->equals(['newsletter' => true]);
+    }
+
+    public function testFirstVerificationThroughLoginCodeWithoutStoredDataGivesEmptyPostVerifyData()
+    {
+        $service = $this->buildServiceForFirstVerification('login', ['return_page' => '/'], null);
+
+        $result = $service->handleData($this->makeEmpty(Request::class), 'test-guid-123', 'login');
+
+        verify($result['first_verification'])->true();
+        verify($result['post_verify_data'])->equals([]);
+    }
+
+    public function testFirstVerificationWithCorruptStoredDataFallsBackAndRemovesIt()
+    {
+        $service = $this->buildServiceForFirstVerification('register', ['newsletter' => true], 'not-json');
+
+        $result = $service->handleData($this->makeEmpty(Request::class), 'test-guid-123', 'register');
+
+        verify($result['post_verify_data'])->equals(['newsletter' => true]);
     }
 
     public function testHandleDataWithVerifiedUser()
@@ -203,6 +300,11 @@ final class UserVerificationServiceTest extends Unit
                 'userRepository' => $userRepository,
                 'eventService' => $eventService,
                 'logger' => $logger,
+                'storedUserValuesService' => $this->makeEmpty(StoredUserValuesService::class, [
+                    'valueExists' => Expected::never(),
+                    'getValue' => Expected::never(),
+                    'deleteValue' => Expected::never(),
+                ]),
             ],
         );
 
@@ -212,6 +314,7 @@ final class UserVerificationServiceTest extends Unit
 
         verify($result['user'])->equals($user);
         verify($result['first_verification'])->false();
+        verify($result['post_verify_data'])->equals([]);
     }
 
     public function testHandleDataThrowsExceptionWhenVerificationCodeNotFound()

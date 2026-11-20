@@ -21,6 +21,7 @@ use WebFramework\Exception\CodeVerificationException;
 use WebFramework\Mail\UserMailer;
 use WebFramework\Repository\UserRepository;
 use WebFramework\Repository\VerificationCodeRepository;
+use WebFramework\Support\StoredUserValuesService;
 
 /**
  * Handles user verification processes.
@@ -28,10 +29,16 @@ use WebFramework\Repository\VerificationCodeRepository;
 class UserVerificationService
 {
     /**
+     * Stored user value that holds the registration after verify data until first verification.
+     */
+    public const AFTER_VERIFY_DATA_KEY = 'registration.after_verify_data';
+
+    /**
      * UserVerificationService constructor.
      *
      * @param EventService               $eventService               The event service
      * @param LoggerInterface            $logger                     The logger service
+     * @param StoredUserValuesService    $storedUserValuesService    The stored user values service
      * @param UserCodeService            $userCodeService            The user code service
      * @param UserMailer                 $userMailer                 The user mailer service
      * @param UserRepository             $userRepository             The user repository
@@ -41,6 +48,7 @@ class UserVerificationService
     public function __construct(
         private EventService $eventService,
         private LoggerInterface $logger,
+        private StoredUserValuesService $storedUserValuesService,
         private UserCodeService $userCodeService,
         private UserMailer $userMailer,
         private UserRepository $userRepository,
@@ -88,8 +96,9 @@ class UserVerificationService
      * @param string  $guid    The GUID of the verification code
      * @param string  $action  The action to handle the verification data for
      *
-     * @return array{user: User, after_verify_data: array<mixed>, first_verification: bool} The user, the after verify data
-     *                                                                                      and whether this call verified the user for the first time
+     * @return array{user: User, after_verify_data: array<mixed>, first_verification: bool, post_verify_data: array<mixed>} The user,
+     *                                                                                                                      the after verify data of this code, whether this call verified the user for the first
+     *                                                                                                                      time, and the registration after verify data (only filled on first verification)
      *
      * @throws CodeVerificationException If the code is invalid
      */
@@ -146,9 +155,12 @@ class UserVerificationService
         }
 
         $firstVerification = !$user->isVerified();
+        $postVerifyData = [];
 
         if ($firstVerification)
         {
+            $postVerifyData = $this->takeRegistrationData($user, $action, $flowData['after_verify_data'] ?? []);
+
             $this->logger->info('Setting user to verified', ['user_id' => $user->getId()]);
 
             $user->setVerified(Carbon::now()->getTimestamp());
@@ -172,6 +184,35 @@ class UserVerificationService
             'user' => $user,
             'after_verify_data' => $flowData['after_verify_data'] ?? [],
             'first_verification' => $firstVerification,
+            'post_verify_data' => $postVerifyData,
         ];
+    }
+
+    /**
+     * Get the registration after verify data for a user and remove it from storage.
+     *
+     * The data is stored with the user at registration. Users registered before that was
+     * the case only have it in their register code, so that is the fallback.
+     *
+     * @param User         $user                The user being verified for the first time
+     * @param string       $action              The action of the verification code
+     * @param array<mixed> $codeAfterVerifyData The after verify data of the verification code
+     *
+     * @return array<mixed> The registration after verify data
+     */
+    private function takeRegistrationData(User $user, string $action, array $codeAfterVerifyData): array
+    {
+        $fallback = ($action === 'register') ? $codeAfterVerifyData : [];
+
+        if (!$this->storedUserValuesService->valueExists($user->getId(), self::AFTER_VERIFY_DATA_KEY))
+        {
+            return $fallback;
+        }
+
+        $data = json_decode($this->storedUserValuesService->getValue($user->getId(), self::AFTER_VERIFY_DATA_KEY), true);
+
+        $this->storedUserValuesService->deleteValue($user->getId(), self::AFTER_VERIFY_DATA_KEY);
+
+        return is_array($data) ? $data : $fallback;
     }
 }

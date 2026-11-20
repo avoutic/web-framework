@@ -6,14 +6,16 @@
 * `LoginService` has a new constructor parameter `LoginExtensionInterface $loginExtension`. Autowired definitions need no change.
 * The `LoginVerify` and `RegisterVerify` actions take `LoginService` instead of `AuthenticationService` in their constructor. Subclasses must be adapted. Subclasses that only existed to add a check before authentication can be replaced by `preAuthenticate()`.
 * `UserLoggedIn` is now also dispatched after login verification (`LoginVerify`) and registration verification (`RegisterVerify`). Apps that dispatched it themselves on those paths, or did login bookkeeping elsewhere to work around the gap, must remove that to avoid duplicate handling.
-* `RegisterExtensionInterface::postVerify()` is now called exactly once per user, on first verification, whichever flow caused it. It is no longer called when an already verified user redeems a register code (for example a stale resend). It is now also called from `LoginVerify`, with an empty array, when a user is verified for the first time through a login code. It runs before the login is completed, so also when `preAuthenticate()` refuses the login.
+* `RegisterExtensionInterface::postVerify()` is now called exactly once per user, on first verification, whichever flow caused it. It is no longer called when an already verified user redeems a register code (for example a stale resend). It is now also called from `LoginVerify` when a user is verified for the first time through a login code, with the same data from `getAfterVerifyData()`. It runs before the login is completed, so also when `preAuthenticate()` refuses the login.
 * `LoginVerify` has a new constructor parameter `RegisterExtensionInterface $registerExtension`.
+* `RegisterService` and `UserVerificationService` have a new constructor parameter `StoredUserValuesService $storedUserValuesService`. Autowired definitions need no change.
+* The data from `RegisterExtensionInterface::getAfterVerifyData()` is now stored as JSON with the user (stored user value `registration.after_verify_data`) until the user is verified for the first time, so it must be JSON serializable. Unlike verification codes, it is not removed by `CleanupVerificationCodesTask`; it stays until the user verifies. Users that registered before the upgrade and are still unverified get the data from their register code when they verify through `RegisterVerify`, and an empty array when they verify through `LoginVerify`.
 * `LoginService::authenticate()` can now throw `LoginRefusedException` when `preAuthenticate()` refuses the login. Custom login actions or endpoints that call it must catch this exception.
 
 ## New features
 
 * Introduce `LoginService::completeLogin()` as the single place where a login results in a session. It calls `LoginExtensionInterface::preAuthenticate()`, authenticates the user and dispatches `UserLoggedIn`. It throws `LoginRefusedException` when the extension refuses the login.
-* `UserVerificationService::handleData()` returns an extra `first_verification` flag that tells whether this call verified the user for the first time.
+* `UserVerificationService::handleData()` returns an extra `first_verification` flag that tells whether this call verified the user for the first time, and `post_verify_data` with the registration after verify data on first verification.
 * New translation keys `login.refused` and `login.refused_extra`.
 
 # v11 release

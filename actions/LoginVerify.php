@@ -75,15 +75,15 @@ class LoginVerify
                 'user' => $user,
                 'after_verify_data' => $afterVerifyData,
                 'first_verification' => $firstVerification,
+                'post_verify_data' => $postVerifyData,
             ] = $this->userVerificationService->handleData($request, $guid, 'login');
 
             // The user never completed registration verification and is verified through
-            // a login code instead. The data from getAfterVerifyData() is tied to the
-            // register code and not available here
+            // a login code instead
             //
             if ($firstVerification)
             {
-                $this->registerExtension->postVerify($user, []);
+                $this->registerExtension->postVerify($user, $postVerifyData);
             }
 
             $this->loginService->completeLogin($request, $user);

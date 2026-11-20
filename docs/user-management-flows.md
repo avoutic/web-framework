@@ -29,7 +29,7 @@ The registration flow allows new users to create accounts with email verificatio
 2. Validates input (username/email format, password strength, CAPTCHA)
 3. Checks username/email availability
 4. Calls `RegisterExtensionInterface::customValueCheck()` for custom validation
-5. Gets after-verify data via `RegisterExtensionInterface::getAfterVerifyData()`
+5. Gets after-verify data via `RegisterExtensionInterface::getAfterVerifyData()`. `RegisterService::register()` stores it with the user (stored user value `registration.after_verify_data`) until the user is verified for the first time
 6. Creates user account via `RegisterService::register()` (which generates verification code and sends email) and dispatches `UserRegistered` event
 7. Calls `RegisterExtensionInterface::postCreate()` hook
 8. Redirects to Verify page with `guid` parameter
@@ -39,7 +39,7 @@ The registration flow allows new users to create accounts with email verificatio
 - `customValueCheck()`: Perform additional validation checks
 - `getAfterVerifyData()`: Provide data to pass through verification
 - `postCreate()`: Execute logic after user creation
-- `postVerify()`: Execute logic once, when the user is verified for the first time (called in RegisterVerify, or in LoginVerify with an empty array when the first verification happens through a login code)
+- `postVerify()`: Execute logic once, when the user is verified for the first time (called in RegisterVerify, or in LoginVerify when the first verification happens through a login code). It receives the data from `getAfterVerifyData()` in both cases
 
 **Configuration**:
 - `actions.register.return_page`: Page to redirect after successful registration verification
@@ -128,7 +128,7 @@ The login flow handles user authentication, including cases where users need to 
 **Process**:
 1. Extracts user, flow, and after_verify_data from `guid`
 2. Verifies flow is 'login'
-3. If this verified the user for the first time (the user never completed registration verification), calls `RegisterExtensionInterface::postVerify()` with an empty array
+3. If this verified the user for the first time (the user never completed registration verification), calls `RegisterExtensionInterface::postVerify()` with the after-verify data stored at registration
 4. Completes the login via `LoginService::completeLogin()`, which calls `LoginExtensionInterface::preAuthenticate()`, creates the session and dispatches the `UserLoggedIn` event
 5. Redirects to `after_verify_data['return_page']` with `return_query` parameters
 6. If `preAuthenticate()` returns false, no session is created and the user is redirected to the login page with the `login.refused` message

@@ -55,6 +55,7 @@ final class LoginVerifyTest extends Unit
                     'user' => $user,
                     'after_verify_data' => ['return_page' => '/dashboard', 'return_query' => ['a' => 'b']],
                     'first_verification' => false,
+                    'post_verify_data' => [],
                 ]),
             ]),
         );
@@ -93,6 +94,7 @@ final class LoginVerifyTest extends Unit
                     'user' => $user,
                     'after_verify_data' => [],
                     'first_verification' => false,
+                    'post_verify_data' => [],
                 ]),
             ]),
         );
@@ -100,7 +102,7 @@ final class LoginVerifyTest extends Unit
         verify($instance($request, $response, []))->same($response);
     }
 
-    public function testFirstVerificationThroughLoginCallsPostVerifyWithoutRegisterData()
+    public function testFirstVerificationThroughLoginCallsPostVerifyWithRegistrationData()
     {
         $user = $this->makeEmpty(User::class);
         $request = $this->makeEmpty(Request::class, ['getParam' => 'guid']);
@@ -114,7 +116,7 @@ final class LoginVerifyTest extends Unit
             registerExtension: $this->makeEmpty(RegisterExtensionInterface::class, [
                 'postVerify' => Expected::once(function ($passedUser, $params) {
                     verify($passedUser)->instanceOf(User::class);
-                    verify($params)->equals([]);
+                    verify($params)->equals(['newsletter' => true]);
                 }),
             ]),
             responseEmitter: $this->makeEmpty(ResponseEmitter::class, [
@@ -125,6 +127,7 @@ final class LoginVerifyTest extends Unit
                     'user' => $user,
                     'after_verify_data' => ['return_page' => '/dashboard'],
                     'first_verification' => true,
+                    'post_verify_data' => ['newsletter' => true],
                 ]),
             ]),
         );
@@ -156,6 +159,7 @@ final class LoginVerifyTest extends Unit
                     'user' => $user,
                     'after_verify_data' => [],
                     'first_verification' => true,
+                    'post_verify_data' => [],
                 ]),
             ]),
         );
