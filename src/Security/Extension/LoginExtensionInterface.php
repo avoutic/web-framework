@@ -47,4 +47,15 @@ interface LoginExtensionInterface
      * @return bool True if the checks pass, false otherwise
      */
     public function customValueCheck(Request $request, User $user): bool;
+
+    /**
+     * Called right before a session is created for the user, on every login path
+     * (password login, login verification, registration verification).
+     *
+     * @param Request $request The current request
+     * @param User    $user    The user about to be logged in
+     *
+     * @return bool True to allow the login, false to refuse it
+     */
+    public function preAuthenticate(Request $request, User $user): bool;
 }

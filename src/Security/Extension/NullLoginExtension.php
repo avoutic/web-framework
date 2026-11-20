@@ -35,4 +35,9 @@ class NullLoginExtension implements LoginExtensionInterface
     {
         return true;
     }
+
+    public function preAuthenticate(Request $request, User $user): bool
+    {
+        return true;
+    }
 }
