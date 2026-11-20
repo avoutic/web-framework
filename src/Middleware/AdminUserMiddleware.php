@@ -16,12 +16,14 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Slim\Exception\HttpForbiddenException;
+use Slim\Exception\HttpUnauthorizedException;
 use WebFramework\Security\UserRightService;
 
 /**
  * Middleware to check if the authenticated user had the 'admin' right.
  *
- * Requires the AuthenticationMiddleware to run first.
+ * Requires the AuthenticationMiddleware to run first. A request without an authenticated user
+ * results in a 401, an authenticated user without the 'admin' right in a 403.
  */
 class AdminUserMiddleware implements MiddlewareInterface
 {
@@ -31,11 +33,18 @@ class AdminUserMiddleware implements MiddlewareInterface
 
     public function process(Request $request, RequestHandlerInterface $handler): Response
     {
-        $authenticatedUser = $request->getAttribute('authenticated_user');
+        $isAuthenticated = $request->getAttribute('is_authenticated');
 
-        if ($authenticatedUser === null)
+        if ($isAuthenticated === null)
         {
             throw new \RuntimeException('AuthenticationMiddleware has not run yet');
+        }
+
+        $authenticatedUser = $request->getAttribute('authenticated_user');
+
+        if (!$isAuthenticated || $authenticatedUser === null)
+        {
+            throw new HttpUnauthorizedException($request);
         }
 
         if (!$this->userRightService->hasRight($authenticatedUser, 'admin'))
