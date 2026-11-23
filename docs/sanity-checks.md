@@ -108,3 +108,21 @@ return [
     ],
 ];
 ~~~
+
+### MailReportRateLimit
+
+- **Purpose**: Ensures that error reports by mail can be rate limited. `MailReportFunction` counts errors in the cache. With a cache that does not store values, such as the default `NullCache`, every error sends a mail.
+- **Checks**: Passes when error reports are not sent by mail. Otherwise it writes a value to the cache, reads it back and removes it, and fails when the value was not stored.
+- **Configuration**: None.
+
+#### Example
+
+~~~php
+<?php
+
+return [
+    'sanity_check_modules' => [
+        \WebFramework\SanityCheck\MailReportRateLimit::class => [],
+    ],
+];
+~~~

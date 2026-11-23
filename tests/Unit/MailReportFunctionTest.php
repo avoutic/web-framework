@@ -19,21 +19,30 @@ final class MailReportFunctionTest extends Unit
 {
     public function testReportUncached()
     {
+        $stored = false;
+
         $instance = $this->construct(
             MailReportFunction::class,
             [
                 $this->makeEmpty(
                     NullCache::class,
                     [
-                        'get' => Expected::once(false),
-                        'set' => Expected::once(),
+                        // Read the counter, and read it back after storing the first occurrence
+                        'get' => Expected::exactly(2, function () use (&$stored) {
+                            return $stored;
+                        }),
+                        'set' => Expected::once(function ($path, $value) use (&$stored) {
+                            $stored = $value;
+                        }),
                     ]
                 ),
-                $this->makeEmpty(LoggerInterface::class),
+                $this->makeEmpty(LoggerInterface::class, [
+                    'warning' => Expected::never(),
+                ]),
                 $this->makeEmpty(
                     NullMailService::class,
                     [
-                        'send_raw' => Expected::once(),
+                        'sendRawMail' => Expected::once(true),
                     ]
                 ),
                 '',
@@ -46,6 +55,35 @@ final class MailReportFunctionTest extends Unit
         ]);
 
         verify($instance->report('TestMessage', 'TestError', $report));
+    }
+
+    public function testWarnsAndStillSendsWhenCacheDoesNotStore()
+    {
+        $instance = $this->construct(
+            MailReportFunction::class,
+            [
+                new NullCache(),
+                $this->makeEmpty(LoggerInterface::class, [
+                    'warning' => Expected::once(function ($message) {
+                        verify($message)->stringContainsString('rate limiting is not active');
+                    }),
+                ]),
+                $this->makeEmpty(
+                    NullMailService::class,
+                    [
+                        'sendRawMail' => Expected::once(true),
+                    ]
+                ),
+                '',
+            ],
+        );
+
+        $report = $this->make(ErrorReport::class, [
+            'toString' => 'my_report',
+            'getHash' => 'my_hash',
+        ]);
+
+        $instance->report('TestMessage', 'TestError', $report);
     }
 
     public function testMailDebugInfoCached2()

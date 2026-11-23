@@ -80,6 +80,12 @@ return [
 
 A list in your configuration replaces the default list, so repeat the defaults you want to keep. The error message and the stack trace are not scrubbed.
 
+### Rate limiting of mailed reports
+
+`MailReportFunction` limits how often the same error is mailed: the first three occurrences within ten minutes, and after that only every 25th, 100th and 1000th. It counts occurrences in the cache, so this needs a `Cache` implementation that stores values. With the default `NullCache` every error sends a mail. In that case `MailReportFunction` logs a warning, and still sends the report.
+
+Enable the `MailReportRateLimit` sanity check to find this at deploy time. See [Sanity Checks](sanity-checks.md).
+
 ## Error Handlers
 
 The `ResponseEmitter` uses configurable error handlers to generate custom error pages for various HTTP error codes. Error handlers allow you to provide user-friendly error pages instead of the default simple text responses.

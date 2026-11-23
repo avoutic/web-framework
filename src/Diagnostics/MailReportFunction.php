@@ -21,6 +21,9 @@ use WebFramework\Support\ErrorReport;
  * Class MailReportFunction.
  *
  * Implements the ReportFunction interface to send error reports via email.
+ *
+ * The rate limiting of the mails needs a Cache implementation that stores values. With the
+ * default NullCache every error sends a mail. The MailReportRateLimit sanity check verifies this.
  */
 class MailReportFunction implements ReportFunction
 {
@@ -67,6 +70,15 @@ class MailReportFunction implements ReportFunction
         }
 
         $this->cache->set($cacheId, $cached, Carbon::now()->addMinutes(10)->getTimestamp());
+
+        // Rate limiting only works with a cache that stores values. With the default
+        // NullCache every error is a first occurrence, and every error sends a mail.
+        // The report is still sent: losing sight of errors is worse than too many mails
+        //
+        if ($cached['count'] === 1 && $this->cache->get($cacheId) === false)
+        {
+            $this->logger->warning('Error report rate limiting is not active: the cache does not store values. Bind a working Cache implementation');
+        }
 
         // If more than 3 occurred in the last 10 minutes, only send out mail sporadically
         if ($cached['count'] > 1000 && $cached['count'] % 1000 !== 0)
