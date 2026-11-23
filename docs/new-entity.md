@@ -85,6 +85,29 @@ class Car extends EntityCore
 }
 ~~~
 
+#### Extending an existing Entity
+
+An entity that extends another entity, such as the framework's `User`, only declares its own fields. The field lists (`$baseFields`, `$privateFields`, `$fillableFields` and `$additionalIdFields`) are merged with those of the parent entity, with the fields of the parent first:
+
+~~~php
+<?php
+
+namespace App\Entity;
+
+use WebFramework\Entity\User;
+
+class Member extends User
+{
+    protected static array $baseFields = ['display_name', 'api_token'];
+    protected static array $privateFields = ['api_token'];
+
+    protected string $displayName = '';
+    protected string $apiToken = '';
+}
+~~~
+
+`Member::getBaseFields()` returns the fields of `User` followed by `display_name` and `api_token`, and `solid_password` stays private. An entity cannot drop a field of its parent.
+
 ### Step 2: Define the `CarRepository` Class
 
 Create a new class `CarRepository` that extends `RepositoryCore`. Implement methods for accessing and manipulating `Car` entities.

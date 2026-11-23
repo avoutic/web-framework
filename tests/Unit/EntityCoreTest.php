@@ -3,7 +3,9 @@
 namespace Tests\Unit;
 
 use Codeception\Test\Unit;
+use Tests\Support\TestChildEntity;
 use Tests\Support\TestEntity;
+use Tests\Support\TestRelistingEntity;
 
 /**
  * @internal
@@ -183,5 +185,55 @@ final class EntityCoreTest extends Unit
         verify($entity->getEmail())->equals('');
         verify($entity->getAge())->equals(0);
         verify($entity->isActive())->equals(false);
+    }
+
+    public function testChildEntityMergesFieldListsWithParent()
+    {
+        verify(TestChildEntity::getBaseFields())->same([
+            'name', 'email', 'age', 'active', 'secret_field', 'created_at', 'nickname', 'api_token',
+        ]);
+        verify(TestChildEntity::getPrivateFields())->same(['secret_field', 'api_token']);
+        verify(TestChildEntity::getFillableFields())->same(['name', 'email', 'age', 'active', 'nickname']);
+    }
+
+    public function testParentFieldListsAreNotAffectedByChild()
+    {
+        TestChildEntity::getBaseFields();
+
+        verify(TestEntity::getBaseFields())->same(['name', 'email', 'age', 'active', 'secret_field', 'created_at']);
+        verify(TestEntity::getPrivateFields())->same(['secret_field']);
+    }
+
+    public function testChildEntityKeepsParentPrivateFieldsOutOfToArray()
+    {
+        $entity = new TestChildEntity();
+        $entity->setSecretField('parent secret');
+        $entity->setApiToken('child secret');
+        $entity->setNickname('nick');
+
+        $array = $entity->toArray();
+
+        verify($array)->arrayHasNotKey('secret_field');
+        verify($array)->arrayHasNotKey('api_token');
+        verify($array['nickname'])->equals('nick');
+        verify($array)->arrayHasKey('name');
+    }
+
+    public function testChildEntityFromArrayFillsParentAndOwnFields()
+    {
+        $entity = new TestChildEntity();
+        $entity->fromArray(['name' => 'John', 'nickname' => 'J', 'secret_field' => 'x']);
+
+        verify($entity->getName())->equals('John');
+        verify($entity->getNickname())->equals('J');
+        verify($entity->getSecretField())->equals('');
+    }
+
+    public function testRelistedParentFieldsAreNotDuplicated()
+    {
+        verify(TestRelistingEntity::getBaseFields())->same([
+            'name', 'email', 'age', 'active', 'secret_field', 'created_at', 'nickname',
+        ]);
+        verify(TestRelistingEntity::getPrivateFields())->same(['secret_field']);
     }
 }

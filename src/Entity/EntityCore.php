@@ -33,6 +33,9 @@ abstract class EntityCore implements \Stringable, Entity
     /** @var array<string> Additional fields that form part of the entity's identifier */
     protected static array $additionalIdFields = [];
 
+    /** @var array<class-string, array<string, array<string>>> Merged field lists per entity class */
+    private static array $mergedFieldLists = [];
+
     /** @var array<string, mixed> The original values of the entity */
     private array $originalValues = [];
 
@@ -66,12 +69,82 @@ abstract class EntityCore implements \Stringable, Entity
 
     public static function getBaseFields(): array
     {
-        return static::$baseFields;
+        return self::getMergedFieldList('baseFields');
     }
 
     public static function getAdditionalIdFields(): array
     {
-        return static::$additionalIdFields;
+        return self::getMergedFieldList('additionalIdFields');
+    }
+
+    /**
+     * Get the fields that should not be exposed in toArray().
+     *
+     * @return array<string> The private fields of this entity and its parent entities
+     */
+    public static function getPrivateFields(): array
+    {
+        return self::getMergedFieldList('privateFields');
+    }
+
+    /**
+     * Get the fields that can be mass-assigned.
+     *
+     * @return array<string> The fillable fields of this entity and its parent entities
+     */
+    public static function getFillableFields(): array
+    {
+        return self::getMergedFieldList('fillableFields');
+    }
+
+    /**
+     * Get a field list of this entity, merged with the same list of its parent entities.
+     *
+     * An entity that extends another entity only has to declare its own fields. The fields
+     * of parent entities come first, and a field that is listed more than once is kept once.
+     *
+     * @param string $property The name of the static property holding the list
+     *
+     * @return array<string> The merged field list
+     */
+    private static function getMergedFieldList(string $property): array
+    {
+        $class = static::class;
+
+        if (isset(self::$mergedFieldLists[$class][$property]))
+        {
+            return self::$mergedFieldLists[$class][$property];
+        }
+
+        $lists = [];
+
+        for ($reflection = new \ReflectionClass($class); $reflection !== false; $reflection = $reflection->getParentClass())
+        {
+            if (!$reflection->hasProperty($property))
+            {
+                continue;
+            }
+
+            $reflectionProperty = $reflection->getProperty($property);
+
+            // Only take the list from the class that declares it, a class that
+            // does not redeclare the property shares it with its parent
+            //
+            if ($reflectionProperty->getDeclaringClass()->getName() !== $reflection->getName())
+            {
+                continue;
+            }
+
+            $reflectionProperty->setAccessible(true);
+
+            array_unshift($lists, $reflectionProperty->getValue());
+        }
+
+        $merged = array_values(array_unique(array_merge(...$lists)));
+
+        self::$mergedFieldLists[$class][$property] = $merged;
+
+        return $merged;
     }
 
     /**
@@ -110,11 +183,11 @@ abstract class EntityCore implements \Stringable, Entity
             $data['id'] = $property->getValue($this);
         }
 
-        foreach (static::$baseFields as $name)
+        foreach (static::getBaseFields() as $name)
         {
             // Skip private fields
             //
-            if (in_array($name, static::$privateFields))
+            if (in_array($name, static::getPrivateFields()))
             {
                 continue;
             }
@@ -160,11 +233,11 @@ abstract class EntityCore implements \Stringable, Entity
             $data['id'] = $property->getValue($this);
         }
 
-        foreach (static::$baseFields as $name)
+        foreach (static::getBaseFields() as $name)
         {
             // Skip private fields
             //
-            if (in_array($name, static::$privateFields))
+            if (in_array($name, static::getPrivateFields()))
             {
                 continue;
             }
@@ -188,7 +261,7 @@ abstract class EntityCore implements \Stringable, Entity
     {
         $reflection = new \ReflectionClass($this);
 
-        foreach (static::$fillableFields as $name)
+        foreach (static::getFillableFields() as $name)
         {
             if (in_array($name, $exclude))
             {
