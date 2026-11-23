@@ -65,7 +65,7 @@ Here is a description of the purpose of each standard middleware implementation:
 
 ### TransactionMiddleware
 
-- **Purpose**: Ensures that the request is wrapped in a database transaction, committing the transaction if the request is successful or rolling it back if an error occurs.
+- **Purpose**: Ensures that the request is wrapped in a database transaction, committing the transaction when a response is returned and rolling it back when an exception is thrown. This includes exceptions that result in a normal response further up, such as `RedirectException` or `HttpNotFoundException`. To keep what was written, return a response instead of throwing.
 
 ### SecurityHeadersMiddleware
 

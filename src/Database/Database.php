@@ -87,6 +87,25 @@ interface Database
     public function rollbackTransaction(): void;
 
     /**
+     * Run a callback inside a database transaction.
+     *
+     * The transaction is committed when the callback returns, and rolled back when it
+     * throws, after which the exception is thrown again. Calls can be nested: a nested
+     * call that throws only rolls back its own work.
+     *
+     * Implementations can use TransactionTrait.
+     *
+     * @template TResult
+     *
+     * @param callable(Database): TResult $callback The work to do inside the transaction
+     *
+     * @return TResult The return value of the callback
+     *
+     * @throws \Throwable The exception thrown by the callback, after rolling back
+     */
+    public function transaction(callable $callback): mixed;
+
+    /**
      * Get the current transaction nesting depth.
      *
      * @return int The current transaction depth

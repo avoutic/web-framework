@@ -33,6 +33,7 @@ final class TransactionMiddlewareTest extends Unit
                     [
                         'startTransaction' => Expected::once(),
                         'commitTransaction' => Expected::once(),
+                        'rollbackTransaction' => Expected::never(),
                     ]
                 ),
             ]
@@ -47,5 +48,81 @@ final class TransactionMiddlewareTest extends Unit
         );
 
         $middleware->process($request, $handler);
+    }
+
+    public function testRollsBackAndRethrowsWhenHandlerThrows()
+    {
+        $exception = new \RuntimeException('handler failed');
+
+        $middleware = new TransactionMiddleware(
+            $this->makeEmpty(
+                Database::class,
+                [
+                    'startTransaction' => Expected::once(),
+                    'commitTransaction' => Expected::never(),
+                    'rollbackTransaction' => Expected::once(),
+                ]
+            )
+        );
+
+        $handler = $this->makeEmpty(
+            RequestHandlerInterface::class,
+            [
+                'handle' => function () use ($exception) {
+                    throw $exception;
+                },
+            ]
+        );
+
+        $caught = null;
+
+        try
+        {
+            $middleware->process($this->makeEmpty(Request::class), $handler);
+        }
+        catch (\Throwable $e)
+        {
+            $caught = $e;
+        }
+
+        verify($caught)->same($exception);
+    }
+
+    public function testRethrowsOriginalExceptionWhenRollbackFails()
+    {
+        $exception = new \RuntimeException('handler failed');
+
+        $middleware = new TransactionMiddleware(
+            $this->makeEmpty(
+                Database::class,
+                [
+                    'rollbackTransaction' => Expected::once(function () {
+                        throw new \RuntimeException('rollback failed');
+                    }),
+                ]
+            )
+        );
+
+        $handler = $this->makeEmpty(
+            RequestHandlerInterface::class,
+            [
+                'handle' => function () use ($exception) {
+                    throw $exception;
+                },
+            ]
+        );
+
+        $caught = null;
+
+        try
+        {
+            $middleware->process($this->makeEmpty(Request::class), $handler);
+        }
+        catch (\Throwable $e)
+        {
+            $caught = $e;
+        }
+
+        verify($caught)->same($exception);
     }
 }

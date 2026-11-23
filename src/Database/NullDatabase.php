@@ -18,6 +18,8 @@ namespace WebFramework\Database;
  */
 class NullDatabase implements Database
 {
+    use TransactionTrait;
+
     /**
      * Execute a database query.
      *

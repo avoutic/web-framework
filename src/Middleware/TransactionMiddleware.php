@@ -19,6 +19,9 @@ use WebFramework\Database\Database;
 
 /**
  * Middleware to ensure the request is wrapped in a database transaction.
+ *
+ * The transaction is committed when the handler returns a response, and rolled back when
+ * the handler throws. To keep what was written, return a response instead of throwing.
  */
 class TransactionMiddleware implements MiddlewareInterface
 {
@@ -39,7 +42,26 @@ class TransactionMiddleware implements MiddlewareInterface
     {
         $this->database->startTransaction();
 
-        $response = $handler->handle($request);
+        try
+        {
+            $response = $handler->handle($request);
+        }
+        catch (\Throwable $e)
+        {
+            // Any exception rolls back, also the ones that result in a normal response
+            // further up, such as a redirect or a 404
+            //
+            try
+            {
+                $this->database->rollbackTransaction();
+            }
+            catch (\Throwable $rollbackError)
+            {
+                // The exception of the handler is the one that matters to the caller
+            }
+
+            throw $e;
+        }
 
         $this->database->commitTransaction();
 

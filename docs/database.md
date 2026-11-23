@@ -74,7 +74,7 @@ In this example, the `UserService` uses the `insertQuery()` method to add a new 
 
 ## Managing Transactions
 
-Transactions are used to ensure that a series of database operations are executed atomically. You can start a transaction using the `startTransaction()` method and commit it using the `commitTransaction()` method.
+Transactions are used to ensure that a series of database operations are executed atomically. The simplest way is the `transaction()` method. It commits when the callback returns, and rolls back and throws the exception again when the callback throws.
 
 ### Example: Using Transactions
 
@@ -89,11 +89,9 @@ class OrderService
         private Database $database,
     ) {}
 
-    public function placeOrder(array $orderData): void
+    public function placeOrder(array $orderData): int
     {
-        $this->database->startTransaction();
-
-        try {
+        return $this->database->transaction(function () use ($orderData) {
             // Insert order
             $orderId = $this->database->insertQuery('INSERT INTO orders (customer_id, total) VALUES (?, ?)', [
                 $orderData['customer_id'],
@@ -109,18 +107,21 @@ class OrderService
                 ]);
             }
 
-            // Commit transaction
-            $this->database->commitTransaction();
-        } catch (\Exception $e) {
-            // Rollback transaction on error
-            $this->database->rollbackTransaction();
-            throw $e;
-        }
+            return $orderId;
+        });
     }
 }
 ~~~
 
 In this example, the `OrderService` uses a transaction to ensure that both the order and its items are inserted into the database atomically. If an error occurs, the transaction is rolled back.
+
+### Nested Transactions
+
+Transactions can be nested, for example when a service that uses `transaction()` is called from a request that is wrapped by the `TransactionMiddleware`. A nested transaction that is rolled back only undoes its own work; the outer transaction stays open and decides for itself whether to commit. Nothing is permanent until the outermost transaction commits.
+
+### Manual Control
+
+You can also control a transaction yourself with `startTransaction()`, `commitTransaction()` and `rollbackTransaction()`. Make sure every started transaction is either committed or rolled back, also when an exception is thrown.
 
 ## Handling Query Errors
 
