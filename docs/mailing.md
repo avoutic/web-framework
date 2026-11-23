@@ -38,6 +38,25 @@ interface MailBackend
 
 The `NullMailService` is a no-op implementation that implements both `MailService` and `MailBackend`. It's useful for testing or when email functionality is not required. All methods return `true` without actually sending any emails.
 
+### LoggingMailService
+
+The `LoggingMailService` implements both `MailService` and `MailBackend` and writes every mail to the log instead of sending it: the recipient, sender, subject and body of a raw mail, and the template id and variables of a template mail. This makes mailed content, such as verification codes, reachable on a development machine without a mail backend.
+
+Bind it in a definitions file that is only loaded in your development environment:
+
+~~~php
+<?php
+
+use WebFramework\Mail;
+
+return [
+    Mail\MailService::class => DI\autowire(Mail\LoggingMailService::class),
+    Mail\MailBackend::class => DI\autowire(Mail\LoggingMailService::class),
+];
+~~~
+
+**For development only.** The logged mails contain secrets, such as verification codes and newly generated passwords. Never bind this service in a production environment.
+
 ### QueuedMailService
 
 The `QueuedMailService` implements `MailService` and queues email jobs instead of sending them immediately. This allows you to send emails asynchronously, reducing latency in your main application thread.
@@ -283,6 +302,8 @@ if ($result !== true) {
 5. **Monitor Queue Workers**: Ensure queue workers are running when using `QueuedMailService`. Emails won't be sent until workers process the queue.
 
 6. **Test with NullMailService**: Use `NullMailService` in test environments to avoid sending actual emails during testing.
+
+7. **Develop with LoggingMailService**: Use `LoggingMailService` on a development machine to read verification codes and other mailed content from the log. Never use it in production.
 
 ## Integration with Queue System
 
