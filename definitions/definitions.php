@@ -95,6 +95,10 @@ return [
 
     Database\Database::class => DI\autowire(Database\NullDatabase::class),
 
+    Diagnostics\DebugService::class => DI\autowire()
+        ->constructorParameter('scrubHeaders', DI\get('error_report.scrub_headers'))
+        ->constructorParameter('scrubInputs', DI\get('error_report.scrub_inputs'))
+        ->constructorParameter('serverParams', DI\get('error_report.server_params')),
     Diagnostics\Instrumentation::class => DI\autowire(Diagnostics\NullInstrumentation::class),
     Diagnostics\MailReportFunction::class => DI\autowire()
         ->constructorParameter('assertRecipient', DI\get('sender_core.assert_recipient')),

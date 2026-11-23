@@ -27,6 +27,46 @@ use WebFramework\Support\Helpers;
  */
 class DebugService
 {
+    /** The value that replaces scrubbed content in a report */
+    public const SCRUBBED = 'scrubbed';
+
+    /** Request headers whose name contains one of these (case-insensitive) are scrubbed */
+    public const DEFAULT_SCRUB_HEADERS = ['authorization', 'cookie', 'token', 'secret', 'key'];
+
+    /** Inputs whose key contains one of these (case-insensitive) are scrubbed */
+    public const DEFAULT_SCRUB_INPUTS = ['password', 'passwd', 'secret', 'token', 'authorization', 'code'];
+
+    /** Server params that are reported, all others are left out */
+    public const DEFAULT_SERVER_PARAMS = [
+        'REQUEST_METHOD',
+        'REQUEST_URI',
+        'QUERY_STRING',
+        'REQUEST_SCHEME',
+        'SERVER_PROTOCOL',
+        'HTTPS',
+        'SERVER_NAME',
+        'SERVER_PORT',
+        'HTTP_HOST',
+        'REMOTE_ADDR',
+        'HTTP_X_FORWARDED_FOR',
+        'HTTP_USER_AGENT',
+        'HTTP_REFERER',
+        'HTTP_ACCEPT',
+        'HTTP_ACCEPT_LANGUAGE',
+        'CONTENT_TYPE',
+        'CONTENT_LENGTH',
+        'REQUEST_TIME',
+    ];
+
+    /** @var array<string> */
+    private array $scrubHeaders = self::DEFAULT_SCRUB_HEADERS;
+
+    /** @var array<string> */
+    private array $scrubInputs = self::DEFAULT_SCRUB_INPUTS;
+
+    /** @var array<string> */
+    private array $serverParams = self::DEFAULT_SERVER_PARAMS;
+
     /**
      * DebugService constructor.
      *
@@ -34,13 +74,23 @@ class DebugService
      * @param DatabaseProvider      $databaseProvider      Provider for database access
      * @param ReportFunction        $reportFunction        Function for reporting errors
      * @param RuntimeEnvironment    $runtimeEnvironment    Runtime environment information
+     * @param null|array<string>    $scrubHeaders          Parts of header names to scrub (null for the defaults)
+     * @param null|array<string>    $scrubInputs           Parts of input keys to scrub (null for the defaults)
+     * @param null|array<string>    $serverParams          Server params to report (null for the defaults)
      */
     public function __construct(
         private AuthenticationService $authenticationService,
         private DatabaseProvider $databaseProvider,
         private ReportFunction $reportFunction,
         private RuntimeEnvironment $runtimeEnvironment,
-    ) {}
+        ?array $scrubHeaders = null,
+        ?array $scrubInputs = null,
+        ?array $serverParams = null,
+    ) {
+        $this->scrubHeaders = $scrubHeaders ?? self::DEFAULT_SCRUB_HEADERS;
+        $this->scrubInputs = $scrubInputs ?? self::DEFAULT_SCRUB_INPUTS;
+        $this->serverParams = $serverParams ?? self::DEFAULT_SERVER_PARAMS;
+    }
 
     /**
      * Report an error.
@@ -179,7 +229,7 @@ class DebugService
             $headers = $request->getHeaders();
             $report->headers = $this->scrubRequestHeaders($headers);
 
-            $report->serverParams = $request->getServerParams();
+            $report->serverParams = $this->scrubServerParams($request->getServerParams());
         }
 
         return $report;
@@ -326,7 +376,7 @@ class DebugService
 
         if (count($getParams))
         {
-            $inputs['get'] = $getParams;
+            $inputs['get'] = $this->scrubInputs($getParams);
         }
 
         // Check if the Content-Type header indicates JSON data
@@ -346,11 +396,13 @@ class DebugService
 
             if ($jsonData === null && json_last_error() !== JSON_ERROR_NONE)
             {
-                $inputs['json_parsing_failed'] = $body;
+                // The raw body cannot be scrubbed by key, so only report its size
+                //
+                $inputs['json_parsing_failed'] = 'Unparseable body of '.strlen($body).' bytes';
             }
             else
             {
-                $inputs['json_data'] = $jsonData;
+                $inputs['json_data'] = is_array($jsonData) ? $this->scrubInputs($jsonData) : $jsonData;
             }
         }
 
@@ -359,7 +411,7 @@ class DebugService
         $postParams = $request->getParsedBody();
         if ($postParams !== null)
         {
-            $inputs['post'] = $postParams;
+            $inputs['post'] = is_array($postParams) ? $this->scrubInputs($postParams) : self::SCRUBBED;
         }
 
         return $inputs;
@@ -367,6 +419,10 @@ class DebugService
 
     /**
      * Scrub sensitive information from request headers.
+     *
+     * The value of a header whose name contains one of the configured parts is replaced,
+     * so the report still shows the header was sent. Query parameters in a Referer are
+     * scrubbed like inputs.
      *
      * @param array<array<mixed>> $headers The original headers
      *
@@ -376,14 +432,153 @@ class DebugService
     {
         foreach ($headers as $name => $values)
         {
-            // Exclude cookie headers
-            //
-            if (strtolower($name) === 'cookie')
+            $name = (string) $name;
+
+            if ($this->containsAny($name, $this->scrubHeaders))
             {
-                unset($headers[$name]);
+                $headers[$name] = [self::SCRUBBED];
+
+                continue;
+            }
+
+            if (strtolower($name) === 'referer')
+            {
+                $headers[$name] = array_map(fn ($value) => is_string($value) ? $this->scrubUrl($value) : $value, $values);
             }
         }
 
         return $headers;
+    }
+
+    /**
+     * Scrub sensitive information from request inputs.
+     *
+     * The value of an input whose key contains one of the configured parts is replaced,
+     * at any depth, so the report still shows the input was sent.
+     *
+     * @param array<mixed> $inputs The original inputs
+     *
+     * @return array<mixed> The scrubbed inputs
+     */
+    public function scrubInputs(array $inputs): array
+    {
+        foreach ($inputs as $key => $value)
+        {
+            if (is_string($key) && $this->containsAny($key, $this->scrubInputs))
+            {
+                $inputs[$key] = self::SCRUBBED;
+            }
+            elseif (is_array($value))
+            {
+                $inputs[$key] = $this->scrubInputs($value);
+            }
+        }
+
+        return $inputs;
+    }
+
+    /**
+     * Reduce the server params to the ones that are allowed in a report.
+     *
+     * Server params can hold credentials and the environment of the process, under names
+     * that cannot be known in advance. So only the configured params are kept. Query
+     * parameters in the kept URLs are scrubbed like inputs.
+     *
+     * @param array<mixed> $serverParams The original server params
+     *
+     * @return array<mixed> The allowed server params
+     */
+    public function scrubServerParams(array $serverParams): array
+    {
+        $allowed = [];
+
+        foreach ($serverParams as $name => $value)
+        {
+            if (!in_array($name, $this->serverParams, true))
+            {
+                continue;
+            }
+
+            if (is_string($value))
+            {
+                if ($name === 'QUERY_STRING')
+                {
+                    $value = $this->scrubQueryString($value);
+                }
+                elseif ($name === 'REQUEST_URI' || $name === 'HTTP_REFERER')
+                {
+                    $value = $this->scrubUrl($value);
+                }
+            }
+
+            $allowed[$name] = $value;
+        }
+
+        return $allowed;
+    }
+
+    /**
+     * Scrub the query parameters of a URL.
+     */
+    private function scrubUrl(string $url): string
+    {
+        $fragment = '';
+        $fragmentPosition = strpos($url, '#');
+
+        if ($fragmentPosition !== false)
+        {
+            $fragment = substr($url, $fragmentPosition);
+            $url = substr($url, 0, $fragmentPosition);
+        }
+
+        $queryPosition = strpos($url, '?');
+
+        if ($queryPosition === false)
+        {
+            return $url.$fragment;
+        }
+
+        $query = $this->scrubQueryString(substr($url, $queryPosition + 1));
+
+        return substr($url, 0, $queryPosition + 1).$query.$fragment;
+    }
+
+    /**
+     * Scrub the parameters of a query string. The string is only rewritten when it
+     * contains something to scrub.
+     */
+    private function scrubQueryString(string $query): string
+    {
+        $params = [];
+        parse_str($query, $params);
+
+        $scrubbed = $this->scrubInputs($params);
+
+        if ($scrubbed === $params)
+        {
+            return $query;
+        }
+
+        return http_build_query($scrubbed);
+    }
+
+    /**
+     * Check if a name contains one of the given parts, ignoring case.
+     *
+     * @param array<string> $parts
+     */
+    private function containsAny(string $name, array $parts): bool
+    {
+        $name = strtolower($name);
+
+        foreach ($parts as $part)
+        {
+            if ($part !== '' && str_contains($name, strtolower($part)))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

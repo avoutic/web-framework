@@ -97,6 +97,34 @@ return [
         ],
     ],
     // Definition files to be loaded
+    // What ends up in error reports, which are mailed, logged and shown in debug mode
+    'error_report' => [
+        // Request headers whose name contains one of these parts are scrubbed (case-insensitive)
+        'scrub_headers' => ['authorization', 'cookie', 'token', 'secret', 'key'],
+        // Inputs (query, post and JSON) whose key contains one of these parts are scrubbed (case-insensitive)
+        'scrub_inputs' => ['password', 'passwd', 'secret', 'token', 'authorization', 'code'],
+        // Server params that are reported, all others are left out
+        'server_params' => [
+            'REQUEST_METHOD',
+            'REQUEST_URI',
+            'QUERY_STRING',
+            'REQUEST_SCHEME',
+            'SERVER_PROTOCOL',
+            'HTTPS',
+            'SERVER_NAME',
+            'SERVER_PORT',
+            'HTTP_HOST',
+            'REMOTE_ADDR',
+            'HTTP_X_FORWARDED_FOR',
+            'HTTP_USER_AGENT',
+            'HTTP_REFERER',
+            'HTTP_ACCEPT',
+            'HTTP_ACCEPT_LANGUAGE',
+            'CONTENT_TYPE',
+            'CONTENT_LENGTH',
+            'REQUEST_TIME',
+        ],
+    ],
     'definition_files' => [
         '/vendor/avoutic/web-framework/definitions/definitions.php',
         '/definitions/app_definitions.php',

@@ -54,6 +54,32 @@ Exceptions can be thrown in an Action or Service class to trigger specific respo
 - **Throwable**: Any other unhandled exception results in a generic error response.
   - **HTTP Code**: 500 (Internal Server Error)
 
+## Error Reports
+
+When an unhandled exception occurs, an error report is built. Depending on your setup it is mailed (`MailReportFunction`), logged, and shown in the browser in debug mode. The report contains the request, so the framework scrubs it before it leaves the application:
+
+- **Request headers** whose name contains one of the parts in `error_report.scrub_headers` have their value replaced by `scrubbed`. Default: `authorization`, `cookie`, `token`, `secret`, `key`.
+- **Inputs** (query, post and JSON) whose key contains one of the parts in `error_report.scrub_inputs` have their value replaced by `scrubbed`, at any depth. Default: `password`, `passwd`, `secret`, `token`, `authorization`, `code`. A JSON body that cannot be parsed is reported as its size only.
+- **Server params** are reduced to the allow list in `error_report.server_params`. Server params can hold credentials and the environment of the process under names that cannot be known in advance, so everything that is not on the list is left out.
+- **Query parameters** in `REQUEST_URI`, `QUERY_STRING` and the referer are scrubbed like inputs.
+
+Matching ignores case and looks for the part anywhere in the name, so `password` also covers `orig_password` and `Password2`.
+
+Scrubbing by name is a heuristic. A secret that is sent under a name that is not on the lists ends up in the report. Add the names of your own secret fields and headers in your configuration:
+
+~~~php
+<?php
+
+return [
+    'error_report' => [
+        'scrub_headers' => ['authorization', 'cookie', 'token', 'secret', 'key', 'x-signature'],
+        'scrub_inputs' => ['password', 'passwd', 'secret', 'token', 'authorization', 'code', 'iban', 'pin'],
+    ],
+];
+~~~
+
+A list in your configuration replaces the default list, so repeat the defaults you want to keep. The error message and the stack trace are not scrubbed.
+
 ## Error Handlers
 
 The `ResponseEmitter` uses configurable error handlers to generate custom error pages for various HTTP error codes. Error handlers allow you to provide user-friendly error pages instead of the default simple text responses.

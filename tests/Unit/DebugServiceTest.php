@@ -13,7 +13,9 @@ use WebFramework\Database\DatabaseProvider;
 use WebFramework\Diagnostics\DebugService;
 use WebFramework\Diagnostics\MailReportFunction;
 use WebFramework\Diagnostics\NullReportFunction;
+use WebFramework\Diagnostics\ReportFunction;
 use WebFramework\Entity\User;
+use WebFramework\Security\AuthenticationService;
 use WebFramework\Security\NullAuthenticationService;
 use WebFramework\Support\ErrorReport;
 
@@ -338,44 +340,149 @@ final class DebugServiceTest extends Unit
     public function testScrubRequestHeaders()
     {
         $headers = [
-            'key1' => 'val1',
-            'key2' => 'val2',
-            'cookie' => 'val3',
-            'key3' => 'val4',
-        ];
-
-        $headersScrubbed = [
-            'key1' => 'val1',
-            'key2' => 'val2',
-            'key3' => 'val4',
+            'Host' => ['example.com'],
+            'Cookie' => ['session=abc'],
+            'AUTHORIZATION' => ['Bearer abc'],
+            'Proxy-Authorization' => ['Basic abc'],
+            'X-Api-Key' => ['abc'],
+            'X-CSRF-Token' => ['abc'],
+            'X-Client-Secret' => ['abc'],
+            'Referer' => ['https://example.com/verify?guid=1&code=123456'],
+            'Accept' => ['text/html'],
         ];
 
         $instance = $this->make(DebugService::class);
 
         verify($instance->scrubRequestHeaders($headers))
-            ->equals($headersScrubbed)
+            ->same([
+                'Host' => ['example.com'],
+                'Cookie' => ['scrubbed'],
+                'AUTHORIZATION' => ['scrubbed'],
+                'Proxy-Authorization' => ['scrubbed'],
+                'X-Api-Key' => ['scrubbed'],
+                'X-CSRF-Token' => ['scrubbed'],
+                'X-Client-Secret' => ['scrubbed'],
+                'Referer' => ['https://example.com/verify?guid=1&code=scrubbed'],
+                'Accept' => ['text/html'],
+            ])
         ;
     }
 
-    public function testScrubRequestHeadersCaseInsensitive()
+    public function testScrubInputsRecursivelyByKey()
     {
-        $headers = [
-            'key1' => 'val1',
-            'key2' => 'val2',
-            'COOKIE' => 'val3',
-            'key3' => 'val4',
-        ];
-
-        $headersScrubbed = [
-            'key1' => 'val1',
-            'key2' => 'val2',
-            'key3' => 'val4',
-        ];
-
         $instance = $this->make(DebugService::class);
 
-        verify($instance->scrubRequestHeaders($headers))
-            ->equals($headersScrubbed)
+        verify($instance->scrubInputs([
+            'username' => 'john',
+            'password' => 'hunter2',
+            'Password2' => 'hunter2',
+            'orig_password' => 'old',
+            'token' => 'csrf',
+            'code' => '123456',
+            'nested' => [
+                'client_secret' => 'abc',
+                'name' => 'x',
+                'list' => ['a', 'b'],
+            ],
+            'empty_password' => '',
+        ]))
+            ->same([
+                'username' => 'john',
+                'password' => 'scrubbed',
+                'Password2' => 'scrubbed',
+                'orig_password' => 'scrubbed',
+                'token' => 'scrubbed',
+                'code' => 'scrubbed',
+                'nested' => [
+                    'client_secret' => 'scrubbed',
+                    'name' => 'x',
+                    'list' => ['a', 'b'],
+                ],
+                'empty_password' => 'scrubbed',
+            ])
+        ;
+    }
+
+    public function testScrubServerParamsOnlyKeepsAllowedParams()
+    {
+        $instance = $this->make(DebugService::class);
+
+        verify($instance->scrubServerParams([
+            'REQUEST_METHOD' => 'POST',
+            'REQUEST_URI' => '/login?return_page=/x&token=abc',
+            'QUERY_STRING' => 'return_page=/x&token=abc',
+            'REMOTE_ADDR' => '10.0.0.1',
+            'HTTP_USER_AGENT' => 'Browser',
+            'HTTP_REFERER' => 'https://example.com/verify?code=123456#top',
+            'HTTP_COOKIE' => 'session=abc',
+            'HTTP_AUTHORIZATION' => 'Bearer abc',
+            'PHP_AUTH_USER' => 'john',
+            'PHP_AUTH_PW' => 'hunter2',
+            'DATABASE_PASSWORD' => 'dbsecret',
+            'STRIPE_API_KEY' => 'sk_live',
+        ]))
+            ->same([
+                'REQUEST_METHOD' => 'POST',
+                'REQUEST_URI' => '/login?return_page=%2Fx&token=scrubbed',
+                'QUERY_STRING' => 'return_page=%2Fx&token=scrubbed',
+                'REMOTE_ADDR' => '10.0.0.1',
+                'HTTP_USER_AGENT' => 'Browser',
+                'HTTP_REFERER' => 'https://example.com/verify?code=scrubbed#top',
+            ])
+        ;
+    }
+
+    public function testScrubListsAreConfigurable()
+    {
+        $instance = new DebugService(
+            $this->makeEmpty(AuthenticationService::class),
+            $this->makeEmpty(DatabaseProvider::class),
+            $this->makeEmpty(ReportFunction::class),
+            $this->makeEmpty(RuntimeEnvironment::class),
+            ['x-internal'],
+            ['pin'],
+            ['REQUEST_METHOD', 'CUSTOM_PARAM'],
+        );
+
+        verify($instance->scrubRequestHeaders(['X-Internal-Id' => ['1'], 'Cookie' => ['a']]))
+            ->same(['X-Internal-Id' => ['scrubbed'], 'Cookie' => ['a']])
+        ;
+        verify($instance->scrubInputs(['pin' => '1234', 'password' => 'visible']))
+            ->same(['pin' => 'scrubbed', 'password' => 'visible'])
+        ;
+        verify($instance->scrubServerParams(['REQUEST_METHOD' => 'GET', 'CUSTOM_PARAM' => 'x', 'REMOTE_ADDR' => '1']))
+            ->same(['REQUEST_METHOD' => 'GET', 'CUSTOM_PARAM' => 'x'])
+        ;
+    }
+
+    public function testGetInputsReportScrubsGetPostAndJson()
+    {
+        $instance = $this->make(DebugService::class);
+
+        $streamFactory = new StreamFactory();
+        $requestFactory = new RequestFactory($streamFactory);
+
+        $request = $requestFactory->createRequest('POST', 'https://test.com')
+            ->withQueryParams(['guid' => 'g', 'code' => '123456'])
+            ->withParsedBody(['username' => 'john', 'password' => 'hunter2'])
+        ;
+
+        verify($instance->getInputsReport($request))
+            ->same([
+                'get' => ['guid' => 'g', 'code' => 'scrubbed'],
+                'post' => ['username' => 'john', 'password' => 'scrubbed'],
+            ])
+        ;
+
+        $jsonRequest = $requestFactory->createRequest('POST', 'https://test.com')
+            ->withHeader('Content-Type', 'application/json')
+            ->withBody($streamFactory->createStream('{"user":{"password":"hunter2","name":"john"}}'))
+        ;
+
+        verify($instance->getInputsReport($jsonRequest))
+            ->same([
+                'json_data' => ['user' => ['password' => 'scrubbed', 'name' => 'john']],
+            ])
         ;
     }
 
@@ -476,9 +583,10 @@ final class DebugServiceTest extends Unit
             ->withBody($stream)
         ;
 
+        // The raw body cannot be scrubbed by key, so only its size is reported
         verify($instance->getInputsReport($request))
             ->equals([
-                'json_parsing_failed' => $badJson,
+                'json_parsing_failed' => 'Unparseable body of '.strlen($badJson).' bytes',
             ])
         ;
     }

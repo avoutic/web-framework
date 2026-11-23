@@ -34,6 +34,14 @@
 * The `Database` interface has a new method `transaction(callable $callback): mixed`. Other implementations of `Database` must add it; they can use `Database\TransactionTrait`.
 * `TransactionMiddleware` now rolls back the transaction when the handler throws, and throws the exception again. Before, the transaction and its nesting depth were left open, which in a long-running process meant that later transactions were never committed. This applies to every exception, also the ones that result in a normal response further up, such as `RedirectException` and `HttpNotFoundException`. To keep what was written, return a response instead of throwing.
 * The queued mail handlers (`RawMailJobHandler` and `TemplateMailJobHandler`) no longer retry a mail when the backend returns `MailBackend::INACTIVE_ADDRESS` (`'inactive_address'`). They log a warning and complete the job. Before, the job failed and was retried until its attempts ran out.
+* Error reports no longer contain credentials. Before, only the `Cookie` header was removed, and the server params, query, post and JSON inputs were reported in full. That put session cookies (as `HTTP_COOKIE`), `Authorization` headers, `PHP_AUTH_PW`, environment variables and posted passwords in error mails and logs. Now:
+    * Request headers whose name contains `authorization`, `cookie`, `token`, `secret` or `key` have their value replaced by `scrubbed`. The header itself stays in the report, where the `Cookie` header used to be removed.
+    * Query, post and JSON inputs whose key contains `password`, `passwd`, `secret`, `token`, `authorization` or `code` have their value replaced by `scrubbed`, at any depth. This also catches keys such as `postal_code`.
+    * A JSON body that cannot be parsed is reported as its size only.
+    * Only an allow list of server params is reported. Everything else, including the environment of the process, is left out.
+    * Query parameters in `REQUEST_URI`, `QUERY_STRING` and the referer are scrubbed like inputs.
+    * The three lists are configurable as `error_report.scrub_headers`, `error_report.scrub_inputs` and `error_report.server_params`. Add the names of your own secret fields and headers to them.
+    * `DebugService` has three new optional constructor parameters for these lists.
 * `AdminUserMiddleware` now throws `HttpUnauthorizedException` (401) for a request without an authenticated user. It used to throw a `RuntimeException`, which resulted in a 500. The `RuntimeException` remains for the case where `AuthenticationMiddleware` has not run.
 * `LoginService::authenticate()` can now throw `LoginRefusedException` when `preAuthenticate()` refuses the login. Custom login actions or endpoints that call it must catch this exception.
 
