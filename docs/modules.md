@@ -50,6 +50,8 @@ return [
 ];
 ```
 
+   Optional keys are `database_port`, `database_socket`, `database_charset` (default: `utf8mb4`) and `database_collation`. See the README of the module for details.
+
 **Repository**: [github.com/avoutic/web-framework-mysql](https://github.com/avoutic/web-framework-mysql)
 
 ---
