@@ -135,4 +135,31 @@ final class TemplateMailJobHandlerTest extends Unit
             $handler->handle($job);
         })->callableThrows(JobExecutionException::class);
     }
+
+    public function testInactiveAddressIsNotRetried()
+    {
+        $job = new TemplateMailJob(
+            'sender@example.com',
+            'recipient@example.com',
+            'template-123',
+            []
+        );
+        $job->setJobId('job-123');
+
+        $mailBackend = $this->makeEmpty(MailBackend::class, [
+            'sendTemplateMail' => Expected::once(MailBackend::INACTIVE_ADDRESS),
+        ]);
+
+        $logger = $this->makeEmpty(LoggerInterface::class, [
+            'warning' => Expected::once(function ($message, $context) {
+                verify($context['recipient'])->equals('recipient@example.com');
+            }),
+            'error' => Expected::never(),
+        ]);
+
+        $handler = new TemplateMailJobHandler($mailBackend, $logger);
+
+        // No exception, so the job completes and is not retried
+        $handler->handle($job);
+    }
 }

@@ -289,6 +289,12 @@ if ($result !== true) {
 }
 ~~~
 
+### Backend failures
+
+A mail backend that fails to send throws a `WebFramework\Exception\MailException` (a `\RuntimeException`), instead of the exception of its own client library. `getErrorCode()` gives the error code of the backend, if any, and `getPrevious()` the original exception.
+
+A backend returns the string `MailBackend::INACTIVE_ADDRESS` (`'inactive_address'`) when it permanently refuses the recipient, for example after a hard bounce or a spam complaint. The queued mail handlers log a warning for this result and do not retry the job.
+
 ## Best Practices
 
 1. **Use QueuedMailService for Production**: Asynchronous email sending reduces latency and improves user experience. Always use `QueuedMailService` in production environments.

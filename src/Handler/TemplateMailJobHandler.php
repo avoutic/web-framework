@@ -68,6 +68,19 @@ class TemplateMailJobHandler implements JobHandler
             $job->getTemplateVariables(),
         );
 
+        if ($result === MailBackend::INACTIVE_ADDRESS)
+        {
+            // Permanent refusal of the recipient: retrying cannot succeed, so the job is done
+            //
+            $this->logger->warning('Not sending template mail to inactive address', [
+                'jobId' => $job->getJobId(),
+                'templateId' => $job->getTemplateId(),
+                'recipient' => $job->getRecipient(),
+            ]);
+
+            return;
+        }
+
         if ($result !== true)
         {
             $errorMessage = is_string($result) ? $result : 'Unknown error';

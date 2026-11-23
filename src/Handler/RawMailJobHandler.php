@@ -57,6 +57,18 @@ class RawMailJobHandler implements JobHandler
             $job->getMessage(),
         );
 
+        if ($result === MailBackend::INACTIVE_ADDRESS)
+        {
+            // Permanent refusal of the recipient: retrying cannot succeed, so the job is done
+            //
+            $this->logger->warning('Not sending raw mail to inactive address', [
+                'jobId' => $job->getJobId(),
+                'recipient' => $job->getRecipient(),
+            ]);
+
+            return;
+        }
+
         if ($result !== true)
         {
             $errorMessage = is_string($result) ? $result : 'Unknown error';

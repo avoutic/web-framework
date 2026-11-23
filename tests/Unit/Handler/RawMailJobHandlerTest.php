@@ -112,4 +112,31 @@ final class RawMailJobHandlerTest extends Unit
             $handler->handle($job);
         })->callableThrows(JobExecutionException::class);
     }
+
+    public function testInactiveAddressIsNotRetried()
+    {
+        $job = new RawMailJob(
+            'sender@example.com',
+            'recipient@example.com',
+            'Test Subject',
+            'Test message body'
+        );
+        $job->setJobId('job-123');
+
+        $mailBackend = $this->makeEmpty(MailBackend::class, [
+            'sendRawMail' => Expected::once(MailBackend::INACTIVE_ADDRESS),
+        ]);
+
+        $logger = $this->makeEmpty(LoggerInterface::class, [
+            'warning' => Expected::once(function ($message, $context) {
+                verify($context['recipient'])->equals('recipient@example.com');
+            }),
+            'error' => Expected::never(),
+        ]);
+
+        $handler = new RawMailJobHandler($mailBackend, $logger);
+
+        // No exception, so the job completes and is not retried
+        $handler->handle($job);
+    }
 }

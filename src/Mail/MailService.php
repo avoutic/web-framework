@@ -11,6 +11,8 @@
 
 namespace WebFramework\Mail;
 
+use WebFramework\Exception\MailException;
+
 /**
  * Interface MailService.
  *
@@ -26,7 +28,11 @@ interface MailService
      * @param string      $title     The email subject
      * @param string      $message   The email body
      *
-     * @return bool|string True if sent successfully, or an error message string
+     * @return bool|string True if sent successfully, or an error message string. The string
+     *                     MailBackend::INACTIVE_ADDRESS means the backend permanently refuses
+     *                     the recipient, so sending again is pointless
+     *
+     * @throws MailException If the mail backend fails
      */
     public function sendRawMail(?string $from, string $recipient, string $title, string $message): bool|string;
 
@@ -38,7 +44,11 @@ interface MailService
      * @param string               $recipient         The recipient's email address
      * @param array<string, mixed> $templateVariables Variables to be used in the template
      *
-     * @return bool|string True if sent successfully, or an error message string
+     * @return bool|string True if sent successfully, or an error message string. The string
+     *                     MailBackend::INACTIVE_ADDRESS means the backend permanently refuses
+     *                     the recipient, so sending again is pointless
+     *
+     * @throws MailException If the mail backend fails
      */
     public function sendTemplateMail(string $templateId, ?string $from, string $recipient, array $templateVariables): bool|string;
 }
