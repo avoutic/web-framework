@@ -255,3 +255,57 @@ Configuration values are resolved in the following order (highest to lowest prec
 3. Configuration files (by default `config_local.php` > `config.php` > `base_config.php`)
 
 This allows you to override any configuration value at any level while maintaining sensible defaults.
+
+## Session Options
+
+The session of the application is a PHP session. Its name, lifetime, path, domain and the `secure` and `httponly` flags of its cookie follow from other settings: `app_name`, `authenticator.session_timeout`, `host_name` and `http_mode`.
+
+Other options are set with `session.options`. An option that is not one of the above is passed on as a PHP `session.*` setting. By default the session cookie gets `SameSite=Lax`:
+
+~~~php
+<?php
+
+return [
+    'session' => [
+        'options' => [
+            'cookie_samesite' => 'Lax',
+        ],
+    ],
+];
+~~~
+
+As `session.options` has named keys, your configuration only has to contain what you change or add:
+
+~~~php
+<?php
+
+return [
+    'session' => [
+        'options' => [
+            'save_path' => '/var/lib/php/sessions/myapp',
+        ],
+    ],
+];
+~~~
+
+- `cookie_samesite` can be `Lax`, `Strict`, `None` or an empty string for no attribute. With `Lax` the session cookie is not sent with a cross-site `POST`, for example when a payment provider posts the user back to your application. `None` requires https.
+- An option that is also derived from other settings, such as `path`, replaces the derived value.
+- Set an option to `null` to leave it out.
+
+### Sessions in Tests
+
+For tests you usually do not want a PHP session at all. The session library has an in-memory implementation for that. Bind it in the definitions of your tests:
+
+~~~php
+<?php
+
+use Odan\Session\MemorySession;
+use Odan\Session\SessionInterface;
+
+return [
+    SessionInterface::class => DI\autowire(MemorySession::class),
+];
+~~~
+
+`SessionManagerInterface` follows `SessionInterface`, so this is the only binding you need. The session then lives in memory for as long as the container does, and no PHP session is started or has to be closed between tests.
+

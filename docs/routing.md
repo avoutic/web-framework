@@ -152,5 +152,6 @@ Things to know:
 - The application uses the container the factory is resolved from. Resolve the factory from the container that also holds your test doubles, so there is only one container.
 - The factory does not bootstrap the framework. Call `BootstrapService::bootstrap()` once per process before creating an application.
 - Every call to `create()` gives a new application.
+- Bind the in-memory session for tests, see [Configuration](configuration.md).
 - A request that is passed to `handle()` is not decorated by Slim. Add the `RequestDecoratorMiddleware` as the outermost middleware, see [Middlewares](middlewares.md).
 

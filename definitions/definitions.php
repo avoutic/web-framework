@@ -26,14 +26,15 @@ return [
         ->constructorParameter('streamFactory', DI\get(StreamFactory::class)),
     SessionManagerInterface::class => DI\get(SessionInterface::class),
     SessionInterface::class => function (ContainerInterface $container) {
-        $options = [
-            'name' => $container->get('app_name'),
-            'lifetime' => $container->get('authenticator.session_timeout'),
-            'path' => '/',
-            'domain' => $container->get('host_name'),
-            'secure' => $container->get('http_mode') === 'https',
-            'httponly' => true,
-        ];
+        $configService = $container->get(Config\ConfigService::class);
+
+        $options = $container->get(Security\SessionOptions::class)->build(
+            $container->get('app_name'),
+            $container->get('authenticator.session_timeout'),
+            $container->get('host_name'),
+            $container->get('http_mode'),
+            $configService->get('session.options'),
+        );
 
         return new PhpSession($options);
     },

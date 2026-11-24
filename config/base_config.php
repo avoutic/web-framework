@@ -19,6 +19,16 @@ return [
     ],
     'http_mode' => 'https',
     'base_url' => '',                    // Add a base_url to be used in external urls
+    'session' => [
+        /* Options for the PHP session, on top of the ones that follow from other settings
+         * (name, lifetime, path, domain, secure and httponly). An option that is not one of
+         * those is set as a PHP 'session.*' setting, for example save_path. Set an option to
+         * null to leave it out.
+         */
+        'options' => [
+            'cookie_samesite' => 'Lax',  // SameSite attribute of the session cookie: Lax, Strict, None or '' for no attribute
+        ],
+    ],
     'json_response_paths' => [],         /* Path prefixes (such as '/api/') that always get JSON error and
                                           * authentication responses, whatever headers the client sends
                                           */
