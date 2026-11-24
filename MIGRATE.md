@@ -91,6 +91,7 @@
 * Introduce `QueueJobRepository::countDeadLetterJobs()` and `getOldestPendingTimestamp()`.
 * Introduce `Testing\FixedAuthenticationService`, an `AuthenticationService` for tests that is logged in as the user it is given, without a session or a database.
 * Introduce `Recaptcha::getScore()` and `Recaptcha::getAction()`, with the score and the action of a reCAPTCHA v3 verification. An answer of the reCAPTCHA service that cannot be read now counts as not verified.
+* Introduce `Cache\MemoryCache`, a cache that keeps its items in memory, with expiry and tags. It is meant for tests and for tools that run as one process.
 * Introduce `Entity::resetToNew()`, which turns a stored entity back into a new one, so it is inserted again by the next `save()`. Use it for an entity that was stored in a transaction that was rolled back, when the object is used again in a retry.
 * Introduce `RepositoryCore::refresh()`, which reloads an entity from the database into the same instance and resets its baseline for changes. It can lock the row for update. `RepositoryCore::getFieldsFromDb()` has a new optional parameter to lock the row.
 * Introduce `Testing\InstantiationSweep`, a helper for tests that tries to get every class of a set of namespaces from the container and reports the ones that cannot be instantiated. It has no dependency on a test framework and replaces hand-written instantiation tests and their class counts.

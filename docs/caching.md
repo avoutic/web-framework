@@ -8,6 +8,7 @@ Caching in WebFramework is managed using the `Cache` interface, which defines th
 
 - **RedisCache**: A Redis-based implementation for high-performance caching in the **web-framework-redis** module.
 - **NullCache**: A no-op implementation that performs no caching, useful for testing or when caching is disabled.
+- **MemoryCache**: Keeps its items in memory, with expiry and tags, for as long as the object lives. Use it in tests, where you want to see what was cached and to test the path where a value is found, and in tools that run as one process. In a web application every request starts with an empty cache, so it does not cache anything between requests. Bind it with `Cache::class => DI\autowire(MemoryCache::class)`.
 
 ## Using Caching in Your Application
 

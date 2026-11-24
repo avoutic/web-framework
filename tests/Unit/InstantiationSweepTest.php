@@ -5,6 +5,7 @@ namespace Tests\Unit;
 use Codeception\Test\Unit;
 use DI\Container;
 use WebFramework\Cache\Cache;
+use WebFramework\Cache\MemoryCache;
 use WebFramework\Cache\NullCache;
 use WebFramework\Mail\LoggingMailService;
 use WebFramework\Mail\NullMailService;
@@ -26,7 +27,7 @@ final class InstantiationSweepTest extends Unit
     {
         $result = (new InstantiationSweep(new Container()))->run(['WebFramework\Cache']);
 
-        verify($result->instantiated)->same([NullCache::class]);
+        verify($result->instantiated)->same([MemoryCache::class, NullCache::class]);
         verify($result->failed)->same([]);
         verify($result->isSuccessful())->true();
     }

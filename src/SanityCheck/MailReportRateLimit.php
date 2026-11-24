@@ -13,6 +13,7 @@ namespace WebFramework\SanityCheck;
 
 use Psr\Log\LoggerInterface;
 use WebFramework\Cache\Cache;
+use WebFramework\Cache\MemoryCache;
 use WebFramework\Diagnostics\MailReportFunction;
 use WebFramework\Diagnostics\ReportFunction;
 
@@ -59,11 +60,19 @@ class MailReportRateLimit extends SanityCheckBase
         $stored = $this->cache->get(self::PROBE_KEY) === 'probe';
         $this->cache->invalidate(self::PROBE_KEY);
 
+        // A cache in memory stores, but only within this process. The errors of other
+        // requests are not counted with it
+        //
+        if ($this->cache instanceof MemoryCache)
+        {
+            $stored = false;
+        }
+
         if (!$stored)
         {
             $this->logger->emergency('Error reports are sent by mail, but the cache does not store values, so the mails are not rate limited');
 
-            $this->addOutput(' - The cache does not store values. Every error sends a mail. Bind a working Cache implementation. Not fixing.'.PHP_EOL);
+            $this->addOutput(' - The cache does not store values between requests. Every error sends a mail. Bind a working Cache implementation. Not fixing.'.PHP_EOL);
             $this->addOutput(PHP_EOL.'Breaking off');
 
             return false;
