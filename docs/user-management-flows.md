@@ -354,9 +354,6 @@ namespace App\Repository;
 use App\Entity\Member;
 use WebFramework\Repository\UserRepository;
 
-/**
- * @extends UserRepository<Member>
- */
 class MemberRepository extends UserRepository
 {
     protected static string $entityClass = Member::class;
