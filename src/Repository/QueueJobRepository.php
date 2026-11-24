@@ -19,6 +19,44 @@ use WebFramework\Entity\QueueJob;
  */
 class QueueJobRepository extends RepositoryCore
 {
+    /**
+     * Count the jobs in the dead letter queue of a queue: the jobs that ran out of attempts.
+     *
+     * @param string $queueName The name of the queue, without the '-failed' of its dead letter queue
+     *
+     * @return int The number of jobs in the dead letter queue
+     */
+    public function countDeadLetterJobs(string $queueName): int
+    {
+        return $this
+            ->query([
+                'queue_name' => $queueName.'-failed',
+            ])
+            ->count()
+        ;
+    }
+
+    /**
+     * Get the time at which the oldest job that is still waiting in a queue was created.
+     *
+     * @param string $queueName The name of the queue
+     *
+     * @return null|int The timestamp, or null if no job is waiting
+     */
+    public function getOldestPendingTimestamp(string $queueName): ?int
+    {
+        $timestamp = $this
+            ->query([
+                'queue_name' => $queueName,
+                'attempts' => ['<', new Column('max_attempts')],
+                'completed_at' => null,
+            ])
+            ->min('created_at')
+        ;
+
+        return ($timestamp === null) ? null : (int) $timestamp;
+    }
+
     /** @var class-string<QueueJob> */
     protected static string $entityClass = QueueJob::class;
 

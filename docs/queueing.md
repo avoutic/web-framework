@@ -187,6 +187,27 @@ The worker will:
 - Stop when max-jobs or max-runtime is reached, also when the queue is empty
 - Roll back a database transaction that a job handler left open, before continuing with the next job. A handler that returns with a transaction still open counts as failed. Use `Database::transaction()` in your handlers, so a transaction is always committed or rolled back
 
+### Job Events
+
+The worker dispatches an event after every job it handled:
+
+- `WebFramework\Event\JobCompleted`, with the job, the name of the queue and the duration in seconds
+- `WebFramework\Event\JobFailed`, with the same, and the class and message of the exception. It is dispatched for every attempt that fails, also when the job will be tried again
+
+Register a listener for them to record metrics or to be told about failures, see [Events](events.md). An event that has no listeners costs nothing.
+
+A listener for these events can be a queued listener. The job of such a listener does not lead to a job event itself, as that would never end. A listener that fails is logged, and does not change what happened to the job.
+
+### Queue Statistics
+
+For the database queue, `WebFramework\Repository\QueueJobRepository` tells you how a queue is doing:
+
+- `countJobsInQueue($queueName)`: the number of jobs that are waiting
+- `countDeadLetterJobs($queueName)`: the number of jobs that ran out of attempts, in the dead letter queue `<name>-failed`
+- `getOldestPendingTimestamp($queueName)`: when the oldest job that is still waiting was created, or `null` if none is waiting
+
+Use them in a task that watches your queues.
+
 ## Built-in Implementations
 
 ### MemoryQueue

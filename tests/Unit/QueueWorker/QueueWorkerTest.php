@@ -8,7 +8,11 @@ use Codeception\Test\Unit;
 use Tests\Support\StaticArrayJob;
 use Tests\Support\StaticArrayJobHandler;
 use WebFramework\Database\Database;
+use WebFramework\Event\EventService;
+use WebFramework\Event\JobCompleted;
+use WebFramework\Event\JobFailed;
 use WebFramework\Exception\ArgumentParserException;
+use WebFramework\Job\EventJob;
 use WebFramework\Logging\LogService;
 use WebFramework\Queue\Job;
 use WebFramework\Queue\MemoryQueue;
@@ -103,6 +107,7 @@ final class QueueWorkerTest extends Unit
             QueueWorker::class,
             [
                 $this->makeEmpty(Database::class),
+                $this->makeEmpty(EventService::class),
                 $this->makeEmpty(QueueService::class, [
                     'get' => function (string $queueName) use ($queue) {
                         if ($queueName === 'default')
@@ -145,6 +150,7 @@ final class QueueWorkerTest extends Unit
             QueueWorker::class,
             [
                 $this->makeEmpty(Database::class),
+                $this->makeEmpty(EventService::class),
                 $this->makeEmpty(QueueService::class, [
                     'get' => function (string $queueName) use ($queue) {
                         if ($queueName === 'default')
@@ -198,6 +204,7 @@ final class QueueWorkerTest extends Unit
             QueueWorker::class,
             [
                 $this->makeEmpty(Database::class),
+                $this->makeEmpty(EventService::class),
                 $this->makeEmpty(QueueService::class, [
                     'get' => function (string $queueName) use ($queue) {
                         return $queue;
@@ -243,6 +250,7 @@ final class QueueWorkerTest extends Unit
             QueueWorker::class,
             [
                 $this->makeEmpty(Database::class),
+                $this->makeEmpty(EventService::class),
                 $this->makeEmpty(QueueService::class, [
                     'get' => function (string $queueName) use ($queue) {
                         return $queue;
@@ -285,6 +293,7 @@ final class QueueWorkerTest extends Unit
             QueueWorker::class,
             [
                 $this->makeEmpty(Database::class),
+                $this->makeEmpty(EventService::class),
                 $this->makeEmpty(QueueService::class, [
                     'get' => function (string $queueName) use ($queue) {
                         return $queue;
@@ -331,6 +340,7 @@ final class QueueWorkerTest extends Unit
             QueueWorker::class,
             [
                 $this->makeEmpty(Database::class),
+                $this->makeEmpty(EventService::class),
                 $this->makeEmpty(QueueService::class, [
                     'get' => function (string $queueName) use ($queue) {
                         return $queue;
@@ -364,6 +374,7 @@ final class QueueWorkerTest extends Unit
             QueueWorker::class,
             [
                 $this->makeEmpty(Database::class, $database),
+                $this->eventService ?? $this->makeEmpty(EventService::class),
                 $this->makeEmpty(QueueService::class, [
                     'get' => fn () => $memoryQueue,
                     'getJobHandler' => fn () => $jobHandler,
@@ -373,6 +384,21 @@ final class QueueWorkerTest extends Unit
             ],
             $constructorOverrides,
         );
+    }
+
+    private ?EventService $eventService = null;
+
+    /** @var array<object> */
+    private array $events = [];
+
+    private function recordEvents(): void
+    {
+        $this->events = [];
+        $this->eventService = $this->makeEmpty(EventService::class, [
+            'dispatch' => function ($event) {
+                $this->events[] = $event;
+            },
+        ]);
     }
 
     private function buildJob(): StaticArrayJob
@@ -497,6 +523,90 @@ final class QueueWorkerTest extends Unit
                 'getTransactionDepth' => 0,
                 'rollbackTransaction' => Expected::never(),
             ],
+            ['maxJobs' => 1],
+        );
+
+        $worker->execute();
+    }
+
+    public function testCompletedJobDispatchesAnEvent()
+    {
+        Carbon::setTestNow('2025-01-01 00:00:00');
+        $this->recordEvents();
+
+        $worker = $this->buildWorker(
+            ['popJob' => fn () => $this->buildJob(), 'markJobCompleted' => Expected::once()],
+            fn () => true,
+            ['getTransactionDepth' => 0],
+            ['maxJobs' => 1],
+        );
+
+        $worker->execute();
+
+        verify(count($this->events))->equals(1);
+        verify($this->events[0])->instanceOf(JobCompleted::class);
+        verify($this->events[0]->job->getJobId())->equals('test-job-id');
+        verify($this->events[0]->queueName)->equals('default');
+        verify($this->events[0]->duration)->greaterThanOrEqual(0.0);
+    }
+
+    public function testFailedJobDispatchesAnEvent()
+    {
+        Carbon::setTestNow('2025-01-01 00:00:00');
+        $this->recordEvents();
+
+        $worker = $this->buildWorker(
+            ['popJob' => fn () => $this->buildJob(), 'markJobFailed' => Expected::once()],
+            function () {
+                throw new \RuntimeException('Job failed');
+            },
+            ['getTransactionDepth' => 0],
+            ['maxJobs' => 1],
+        );
+
+        $worker->execute();
+
+        verify(count($this->events))->equals(1);
+        verify($this->events[0])->instanceOf(JobFailed::class);
+        verify($this->events[0]->exceptionClass)->equals(\RuntimeException::class);
+        verify($this->events[0]->exceptionMessage)->equals('Job failed');
+        verify($this->events[0]->queueName)->equals('default');
+    }
+
+    public function testNoEventForAJobThatCarriesAJobEvent()
+    {
+        Carbon::setTestNow('2025-01-01 00:00:00');
+        $this->recordEvents();
+
+        // A queued listener for JobCompleted: its job must not cause another JobCompleted
+        $eventJob = new EventJob('SomeListener', new JobCompleted($this->buildJob(), 'default', 0.1));
+        $eventJob->setJobId('event-job-id');
+
+        $worker = $this->buildWorker(
+            ['popJob' => fn () => $eventJob, 'markJobCompleted' => Expected::once()],
+            fn () => true,
+            ['getTransactionDepth' => 0],
+            ['maxJobs' => 1],
+        );
+
+        $worker->execute();
+
+        verify($this->events)->same([]);
+    }
+
+    public function testFailingEventListenerDoesNotStopTheWorker()
+    {
+        Carbon::setTestNow('2025-01-01 00:00:00');
+        $this->eventService = $this->makeEmpty(EventService::class, [
+            'dispatch' => function () {
+                throw new \RuntimeException('listener failed');
+            },
+        ]);
+
+        $worker = $this->buildWorker(
+            ['popJob' => fn () => $this->buildJob(), 'markJobCompleted' => Expected::once(), 'markJobFailed' => Expected::never()],
+            fn () => true,
+            ['getTransactionDepth' => 0],
             ['maxJobs' => 1],
         );
 

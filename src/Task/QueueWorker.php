@@ -13,8 +13,13 @@ namespace WebFramework\Task;
 
 use Carbon\Carbon;
 use WebFramework\Database\Database;
+use WebFramework\Event\Event;
+use WebFramework\Event\EventService;
+use WebFramework\Event\JobCompleted;
+use WebFramework\Event\JobFailed;
 use WebFramework\Exception\ArgumentParserException;
 use WebFramework\Exception\JobExecutionException;
+use WebFramework\Job\EventJob;
 use WebFramework\Logging\LogService;
 use WebFramework\Queue\Job;
 use WebFramework\Queue\QueueService;
@@ -27,6 +32,7 @@ class QueueWorker extends ConsoleTask
 
     public function __construct(
         private Database $database,
+        private EventService $eventService,
         private QueueService $queueService,
         private LogService $logger,
         private ?string $queueName = null,
@@ -138,7 +144,8 @@ class QueueWorker extends ConsoleTask
             throw new ArgumentParserException('Queue name not set');
         }
 
-        $queue = $this->queueService->get($this->queueName);
+        $queueName = $this->queueName;
+        $queue = $this->queueService->get($queueName);
 
         $jobsProcessed = 0;
         $startTime = Carbon::now();
@@ -173,6 +180,8 @@ class QueueWorker extends ConsoleTask
                 continue;
             }
 
+            $startedAt = microtime(true);
+
             try
             {
                 $jobHandler = $this->queueService->getJobHandler($job);
@@ -190,6 +199,8 @@ class QueueWorker extends ConsoleTask
                 $queue->markJobCompleted($job);
 
                 $jobsProcessed++;
+
+                $this->dispatchJobEvent($job, new JobCompleted($job, $queueName, microtime(true) - $startedAt));
             }
             catch (\Throwable $e)
             {
@@ -216,7 +227,42 @@ class QueueWorker extends ConsoleTask
 
                 // Continue processing instead of crashing the worker
                 $jobsProcessed++;
+
+                $this->dispatchJobEvent($job, new JobFailed(
+                    $job,
+                    $queueName,
+                    microtime(true) - $startedAt,
+                    get_class($e),
+                    $e->getMessage(),
+                ));
             }
+        }
+    }
+
+    /**
+     * Dispatch the event for a job that was completed or failed.
+     *
+     * @param Job   $job   The job that was handled
+     * @param Event $event The event to dispatch
+     */
+    private function dispatchJobEvent(Job $job, Event $event): void
+    {
+        // A queued listener for a job event is a job itself. Its completion must not
+        // lead to another job event, and so on forever
+        //
+        if ($job instanceof EventJob && ($job->event instanceof JobCompleted || $job->event instanceof JobFailed))
+        {
+            return;
+        }
+
+        try
+        {
+            $this->eventService->dispatch($event);
+        }
+        catch (\Throwable $e)
+        {
+            // A listener that fails does not change what happened to the job
+            $this->logger->error('default', 'Failed to dispatch job event: '.get_class($e).': '.$e->getMessage());
         }
     }
 

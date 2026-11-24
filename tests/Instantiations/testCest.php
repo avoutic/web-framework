@@ -8,6 +8,8 @@ use Tests\Support\TaskRunnerTrait;
 use WebFramework\Config\ConfigBuilder;
 use WebFramework\Database\DatabaseResultWrapper;
 use WebFramework\Database\Lock;
+use WebFramework\Event\JobCompleted;
+use WebFramework\Event\JobFailed;
 use WebFramework\Event\UserEmailChanged;
 use WebFramework\Event\UserLoggedIn;
 use WebFramework\Event\UserPasswordChanged;
@@ -65,6 +67,8 @@ class testCest
         DatabaseResultWrapper::class,
         Lock::class,
         // Event
+        JobCompleted::class,
+        JobFailed::class,
         UserEmailChanged::class,
         UserLoggedIn::class,
         UserPasswordChanged::class,
