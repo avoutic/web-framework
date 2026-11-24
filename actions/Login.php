@@ -28,6 +28,7 @@ use WebFramework\Security\AuthenticationService;
 use WebFramework\Security\Extension\LoginExtensionInterface;
 use WebFramework\Security\LoginService;
 use WebFramework\Security\UserVerificationService;
+use WebFramework\Security\VerifyLocation;
 use WebFramework\Validation\InputValidationService;
 use WebFramework\Validation\Validator\EmailValidator;
 use WebFramework\Validation\Validator\PasswordValidator;
@@ -52,6 +53,7 @@ class Login
      * @param RenderService           $renderer                The render service
      * @param ResponseEmitter         $responseEmitter         The response emitter
      * @param UserVerificationService $userVerificationService The user verification service
+     * @param VerifyLocation          $verifyLocation          The verify location service
      */
     public function __construct(
         private AuthenticationService $authenticationService,
@@ -63,6 +65,7 @@ class Login
         private RenderService $renderer,
         private ResponseEmitter $responseEmitter,
         private UserVerificationService $userVerificationService,
+        private VerifyLocation $verifyLocation,
         private string $templateName,
     ) {}
 
@@ -77,7 +80,6 @@ class Login
      *
      * @uses config authenticator.unique_identifier
      * @uses config actions.login.default_return_page
-     * @uses config actions.verify.location
      */
     public function __invoke(Request $request, Response $response, array $routeArgs): ResponseInterface
     {
@@ -156,7 +158,7 @@ class Login
             $guid = $this->userVerificationService->sendVerifyMail($e->getUser(), 'login', $afterVerifyData);
 
             return $this->responseEmitter->buildQueryRedirect(
-                $this->configService->get('actions.verify.location'),
+                $this->verifyLocation->getFor('login'),
                 [],
                 [
                     'guid' => $guid,

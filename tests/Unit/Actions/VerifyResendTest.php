@@ -19,6 +19,7 @@ use WebFramework\Security\ChangeEmailService;
 use WebFramework\Security\NullAuthenticationService;
 use WebFramework\Security\ResetPasswordService;
 use WebFramework\Security\UserVerificationService;
+use WebFramework\Security\VerifyLocation;
 
 /**
  * @internal
@@ -54,6 +55,9 @@ final class VerifyResendTest extends Unit
             ]),
             userVerificationService: $this->makeEmpty(UserVerificationService::class, [
                 'sendVerifyMail' => Expected::never(),
+            ]),
+            verifyLocation: $this->makeEmpty(VerifyLocation::class, [
+                'getFor' => fn (string $action) => "/verify-{$action}",
             ]),
             verificationCodeRepository: $this->makeEmpty(VerificationCodeRepository::class, [
                 'getByGuid' => $verificationCode,
@@ -126,6 +130,9 @@ final class VerifyResendTest extends Unit
             userVerificationService: $this->makeEmpty(UserVerificationService::class, [
                 'sendVerifyMail' => $sendVerifyMail,
             ]),
+            verifyLocation: $this->makeEmpty(VerifyLocation::class, [
+                'getFor' => fn (string $action) => "/verify-{$action}",
+            ]),
             verificationCodeRepository: $this->makeEmpty(VerificationCodeRepository::class, [
                 'getByGuid' => $verificationCode,
             ]),
@@ -163,6 +170,38 @@ final class VerifyResendTest extends Unit
                 return $response;
             }),
         ]), Expected::once('new-guid'));
+
+        verify($instance($request, $response, []))->same($response);
+    }
+
+    public function testResendRedirectsToTheLocationOfTheAction()
+    {
+        $response = $this->makeEmpty(Response::class);
+        $request = $this->makeEmpty(Request::class, ['getAttribute' => true, 'getParam' => 'old-guid']);
+
+        $instance = $this->buildActionForCooldown(10, 30, $this->makeEmpty(ResponseEmitter::class, [
+            'buildQueryRedirect' => Expected::once(function ($template) use ($response) {
+                verify($template)->equals('/verify-register');
+
+                return $response;
+            }),
+        ]), Expected::once('new-guid'));
+
+        verify($instance($request, $response, []))->same($response);
+    }
+
+    public function testCooldownRedirectsToTheLocationOfTheAction()
+    {
+        $response = $this->makeEmpty(Response::class);
+        $request = $this->makeEmpty(Request::class, ['getAttribute' => true, 'getParam' => 'old-guid']);
+
+        $instance = $this->buildActionForCooldown(120, 90, $this->makeEmpty(ResponseEmitter::class, [
+            'buildQueryRedirect' => Expected::once(function ($template) use ($response) {
+                verify($template)->equals('/verify-register');
+
+                return $response;
+            }),
+        ]), Expected::never());
 
         verify($instance($request, $response, []))->same($response);
     }

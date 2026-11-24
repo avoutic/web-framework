@@ -24,6 +24,7 @@ use WebFramework\Presentation\RenderService;
 use WebFramework\Security\AuthenticationService;
 use WebFramework\Security\ChangeEmailService;
 use WebFramework\Security\Extension\ChangeEmailExtensionInterface;
+use WebFramework\Security\VerifyLocation;
 use WebFramework\Validation\InputValidationService;
 use WebFramework\Validation\Validator\EmailValidator;
 
@@ -45,6 +46,7 @@ class ChangeEmail
      * @param MessageService                $messageService         The message service
      * @param RenderService                 $renderer               The render service
      * @param ResponseEmitter               $responseEmitter        The response emitter
+     * @param VerifyLocation                $verifyLocation         The verify location service
      */
     public function __construct(
         private AuthenticationService $authenticationService,
@@ -55,6 +57,7 @@ class ChangeEmail
         private MessageService $messageService,
         private RenderService $renderer,
         private ResponseEmitter $responseEmitter,
+        private VerifyLocation $verifyLocation,
         private string $templateName,
     ) {}
 
@@ -106,7 +109,7 @@ class ChangeEmail
                 $guid = $this->changeEmailService->sendChangeEmailVerify($user, $filtered['email']);
 
                 return $this->responseEmitter->buildQueryRedirect(
-                    $this->configService->get('actions.verify.location'),
+                    $this->verifyLocation->getFor('change_email'),
                     [],
                     [
                         'guid' => $guid,

@@ -26,6 +26,7 @@ use WebFramework\Security\AuthenticationService;
 use WebFramework\Security\ChangeEmailService;
 use WebFramework\Security\ResetPasswordService;
 use WebFramework\Security\UserVerificationService;
+use WebFramework\Security\VerifyLocation;
 
 /**
  * Class Verify.
@@ -46,6 +47,7 @@ class VerifyResend
      * @param UserRepository             $userRepository             The user repository
      * @param UserVerificationService    $userVerificationService    The user verification service
      * @param VerificationCodeRepository $verificationCodeRepository The verification code repository
+     * @param VerifyLocation             $verifyLocation             The verify location service
      */
     public function __construct(
         private AccountStatusChecker $accountStatusChecker,
@@ -57,6 +59,7 @@ class VerifyResend
         private UserRepository $userRepository,
         private UserVerificationService $userVerificationService,
         private VerificationCodeRepository $verificationCodeRepository,
+        private VerifyLocation $verifyLocation,
     ) {}
 
     /**
@@ -70,7 +73,6 @@ class VerifyResend
      *
      * @uses config actions.login.location
      * @uses config security.email_verification.resend_cooldown_seconds
-     * @uses config actions.verify.location
      */
     public function __invoke(Request $request, Response $response, array $routeArgs): ResponseInterface
     {
@@ -100,7 +102,7 @@ class VerifyResend
         if ($secondsSinceCreation < $cooldownSeconds)
         {
             return $this->responseEmitter->buildQueryRedirect(
-                $this->configService->get('actions.verify.location'),
+                $this->verifyLocation->getFor($verificationCode->getAction()),
                 [],
                 [
                     'guid' => $verificationCode->getGuid(),
@@ -138,7 +140,7 @@ class VerifyResend
             {
                 // Don't reveal that the account is disabled - same response as a resend
                 return $this->responseEmitter->buildQueryRedirect(
-                    $this->configService->get('actions.verify.location'),
+                    $this->verifyLocation->getFor($verificationCode->getAction()),
                     [],
                     [
                         'guid' => $verificationCode->getGuid(),
@@ -184,7 +186,7 @@ class VerifyResend
         }
 
         return $this->responseEmitter->buildQueryRedirect(
-            $this->configService->get('actions.verify.location'),
+            $this->verifyLocation->getFor($verificationCode->getAction()),
             [],
             [
                 'guid' => $newGuid,

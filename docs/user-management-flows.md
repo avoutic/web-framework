@@ -43,7 +43,7 @@ The registration flow allows new users to create accounts with email verificatio
 
 **Configuration**:
 - `actions.register.return_page`: Page to redirect after successful registration verification
-- `actions.verify.location`: Location of verification page
+- `actions.verify.locations.register`: Location of the verification page for this flow. Falls back to `actions.verify.location`
 
 ### Step 2: Verify Action (`/verify`)
 
@@ -102,7 +102,7 @@ The login flow handles user authentication, including cases where users need to 
 **Configuration**:
 - `actions.login.default_return_page`: Default page after successful login
 - `actions.login.after_verify_page`: Page to redirect after verification
-- `actions.verify.location`: Location of verification page
+- `actions.verify.locations.login`: Location of the verification page for this flow. Falls back to `actions.verify.location`
 
 **Note**: If user is already verified, login proceeds directly without verification step.
 
@@ -158,7 +158,7 @@ The password reset flow allows users to reset forgotten passwords via email veri
 
 **Configuration**:
 - `actions.reset_password.after_verify_page`: Page to redirect after verification
-- `actions.verify.location`: Location of verification page
+- `actions.verify.locations.reset_password`: Location of the verification page for this flow. Falls back to `actions.verify.location`
 
 ### Step 2: Verify Action (`/verify`)
 
@@ -215,7 +215,7 @@ The change email flow allows authenticated users to change their email address w
 **Configuration**:
 - `actions.change_email.after_verify_page`: Page to redirect after verification
 - `actions.change_email.return_page`: Page to redirect after successful email change
-- `actions.verify.location`: Location of verification page
+- `actions.verify.locations.change_email`: Location of the verification page for this flow. Falls back to `actions.verify.location`
 
 **Security**: Verification email is sent to the new address to ensure the user has access to it.
 
@@ -294,6 +294,12 @@ return [
         ],
         'verify' => [
             'location' => '/verify',            // Location of the verify page
+            'locations' => [                    // Location of the verify page per flow, null to use 'location'
+                'login' => null,
+                'register' => null,
+                'reset_password' => null,
+                'change_email' => null,
+            ],
             'templates' => [                    // Template names per action type
                 'login' => 'Verify.latte',
                 'register' => 'Verify.latte',
@@ -313,6 +319,28 @@ return [
     ],
 ];
 ```
+
+### A Verify Page per Flow
+
+All flows send the user to the page where the verification code is entered. By default that is one page for all of them, `actions.verify.location`. To give a flow its own page, for example to enter the registration code as a step of your onboarding, set its entry in `actions.verify.locations`:
+
+~~~php
+<?php
+
+return [
+    'actions' => [
+        'verify' => [
+            'locations' => [
+                'register' => '/getting-started',
+            ],
+        ],
+    ],
+];
+~~~
+
+The other flows keep using `actions.verify.location`. Resending a code sends the user back to the page of the flow the code belongs to.
+
+The framework only redirects to this location, with the `guid` of the code as a parameter. Make sure it is routed to something that handles the code: the `Verify` action of the framework, or a page of your own that posts the code to it.
 
 ## Customization Points
 

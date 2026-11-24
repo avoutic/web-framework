@@ -26,6 +26,7 @@ use WebFramework\Presentation\RenderService;
 use WebFramework\Security\AuthenticationService;
 use WebFramework\Security\Extension\RegisterExtensionInterface;
 use WebFramework\Security\RegisterService;
+use WebFramework\Security\VerifyLocation;
 use WebFramework\Validation\InputValidationService;
 use WebFramework\Validation\Validator\EmailValidator;
 use WebFramework\Validation\Validator\PasswordValidator;
@@ -49,6 +50,7 @@ class Register
      * @param RegisterService            $registerService        The register service
      * @param RenderService              $renderer               The render service
      * @param ResponseEmitter            $responseEmitter        The response emitter
+     * @param VerifyLocation             $verifyLocation         The verify location service
      */
     public function __construct(
         private AuthenticationService $authenticationService,
@@ -59,6 +61,7 @@ class Register
         private RegisterService $registerService,
         private RenderService $renderer,
         private ResponseEmitter $responseEmitter,
+        private VerifyLocation $verifyLocation,
         private string $templateName,
     ) {}
 
@@ -78,7 +81,6 @@ class Register
      * @uses config authenticator.unique_identifier
      * @uses config actions.login.default_return_page
      * @uses config actions.register.post_verify_page
-     * @uses config actions.verify.location
      */
     public function __invoke(Request $request, Response $response, array $routeArgs): ResponseInterface
     {
@@ -149,7 +151,7 @@ class Register
                 $this->registerExtension->postCreate($request, $user);
 
                 return $this->responseEmitter->buildQueryRedirect(
-                    $this->configService->get('actions.verify.location'),
+                    $this->verifyLocation->getFor('register'),
                     [],
                     [
                         'guid' => $guid,

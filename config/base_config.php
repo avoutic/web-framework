@@ -100,6 +100,12 @@ return [
         ],
         'verify' => [
             'location' => '/verify',               // Location of the verify page
+            'locations' => [                       // Location of the verify page per action type,
+                'login' => null,                   // null to use 'location'
+                'register' => null,
+                'reset_password' => null,
+                'change_email' => null,
+            ],
             'resend_location' => '/verify/resend', // Location of the verify resend page
             'templates' => [                       // Template names per action type
                 'login' => 'Verify.latte',

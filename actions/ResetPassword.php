@@ -23,6 +23,7 @@ use WebFramework\Presentation\RenderService;
 use WebFramework\Repository\UserRepository;
 use WebFramework\Security\Extension\ResetPasswordExtensionInterface;
 use WebFramework\Security\ResetPasswordService;
+use WebFramework\Security\VerifyLocation;
 use WebFramework\Support\UuidProvider;
 use WebFramework\Validation\InputValidationService;
 use WebFramework\Validation\Validator\EmailValidator;
@@ -46,6 +47,7 @@ class ResetPassword
      * @param ResetPasswordService   $resetPasswordService   The reset password service
      * @param UserRepository         $userRepository         The user repository
      * @param UuidProvider           $uuidProvider           The UUID provider
+     * @param VerifyLocation         $verifyLocation         The verify location service
      */
     public function __construct(
         private ConfigService $configService,
@@ -57,6 +59,7 @@ class ResetPassword
         private ResetPasswordService $resetPasswordService,
         private UserRepository $userRepository,
         private UuidProvider $uuidProvider,
+        private VerifyLocation $verifyLocation,
         private string $templateName,
     ) {}
 
@@ -124,7 +127,7 @@ class ResetPassword
                 }
 
                 return $this->responseEmitter->buildQueryRedirect(
-                    $this->configService->get('actions.verify.location'),
+                    $this->verifyLocation->getFor('reset_password'),
                     [],
                     [
                         'guid' => $guid,

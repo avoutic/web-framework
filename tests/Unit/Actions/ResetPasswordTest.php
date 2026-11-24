@@ -17,6 +17,7 @@ use WebFramework\Presentation\RenderService;
 use WebFramework\Repository\UserRepository;
 use WebFramework\Security\Extension\ResetPasswordExtensionInterface;
 use WebFramework\Security\ResetPasswordService;
+use WebFramework\Security\VerifyLocation;
 use WebFramework\Support\UuidProvider;
 use WebFramework\Validation\InputValidationService;
 
@@ -72,6 +73,7 @@ final class ResetPasswordTest extends Unit
             uuidProvider: $this->makeEmpty(UuidProvider::class, [
                 'generate' => Expected::once('random-guid'),
             ]),
+            verifyLocation: $this->makeEmpty(VerifyLocation::class, ['getFor' => '/verify']),
             templateName: 'ResetPassword.latte',
         );
 

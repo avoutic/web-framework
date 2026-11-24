@@ -19,6 +19,7 @@ use WebFramework\Security\Extension\LoginExtensionInterface;
 use WebFramework\Security\LoginService;
 use WebFramework\Security\NullAuthenticationService;
 use WebFramework\Security\UserVerificationService;
+use WebFramework\Security\VerifyLocation;
 use WebFramework\Validation\InputValidationService;
 
 /**
@@ -68,6 +69,7 @@ final class LoginTest extends Unit
                 'buildQueryRedirect' => Expected::never(),
             ]),
             userVerificationService: $this->makeEmpty(UserVerificationService::class),
+            verifyLocation: $this->makeEmpty(VerifyLocation::class, ['getFor' => '/verify']),
             templateName: 'Login.latte',
         );
 
@@ -114,6 +116,7 @@ final class LoginTest extends Unit
                 'buildQueryRedirect' => Expected::never(),
             ]),
             userVerificationService: $this->makeEmpty(UserVerificationService::class),
+            verifyLocation: $this->makeEmpty(VerifyLocation::class, ['getFor' => '/verify']),
             templateName: 'Login.latte',
         );
 
@@ -145,6 +148,7 @@ final class LoginTest extends Unit
             ]),
             responseEmitter: $this->makeEmpty(ResponseEmitter::class, $responseEmitter),
             userVerificationService: $this->makeEmpty(UserVerificationService::class, $userVerificationService),
+            verifyLocation: $this->makeEmpty(VerifyLocation::class, ['getFor' => '/verify']),
             templateName: 'Login.latte',
         );
     }
