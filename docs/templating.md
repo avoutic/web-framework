@@ -61,3 +61,51 @@ Hello, {$name}!
 ~~~
 
 In this template, the `name` parameter is accessed using the `{$name}` syntax, and the output will be "Hello, World!".
+
+## Filters, Functions and Values for Every Template
+
+The Latte `Engine` comes from the container. To add your own filters and functions, or values that every template can use, decorate it in your definitions. The decorator gets the engine the framework created, adds to it and returns it:
+
+~~~php
+<?php
+
+use Latte\Engine;
+use Psr\Container\ContainerInterface;
+use WebFramework\Security\CsrfService;
+
+return [
+    Engine::class => DI\decorate(function (Engine $engine, ContainerInterface $c) {
+        // A filter: {$price|money}
+        $engine->addFilter('money', fn (int $cents): string => number_format($cents / 100, 2));
+
+        // A function: {csrfToken()}
+        $engine->addFunction('csrfToken', fn (): string => $c->get(CsrfService::class)->getToken());
+
+        // A value: {$this->global->appName}
+        $engine->addProvider('appName', 'My Application');
+
+        return $engine;
+    }),
+];
+~~~
+
+Things to know:
+
+- A function is called when the template uses it. So it can give something that belongs to the current request, such as a CSRF token or the rights of the user, by asking a service at that moment. A value that is added with `addProvider()` is fixed when the engine is created.
+- Functions and the values under `$this->global` are separate from the parameters an action passes to a template, so they cannot be overwritten by them, or overwrite them.
+- Do not create the `Engine` yourself in a definition to add a filter. A decorator keeps working when the framework changes how the engine is set up.
+
+## Compiled Templates
+
+Latte compiles a template to PHP code, and keeps the result in the directory of `latte.tmp_dir`, which is `/tmp/latte` by default. The code in that directory is run by your application. On a server that is shared with others, set it to a directory that only your application can write to:
+
+~~~php
+<?php
+
+return [
+    'latte' => [
+        'tmp_dir' => '/var/cache/myapp/latte',
+    ],
+];
+~~~
+

@@ -144,7 +144,7 @@ return [
 
     Presentation\LatteRenderService::class => DI\autowire()
         ->constructorParameter('templateDir', DI\string('{app_dir}/templates'))
-        ->constructorParameter('tmpDir', '/tmp/latte'),
+        ->constructorParameter('tmpDir', DI\get('latte.tmp_dir')),
     Presentation\RenderService::class => DI\get(Presentation\LatteRenderService::class),
 
     Queue\Queue::class => DI\autowire(Queue\MemoryQueue::class)

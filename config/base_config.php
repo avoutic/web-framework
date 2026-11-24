@@ -29,6 +29,10 @@ return [
             'cookie_samesite' => 'Lax',  // SameSite attribute of the session cookie: Lax, Strict, None or '' for no attribute
         ],
     ],
+    'latte' => [
+        'tmp_dir' => '/tmp/latte',       // Directory for the compiled templates. Use a directory that only your
+        // application can write to
+    ],
     'json_response_paths' => [],         /* Path prefixes (such as '/api/') that always get JSON error and
                                           * authentication responses, whatever headers the client sends
                                           */
