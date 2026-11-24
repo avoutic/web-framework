@@ -336,7 +336,6 @@ SQL;
     public function instantiateEntityFromData(array $data, ?string $prefix = null): Entity
     {
         $entity = new static::$entityClass();
-        $reflection = new \ReflectionClass($entity);
 
         $prefixFmt = '';
         if ($prefix !== null && $prefix !== '')
@@ -362,6 +361,27 @@ SQL;
             'id' => (int) $data[$idKey],
         ];
 
+        $originalValues += $this->hydrateFields($entity, $data, $prefixFmt);
+
+        $entity->setOriginalValues($originalValues);
+
+        return $entity;
+    }
+
+    /**
+     * Write the fields from a result row into an entity.
+     *
+     * @param T                    $entity    The entity to write the fields into
+     * @param array<string, mixed> $data      The result row
+     * @param string               $prefixFmt The prefix of the field keys in the result row
+     *
+     * @return array<string, mixed> The values as the entity holds them, to use as the baseline for changes
+     */
+    private function hydrateFields(Entity $entity, array $data, string $prefixFmt = ''): array
+    {
+        $reflection = new \ReflectionClass($entity);
+        $values = [];
+
         foreach ($this->baseFields as $name)
         {
             $fieldKey = $prefixFmt.$name;
@@ -385,9 +405,15 @@ SQL;
             {
                 $property->setValue($entity, $value);
             }
+            elseif ($property->hasDefaultValue())
+            {
+                // A NULL value on a property that cannot hold NULL: use the default of
+                // the property, which is also what a new instance has
+                //
+                $property->setValue($entity, $property->getDefaultValue());
+            }
 
-            // For a NULL value on a property that cannot hold NULL, the default of the
-            // property is kept. Without a default the field stays uninitialized
+            // Without a default the field stays uninitialized
             //
             if (!$property->isInitialized($entity))
             {
@@ -397,12 +423,42 @@ SQL;
             // Snapshot the value as the entity holds it (after type coercion), so it
             // can be compared strictly when determining what changed
             //
-            $originalValues[$name] = $property->getValue($entity);
+            $values[$name] = $property->getValue($entity);
         }
 
-        $entity->setOriginalValues($originalValues);
+        return $values;
+    }
 
-        return $entity;
+    /**
+     * Reload an entity from the database, into the same instance.
+     *
+     * Use this to get the current values after another request may have changed the row,
+     * for example after waiting for a lock. Every reference to the entity sees the new
+     * values. Changes on the entity that were not saved are lost.
+     *
+     * @param T    $entity        The entity to reload
+     * @param bool $lockForUpdate Whether to lock the row for the rest of the transaction
+     *
+     * @throws \RuntimeException If the entity is new, or its row no longer exists
+     */
+    public function refresh(Entity $entity, bool $lockForUpdate = false): void
+    {
+        $class = static::$entityClass;
+
+        if ($entity->isNewObject())
+        {
+            throw new \RuntimeException("Cannot refresh an object that is not stored yet ({$class})");
+        }
+
+        $id = $entity->getId();
+        $data = $this->getFieldsFromDb($id, $lockForUpdate);
+
+        if ($data === null)
+        {
+            throw new \RuntimeException("Cannot refresh object {$id}, it no longer exists ({$class})");
+        }
+
+        $entity->setOriginalValues(['id' => $id] + $this->hydrateFields($entity, $data));
     }
 
     /**
@@ -488,20 +544,23 @@ SQL;
     /**
      * Get the fields of an entity from the database.
      *
-     * @param int $id The ID of the entity
+     * @param int  $id            The ID of the entity
+     * @param bool $lockForUpdate Whether to lock the row for the rest of the transaction
      *
      * @return null|array<string> The entity fields or null if not found
      *
      * @throws \RuntimeException If multiple entities are found for the given ID
      */
-    public function getFieldsFromDb(int $id): ?array
+    public function getFieldsFromDb(int $id, bool $lockForUpdate = false): ?array
     {
         $fieldsFmt = implode('`, `', $this->baseFields);
+        $lockFmt = $lockForUpdate ? 'FOR UPDATE' : '';
 
         $query = <<<SQL
         SELECT `{$fieldsFmt}`
         FROM {$this->tableName}
         WHERE id = ?
+        {$lockFmt}
 SQL;
 
         $params = [$id];

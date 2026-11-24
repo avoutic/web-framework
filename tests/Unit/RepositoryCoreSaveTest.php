@@ -216,4 +216,103 @@ final class RepositoryCoreSaveTest extends Unit
 
         $repository->save($job);
     }
+
+    /**
+     * @param null|array<string, mixed> $dbRow The row the database returns, null for no row
+     */
+    private function buildRepositoryWithRow(?array $dbRow): QueueJobRepository
+    {
+        $this->queries = [];
+
+        $database = $this->makeEmpty(Database::class, [
+            'query' => function (string $query, array $params) use ($dbRow) {
+                $this->queries[] = ['query' => $query, 'params' => $params];
+
+                $result = $this->makeEmpty(DatabaseResultWrapper::class, [
+                    'RecordCount' => ($dbRow === null) ? 0 : 1,
+                ]);
+                $result->fields = $dbRow ?? [];
+
+                return $result;
+            },
+        ]);
+
+        return $this->construct(
+            QueueJobRepository::class,
+            [
+                $this->makeEmpty(Container::class),
+                $database,
+            ]
+        );
+    }
+
+    public function testRefreshLoadsTheCurrentValuesIntoTheSameInstance()
+    {
+        $current = $this->row();
+        $current['attempts'] = '2';
+        $current['error'] = 'failed before';
+        $current['reserved_at'] = '500';
+
+        $repository = $this->buildRepositoryWithRow($current);
+
+        $job = $repository->instantiateEntityFromData($this->row());
+        $reference = $job;
+
+        $repository->refresh($job);
+
+        verify($reference->getAttempts())->same(2);
+        verify($reference->getError())->same('failed before');
+        verify($reference->getReservedAt())->same(500);
+        verify($this->queries[0]['params'])->same([7]);
+        verify($this->queries[0]['query'])->stringNotContainsString('FOR UPDATE');
+    }
+
+    public function testRefreshResetsTheBaselineAndDropsUnsavedChanges()
+    {
+        $repository = $this->buildRepositoryWithRow($this->row());
+
+        $job = $repository->instantiateEntityFromData($this->row());
+        $job->setAttempts(9);
+
+        $repository->refresh($job);
+
+        verify($job->getAttempts())->same(0);
+        verify($repository->getChangedFields($job))->same([]);
+    }
+
+    public function testRefreshSetsAColumnThatBecameNull()
+    {
+        $before = $this->row();
+        $before['error'] = 'old error';
+
+        $repository = $this->buildRepositoryWithRow($this->row());
+
+        $job = $repository->instantiateEntityFromData($before);
+
+        $repository->refresh($job);
+
+        verify($job->getError())->null();
+    }
+
+    public function testRefreshCanLockTheRow()
+    {
+        $repository = $this->buildRepositoryWithRow($this->row());
+
+        $job = $repository->instantiateEntityFromData($this->row());
+
+        $repository->refresh($job, true);
+
+        verify($this->queries[0]['query'])->stringContainsString('FOR UPDATE');
+    }
+
+    public function testRefreshThrowsWhenTheRowIsGone()
+    {
+        $repository = $this->buildRepositoryWithRow(null);
+
+        $job = $repository->instantiateEntityFromData($this->row());
+
+        verify(function () use ($repository, $job) {
+            $repository->refresh($job);
+        })->callableThrows(\RuntimeException::class);
+    }
 }

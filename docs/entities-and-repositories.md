@@ -448,6 +448,30 @@ $totalCreditsByStatus = $userRepository
     ->sum('credits');
 ~~~
 
+## Saving and Reloading an Entity
+
+`save()` only writes the fields that changed since the entity was loaded or last saved. A second `save()` without changes does not query the database.
+
+An entity holds the values of the moment it was loaded. When another request may have changed the row since, for example when you had to wait for a lock, reload it with `refresh()`:
+
+~~~php
+<?php
+
+$this->database->transaction(function () use ($account, $amount) {
+    // Lock the row and get its current values
+    $this->accountRepository->refresh($account, lockForUpdate: true);
+
+    $account->setBalance($account->getBalance() - $amount);
+    $this->accountRepository->save($account);
+});
+~~~
+
+`refresh()` loads the current values into the same instance, so every reference to the entity sees them. Things to know:
+
+- Changes on the entity that were not saved are lost.
+- With `lockForUpdate`, the row is locked until the transaction ends. Use it inside a transaction.
+- It throws a `RuntimeException` when the row no longer exists, or when the entity was never stored.
+
 ## Working with EntityCollection
 
 `EntityCollection` is a specialized class for handling collections of entities. It implements both `Iterator` and `Countable` interfaces, providing several advantages over regular arrays:
