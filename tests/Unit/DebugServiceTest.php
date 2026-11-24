@@ -5,6 +5,7 @@ namespace Tests\Unit;
 use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use Psr\Log\LoggerInterface;
 use Slim\Psr7\Factory\RequestFactory;
 use Slim\Psr7\Factory\StreamFactory;
 use WebFramework\Core\RuntimeEnvironment;
@@ -437,6 +438,7 @@ final class DebugServiceTest extends Unit
         $instance = new DebugService(
             $this->makeEmpty(AuthenticationService::class),
             $this->makeEmpty(DatabaseProvider::class),
+            $this->makeEmpty(LoggerInterface::class),
             $this->makeEmpty(ReportFunction::class),
             $this->makeEmpty(RuntimeEnvironment::class),
             ['x-internal'],
@@ -662,6 +664,7 @@ TXT;
                     ],
                 ),
                 'databaseProvider' => $databaseProvider,
+                'logger' => $this->makeEmpty(LoggerInterface::class),
                 'reportFunction' => $this->makeEmpty(NullReportFunction::class),
                 'runtimeEnvironment' => $this->makeEmpty(
                     RuntimeEnvironment::class,
@@ -767,6 +770,7 @@ TXT;
             [
                 'authenticationService' => $this->makeEmpty(NullAuthenticationService::class),
                 'databaseProvider' => $this->makeEmpty(DatabaseProvider::class),
+                'logger' => $this->makeEmpty(LoggerInterface::class),
                 'reportFunction' => $this->makeEmpty(
                     MailReportFunction::class,
                     [
@@ -788,5 +792,58 @@ TXT;
         );
 
         verify($instance->reportError('TestMessage'));
+    }
+
+    private function buildServiceWithFailingReportFunction(LoggerInterface $logger): DebugService
+    {
+        return new DebugService(
+            $this->makeEmpty(AuthenticationService::class, ['isAuthenticated' => false]),
+            $this->makeEmpty(DatabaseProvider::class),
+            $logger,
+            $this->makeEmpty(ReportFunction::class, [
+                'report' => Expected::once(function () {
+                    throw new \RuntimeException('mail backend down');
+                }),
+            ]),
+            $this->makeEmpty(RuntimeEnvironment::class),
+        );
+    }
+
+    public function testReportErrorDoesNotThrowWhenReportFunctionFails()
+    {
+        $instance = $this->buildServiceWithFailingReportFunction(
+            $this->makeEmpty(LoggerInterface::class, [
+                'error' => Expected::once(function ($message, $context) {
+                    verify($message)->equals('Failed to report error');
+                    verify($context['reason'])->equals('mail backend down');
+                }),
+            ])
+        );
+
+        $instance->reportError('TestMessage');
+    }
+
+    public function testReportExceptionDoesNotThrowWhenReportFunctionFails()
+    {
+        $instance = $this->buildServiceWithFailingReportFunction(
+            $this->makeEmpty(LoggerInterface::class, [
+                'error' => Expected::once(),
+            ])
+        );
+
+        $instance->reportException(new \LogicException('original'));
+    }
+
+    public function testReportDoesNotThrowWhenLoggingTheFailureFailsToo()
+    {
+        $instance = $this->buildServiceWithFailingReportFunction(
+            $this->makeEmpty(LoggerInterface::class, [
+                'error' => function () {
+                    throw new \RuntimeException('logger down');
+                },
+            ])
+        );
+
+        $instance->reportError('TestMessage');
     }
 }

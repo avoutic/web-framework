@@ -110,11 +110,29 @@ class MailReportFunction implements ReportFunction
 
         $this->logger->info('Sending error report', ['title' => $title]);
 
-        $this->mailService->sendRawMail(
-            null,
-            $this->assertRecipient,
-            $title,
-            $errorReport->toString(),
-        );
+        // A failure to send must not become an error of its own: this runs while another
+        // error is being handled
+        //
+        try
+        {
+            $result = $this->mailService->sendRawMail(
+                null,
+                $this->assertRecipient,
+                $title,
+                $errorReport->toString(),
+            );
+        }
+        catch (\Throwable $e)
+        {
+            $result = $e->getMessage();
+        }
+
+        if ($result !== true)
+        {
+            $this->logger->error('Failed to send error report', [
+                'title' => $title,
+                'reason' => is_string($result) ? $result : 'Unknown error',
+            ]);
+        }
     }
 }

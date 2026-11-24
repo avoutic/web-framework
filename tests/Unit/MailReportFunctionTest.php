@@ -209,4 +209,57 @@ final class MailReportFunctionTest extends Unit
 
         verify($instance->report('TestMessage', 'TestError', $report));
     }
+
+    private function buildReport(): ErrorReport
+    {
+        return $this->make(ErrorReport::class, [
+            'toString' => 'my_report',
+            'getHash' => 'my_hash',
+        ]);
+    }
+
+    public function testSendFailureIsLoggedAndNotThrown()
+    {
+        $instance = $this->construct(
+            MailReportFunction::class,
+            [
+                $this->makeEmpty(NullCache::class, ['get' => ['count' => 1]]),
+                $this->makeEmpty(LoggerInterface::class, [
+                    'error' => Expected::once(function ($message, $context) {
+                        verify($message)->equals('Failed to send error report');
+                        verify($context['reason'])->equals('mail backend down');
+                    }),
+                ]),
+                $this->makeEmpty(NullMailService::class, [
+                    'sendRawMail' => Expected::once(function () {
+                        throw new \RuntimeException('mail backend down');
+                    }),
+                ]),
+                '',
+            ],
+        );
+
+        $instance->report('TestMessage', 'TestError', $this->buildReport());
+    }
+
+    public function testRefusedSendIsLogged()
+    {
+        $instance = $this->construct(
+            MailReportFunction::class,
+            [
+                $this->makeEmpty(NullCache::class, ['get' => ['count' => 1]]),
+                $this->makeEmpty(LoggerInterface::class, [
+                    'error' => Expected::once(function ($message, $context) {
+                        verify($context['reason'])->equals('inactive_address');
+                    }),
+                ]),
+                $this->makeEmpty(NullMailService::class, [
+                    'sendRawMail' => Expected::once('inactive_address'),
+                ]),
+                '',
+            ],
+        );
+
+        $instance->report('TestMessage', 'TestError', $this->buildReport());
+    }
 }

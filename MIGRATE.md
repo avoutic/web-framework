@@ -42,6 +42,9 @@
     * Query parameters in `REQUEST_URI`, `QUERY_STRING` and the referer are scrubbed like inputs.
     * The three lists are configurable as `error_report.scrub_headers`, `error_report.scrub_inputs` and `error_report.server_params`. Add the names of your own secret fields and headers to them.
     * `DebugService` has three new optional constructor parameters for these lists.
+* The default log channel is no longer silent. `channels.default` now writes messages of level `error` and higher to the PHP error log, and `channels.exception` follows `channels.default`. Before, both were a `NullLogger`, so an application that did not bind the channels recorded unhandled exceptions nowhere. Applications that bind both channels are not affected. An application that binds only `channels.default` now also gets the exception channel in that logger. To keep the old behaviour, bind both channels to `Psr\Log\NullLogger`.
+* `DebugService::reportError()` and `DebugService::reportException()` never throw anymore. A failure in the report function is logged. `DebugService` has a new constructor parameter `LoggerInterface $logger`.
+* `MailReportFunction` no longer throws when the mail cannot be sent. It logs the failure, also when the mail service returns an error instead of throwing.
 * `AdminUserMiddleware` now throws `HttpUnauthorizedException` (401) for a request without an authenticated user. It used to throw a `RuntimeException`, which resulted in a 500. The `RuntimeException` remains for the case where `AuthenticationMiddleware` has not run.
 * `LoginService::authenticate()` can now throw `LoginRefusedException` when `preAuthenticate()` refuses the login. Custom login actions or endpoints that call it must catch this exception.
 
@@ -51,6 +54,7 @@
 * `UserVerificationService::handleData()` returns an extra `first_verification` flag that tells whether this call verified the user for the first time, and `post_verify_data` with the registration after verify data on first verification.
 * Introduce `Security\AccountStatusChecker` with `DefaultAccountStatusChecker` and `NullAccountStatusChecker`, and `AccountDisabledException`. Use it for anything that is a property of the account (disabled, suspended, pending approval). Use `LoginExtensionInterface::preAuthenticate()` for checks that depend on the request.
 * `MailReportFunction` logs a warning when its rate limiting is not active because the cache does not store values, which is the case with the default `NullCache`. The report is still mailed. Before, every error silently sent a mail.
+* Introduce the `SanityCheck\ErrorReporting` sanity check, which fails when unhandled exceptions are neither logged nor reported.
 * Introduce the `SanityCheck\MailReportRateLimit` sanity check, which fails when error reports are sent by mail while the cache does not store values. Add it to `sanity_check_modules` if you use `MailReportFunction`.
 * Introduce `Exception\MailException` (a `\RuntimeException`) for failures of a mail backend, so callers do not depend on the exceptions of a specific backend. It is thrown by mail modules that support it, such as `web-framework-postmark` for WebFramework 12.
 * Introduce the constant `MailBackend::INACTIVE_ADDRESS` for the result of a permanently refused recipient.

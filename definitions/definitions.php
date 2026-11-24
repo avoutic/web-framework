@@ -5,13 +5,15 @@ namespace WebFramework;
 use Composer\Autoload\ClassLoader;
 use DI;
 use Latte\Engine;
+use Monolog\Handler\ErrorLogHandler;
+use Monolog\Level;
+use Monolog\Logger;
 use Odan\Session\PhpSession;
 use Odan\Session\SessionInterface;
 use Odan\Session\SessionManagerInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Log\LoggerInterface;
-use Psr\Log\NullLogger;
 use Slim\Http\Factory\DecoratedResponseFactory;
 use Slim\Psr7\Factory\ResponseFactory;
 use Slim\Psr7\Factory\StreamFactory;
@@ -36,8 +38,16 @@ return [
         return new PhpSession($options);
     },
 
-    'channels.default' => NullLogger::class,
-    'channels.exception' => NullLogger::class,
+    // Errors are visible out of the box: the default channel writes level error and up to
+    // the PHP error log. The exception channel follows the default channel, so binding
+    // 'channels.default' is enough to send all framework logging somewhere else
+    'channels.default' => static function (): LoggerInterface {
+        $logger = new Logger('default');
+        $logger->pushHandler(new ErrorLogHandler(ErrorLogHandler::OPERATING_SYSTEM, Level::Error));
+
+        return $logger;
+    },
+    'channels.exception' => static fn (ContainerInterface $c): LoggerInterface => $c->get('channels.default'),
 
     'app_dir' => function (ContainerInterface $c) {
         // Determine app dir

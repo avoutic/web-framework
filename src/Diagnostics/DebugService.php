@@ -12,6 +12,7 @@
 namespace WebFramework\Diagnostics;
 
 use Psr\Http\Message\ServerRequestInterface as Request;
+use Psr\Log\LoggerInterface;
 use Slim\Routing\RouteContext;
 use WebFramework\Core\RuntimeEnvironment;
 use WebFramework\Database\Database;
@@ -72,6 +73,7 @@ class DebugService
      *
      * @param AuthenticationService $authenticationService Service for handling authentication
      * @param DatabaseProvider      $databaseProvider      Provider for database access
+     * @param LoggerInterface       $logger                The logger
      * @param ReportFunction        $reportFunction        Function for reporting errors
      * @param RuntimeEnvironment    $runtimeEnvironment    Runtime environment information
      * @param null|array<string>    $scrubHeaders          Parts of header names to scrub (null for the defaults)
@@ -81,6 +83,7 @@ class DebugService
     public function __construct(
         private AuthenticationService $authenticationService,
         private DatabaseProvider $databaseProvider,
+        private LoggerInterface $logger,
         private ReportFunction $reportFunction,
         private RuntimeEnvironment $runtimeEnvironment,
         ?array $scrubHeaders = null,
@@ -95,6 +98,8 @@ class DebugService
     /**
      * Report an error.
      *
+     * This never throws. A failure to report is logged.
+     *
      * @param string       $message   The error message
      * @param array<mixed> $stack     The error stack trace
      * @param null|Request $request   The request object, if available
@@ -102,22 +107,59 @@ class DebugService
      */
     public function reportError(string $message, array $stack = [], ?Request $request = null, string $errorType = 'report_error'): void
     {
-        $errorReport = $this->getErrorReport($stack, $request, $errorType, $message);
+        try
+        {
+            $errorReport = $this->getErrorReport($stack, $request, $errorType, $message);
 
-        $this->reportFunction->report($message, $errorType, $errorReport);
+            $this->reportFunction->report($message, $errorType, $errorReport);
+        }
+        catch (\Throwable $reportError)
+        {
+            $this->logReportFailure($reportError, $message);
+        }
     }
 
     /**
      * Report an exception.
+     *
+     * This never throws. A failure to report is logged.
      *
      * @param \Throwable   $e       The Throwable object
      * @param null|Request $request The request object, if available
      */
     public function reportException(\Throwable $e, ?Request $request = null): void
     {
-        $errorReport = $this->getThrowableReport($e, $request);
+        try
+        {
+            $errorReport = $this->getThrowableReport($e, $request);
 
-        $this->reportFunction->report($e->getMessage(), $e::class, $errorReport);
+            $this->reportFunction->report($e->getMessage(), $e::class, $errorReport);
+        }
+        catch (\Throwable $reportError)
+        {
+            $this->logReportFailure($reportError, $e->getMessage());
+        }
+    }
+
+    /**
+     * Log that an error could not be reported. Reporting an error must never cause a new one.
+     *
+     * @param \Throwable $reportError The exception thrown while reporting
+     * @param string     $message     The message of the error that was being reported
+     */
+    private function logReportFailure(\Throwable $reportError, string $message): void
+    {
+        try
+        {
+            $this->logger->error('Failed to report error', [
+                'reason' => $reportError->getMessage(),
+                'error' => $message,
+            ]);
+        }
+        catch (\Throwable $loggingError)
+        {
+            // Nothing left to tell it to
+        }
     }
 
     /**

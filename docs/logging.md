@@ -73,9 +73,16 @@ Out of the box, WebFramework provides two channels, for which it provides defaul
 - `channels.default`
 - `channels.exception`
 
-Both are bound to the `NullLogger`.
+- `channels.default` writes messages of level `error` and higher to the PHP error log. This makes errors, including unhandled exceptions, visible without any configuration.
+- `channels.exception` follows `channels.default`.
 
-To define the Logger for these (and other) channels, you can override the definition in your definitions file (e.g. `definitions/app_definitions.php`).
+To define the Logger for these (and other) channels, you can override the definition in your definitions file (e.g. `definitions/app_definitions.php`). Because the exception channel follows the default channel, overriding `channels.default` is enough to send all framework logging to your own logger. Override `channels.exception` as well if you want unhandled exceptions somewhere else.
+
+The framework logs an unhandled exception to both channels. As long as the exception channel follows the default channel, it shows up twice in the same log: once as a short line, and once with the error report as context.
+
+### Bind the channels, not `LoggerInterface`
+
+`LoggerInterface` resolves to the default channel. Do not bind `LoggerInterface` to your own logger: classes that inject `LoggerInterface` would use it, but the framework also logs through `LogService` by channel name, and those messages, including unhandled exceptions, would not reach your logger. Bind `channels.default` instead.
 
 ## Adding or Replacing Channel Definitions
 

@@ -109,6 +109,24 @@ return [
 ];
 ~~~
 
+### ErrorReporting
+
+- **Purpose**: Ensures that unhandled exceptions end up somewhere.
+- **Checks**: Fails when the exception log channel is a `NullLogger` and the report function is the `NullReportFunction` at the same time.
+- **Configuration**: None.
+
+#### Example
+
+~~~php
+<?php
+
+return [
+    'sanity_check_modules' => [
+        \WebFramework\SanityCheck\ErrorReporting::class => [],
+    ],
+];
+~~~
+
 ### MailReportRateLimit
 
 - **Purpose**: Ensures that error reports by mail can be rate limited. `MailReportFunction` counts errors in the cache. With a cache that does not store values, such as the default `NullCache`, every error sends a mail.
