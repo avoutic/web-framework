@@ -190,6 +190,9 @@ Each field definition is an associative array that can include the following key
 - `default` (optional): The default value for the field. Can be either:
   - A string or number value: Will be quoted automatically based on the field type
   - An array with a 'function' key: The value will be used as-is without quotes as a SQL function
+  - `null`, for `DEFAULT NULL`. The field has to be nullable (`'null' => true`), otherwise the migration is refused
+  - `true` or `false`, which become `1` and `0`
+  - Quotes and backslashes in a string default are escaped for you
 
 ### Constraint Definition
 

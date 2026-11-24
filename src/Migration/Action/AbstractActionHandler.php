@@ -85,6 +85,19 @@ abstract class AbstractActionHandler implements ActionHandler
             {
                 $defaultFmt = "DEFAULT {$info['default']['function']}";
             }
+            elseif ($info['default'] === null)
+            {
+                if (!$null)
+                {
+                    throw new \InvalidArgumentException("Field '{$info['name']}' cannot have NULL as default, it is not nullable");
+                }
+
+                $defaultFmt = 'DEFAULT NULL';
+            }
+            elseif (is_bool($info['default']))
+            {
+                $defaultFmt = 'DEFAULT '.($info['default'] ? '1' : '0');
+            }
             else
             {
                 $needsQuotes = in_array($info['type'], [
@@ -109,8 +122,11 @@ abstract class AbstractActionHandler implements ActionHandler
                     'tinyblob',
                 ], true);
 
+                // The default ends up in the statement itself, so escape what would end
+                // the quoted value
+                //
                 $defaultFmt = $needsQuotes
-                    ? "DEFAULT '{$info['default']}'"
+                    ? "DEFAULT '".str_replace(['\\', "'"], ['\\\\', "''"], (string) $info['default'])."'"
                     : "DEFAULT {$info['default']}";
             }
         }

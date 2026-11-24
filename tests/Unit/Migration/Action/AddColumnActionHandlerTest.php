@@ -130,4 +130,66 @@ final class AddColumnActionHandlerTest extends Unit
             $handler->buildStep($action);
         })->callableThrows(\InvalidArgumentException::class, 'No field type specified');
     }
+
+    /**
+     * @param array<string, mixed> $field
+     */
+    private function buildQuery(array $field): string
+    {
+        $step = (new AddColumnActionHandler())->buildStep([
+            'table_name' => 'test_table',
+            'field' => $field,
+        ]);
+
+        return $step->getQuery();
+    }
+
+    public function testNullDefaultOnATextColumnIsDefaultNull()
+    {
+        $query = $this->buildQuery(['name' => 'note', 'type' => 'varchar', 'size' => 50, 'null' => true, 'default' => null]);
+
+        verify($query)->stringContainsString('NULL DEFAULT NULL');
+        verify($query)->stringNotContainsString("DEFAULT ''");
+    }
+
+    public function testNullDefaultOnANumericColumnIsDefaultNull()
+    {
+        $query = $this->buildQuery(['name' => 'request_id', 'type' => 'int', 'null' => true, 'default' => null]);
+
+        verify($query)->stringContainsString('`request_id` INT NULL DEFAULT NULL');
+    }
+
+    public function testNullDefaultOnAColumnThatIsNotNullableIsRefused()
+    {
+        verify(function () {
+            $this->buildQuery(['name' => 'request_id', 'type' => 'int', 'default' => null]);
+        })->callableThrows(\InvalidArgumentException::class, "Field 'request_id' cannot have NULL as default, it is not nullable");
+    }
+
+    public function testBooleanDefaults()
+    {
+        verify($this->buildQuery(['name' => 'active', 'type' => 'tinyint', 'size' => 1, 'default' => false]))
+            ->stringContainsString('`active` TINYINT(1) NOT NULL DEFAULT 0')
+        ;
+        verify($this->buildQuery(['name' => 'active', 'type' => 'tinyint', 'size' => 1, 'default' => true]))
+            ->stringContainsString('`active` TINYINT(1) NOT NULL DEFAULT 1')
+        ;
+    }
+
+    public function testStringDefaultIsEscaped()
+    {
+        $query = $this->buildQuery(['name' => 'label', 'type' => 'varchar', 'size' => 50, 'default' => "it's a \\ test"]);
+
+        verify($query)->stringContainsString("DEFAULT 'it''s a \\\\ test'");
+    }
+
+    public function testEmptyStringAndZeroDefaultsAreKept()
+    {
+        verify($this->buildQuery(['name' => 'label', 'type' => 'varchar', 'size' => 50, 'default' => '']))
+            ->stringContainsString("DEFAULT ''")
+        ;
+        verify($this->buildQuery(['name' => 'count', 'type' => 'int', 'default' => 0]))
+            ->stringContainsString('DEFAULT 0')
+        ;
+    }
 }
