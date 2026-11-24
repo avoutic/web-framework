@@ -124,6 +124,52 @@ class TaskRunner
     }
 
     /**
+     * Resolve an entry of the definition files to the path of the file.
+     *
+     * - A path that starts with '/' is relative to the application directory, like the
+     *   configuration files are.
+     * - Any other path is relative to the definitions directory of the application.
+     * - A '?' in front makes the file optional.
+     *
+     * @param string $file The entry from the definition files
+     *
+     * @return null|string The path of the file, or null for an optional file that does not exist
+     */
+    public function resolveDefinitionFile(string $file): ?string
+    {
+        $optional = str_starts_with($file, '?');
+
+        if ($optional)
+        {
+            $file = substr($file, 1);
+        }
+
+        if (str_starts_with($file, '/'))
+        {
+            $path = "{$this->appDir}{$file}";
+
+            // Before, every path was relative to the definitions directory, also with a
+            // slash in front. Keep those entries working
+            //
+            if (!file_exists($path) && file_exists("{$this->appDir}/definitions{$file}"))
+            {
+                $path = "{$this->appDir}/definitions{$file}";
+            }
+        }
+        else
+        {
+            $path = "{$this->appDir}/definitions/{$file}";
+        }
+
+        if ($optional && !file_exists($path))
+        {
+            return null;
+        }
+
+        return $path;
+    }
+
+    /**
      * Build the configuration and container.
      */
     public function build(): void
@@ -144,17 +190,12 @@ class TaskRunner
         $definitionFiles = $this->definitionFiles ?? $config['definition_files'];
         foreach ($definitionFiles as $file)
         {
-            if ($file[0] == '?')
+            $path = $this->resolveDefinitionFile($file);
+
+            if ($path !== null)
             {
-                $file = substr($file, 1);
-
-                if (!file_exists("{$this->appDir}/definitions/{$file}"))
-                {
-                    continue;
-                }
+                $this->containerBuilder->addDefinitions($path);
             }
-
-            $this->containerBuilder->addDefinitions("{$this->appDir}/definitions/{$file}");
         }
 
         $this->container = $this->containerBuilder->build();

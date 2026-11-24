@@ -23,7 +23,14 @@ To set your own definition files, you need to specify them in the `base_config.p
 
 For available configuration options and default settings, see `config/base_config.php`.
 
-If the file starts with a `?`, it will be ignored if it does not exist. This is useful for local configuration files that you don't want to commit to version control.
+Each entry is the path of a definition file:
+
+- A path that starts with `/` is relative to your application directory, the same way configuration files are listed. For example `/vendor/avoutic/web-framework/definitions/definitions.php` or `/definitions/app_definitions.php`.
+- Any other path is relative to the `definitions` directory of your application. For example `app_definitions.php` or `../vendor/avoutic/web-framework/definitions/definitions.php`.
+
+If the entry starts with a `?`, the file is ignored if it does not exist. This is useful for local definition files that you don't want to commit to version control.
+
+The files are loaded in the order they are listed, and a later file replaces the entries of an earlier one. So list the definitions of the framework first, then those of the modules you use, such as `/vendor/avoutic/web-framework-mysql/definitions/definitions.php`, and your own definitions last.
 
 ### Example Configuration
 
