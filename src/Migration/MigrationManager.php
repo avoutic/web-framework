@@ -205,7 +205,7 @@ class MigrationManager
 
         $this->write("Running {$type} migration: {$migrationFile} ({$direction})".PHP_EOL);
 
-        $migrationData = require $migrationPath;
+        $migrationData = (new MigrationFileLoader())->load($migrationPath);
 
         if (isset($migrationData[$direction]) && is_array($migrationData[$direction]))
         {
@@ -283,12 +283,7 @@ class MigrationManager
             return false;
         }
 
-        $migrationData = require $migrationPath;
-
-        if (!is_array($migrationData))
-        {
-            return false;
-        }
+        $migrationData = (new MigrationFileLoader())->load($migrationPath);
 
         if ($direction === 'up' && isset($migrationData['actions']) && is_array($migrationData['actions']))
         {

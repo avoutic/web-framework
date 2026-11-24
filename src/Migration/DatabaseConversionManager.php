@@ -397,11 +397,11 @@ class DatabaseConversionManager
         $schemeData = [];
         if (file_exists($schemeFile))
         {
-            $schemeData = require $schemeFile;
+            $schemeData = (new MigrationFileLoader())->load($schemeFile);
         }
         elseif (file_exists($schemeIncFile))
         {
-            $schemeData = require $schemeIncFile;
+            $schemeData = (new MigrationFileLoader())->load($schemeIncFile);
         }
 
         $migrationFile = "{$migrationsDir}/{$migrationName}.php";
