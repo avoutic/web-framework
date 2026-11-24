@@ -111,6 +111,26 @@ return [
 
 - **Purpose**: Adds the client IP address to the request attributes for use in other middleware or actions.
 
+Behind a reverse proxy or a load balancer, every request comes from the address of that proxy. Without further configuration all visitors then share one IP address, and the blacklist, which counts failed logins per IP address, counts them together.
+
+List the addresses of your proxies in `security.trusted_proxies`, as single addresses or as CIDR ranges:
+
+~~~php
+<?php
+
+return [
+    'security' => [
+        'trusted_proxies' => ['10.0.0.5', '172.16.0.0/12', 'fd00::/8'],
+    ],
+];
+~~~
+
+When a request comes from one of these addresses, the client address is taken from its `X-Forwarded-For` header: the right-most address in it that is not a trusted proxy itself. A `X-Forwarded-For` header on a request from any other address is ignored, as anyone can send it.
+
+Only list addresses that you control. Listing a range that visitors can connect from lets them choose their own IP address.
+
+When the request has no address at all, which only happens outside of a web server, the `ip` attribute is the string `app`.
+
 ### SessionStartMiddleware
 
 - **Purpose**: Starts a session for the request, allowing session data to be accessed and modified during the request lifecycle.

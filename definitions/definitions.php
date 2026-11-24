@@ -149,6 +149,8 @@ return [
 
     Queue\Queue::class => DI\autowire(Queue\MemoryQueue::class)
         ->constructorParameter('name', 'default'),
+    Middleware\IpMiddleware::class => DI\autowire()
+        ->constructorParameter('trustedProxies', DI\get('security.trusted_proxies')),
     Queue\QueueService::class => DI\decorate(function (Queue\QueueService $queueService) {
         // Register mail job handlers
         $queueService->registerJobHandler(Job\RawMailJob::class, Handler\RawMailJobHandler::class);

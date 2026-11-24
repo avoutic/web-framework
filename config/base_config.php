@@ -46,6 +46,7 @@ return [
             'store_period' => 2592000,  // Period to keep entries (default: 30 days)
             'threshold' => 25,          // Points before blacklisting occurs (default: 25)
         ],
+        'trusted_proxies' => [],        // Addresses and CIDR ranges of the proxies in front of the application
         'hash' => 'sha256',
         'hmac_key' => env('HMAC_KEY', ''),
         'crypt_key' => env('CRYPT_KEY', ''),
