@@ -21,11 +21,61 @@ The `TaskRunner` class specifies a default set of configuration files that are u
 
 - `/vendor/avoutic/web-framework/config/base_config.php`
 - `/config/config.php`
+- `?/config/config_{APP_ENV}.php`, when the `APP_ENV` environment variable is set
 - `?/config/config_local.php`
 
 The `?` before a file path indicates that the file is optional. If it exists, it will be included; otherwise, it will be ignored.
 
-Meaning that if will load the base configuration file from the WebFramework, then the application configuration file, and finally the local configuration file if it exists.
+Meaning that if will load the base configuration file from the WebFramework, then the application configuration file, then the configuration file for the environment if it exists, and finally the local configuration file if it exists.
+
+### Configuration per Environment
+
+With `APP_ENV=staging` in the environment, `/config/config_staging.php` is loaded if it exists, on top of `config.php` and below `config_local.php`. Use it for what differs per environment and belongs in version control. `APP_ENV` must be a real environment variable: it is read before the `.env` file is loaded, as it also selects which `.env` file is used. With `APP_ENV=local` no extra file is loaded, as `config_local.php` already is.
+
+### How Files Are Merged
+
+Each file is merged on top of the files before it:
+
+- Arrays with named keys are merged key by key, at every level. A file only has to contain the keys it changes.
+- Lists (arrays without keys, such as `definition_files`, `routes` or the middleware stacks) are replaced as a whole. The order of a list often matters, so a later file states the complete list.
+
+### Extending a List
+
+To add to a list instead of restating it, a configuration file can return a function instead of an array. The function gets the configuration of the files before it, and returns the configuration to merge on top:
+
+~~~php
+<?php
+
+return fn (array $config) => [
+    'definition_files' => [
+        ...$config['definition_files'],
+        '?local_definitions.php',
+    ],
+];
+~~~
+
+As it is plain PHP, you can also insert at a position, for example to add a middleware before another one:
+
+~~~php
+<?php
+
+use App\Middleware\MaintenanceMiddleware;
+use WebFramework\Middleware\CsrfValidationMiddleware;
+
+return function (array $config): array {
+    $stack = $config['middlewares']['post_routing'];
+
+    array_splice($stack, array_search(CsrfValidationMiddleware::class, $stack, true), 0, [MaintenanceMiddleware::class]);
+
+    return [
+        'middlewares' => [
+            'post_routing' => $stack,
+        ],
+    ];
+};
+~~~
+
+What the function returns is merged like the array of any other configuration file.
 
 ### Available Configuration Options
 

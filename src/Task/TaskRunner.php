@@ -35,12 +35,8 @@ class TaskRunner
     private ?Container $container = null;
     private bool $isPlaintext = false;
 
-    /** @var array<string> Default configuration files */
-    private array $configFiles = [
-        '/vendor/avoutic/web-framework/config/base_config.php',
-        '/config/config.php',
-        '?/config/config_local.php',
-    ];
+    /** @var ?array<string> Configuration files set with setConfigFiles(), null for the defaults */
+    private ?array $configFiles = null;
 
     /** @var ?array<string> */
     private ?array $definitionFiles = null;
@@ -102,6 +98,41 @@ class TaskRunner
     public function setPlaintext(): void
     {
         $this->isPlaintext = true;
+    }
+
+    /**
+     * Get the configuration files to use.
+     *
+     * Without files set with setConfigFiles(), these are the base configuration of the
+     * framework, the configuration of the application, the optional configuration for the
+     * environment in APP_ENV, and the optional local configuration.
+     *
+     * @return array<string> The configuration file paths
+     */
+    public function getConfigFiles(): array
+    {
+        if ($this->configFiles !== null)
+        {
+            return $this->configFiles;
+        }
+
+        $files = [
+            '/vendor/avoutic/web-framework/config/base_config.php',
+            '/config/config.php',
+        ];
+
+        // The name ends up in a path, so only accept a plain name. 'local' is the local
+        // configuration itself
+        //
+        $appEnv = getenv('APP_ENV');
+        if ($appEnv !== false && $appEnv !== 'local' && preg_match('/^[A-Za-z0-9_-]+$/', $appEnv))
+        {
+            $files[] = "?/config/config_{$appEnv}.php";
+        }
+
+        $files[] = '?/config/config_local.php';
+
+        return $files;
     }
 
     public function loadEnv(): void
@@ -177,7 +208,7 @@ class TaskRunner
         $this->loadEnv();
 
         $config = $this->configBuilder->buildConfig(
-            $this->configFiles,
+            $this->getConfigFiles(),
         );
 
         // Build container

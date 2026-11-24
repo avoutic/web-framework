@@ -337,4 +337,57 @@ final class ConfigBuilderBuildTest extends Unit
             $instance->buildConfig(['/nonexistent.php']);
         })->callableThrows(\RuntimeException::class, "File '/nonexistent.php' does not exist");
     }
+
+    private function writeConfig(string $name, string $php): string
+    {
+        if (!is_dir($this->tempDir.'/config'))
+        {
+            mkdir($this->tempDir.'/config', 0o777, true);
+        }
+
+        file_put_contents($this->tempDir.'/config/'.$name, '<?php return '.$php.';');
+
+        return '/config/'.$name;
+    }
+
+    public function testConfigFileCanReturnAFunctionThatExtendsAList()
+    {
+        $base = $this->writeConfig('base.php', "['definition_files' => ['core.php', 'app.php'], 'debug' => false]");
+        $extra = $this->writeConfig('extra.php', "fn (array \$config) => ['definition_files' => [...\$config['definition_files'], '?local.php']]");
+
+        $config = (new ConfigBuilder($this->tempDir))->buildConfig([$base, $extra]);
+
+        verify($config['definition_files'])->same(['core.php', 'app.php', '?local.php']);
+        verify($config['debug'])->false();
+    }
+
+    public function testFunctionSeesTheConfigurationOfAllEarlierFiles()
+    {
+        $base = $this->writeConfig('base.php', "['stack' => ['a', 'c']]");
+        $middle = $this->writeConfig('middle.php', "['stack' => ['a', 'b', 'c']]");
+        $last = $this->writeConfig('last.php', "function (array \$config) { \$stack = \$config['stack']; array_splice(\$stack, 1, 0, ['inserted']); return ['stack' => \$stack]; }");
+
+        $config = (new ConfigBuilder($this->tempDir))->buildConfig([$base, $middle, $last]);
+
+        verify($config['stack'])->same(['a', 'inserted', 'b', 'c']);
+    }
+
+    public function testFunctionResultIsMergedLikeAnArray()
+    {
+        $base = $this->writeConfig('base.php', "['security' => ['a' => 1, 'b' => 2]]");
+        $extra = $this->writeConfig('extra.php', "fn (array \$config) => ['security' => ['b' => 3]]");
+
+        $config = (new ConfigBuilder($this->tempDir))->buildConfig([$base, $extra]);
+
+        verify($config['security'])->same(['a' => 1, 'b' => 3]);
+    }
+
+    public function testFunctionThatDoesNotReturnAnArrayIsRefused()
+    {
+        $file = $this->writeConfig('bad.php', "fn (array \$config) => 'nope'");
+
+        verify(function () use ($file) {
+            (new ConfigBuilder($this->tempDir))->buildConfig([$file]);
+        })->callableThrows(\RuntimeException::class, "No valid config array found in '{$file}'");
+    }
 }

@@ -70,6 +70,15 @@ class ConfigBuilder
         }
 
         $fileConfig = require "{$this->appDir}{$configLocation}";
+
+        // A config file can return a function instead of an array. It gets the configuration
+        // of the files before it, so it can extend a list instead of replacing it
+        //
+        if ($fileConfig instanceof \Closure)
+        {
+            $fileConfig = $fileConfig($this->globalConfig);
+        }
+
         if (!is_array($fileConfig))
         {
             throw new \RuntimeException("No valid config array found in '{$configLocation}'");

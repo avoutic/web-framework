@@ -100,7 +100,7 @@ return [
 ];
 ~~~
 
-A list in your configuration replaces the default list, so repeat the defaults you want to keep. The error message and the stack trace are not scrubbed.
+A list in your configuration replaces the default list, so repeat the defaults you want to keep, or extend the list with a function, see [Configuration](configuration.md). The error message and the stack trace are not scrubbed.
 
 ### Rate limiting of mailed reports
 

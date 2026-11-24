@@ -61,6 +61,9 @@
 * `JsonParserMiddleware` rewinds the request body after parsing it. Before, a later `getBody()->getContents()` returned an empty string, which for example broke verifying a webhook signature over the raw body.
 * Introduce `Http\SlimAppFactory`, which creates the Slim application with the configured middlewares and routes without running it, on the container it is resolved from.
 * Introduce `Middleware\RequestDecoratorMiddleware`, which decorates a plain PSR-7 request as a `Slim\Http\ServerRequest`. Add it as the outermost middleware when requests are passed to `App::handle()` directly, for example by a test harness.
+* A configuration file can return a function instead of an array. The function gets the configuration of the files before it and returns the configuration to merge on top. Use it to extend a list, such as `definition_files` or a middleware stack, instead of restating it. Lists in an array are still replaced as a whole.
+* An optional `/config/config_{APP_ENV}.php` is loaded when the `APP_ENV` environment variable is set, between `config.php` and `config_local.php`. An application that happens to have a file with that name, without wanting it loaded, must rename it.
+* Introduce `TaskRunner::getConfigFiles()`.
 * New config option `json_response_paths`: path prefixes, such as `/api/`, that always get JSON error and authentication responses.
 * Introduce `ResponseEmitter::wantsJson()` to decide whether a request should get a JSON response.
 * Introduce the `SanityCheck\ErrorReporting` sanity check, which fails when unhandled exceptions are neither logged nor reported.
