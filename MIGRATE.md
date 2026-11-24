@@ -57,6 +57,7 @@
 * Introduce `Security\AccountStatusChecker` with `DefaultAccountStatusChecker` and `NullAccountStatusChecker`, and `AccountDisabledException`. Use it for anything that is a property of the account (disabled, suspended, pending approval). Use `LoginExtensionInterface::preAuthenticate()` for checks that depend on the request.
 * `MailReportFunction` logs a warning when its rate limiting is not active because the cache does not store values, which is the case with the default `NullCache`. The report is still mailed. Before, every error silently sent a mail.
 * `JsonParserMiddleware` rewinds the request body after parsing it. Before, a later `getBody()->getContents()` returned an empty string, which for example broke verifying a webhook signature over the raw body.
+* Introduce `Middleware\RequestDecoratorMiddleware`, which decorates a plain PSR-7 request as a `Slim\Http\ServerRequest`. Add it as the outermost middleware when requests are passed to `App::handle()` directly, for example by a test harness.
 * New config option `json_response_paths`: path prefixes, such as `/api/`, that always get JSON error and authentication responses.
 * Introduce `ResponseEmitter::wantsJson()` to decide whether a request should get a JSON response.
 * Introduce the `SanityCheck\ErrorReporting` sanity check, which fails when unhandled exceptions are neither logged nor reported.

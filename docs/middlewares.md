@@ -59,6 +59,26 @@ Here is a description of the purpose of each standard middleware implementation:
 
 - **Purpose**: Handles errors and exceptions by redirecting to appropriate error pages or handling exceptions gracefully.
 
+### RequestDecoratorMiddleware
+
+- **Purpose**: Makes sure the request is a decorated `Slim\Http\ServerRequest`, which the actions, extension hooks and events of the framework work with. A request that enters through `App::run()` is already decorated by Slim, and passes through unchanged. A request that is passed to `App::handle()` directly, for example by a test harness or another PSR-15 client, is not decorated, and without this middleware the first action it reaches fails with a `TypeError`.
+- **Placement**: It must be the outermost middleware, so it runs before any code that expects the decorated request. That is the last entry of the `pre_routing` list:
+
+~~~php
+<?php
+
+return [
+    'middlewares' => [
+        'pre_routing' => [
+            // End of stack
+            ErrorRedirectMiddleware::class,
+            RequestDecoratorMiddleware::class,
+            // Start of stack
+        ],
+    ],
+];
+~~~
+
 ### AuthenticationMiddleware
 
 - **Purpose**: Determines if there is an authenticated user and adds the info the the request attributes.
