@@ -13,6 +13,7 @@ namespace WebFramework\Console;
 
 use WebFramework\Diagnostics\DebugService;
 use WebFramework\Exception\ArgumentParserException;
+use WebFramework\Logging\LogService;
 use WebFramework\Task\TaskArgument;
 use WebFramework\Task\TaskOption;
 use WebFramework\Task\TaskRunner;
@@ -27,6 +28,7 @@ class ConsoleApplication
      */
     public function __construct(
         private DebugService $debugService,
+        private LogService $logService,
         private TaskRunner $taskRunner,
         private ConsoleTaskRegistryService $taskRegistry,
         private bool $debug,
@@ -83,6 +85,8 @@ class ConsoleApplication
         }
         catch (\Throwable $e)
         {
+            $this->reportFailure((string) $command, $e);
+
             if ($this->debug)
             {
                 $errorReport = $this->debugService->getThrowableReport($e);
@@ -97,6 +101,30 @@ class ConsoleApplication
 
             return 1;
         }
+    }
+
+    /**
+     * Log and report a failed command, the same way an unhandled exception in a web
+     * request is, so a failing scheduled task does not go unnoticed.
+     */
+    private function reportFailure(string $command, \Throwable $e): void
+    {
+        try
+        {
+            $message = "Unhandled exception in console command {$command}: {$e->getMessage()}";
+
+            $this->logService->error('default', $message);
+            $this->logService->error('exception', $message, [
+                'command' => $command,
+                'exception' => $e,
+            ]);
+        }
+        catch (\Throwable $loggingError)
+        {
+            // Still report and print the failure of the command itself
+        }
+
+        $this->debugService->reportException($e);
     }
 
     /**

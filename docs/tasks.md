@@ -55,6 +55,12 @@ $taskRunner->execute(CustomTask::class);
 
 This script initializes the `TaskRunner`, builds the application environment, and executes the `CustomTask`.
 
+### Failing Tasks
+
+A command that is run through the `framework` command line tool and fails with an exception is handled the same way as an unhandled exception in a web request: it is logged to the default and exception log channels and reported through the configured `ReportFunction`. The message is printed and the exit code is `1`. This way a failing scheduled task does not go unnoticed. Wrong arguments are not reported, they only show the usage.
+
+A script of your own that calls `TaskRunner::execute()` directly, like the example above, does not go through this handling. Catch exceptions there yourself and pass them to `DebugService::reportException()`.
+
 ## Existing Tasks
 
 The WebFramework includes several predefined tasks for common operations. Here are the existing tasks and their purposes:
