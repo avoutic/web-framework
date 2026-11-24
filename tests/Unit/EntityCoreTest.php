@@ -6,6 +6,7 @@ use Codeception\Test\Unit;
 use Tests\Support\TestChildEntity;
 use Tests\Support\TestEntity;
 use Tests\Support\TestRelistingEntity;
+use WebFramework\Entity\Right;
 
 /**
  * @internal
@@ -235,5 +236,52 @@ final class EntityCoreTest extends Unit
             'name', 'email', 'age', 'active', 'secret_field', 'created_at', 'nickname',
         ]);
         verify(TestRelistingEntity::getPrivateFields())->same(['secret_field']);
+    }
+
+    public function testResetToNewMakesAStoredEntityNewAgain()
+    {
+        $entity = new TestEntity();
+        $entity->setName('John');
+        $entity->setObjectId(42);
+        $entity->setOriginalValues(['id' => 42, 'name' => 'John']);
+
+        verify($entity->isNewObject())->false();
+
+        $entity->resetToNew();
+
+        verify($entity->isNewObject())->true();
+        verify($entity->getOriginalValues())->same([]);
+        verify($entity->getName())->equals('John');
+
+        // The id is gone, like on an entity that was never stored
+        verify(function () use ($entity) {
+            $entity->getId();
+        })->callableThrows(\Error::class);
+
+        // And it can be stored again
+        $entity->setObjectId(43);
+        verify($entity->getId())->equals(43);
+    }
+
+    public function testResetToNewWorksForAPrivateId()
+    {
+        $entity = new Right();
+        $entity->setObjectId(5);
+
+        $entity->resetToNew();
+
+        verify($entity->isNewObject())->true();
+        verify(function () use ($entity) {
+            $entity->getId();
+        })->callableThrows(\Error::class);
+    }
+
+    public function testResetToNewOnANewEntityIsHarmless()
+    {
+        $entity = new TestEntity();
+
+        $entity->resetToNew();
+
+        verify($entity->isNewObject())->true();
     }
 }

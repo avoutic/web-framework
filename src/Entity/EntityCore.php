@@ -342,4 +342,21 @@ abstract class EntityCore implements \Stringable, Entity
 
         $this->isNewObject = false;
     }
+
+    public function resetToNew(): void
+    {
+        $reflection = new \ReflectionClass($this);
+        $declaringClass = $reflection->getProperty('id')->getDeclaringClass()->getName();
+
+        // Make the id uninitialized again, as on an object that was never stored. The id
+        // can be private to the class that declares it, so unset it from that scope
+        //
+        \Closure::bind(function (string $property): void {
+            // Not an assignment of null: the property has to become uninitialized
+            unset($this->{$property});
+        }, $this, $declaringClass)('id');
+
+        $this->originalValues = [];
+        $this->isNewObject = true;
+    }
 }

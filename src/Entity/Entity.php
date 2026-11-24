@@ -75,6 +75,15 @@ interface Entity
     public function toRawArray(): array;
 
     /**
+     * Turn a stored entity back into a new one.
+     *
+     * Use this when the transaction that stored the entity was rolled back and the object
+     * is used again, for example in a retry. The id is cleared and the next save inserts
+     * the entity again. The other values of the entity are kept.
+     */
+    public function resetToNew(): void;
+
+    /**
      * Get the original values of the entity.
      *
      * @return array<string, mixed> An array of original values

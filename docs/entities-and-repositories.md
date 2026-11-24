@@ -472,6 +472,44 @@ $this->database->transaction(function () use ($account, $amount) {
 - With `lockForUpdate`, the row is locked until the transaction ends. Use it inside a transaction.
 - It throws a `RuntimeException` when the row no longer exists, or when the entity was never stored.
 
+### After a Rollback
+
+When you save a new entity, it gets its id and counts as stored from then on. If the transaction is rolled back after that, the row is gone, but the object does not know. Saving it again would not insert it.
+
+If you use such an object again, for example when you retry the transaction, turn it back into a new entity first:
+
+~~~php
+<?php
+
+$order = new Order();
+
+for ($attempt = 1; $attempt <= 3; $attempt++)
+{
+    try
+    {
+        $this->database->transaction(function () use ($order) {
+            $this->orderRepository->save($order);
+
+            // More work that can fail
+        });
+
+        break;
+    }
+    catch (DatabaseException $e)
+    {
+        if (!$e->isDeadlock() || $attempt === 3)
+        {
+            throw $e;
+        }
+
+        // The insert was rolled back: make the order new again for the next attempt
+        $order->resetToNew();
+    }
+}
+~~~
+
+`resetToNew()` clears the id and the baseline for changes, and keeps the other values. You have to call it yourself for every entity that was stored for the first time in the transaction that was rolled back. Creating the entities inside the callback, so every attempt starts with new objects, avoids the need for it.
+
 ## Working with EntityCollection
 
 `EntityCollection` is a specialized class for handling collections of entities. It implements both `Iterator` and `Countable` interfaces, providing several advantages over regular arrays:

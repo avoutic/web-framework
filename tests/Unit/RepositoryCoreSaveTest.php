@@ -315,4 +315,49 @@ final class RepositoryCoreSaveTest extends Unit
             $repository->refresh($job);
         })->callableThrows(\RuntimeException::class);
     }
+
+    public function testEntityResetToNewIsInsertedAgain()
+    {
+        // The row that the database returns for each insert
+        $first = $this->buildRepository()->instantiateEntityFromData($this->row());
+        $secondRow = $this->row();
+        $secondRow['id'] = '8';
+        $second = $this->buildRepository()->instantiateEntityFromData($secondRow);
+
+        $created = [$first, $second];
+
+        $repository = $this->construct(
+            QueueJobRepository::class,
+            [
+                $this->makeEmpty(Container::class),
+                $this->makeEmpty(Database::class, [
+                    'query' => Expected::never(),
+                ]),
+            ],
+            [
+                'create' => Expected::exactly(2, function () use (&$created) {
+                    return array_shift($created);
+                }),
+            ]
+        );
+
+        $job = new QueueJob();
+        $job->setQueueName('default');
+        $job->setJobData('{}');
+        $job->setAvailableAt(100);
+        $job->setCreatedAt(100);
+        $job->setAttempts(0);
+        $job->setMaxAttempts(3);
+
+        $repository->save($job);
+        verify($job->getId())->equals(7);
+
+        // The transaction was rolled back: the row does not exist
+        $job->resetToNew();
+
+        $repository->save($job);
+
+        verify($job->getId())->equals(8);
+        verify($job->isNewObject())->false();
+    }
 }
