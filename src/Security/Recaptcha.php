@@ -25,6 +25,8 @@ class Recaptcha
      * @var array<string> Array to store error codes returned by the reCAPTCHA API
      */
     private array $errorCodes = [];
+    private ?float $score = null;
+    private ?string $action = null;
 
     /**
      * Recaptcha constructor.
@@ -47,6 +49,32 @@ class Recaptcha
     public function setSecretKey(string $secretKey): void
     {
         $this->secretKey = $secretKey;
+    }
+
+    /**
+     * Get the score of the last verification.
+     *
+     * reCAPTCHA v3 gives a score between 0.0 (very likely a bot) and 1.0 (very likely a
+     * person). Which score is good enough is up to you.
+     *
+     * @return null|float The score, or null if the last verification gave none
+     */
+    public function getScore(): ?float
+    {
+        return $this->score;
+    }
+
+    /**
+     * Get the action of the last verification.
+     *
+     * reCAPTCHA v3 gives the action the token was made for. Check that it is the action
+     * you expect, so a token of one form cannot be used for another.
+     *
+     * @return null|string The action, or null if the last verification gave none
+     */
+    public function getAction(): ?string
+    {
+        return $this->action;
     }
 
     /**
@@ -77,6 +105,8 @@ class Recaptcha
 
         $recaptchaSecret = $this->secretKey;
         $this->errorCodes = [];
+        $this->score = null;
+        $this->action = null;
 
         $recaptchaData = [
             'secret' => $recaptchaSecret,
@@ -88,7 +118,16 @@ class Recaptcha
         ]);
 
         $body = $response->getBody();
-        $body = json_decode($body, true);
+        $body = json_decode((string) $body, true);
+
+        // An answer that cannot be read is not a verification
+        //
+        if (!is_array($body))
+        {
+            $this->logger->debug('Recaptcha answer is not readable');
+
+            return false;
+        }
 
         if (isset($body['error-codes']))
         {
@@ -107,6 +146,16 @@ class Recaptcha
             }
         }
 
-        return $body['success'];
+        if (isset($body['score']) && is_numeric($body['score']))
+        {
+            $this->score = (float) $body['score'];
+        }
+
+        if (isset($body['action']) && is_string($body['action']))
+        {
+            $this->action = $body['action'];
+        }
+
+        return ($body['success'] ?? false) === true;
     }
 }

@@ -45,23 +45,27 @@ class CaptchaService
     public function hasValidCaptcha(Request $request): bool
     {
         $span = $this->instrumentation->startSpan('captcha.check');
-        $captcha = $this->captchaFactory->getRecaptcha();
-        $captchaResponse = $request->getParam('g-recaptcha-response', '');
 
-        if (!strlen($captchaResponse))
+        try
+        {
+            $captcha = $this->captchaFactory->getRecaptcha();
+            $captchaResponse = $request->getParam('g-recaptcha-response', '');
+
+            if (!strlen($captchaResponse))
+            {
+                return false;
+            }
+
+            if (!$captcha->verifyResponse($captchaResponse))
+            {
+                throw new InvalidCaptchaException();
+            }
+
+            return true;
+        }
+        finally
         {
             $this->instrumentation->finishSpan($span);
-
-            return false;
         }
-
-        if (!$captcha->verifyResponse($captchaResponse))
-        {
-            throw new InvalidCaptchaException();
-        }
-
-        $this->instrumentation->finishSpan($span);
-
-        return true;
     }
 }
