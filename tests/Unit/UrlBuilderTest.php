@@ -139,7 +139,7 @@ final class UrlBuilderTest extends Unit
 
         $result = $urlBuilder->buildUrl('/test', ['id' => 123]);
 
-        verify($result)->equals('/app/test?');
+        verify($result)->equals('/app/test');
     }
 
     public function testBuildUrlWithMessage()
@@ -201,7 +201,7 @@ final class UrlBuilderTest extends Unit
 
         $result = $urlBuilder->buildQueryUrl('/test', [], []);
 
-        verify($result)->equals('/app/test?');
+        verify($result)->equals('/app/test');
     }
 
     public function testBuildQueryUrlSpecialCharactersInValues()
@@ -217,7 +217,7 @@ final class UrlBuilderTest extends Unit
             'term' => 'hello world',
         ], ['filter' => 'type=user&active=true']);
 
-        verify($result)->equals('/app/search/hello world?filter=type%3Duser%26active%3Dtrue');
+        verify($result)->equals('/app/search/hello%20world?filter=type%3Duser%26active%3Dtrue');
     }
 
     public function testBuildQueryUrlWithExtraMessage()
@@ -234,5 +234,44 @@ final class UrlBuilderTest extends Unit
         $result = $urlBuilder->buildQueryUrl('/test', [], [], 'info', 'Info message', 'Extra details');
 
         verify($result)->equals('/app/test?msg=encoded_message');
+    }
+
+    private function buildUrlBuilder(): UrlBuilder
+    {
+        return new UrlBuilder(
+            $this->makeEmpty(MessageService::class),
+            $this->make(RuntimeEnvironment::class, ['getBaseUrl' => '/app']),
+        );
+    }
+
+    public function testNoQuestionMarkWithoutQuery()
+    {
+        $urlBuilder = $this->buildUrlBuilder();
+
+        verify($urlBuilder->buildQueryUrl('/test'))->equals('/app/test');
+        verify($urlBuilder->buildQueryUrl('/test#section'))->equals('/app/test#section');
+    }
+
+    public function testExistingQueryIsKeptWithoutATrailingAmpersand()
+    {
+        $urlBuilder = $this->buildUrlBuilder();
+
+        verify($urlBuilder->buildQueryUrl('/test?page=2'))->equals('/app/test?page=2');
+        verify($urlBuilder->buildQueryUrl('/test?page=2', [], ['sort' => 'name']))->equals('/app/test?page=2&sort=name');
+        verify($urlBuilder->buildQueryUrl('/test?page=2#top', [], ['sort' => 'name']))->equals('/app/test?page=2&sort=name#top');
+    }
+
+    public function testPlaceholderValuesAreUrlEncoded()
+    {
+        $urlBuilder = $this->buildUrlBuilder();
+
+        verify($urlBuilder->buildQueryUrl('/user/{name}', ['name' => 'John Doe']))->equals('/app/user/John%20Doe');
+        verify($urlBuilder->buildQueryUrl('/file/{path}', ['path' => 'docs/intro']))->equals('/app/file/docs%2Fintro');
+
+        // A value cannot add a query or a fragment of its own
+        verify($urlBuilder->buildQueryUrl('/search/{term}', ['term' => 'a?b=c#d&e'], ['page' => 1]))
+            ->equals('/app/search/a%3Fb%3Dc%23d%26e?page=1')
+        ;
+        verify($urlBuilder->buildQueryUrl('/go?to={target}', ['target' => 'x&admin=1']))->equals('/app/go?to=x%26admin%3D1');
     }
 }

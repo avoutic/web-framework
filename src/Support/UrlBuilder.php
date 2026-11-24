@@ -66,7 +66,10 @@ class UrlBuilder
                 throw new \InvalidArgumentException("Missing value for URL placeholder: {$matches[1]}");
             }
 
-            return (string) $values[$matches[1]];
+            // A value fills a single part of the URL: it cannot add path segments, a
+            // query or a fragment of its own
+            //
+            return rawurlencode((string) $values[$matches[1]]);
         }, $template);
 
         if ($url === null)
@@ -95,28 +98,17 @@ class UrlBuilder
 
         $query_string = http_build_query($queryParameters);
 
-        // If there's already a query string in the url, append the new one with a &
-        if (isset($parts['query']))
-        {
-            $parts['query'] .= '&'.$query_string;
-        }
-        else
-        {
-            $parts['query'] = $query_string;
-        }
-
-        $builtUrl = '';
-
-        if ($absolute)
-        {
-            $builtUrl = $this->getServerUrl();
-        }
+        // Combine the query string that is already in the url with the new one
+        $query = implode('&', array_filter(
+            [$parts['query'] ?? '', $query_string],
+            static fn (string $part): bool => $part !== '',
+        ));
 
         return
             ($absolute ? $this->getServerUrl() : '').
             $this->runtimeEnvironment->getBaseUrl().
             (isset($parts['path']) ? $parts['path'] : '').
-            (isset($parts['query']) ? '?'.$parts['query'] : '').
+            ($query !== '' ? '?'.$query : '').
             (isset($parts['fragment']) ? '#'.$parts['fragment'] : '');
     }
 
