@@ -20,6 +20,7 @@ use Psr\Http\Server\RequestHandlerInterface;
  * Middleware to parse JSON request bodies.
  *
  * Adds the 'is_json' and 'json_data' attributes to the request.
+ * The body stream is rewound after parsing, so it can still be read by later code.
  */
 class JsonParserMiddleware implements MiddlewareInterface
 {
@@ -37,7 +38,16 @@ class JsonParserMiddleware implements MiddlewareInterface
 
         if ($isJson)
         {
-            $body = (string) $request->getBody();
+            $stream = $request->getBody();
+            $body = (string) $stream;
+
+            // Reading leaves the stream at its end. Rewind it, so a later getContents(),
+            // for example to verify a webhook signature over the raw body, still gets it
+            //
+            if ($stream->isSeekable())
+            {
+                $stream->rewind();
+            }
             $data = json_decode($body, true);
 
             if (json_last_error() === JSON_ERROR_NONE)

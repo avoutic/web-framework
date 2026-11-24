@@ -102,4 +102,26 @@ final class JsonParserMiddlewareTest extends Unit
 
         $middleware->process($request, $handler);
     }
+
+    public function testBodyCanStillBeReadAfterParsing()
+    {
+        $middleware = new JsonParserMiddleware();
+        $body = '{"name": "John", "age": 30}';
+
+        $request = new Request('POST', 'http://example.com', ['Content-Type' => 'application/json'], $body);
+
+        $handler = $this->makeEmpty(
+            RequestHandlerInterface::class,
+            [
+                'handle' => Expected::once(function (Request $request) use ($body) {
+                    // As a webhook handler does to verify a signature over the raw body
+                    verify($request->getBody()->getContents())->same($body);
+
+                    return $this->makeEmpty(Response::class);
+                }),
+            ]
+        );
+
+        $middleware->process($request, $handler);
+    }
 }
