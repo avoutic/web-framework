@@ -7,6 +7,7 @@ use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
+use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use WebFramework\Core\RuntimeEnvironment;
 use WebFramework\Logging\ChannelManager;
@@ -192,6 +193,90 @@ final class ChannelManagerTest extends Unit
         verify(function () use ($manager) {
             $manager->get('test');
         })->callableThrows(\InvalidArgumentException::class, 'Unknown channel type unknown_type for test');
+    }
+
+    public function testChannelWithoutConfigUsesItsContainerEntry(): void
+    {
+        $billingLogger = new NullLogger();
+        $container = new TestContainer([
+            'channels.billing' => $billingLogger,
+        ]);
+
+        $manager = $this->make(ChannelManager::class, [
+            'container' => $container,
+            'channelConfig' => [],
+        ]);
+
+        verify($manager->get('billing'))->same($billingLogger);
+    }
+
+    public function testConfigWinsOverTheContainerEntryOfTheChannel(): void
+    {
+        $configured = new NullLogger();
+        $container = new TestContainer([
+            'channels.billing' => new NullLogger(),
+            'other.logger' => $configured,
+        ]);
+
+        $manager = $this->make(ChannelManager::class, [
+            'container' => $container,
+            'channelConfig' => ['billing' => 'other.logger'],
+        ]);
+
+        verify($manager->get('billing'))->same($configured);
+    }
+
+    public function testUnknownChannelWarnsOnceOnTheDefaultChannel(): void
+    {
+        $warnings = [];
+        $defaultLogger = $this->makeEmpty(LoggerInterface::class, [
+            'warning' => function (string $message, array $context = []) use (&$warnings) {
+                $warnings[] = [$message, $context];
+            },
+        ]);
+
+        $manager = $this->make(ChannelManager::class, [
+            'container' => new TestContainer(['channels.default' => $defaultLogger]),
+            'channelConfig' => ['default' => 'channels.default'],
+        ]);
+
+        // A typo in the name of the channel
+        $first = $manager->get('biling');
+        $second = $manager->get('biling');
+
+        verify($first)->instanceOf(NullLogger::class);
+        verify($second)->same($first);
+        verify(count($warnings))->equals(1);
+        verify($warnings[0][1]['channel'])->equals('biling');
+    }
+
+    public function testChannelThatPointsAtAMissingEntryWarns(): void
+    {
+        $warnings = 0;
+        $defaultLogger = $this->makeEmpty(LoggerInterface::class, [
+            'warning' => function () use (&$warnings) {
+                $warnings++;
+            },
+        ]);
+
+        $manager = $this->make(ChannelManager::class, [
+            'container' => new TestContainer(['channels.default' => $defaultLogger]),
+            'channelConfig' => ['default' => 'channels.default', 'audit' => 'channels.does_not_exist'],
+        ]);
+
+        verify($manager->get('audit'))->instanceOf(NullLogger::class);
+        verify($warnings)->equals(1);
+    }
+
+    public function testMissingDefaultChannelDoesNotWarnOrLoop(): void
+    {
+        $manager = $this->make(ChannelManager::class, [
+            'container' => new TestContainer(),
+            'channelConfig' => [],
+        ]);
+
+        verify($manager->get('default'))->instanceOf(NullLogger::class);
+        verify($manager->get('other'))->instanceOf(NullLogger::class);
     }
 }
 

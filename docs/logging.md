@@ -141,6 +141,8 @@ This mechanism lets you temporarily override a definition—handy for local debu
 
 ## Fallback Behaviour
 
-When neither the configuration nor the container can supply a logger for a channel, the manager returns a `NullLogger`. This guarantees that logging is safe even while you are still wiring channels.
+A channel that is not listed in `logging.channels` uses the container entry with its name, `channels.<name>`. So for a new channel, a `channels.billing` definition is all you need. A line in `logging.channels` is only needed to point a channel at another entry.
+
+When neither the configuration nor the container can supply a logger for a channel, the manager returns a `NullLogger`, so logging never fails. As that usually is a mistake, such as a typo in the name of the channel, a warning is logged on the default channel, once per channel.
 
 With these tools you can keep the framework supplied `LoggerInterface` for generic logging, add specialised channels for specific domains, and override them per environment whenever needed.

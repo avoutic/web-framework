@@ -89,13 +89,30 @@ class ChannelManager
             throw new \InvalidArgumentException("Unknown channel type {$configuration['type']} for {$channel}");
         }
 
-        if (is_string($configuration) && $this->container->has($configuration))
+        // Without a line in the configuration, the channel uses the container entry with
+        // its name: channels.<name>
+        //
+        $containerId = is_string($configuration) ? $configuration : "channels.{$channel}";
+
+        if ($this->container->has($containerId))
         {
-            $candidate = $this->container->get($configuration);
+            $candidate = $this->container->get($containerId);
             if ($candidate instanceof LoggerInterface)
             {
                 return $candidate;
             }
+        }
+
+        // Logging to a channel without a logger is not an error, but it is likely a
+        // mistake, such as a typo in the name of the channel. Say so once, on the
+        // default channel
+        //
+        if ($channel !== 'default')
+        {
+            $this->getDefaultLogger()->warning('Log channel has no logger, its messages are discarded', [
+                'channel' => $channel,
+                'container_id' => $containerId,
+            ]);
         }
 
         return new NullLogger();
