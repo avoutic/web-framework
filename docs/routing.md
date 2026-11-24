@@ -121,3 +121,36 @@ class Authenticated implements RouteSet
 ~~~
 
 In this example, the `Authenticated` route group uses the `LoggedInMiddleware` to ensure that only authenticated users can access the routes within the group.
+
+## Getting the Application Without Running It
+
+The Slim application, with the configured middlewares and routes, is created by `WebFramework\Http\SlimAppFactory`. The framework uses it to serve requests. You can use it to get the same application without running it, for example to pass requests to it in a functional test:
+
+~~~php
+<?php
+
+use Slim\Psr7\Factory\ServerRequestFactory;
+use WebFramework\Core\BootstrapService;
+use WebFramework\Http\SlimAppFactory;
+use WebFramework\Task\TaskRunner;
+
+$taskRunner = new TaskRunner('/path/to/app');
+$taskRunner->build();
+
+// Once per process
+$taskRunner->get(BootstrapService::class)->bootstrap();
+
+// As often as needed
+$app = $taskRunner->get(SlimAppFactory::class)->create();
+
+$request = (new ServerRequestFactory())->createServerRequest('GET', '/login');
+$response = $app->handle($request);
+~~~
+
+Things to know:
+
+- The application uses the container the factory is resolved from. Resolve the factory from the container that also holds your test doubles, so there is only one container.
+- The factory does not bootstrap the framework. Call `BootstrapService::bootstrap()` once per process before creating an application.
+- Every call to `create()` gives a new application.
+- A request that is passed to `handle()` is not decorated by Slim. Add the `RequestDecoratorMiddleware` as the outermost middleware, see [Middlewares](middlewares.md).
+

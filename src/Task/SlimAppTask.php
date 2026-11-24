@@ -11,14 +11,10 @@
 
 namespace WebFramework\Task;
 
-use Psr\Container\ContainerInterface as Container;
-use Slim\Factory\AppFactory;
 use Slim\Psr7\Factory\ServerRequestFactory;
-use WebFramework\Config\ConfigService;
 use WebFramework\Core\BootstrapService;
 use WebFramework\Diagnostics\Instrumentation;
-use WebFramework\Http\MiddlewareRegistrar;
-use WebFramework\Http\RouteRegistrar;
+use WebFramework\Http\SlimAppFactory;
 
 /**
  * Class SlimAppTask.
@@ -30,34 +26,24 @@ class SlimAppTask implements Task
     /**
      * SlimAppTask constructor.
      *
-     * @param Container        $container        The dependency injection container
-     * @param ConfigService    $configService    The configuration service
-     * @param Instrumentation  $instrumentation  The instrumentation service
      * @param BootstrapService $bootstrapService The bootstrap service
+     * @param Instrumentation  $instrumentation  The instrumentation service
+     * @param SlimAppFactory   $slimAppFactory   The factory for the Slim application
      */
     public function __construct(
-        private Container $container,
-        private ConfigService $configService,
-        private Instrumentation $instrumentation,
         private BootstrapService $bootstrapService,
+        private Instrumentation $instrumentation,
+        private SlimAppFactory $slimAppFactory,
     ) {}
 
     /**
      * Execute the Slim application task.
      *
-     * This method sets up the Slim application, registers middlewares and routes,
-     * and handles the request.
-     *
-     * @uses config middlewares.post_routing
-     * @uses config routes
-     * @uses config middlewares.pre_routing
+     * This method bootstraps the framework, creates the Slim application and handles
+     * the request.
      */
     public function execute(): void
     {
-        // Create and start Slim framework
-        //
-        $app = AppFactory::create(container: $this->container);
-
         // Start instrumentation transaction
         //
         $request = ServerRequestFactory::createFromGlobals();
@@ -69,20 +55,9 @@ class SlimAppTask implements Task
         $this->bootstrapService->bootstrap();
         $this->instrumentation->finishSpan($span);
 
-        // Registrer Post Routing Middlewares
+        // Create the Slim application with its middlewares and routes
         //
-        $middlewareRegistrar = new MiddlewareRegistrar($app);
-        $middlewareRegistrar->register($this->configService->get('middlewares.post_routing'));
-
-        // Registrer Routes
-        //
-        $routeRegistrar = new RouteRegistrar($app, $this->container);
-        $routeRegistrar->register($this->configService->get('routes'));
-        $app->addRoutingMiddleware();
-
-        // Registrer Pre Routing Middlewares
-        //
-        $middlewareRegistrar->register($this->configService->get('middlewares.pre_routing'));
+        $app = $this->slimAppFactory->create();
 
         // Handle the request
         //
