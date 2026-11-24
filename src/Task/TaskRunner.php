@@ -76,9 +76,12 @@ class TaskRunner
     /**
      * Get a service from the container.
      *
-     * @param string $key The service key
+     * @template T of object
      *
-     * @return mixed The requested service
+     * @param class-string<T>|string $key The service key: a class name, or the name of another entry
+     *
+     * @return ($key is class-string<T> ? T : mixed) The requested service. For a class name this
+     *                                               is an instance of that class
      *
      * @throws \RuntimeException If the container is not initialized
      */

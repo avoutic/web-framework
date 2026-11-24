@@ -13,6 +13,8 @@ parameters:
         - actions
         - scripts
         - public
+        - bin/framework
+        - bin/framework-publish
     excludePaths:
         analyse:
             - vendor

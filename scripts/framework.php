@@ -36,7 +36,6 @@ $taskRunner = new TaskRunner($projectRoot);
 $taskRunner->setPlaintext();
 $taskRunner->build();
 
-/** @var ConsoleApplication $application */
 $application = $taskRunner->get(ConsoleApplication::class);
 
 exit($application->run($argv));
