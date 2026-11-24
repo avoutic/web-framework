@@ -321,6 +321,66 @@ return [
 ];
 ```
 
+### Your Own User Class
+
+The user of the framework is `WebFramework\Entity\User`. To add fields and methods of your own, extend it, and let the user repository of the framework give out your class:
+
+~~~php
+<?php
+
+namespace App\Entity;
+
+use WebFramework\Entity\User;
+
+class Member extends User
+{
+    // Only your own fields, the fields of User are added to them
+    protected static array $baseFields = ['display_name'];
+
+    protected string $displayName = '';
+
+    public function getDisplayName(): string
+    {
+        return $this->displayName;
+    }
+}
+~~~
+
+~~~php
+<?php
+
+namespace App\Repository;
+
+use App\Entity\Member;
+use WebFramework\Repository\UserRepository;
+
+/**
+ * @extends UserRepository<Member>
+ */
+class MemberRepository extends UserRepository
+{
+    protected static string $entityClass = Member::class;
+}
+~~~
+
+Bind it in your definitions, in place of the repository of the framework:
+
+~~~php
+<?php
+
+use App\Repository\MemberRepository;
+use WebFramework\Repository\UserRepository;
+
+return [
+    UserRepository::class => DI\autowire(MemberRepository::class),
+    MemberRepository::class => DI\get(UserRepository::class),
+];
+~~~
+
+From then on every user the framework loads is a `Member`: the user in the `authenticated_user` request attribute, the user from `AuthenticationService::getAuthenticatedUser()`, and the user that is passed to your extensions and event listeners. The methods of the framework are typed as `User`, so check with `instanceof Member`, or keep `MemberRepository` at hand, where you need your own methods.
+
+The columns of your fields have to be in the `users` table. Add them with a migration.
+
 ### A Verify Page per Flow
 
 All flows send the user to the page where the verification code is entered. By default that is one page for all of them, `actions.verify.location`. To give a flow its own page, for example to enter the registration code as a step of your onboarding, set its entry in `actions.verify.locations`:

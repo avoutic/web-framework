@@ -153,5 +153,19 @@ Things to know:
 - The factory does not bootstrap the framework. Call `BootstrapService::bootstrap()` once per process before creating an application.
 - Every call to `create()` gives a new application.
 - Bind the in-memory session for tests, see [Configuration](configuration.md).
+- To handle a request as a user that is logged in, bind `WebFramework\Testing\FixedAuthenticationService` to `AuthenticationService` in the definitions of your tests:
+
+~~~php
+<?php
+
+use WebFramework\Security\AuthenticationService;
+use WebFramework\Testing\FixedAuthenticationService;
+
+return [
+    AuthenticationService::class => DI\autowire(FixedAuthenticationService::class),
+];
+~~~
+
+In a test, log a user in with `$container->get(AuthenticationService::class)->authenticate($user)` before you pass the request to the application, and call `deauthenticate()` for a request without a user. It uses no session and no database, and the middlewares of the framework treat the request as coming from that user.
 - A request that is passed to `handle()` is not decorated by Slim. Add the `RequestDecoratorMiddleware` as the outermost middleware, see [Middlewares](middlewares.md).
 

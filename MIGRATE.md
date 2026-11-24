@@ -89,6 +89,7 @@
 * Introduce `Security\ConfigService::hasAuthConfig()` and `getAuthConfigOrDefault()`, for auth configuration of an integration that is optional. A missing auth configuration file now throws a `MissingAuthConfigException`, which is a `RuntimeException`.
 * The queue worker dispatches the events `Event\JobCompleted` and `Event\JobFailed`, with the job, the queue and the duration. Use a listener to record metrics, where you had to wrap the queue before.
 * Introduce `QueueJobRepository::countDeadLetterJobs()` and `getOldestPendingTimestamp()`.
+* Introduce `Testing\FixedAuthenticationService`, an `AuthenticationService` for tests that is logged in as the user it is given, without a session or a database.
 * Introduce `Entity::resetToNew()`, which turns a stored entity back into a new one, so it is inserted again by the next `save()`. Use it for an entity that was stored in a transaction that was rolled back, when the object is used again in a retry.
 * Introduce `RepositoryCore::refresh()`, which reloads an entity from the database into the same instance and resets its baseline for changes. It can lock the row for update. `RepositoryCore::getFieldsFromDb()` has a new optional parameter to lock the row.
 * Introduce `Testing\InstantiationSweep`, a helper for tests that tries to get every class of a set of namespaces from the container and reports the ones that cannot be instantiated. It has no dependency on a test framework and replaces hand-written instantiation tests and their class counts.
