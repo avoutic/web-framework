@@ -110,6 +110,7 @@ The `framework` command line tool comes with these commands:
 | `config:show [path]` | Display the loaded configuration |
 | `definitions:show [key]` | Display the loaded definition files and their contents |
 | `db:migrate` | Run pending database migrations |
+| `db:rollback` | Roll back the last batch of database migrations, after a typed confirmation |
 | `db:status` | Show database migration status |
 | `db:make` | Generate a new migration file |
 | `db:convert-from-scheme` | Migrate from the old db_scheme system to the migrations system |

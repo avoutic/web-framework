@@ -63,19 +63,39 @@ The new migration system provides several CLI commands for managing migrations:
 Execute all pending migrations:
 
 ~~~bash
-php Framework db:migrate
+vendor/bin/framework db:migrate
 ~~~
 
 Options:
 - `--dry-run` or `-d`: Preview what would be executed without making changes
 - `--framework` or `-f`: Run only framework migrations
 
+### Roll Back Migrations
+
+Roll back the last batch of migrations:
+
+~~~bash
+vendor/bin/framework db:rollback
+~~~
+
+Every run of `db:migrate` records what it executed as a batch, separately for the framework migrations and the application migrations. `db:rollback` takes the batch with the highest number and runs the `down` actions of its migrations, newest first. Run it again to roll back the batch before that.
+
+A rollback destroys data: columns and tables that are dropped are lost. So the command shows what it is going to roll back and asks you to type a text that contains the batch number, for example `rollback batch 12`. This has to be typed on a terminal. There is no option to skip it and piped input is refused, so a rollback cannot be part of a script.
+
+Options:
+- `--dry-run` or `-d`: Show what would be executed without making changes. This needs no confirmation.
+
+Things to know:
+
+- Before anything is changed, the command checks that every migration of the batch has a migration file with `down` actions. If one has not, nothing is rolled back.
+- A rollback is not atomic. The database commits each schema change by itself, so when a migration fails, the ones before it stay rolled back. Their records are removed as they complete, so `db:status` shows the actual state and you can run the command again after fixing the problem.
+
 ### Check Migration Status
 
 View the status of all migrations:
 
 ~~~bash
-php Framework db:status
+vendor/bin/framework db:status
 ~~~
 
 This shows executed and pending migrations for both framework and application code.
@@ -85,7 +105,7 @@ This shows executed and pending migrations for both framework and application co
 Create a new migration file with the correct timestamp format:
 
 ~~~bash
-php Framework db:make create_products_table
+vendor/bin/framework db:make create_products_table
 ~~~
 
 This generates a file like `2025_06_10_120000_create_products_table.php` with the basic up/down structure.
@@ -95,7 +115,7 @@ This generates a file like `2025_06_10_120000_create_products_table.php` with th
 If upgrading from the old numbered migration system, use:
 
 ~~~bash
-php Framework db:migrate-from-scheme
+vendor/bin/framework db:migrate-from-scheme
 ~~~
 
 This registers existing migrations as "already executed" to prevent re-application.
@@ -104,7 +124,7 @@ This registers existing migrations as "already executed" to prevent re-applicati
 
 If you're upgrading from the old `db_scheme` numbered migration system:
 
-1. **Run the migration command as a developer**: `php Framework db:convert-from-scheme`
+1. **Run the migration command as a developer**: `vendor/bin/framework db:convert-from-scheme`
 2. **Remove old system**: Move `db_scheme` to `db_scheme_old` or remove it entirely
 3. **Remove config**: Delete `versions.required_app_db` from your config
 4. **Verify database**: Ensure all required tables exist and are correct. This conversion assumes you had WebFramework 8 compatible tables before running the command.

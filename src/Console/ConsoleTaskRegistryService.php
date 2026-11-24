@@ -21,6 +21,7 @@ use WebFramework\Task\DbConvertFromSchemeTask;
 use WebFramework\Task\DbConvertProductionTask;
 use WebFramework\Task\DbMakeMigrationTask;
 use WebFramework\Task\DbMigrateTask;
+use WebFramework\Task\DbRollbackTask;
 use WebFramework\Task\DbStatusTask;
 use WebFramework\Task\DefinitionsShowTask;
 use WebFramework\Task\QueueClear;
@@ -42,6 +43,7 @@ class ConsoleTaskRegistryService
         'config:show' => ConfigShowTask::class,
         'definitions:show' => DefinitionsShowTask::class,
         'db:migrate' => DbMigrateTask::class,
+        'db:rollback' => DbRollbackTask::class,
         'db:convert-from-scheme' => DbConvertFromSchemeTask::class,
         'db:convert-production' => DbConvertProductionTask::class,
         'db:status' => DbStatusTask::class,

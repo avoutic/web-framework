@@ -196,17 +196,7 @@ class MigrationManager
      */
     public function runMigration(string $migrationFile, int $batch, string $type = 'app', string $direction = 'up', bool $dryRun = false): void
     {
-        if ($type === 'framework')
-        {
-            $directory = dirname(__DIR__, 2).'/migrations';
-        }
-        else
-        {
-            $appDir = $this->container->get('app_dir');
-            $directory = "{$appDir}/migrations";
-        }
-
-        $migrationPath = "{$directory}/{$migrationFile}";
+        $migrationPath = $this->getMigrationPath($migrationFile, $type);
 
         if (!file_exists($migrationPath))
         {
@@ -254,6 +244,87 @@ class MigrationManager
         {
             $this->databaseManager->execute($actions, true);
         }
+    }
+
+    /**
+     * Get the path of a migration file.
+     *
+     * @param string $migrationFile The migration filename
+     * @param string $type          Migration type ('app' or 'framework')
+     */
+    private function getMigrationPath(string $migrationFile, string $type): string
+    {
+        if ($type === 'framework')
+        {
+            $directory = dirname(__DIR__, 2).'/migrations';
+        }
+        else
+        {
+            $appDir = $this->container->get('app_dir');
+            $directory = "{$appDir}/migrations";
+        }
+
+        return "{$directory}/{$migrationFile}";
+    }
+
+    /**
+     * Check if a migration file exists and has actions for a direction.
+     *
+     * @param string $migrationFile The migration filename
+     * @param string $type          Migration type ('app' or 'framework')
+     * @param string $direction     Migration direction ('up' or 'down')
+     */
+    public function supportsDirection(string $migrationFile, string $type, string $direction): bool
+    {
+        $migrationPath = $this->getMigrationPath($migrationFile, $type);
+
+        if (!file_exists($migrationPath))
+        {
+            return false;
+        }
+
+        $migrationData = require $migrationPath;
+
+        if (!is_array($migrationData))
+        {
+            return false;
+        }
+
+        if ($direction === 'up' && isset($migrationData['actions']) && is_array($migrationData['actions']))
+        {
+            return true;
+        }
+
+        return isset($migrationData[$direction]['actions']) && is_array($migrationData[$direction]['actions']);
+    }
+
+    /**
+     * Get the migrations of the last batch, newest first, which is the order to roll them back in.
+     *
+     * @return array{batch: int, migrations: array<array{migration: string, type: string}>} The batch number
+     *                                                                                      (0 if there is none) and its migrations
+     */
+    public function getLastBatch(): array
+    {
+        $this->ensureMigrationsTable();
+
+        $batch = $this->getNextBatchNumber() - 1;
+
+        if ($batch < 1)
+        {
+            return ['batch' => 0, 'migrations' => []];
+        }
+
+        $query = 'SELECT migration, type FROM migrations WHERE batch = ? ORDER BY migration DESC';
+        $result = $this->database->query($query, [$batch]);
+
+        $migrations = [];
+        foreach ($result as $row)
+        {
+            $migrations[] = ['migration' => $row['migration'], 'type' => $row['type']];
+        }
+
+        return ['batch' => $batch, 'migrations' => $migrations];
     }
 
     /**
