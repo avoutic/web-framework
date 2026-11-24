@@ -7,6 +7,7 @@ use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
 use Tests\Support\StaticArrayJob;
 use Tests\Support\StaticArrayJobHandler;
+use WebFramework\Database\Database;
 use WebFramework\Exception\ArgumentParserException;
 use WebFramework\Logging\LogService;
 use WebFramework\Queue\Job;
@@ -101,6 +102,7 @@ final class QueueWorkerTest extends Unit
         $instance = $this->construct(
             QueueWorker::class,
             [
+                $this->makeEmpty(Database::class),
                 $this->makeEmpty(QueueService::class, [
                     'get' => function (string $queueName) use ($queue) {
                         if ($queueName === 'default')
@@ -142,6 +144,7 @@ final class QueueWorkerTest extends Unit
         $instance = $this->construct(
             QueueWorker::class,
             [
+                $this->makeEmpty(Database::class),
                 $this->makeEmpty(QueueService::class, [
                     'get' => function (string $queueName) use ($queue) {
                         if ($queueName === 'default')
@@ -194,6 +197,7 @@ final class QueueWorkerTest extends Unit
         $instance = $this->construct(
             QueueWorker::class,
             [
+                $this->makeEmpty(Database::class),
                 $this->makeEmpty(QueueService::class, [
                     'get' => function (string $queueName) use ($queue) {
                         return $queue;
@@ -238,6 +242,7 @@ final class QueueWorkerTest extends Unit
         $instance = $this->construct(
             QueueWorker::class,
             [
+                $this->makeEmpty(Database::class),
                 $this->makeEmpty(QueueService::class, [
                     'get' => function (string $queueName) use ($queue) {
                         return $queue;
@@ -279,6 +284,7 @@ final class QueueWorkerTest extends Unit
         $instance = $this->construct(
             QueueWorker::class,
             [
+                $this->makeEmpty(Database::class),
                 $this->makeEmpty(QueueService::class, [
                     'get' => function (string $queueName) use ($queue) {
                         return $queue;
@@ -324,6 +330,7 @@ final class QueueWorkerTest extends Unit
         $instance = $this->construct(
             QueueWorker::class,
             [
+                $this->makeEmpty(Database::class),
                 $this->makeEmpty(QueueService::class, [
                     'get' => function (string $queueName) use ($queue) {
                         return $queue;
@@ -341,5 +348,158 @@ final class QueueWorkerTest extends Unit
         );
 
         $instance->execute();
+    }
+
+    /**
+     * @param array<string, mixed> $queue
+     * @param array<string, mixed> $database
+     * @param array<string, mixed> $constructorOverrides
+     */
+    private function buildWorker(array $queue, mixed $handle, array $database, array $constructorOverrides): QueueWorker
+    {
+        $memoryQueue = $this->make(MemoryQueue::class, $queue);
+        $jobHandler = $this->make(StaticArrayJobHandler::class, ['handle' => $handle]);
+
+        return $this->construct(
+            QueueWorker::class,
+            [
+                $this->makeEmpty(Database::class, $database),
+                $this->makeEmpty(QueueService::class, [
+                    'get' => fn () => $memoryQueue,
+                    'getJobHandler' => fn () => $jobHandler,
+                ]),
+                $this->makeEmpty(LogService::class),
+                'default',
+            ],
+            $constructorOverrides,
+        );
+    }
+
+    private function buildJob(): StaticArrayJob
+    {
+        $job = new StaticArrayJob('value-1');
+        $job->setJobId('test-job-id');
+
+        return $job;
+    }
+
+    public function testIdleWorkerStopsAtMaxRuntime()
+    {
+        Carbon::setTestNow('2025-01-01 00:00:00');
+
+        $polls = 0;
+
+        $worker = $this->buildWorker(
+            [
+                'popJob' => function () use (&$polls) {
+                    $polls++;
+
+                    if ($polls > 50)
+                    {
+                        throw new \LogicException('The worker did not stop at its maximum runtime');
+                    }
+
+                    // Never a job: the queue stays empty
+                    return null;
+                },
+            ],
+            Expected::never(),
+            [],
+            ['maxRuntime' => 5, 'emptySleep' => 1],
+        );
+
+        $worker->execute();
+
+        verify($polls)->lessThanOrEqual(6);
+    }
+
+    public function testFailedJobThatLeftATransactionOpenIsRolledBackBeforeItIsMarkedFailed()
+    {
+        Carbon::setTestNow('2025-01-01 00:00:00');
+
+        $depth = 2;
+        $events = [];
+
+        $worker = $this->buildWorker(
+            [
+                'popJob' => fn () => $this->buildJob(),
+                'markJobFailed' => Expected::once(function () use (&$depth, &$events) {
+                    $events[] = "markJobFailed at depth {$depth}";
+                }),
+                'markJobCompleted' => Expected::never(),
+            ],
+            function () {
+                // Started a transaction, twice nested, and threw before committing
+                throw new \RuntimeException('Job failed');
+            },
+            [
+                'getTransactionDepth' => function () use (&$depth) {
+                    return $depth;
+                },
+                'rollbackTransaction' => function () use (&$depth, &$events) {
+                    $depth--;
+                    $events[] = 'rollback';
+                },
+            ],
+            ['maxJobs' => 1],
+        );
+
+        $worker->execute();
+
+        verify($events)->same(['rollback', 'rollback', 'markJobFailed at depth 0']);
+    }
+
+    public function testJobThatReturnsWithATransactionOpenIsRolledBackAndFailed()
+    {
+        Carbon::setTestNow('2025-01-01 00:00:00');
+
+        $depth = 1;
+        $rollbacks = 0;
+
+        $worker = $this->buildWorker(
+            [
+                'popJob' => fn () => $this->buildJob(),
+                'markJobCompleted' => Expected::never(),
+                'markJobFailed' => Expected::once(function ($job, \Throwable $e) {
+                    verify($e->getMessage())->stringContainsString('left a database transaction open');
+                }),
+            ],
+            // Returns normally, but never committed
+            fn () => true,
+            [
+                'getTransactionDepth' => function () use (&$depth) {
+                    return $depth;
+                },
+                'rollbackTransaction' => function () use (&$depth, &$rollbacks) {
+                    $depth--;
+                    $rollbacks++;
+                },
+            ],
+            ['maxJobs' => 1],
+        );
+
+        $worker->execute();
+
+        verify($rollbacks)->equals(1);
+    }
+
+    public function testJobWithoutOpenTransactionIsNotRolledBack()
+    {
+        Carbon::setTestNow('2025-01-01 00:00:00');
+
+        $worker = $this->buildWorker(
+            [
+                'popJob' => fn () => $this->buildJob(),
+                'markJobCompleted' => Expected::once(),
+            ],
+            fn () => true,
+            [
+                'getTransactionDepth' => 0,
+                'rollbackTransaction' => Expected::never(),
+            ],
+            ['maxJobs' => 1],
+        );
+
+        $worker->execute();
     }
 }

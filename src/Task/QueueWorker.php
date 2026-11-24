@@ -12,8 +12,11 @@
 namespace WebFramework\Task;
 
 use Carbon\Carbon;
+use WebFramework\Database\Database;
 use WebFramework\Exception\ArgumentParserException;
+use WebFramework\Exception\JobExecutionException;
 use WebFramework\Logging\LogService;
+use WebFramework\Queue\Job;
 use WebFramework\Queue\QueueService;
 
 class QueueWorker extends ConsoleTask
@@ -23,6 +26,7 @@ class QueueWorker extends ConsoleTask
     private ?int $maxRuntime = null;
 
     public function __construct(
+        private Database $database,
         private QueueService $queueService,
         private LogService $logger,
         private ?string $queueName = null,
@@ -141,6 +145,19 @@ class QueueWorker extends ConsoleTask
 
         while (true)
         {
+            // Checked on every pass, also when the queue is empty, so an idle worker
+            // stops at its maximum runtime as well
+            //
+            if ($this->maxJobs !== null && $jobsProcessed >= $this->maxJobs)
+            {
+                break;
+            }
+
+            if ($this->maxRuntime !== null && $startTime->diffInSeconds() >= $this->maxRuntime)
+            {
+                break;
+            }
+
             $this->logger->debug('default', 'Popping job from queue', ['queue' => $this->queueName]);
             $job = $queue->popJob();
 
@@ -161,6 +178,14 @@ class QueueWorker extends ConsoleTask
                 $jobHandler = $this->queueService->getJobHandler($job);
                 $jobHandler->handle($job);
 
+                // A handler that returns with a transaction still open has not stored
+                // its work. Treat that as a failure, not as a completed job
+                //
+                if ($this->rollbackOpenTransactions($job))
+                {
+                    throw new JobExecutionException($job->getJobName(), 'the handler left a database transaction open');
+                }
+
                 // Mark job as completed if no exception was thrown
                 $queue->markJobCompleted($job);
 
@@ -168,6 +193,11 @@ class QueueWorker extends ConsoleTask
             }
             catch (\Throwable $e)
             {
+                // A transaction the handler left open would swallow everything after it:
+                // the failure of this job, and every job that follows
+                //
+                $this->rollbackOpenTransactions($job);
+
                 // Log to default channel with simple message
                 $this->logger->error('default', 'Job execution failed: '.get_class($e).': '.$e->getMessage());
 
@@ -187,16 +217,49 @@ class QueueWorker extends ConsoleTask
                 // Continue processing instead of crashing the worker
                 $jobsProcessed++;
             }
-
-            if ($this->maxJobs !== null && $jobsProcessed >= $this->maxJobs)
-            {
-                break;
-            }
-
-            if ($this->maxRuntime !== null && $startTime->diffInSeconds() >= $this->maxRuntime)
-            {
-                break;
-            }
         }
+    }
+
+    /**
+     * Roll back every database transaction that is still open after a job.
+     *
+     * @param Job $job The job that was handled
+     *
+     * @return bool True if a transaction was open
+     */
+    private function rollbackOpenTransactions(Job $job): bool
+    {
+        $depth = $this->database->getTransactionDepth();
+
+        if ($depth <= 0)
+        {
+            return false;
+        }
+
+        $this->logger->warning('default', 'Job left a database transaction open, rolling back', [
+            'queue' => $this->queueName,
+            'jobId' => $job->getJobId(),
+            'jobName' => $job->getJobName(),
+            'depth' => $depth,
+        ]);
+
+        // One rollback per level. Stop when a rollback does not lower the depth, to not
+        // loop forever on a database that does not track it
+        //
+        while ($depth > 0)
+        {
+            $this->database->rollbackTransaction();
+
+            $newDepth = $this->database->getTransactionDepth();
+
+            if ($newDepth >= $depth)
+            {
+                break;
+            }
+
+            $depth = $newDepth;
+        }
+
+        return true;
     }
 }

@@ -184,7 +184,8 @@ The worker will:
 - Process jobs from the specified queue
 - Automatically handle job failures and retries
 - Sleep for 1 second when no jobs are available
-- Stop when max-jobs or max-runtime is reached
+- Stop when max-jobs or max-runtime is reached, also when the queue is empty
+- Roll back a database transaction that a job handler left open, before continuing with the next job. A handler that returns with a transaction still open counts as failed. Use `Database::transaction()` in your handlers, so a transaction is always committed or rolled back
 
 ## Built-in Implementations
 
