@@ -476,39 +476,24 @@ $this->database->transaction(function () use ($account, $amount) {
 
 When you save a new entity, it gets its id and counts as stored from then on. If the transaction is rolled back after that, the row is gone, but the object does not know. Saving it again would not insert it.
 
-If you use such an object again, for example when you retry the transaction, turn it back into a new entity first:
+If you use such an object again, for example when the transaction is retried, turn it back into a new entity first:
 
 ~~~php
 <?php
 
 $order = new Order();
 
-for ($attempt = 1; $attempt <= 3; $attempt++)
-{
-    try
-    {
-        $this->database->transaction(function () use ($order) {
-            $this->orderRepository->save($order);
+$this->database->transaction(function () use ($order) {
+    // In a new attempt the insert of the attempt before was rolled back
+    $order->resetToNew();
 
-            // More work that can fail
-        });
+    $this->orderRepository->save($order);
 
-        break;
-    }
-    catch (DatabaseException $e)
-    {
-        if (!$e->isDeadlock() || $attempt === 3)
-        {
-            throw $e;
-        }
-
-        // The insert was rolled back: make the order new again for the next attempt
-        $order->resetToNew();
-    }
-}
+    // More work that can fail
+}, attempts: 3);
 ~~~
 
-`resetToNew()` clears the id and the baseline for changes, and keeps the other values. You have to call it yourself for every entity that was stored for the first time in the transaction that was rolled back. Creating the entities inside the callback, so every attempt starts with new objects, avoids the need for it.
+`resetToNew()` clears the id and the baseline for changes, and keeps the other values. On an entity that is still new it does nothing. You have to call it yourself for every entity that is stored for the first time in a transaction that can be rolled back and tried again. Creating the entities inside the callback, so every attempt starts with new objects, avoids the need for it.
 
 ## Working with EntityCollection
 

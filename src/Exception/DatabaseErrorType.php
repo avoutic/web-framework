@@ -25,6 +25,9 @@ enum DatabaseErrorType: string
     /** The transaction was chosen as the victim of a deadlock. */
     case Deadlock = 'deadlock';
 
+    /** The record was changed by another transaction since this transaction read it. */
+    case RecordChanged = 'record_changed';
+
     /** Any other error. */
     case Other = 'other';
 }

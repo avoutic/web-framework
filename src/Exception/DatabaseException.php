@@ -81,6 +81,20 @@ class DatabaseException extends \RuntimeException
     }
 
     /**
+     * Check if the transaction can be tried again: the error is the result of another
+     * transaction getting in the way (a deadlock, a lock wait timeout or a changed record),
+     * not of what this transaction tried to do.
+     */
+    public function isRetryable(): bool
+    {
+        return in_array($this->type, [
+            DatabaseErrorType::Deadlock,
+            DatabaseErrorType::LockTimeout,
+            DatabaseErrorType::RecordChanged,
+        ], true);
+    }
+
+    /**
      * Check if the error is a violation of a unique or primary key constraint.
      */
     public function isDuplicateKey(): bool

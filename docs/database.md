@@ -119,6 +119,32 @@ In this example, the `OrderService` uses a transaction to ensure that both the o
 
 Transactions can be nested, for example when a service that uses `transaction()` is called from a request that is wrapped by the `TransactionMiddleware`. A nested transaction that is rolled back only undoes its own work; the outer transaction stays open and decides for itself whether to commit. Nothing is permanent until the outermost transaction commits.
 
+### Retrying a Transaction
+
+A transaction can fail because another transaction got in its way: a deadlock, a lock wait timeout, or a record that was changed since it was read. Nothing is wrong with what the transaction tried to do, so the usual answer is to do it again. Pass the number of attempts:
+
+~~~php
+<?php
+
+$this->database->transaction(function () use ($from, $to, $amount) {
+    $this->accountRepository->refresh($from, lockForUpdate: true);
+    $this->accountRepository->refresh($to, lockForUpdate: true);
+
+    $from->setBalance($from->getBalance() - $amount);
+    $to->setBalance($to->getBalance() + $amount);
+
+    $this->accountRepository->save($from);
+    $this->accountRepository->save($to);
+}, attempts: 3);
+~~~
+
+Things to know:
+
+- Only errors for which `DatabaseException::isRetryable()` is true lead to another attempt. Any other exception is thrown right away.
+- Only the outermost transaction tries again. Such an error ends the whole transaction in the database, so a nested `transaction()` lets it pass to the outermost one, whatever its own number of attempts is.
+- The callback runs again from the start, so it has to be safe to run more than once. Do not send mail or call other systems inside it. Load or refresh the entities inside the callback, so every attempt works with current values. An entity that is stored for the first time inside the callback has to be created there too, or be reset with `resetToNew()` at the start of the callback.
+- There is a short, slightly random wait before every new attempt.
+
 ### Manual Control
 
 You can also control a transaction yourself with `startTransaction()`, `commitTransaction()` and `rollbackTransaction()`. Make sure every started transaction is either committed or rolled back, also when an exception is thrown.
@@ -132,6 +158,7 @@ A failed query results in a `WebFramework\Exception\DatabaseException`. It exten
 - `getDriverMessage()`: the error message of the driver
 - `getPrevious()`: the exception of the driver, if it threw one
 - `isDuplicateKey()`, `isLockTimeout()`, `isDeadlock()`: the kind of error, as classified by the driver
+- `isRetryable()`: whether the transaction can be tried again, see [Retrying a Transaction](#retrying-a-transaction)
 
 ### Example: Handling a Duplicate Key
 

@@ -93,17 +93,23 @@ interface Database
      * throws, after which the exception is thrown again. Calls can be nested: a nested
      * call that throws only rolls back its own work.
      *
+     * With more than one attempt, the callback is run again when the transaction fails with
+     * a retryable error, see DatabaseException::isRetryable(). Only the outermost transaction
+     * tries again. The callback has to be safe to run more than once.
+     *
      * Implementations can use TransactionTrait.
      *
      * @template TResult
      *
      * @param callable(Database): TResult $callback The work to do inside the transaction
+     * @param int                         $attempts How often to try when the transaction fails with a
+     *                                              retryable error
      *
      * @return TResult The return value of the callback
      *
      * @throws \Throwable The exception thrown by the callback, after rolling back
      */
-    public function transaction(callable $callback): mixed;
+    public function transaction(callable $callback, int $attempts = 1): mixed;
 
     /**
      * Get the current transaction nesting depth.

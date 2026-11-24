@@ -64,4 +64,16 @@ final class DatabaseExceptionTest extends Unit
         verify($exception->getType())->same(DatabaseErrorType::Other);
         verify($exception->isDuplicateKey())->false();
     }
+
+    public function testRetryableErrors()
+    {
+        $retryable = fn (DatabaseErrorType $type) => (new DatabaseException('m', 1, '00000', $type))->isRetryable();
+
+        verify($retryable(DatabaseErrorType::Deadlock))->true();
+        verify($retryable(DatabaseErrorType::LockTimeout))->true();
+        verify($retryable(DatabaseErrorType::RecordChanged))->true();
+        verify($retryable(DatabaseErrorType::DuplicateKey))->false();
+        verify($retryable(DatabaseErrorType::Other))->false();
+        verify((new DatabaseException('no details'))->isRetryable())->false();
+    }
 }
