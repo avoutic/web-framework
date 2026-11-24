@@ -24,15 +24,13 @@ final class InputValidationServiceTest extends Unit
             InputValidationService::class,
         );
 
-        $validators = [
-        ];
+        $validators = [];
 
         $inputs = [
             'a' => 'b',
         ];
 
-        $validated = [
-        ];
+        $validated = [];
 
         verify($instance->validate($validators, $inputs))
             ->equals($validated)
@@ -49,11 +47,9 @@ final class InputValidationServiceTest extends Unit
             'username' => (new UsernameValidator())->required(),
         ];
 
-        $inputs = [
-        ];
+        $inputs = [];
 
-        $validated = [
-        ];
+        $validated = [];
 
         verify(function () use ($instance, $validators, $inputs) {
             $instance->validate($validators, $inputs);
@@ -80,11 +76,9 @@ final class InputValidationServiceTest extends Unit
             'username' => (new UsernameValidator())->required(),
         ];
 
-        $inputs = [
-        ];
+        $inputs = [];
 
-        $validated = [
-        ];
+        $validated = [];
 
         verify(function () use ($instance, $validators, $inputs) {
             $instance->validate($validators, $inputs);
@@ -115,11 +109,9 @@ final class InputValidationServiceTest extends Unit
             'username' => 'abc',
         ];
 
-        $all = [
-        ];
+        $all = [];
 
-        $validated = [
-        ];
+        $validated = [];
 
         verify(function () use ($instance, $validators, $inputs) {
             $instance->validate($validators, $inputs);
@@ -152,11 +144,9 @@ final class InputValidationServiceTest extends Unit
             ],
         ];
 
-        $all = [
-        ];
+        $all = [];
 
-        $validated = [
-        ];
+        $validated = [];
 
         verify(function () use ($instance, $validators, $inputs) {
             $instance->validate($validators, $inputs);
@@ -187,8 +177,7 @@ final class InputValidationServiceTest extends Unit
             'username' => '',
         ];
 
-        $validated = [
-        ];
+        $validated = [];
 
         verify(function () use ($instance, $validators, $inputs) {
             $instance->validate($validators, $inputs);
@@ -215,8 +204,7 @@ final class InputValidationServiceTest extends Unit
             'username' => new UsernameValidator(),
         ];
 
-        $inputs = [
-        ];
+        $inputs = [];
 
         $validated = [
             'username' => '',
@@ -245,8 +233,7 @@ final class InputValidationServiceTest extends Unit
             'username[]' => new UsernameValidator(),
         ];
 
-        $inputs = [
-        ];
+        $inputs = [];
 
         $validated = [
             'username' => [],
@@ -366,8 +353,7 @@ final class InputValidationServiceTest extends Unit
             'username' => 'ABCDEF',
         ];
 
-        $validated = [
-        ];
+        $validated = [];
 
         verify(function () use ($instance, $validators, $inputs) {
             $instance->validate($validators, $inputs);
@@ -463,8 +449,7 @@ final class InputValidationServiceTest extends Unit
             'username' => 'abcdeF',
         ];
 
-        $validated = [
-        ];
+        $validated = [];
 
         verify(function () use ($instance, $validators, $inputs) {
             $instance->validate($validators, $inputs);
@@ -593,8 +578,7 @@ final class InputValidationServiceTest extends Unit
             'number' => '',
         ];
 
-        $validated = [
-        ];
+        $validated = [];
 
         $all = [
             'number' => null,
@@ -629,8 +613,7 @@ final class InputValidationServiceTest extends Unit
             'number' => '',
         ];
 
-        $validated = [
-        ];
+        $validated = [];
 
         $all = [
             'number' => 0,

@@ -100,8 +100,7 @@ final class PasswordHashServiceTest extends Unit
     {
         $instance = $this->make(
             PasswordHashService::class,
-            [
-            ],
+            [],
         );
 
         $passwordHash = 'sha256:1000:MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIz:38d3b4cf1c237982f9b15d62686604ca150cb1281df0e447';
@@ -116,8 +115,7 @@ final class PasswordHashServiceTest extends Unit
     {
         $instance = $this->make(
             PasswordHashService::class,
-            [
-            ],
+            [],
         );
 
         $passwordHash = 'sha256:1000:MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIz:38d3b4cf1c237982f9b15d62686604ca150cb1281df0e447';

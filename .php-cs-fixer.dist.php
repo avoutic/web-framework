@@ -19,6 +19,7 @@ return $config->setRules([
 
         // Preferences
         'braces_position' => [ 'control_structures_opening_brace' => 'next_line_unless_newline_at_signature_end'], // Allman style
+        'declare_strict_types' => false, // Changes how every file handles types, requires check
         'control_structure_continuation_position' => [ 'position' => 'next_line'], // Allman style
         'echo_tag_syntax' => [ 'format' => 'short' ],
         'increment_style' => [ 'style' => 'post' ],
@@ -34,6 +35,7 @@ return $config->setRules([
         'static_lambda' => false, // Does not work well with Slim routing groups and closures
         'strict_comparison' => false,
         'strict_param' => false,
+        'void_return' => false,
         'yoda_style' => false,
 
         'ordered_class_elements' => false, // Big change, requires check

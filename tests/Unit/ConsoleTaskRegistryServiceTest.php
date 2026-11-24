@@ -19,8 +19,7 @@ final class ConsoleTaskRegistryServiceTest extends Unit
     {
         $taskDiscovery = $this->make(ConsoleTaskRegistryService::class, [
             'configService' => $this->makeEmpty(ConfigService::class, [
-                'get' => [
-                ],
+                'get' => [],
             ]),
         ]);
 

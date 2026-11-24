@@ -597,8 +597,7 @@ final class DebugServiceTest extends Unit
     {
         $instance = $this->make(
             ErrorReport::class,
-            [
-            ]
+            []
         );
 
         $reportFmt = <<<'TXT'

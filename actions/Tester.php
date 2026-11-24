@@ -105,7 +105,7 @@ class Tester
 
         if ($action === 'php_error')
         {
-            trigger_error('Triggered PHP error', E_ERROR);
+            trigger_error('Triggered PHP error', E_USER_WARNING);
         }
 
         return $this->renderer->render($request, $response, 'Tester.latte', []);

@@ -25,8 +25,7 @@ final class ValidatorServiceTest extends Unit
             'json' => [],
         ];
 
-        $filters = [
-        ];
+        $filters = [];
 
         $results = [
             'raw' => [],
@@ -51,8 +50,7 @@ final class ValidatorServiceTest extends Unit
             'json' => ['test' => 'json'],
         ];
 
-        $filters = [
-        ];
+        $filters = [];
 
         $results = [
             'raw' => [],

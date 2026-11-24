@@ -22,8 +22,7 @@ final class RepositoryCoreTest extends Unit
         );
 
         verify($instance->getFilterArray(
-            [
-            ]
+            []
         ))
             ->equals([
                 'query' => '',
@@ -145,8 +144,7 @@ final class RepositoryCoreTest extends Unit
         ))
             ->equals([
                 'query' => '`key1` IS NULL',
-                'params' => [
-                ],
+                'params' => [],
             ])
         ;
     }
@@ -164,8 +162,7 @@ final class RepositoryCoreTest extends Unit
         ))
             ->equals([
                 'query' => '`key1` IS NOT NULL',
-                'params' => [
-                ],
+                'params' => [],
             ])
         ;
     }

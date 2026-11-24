@@ -87,8 +87,7 @@ final class DatabaseManagerTest extends Unit
                             'size' => 255,
                         ],
                     ],
-                    'constraints' => [
-                    ],
+                    'constraints' => [],
                 ],
             ],
         ];
@@ -574,8 +573,7 @@ SQL,
                             'default' => ['function' => 'CURRENT_TIMESTAMP'],
                         ],
                     ],
-                    'constraints' => [
-                    ],
+                    'constraints' => [],
                 ],
             ],
         ];
@@ -612,18 +610,14 @@ SQL,
                 [
                     'type' => 'create_table',
                     'table_name' => 'table1',
-                    'fields' => [
-                    ],
-                    'constraints' => [
-                    ],
+                    'fields' => [],
+                    'constraints' => [],
                 ],
                 [
                     'type' => 'create_table',
                     'table_name' => 'table2',
-                    'fields' => [
-                    ],
-                    'constraints' => [
-                    ],
+                    'fields' => [],
+                    'constraints' => [],
                 ],
             ],
         ];
