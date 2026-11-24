@@ -174,7 +174,7 @@ The migration file uses a timestamp-based system with `up` and `down` directions
 
 You don't need to include a field for the `id` column in the `actions` array, as it will be added automatically.
 
-To perform the migration you would typically run the new migration command by executing `php Framework db:migrate` in the console of your system.
+To perform the migration you would typically run the new migration command by executing `vendor/bin/framework db:migrate` in the console of your system.
 
 #### Example Migration File
 
