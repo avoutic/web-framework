@@ -24,7 +24,16 @@ class Lock
     {
         if ($this->isLocked)
         {
-            $this->release();
+            // Nothing can handle a failure here, and an exception from a destructor is
+            // hard to trace. The lock goes with the connection anyway
+            //
+            try
+            {
+                $this->release();
+            }
+            catch (\Throwable $e)
+            {
+            }
         }
     }
 
@@ -50,18 +59,17 @@ SQL;
         SELECT RELEASE_LOCK(?) AS result
 SQL;
 
+        // Whatever the answer is, this lock is done. The database refuses to release a
+        // lock that this connection no longer holds, for example after a reconnect, and
+        // trying again later does not change that
+        //
+        $this->isLocked = false;
+
         $result = $this->database->query($query, [
             $this->tag,
         ], 'Failed to try to release lock');
 
-        if ($result->fields['result'] == 1)
-        {
-            $this->isLocked = false;
-
-            return true;
-        }
-
-        return false;
+        return $result->fields['result'] == 1;
     }
 
     public function block(\Closure $callback, int $wait = 0): mixed
