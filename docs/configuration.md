@@ -258,7 +258,7 @@ This allows you to override any configuration value at any level while maintaini
 
 ## Session Options
 
-The session of the application is a PHP session. Its name, lifetime, path, domain and the `secure` and `httponly` flags of its cookie follow from other settings: `app_name`, `authenticator.session_timeout`, `host_name` and `http_mode`.
+By default the session of the application is a PHP session: the framework binds `Odan\Session\SessionInterface` to `PhpSession` in its definitions. Its name, lifetime, path, domain and the `secure` and `httponly` flags of its cookie follow from other settings: `app_name`, `authenticator.session_timeout`, `host_name` and `http_mode`.
 
 Other options are set with `session.options`. An option that is not one of the above is passed on as a PHP `session.*` setting. By default the session cookie gets `SameSite=Lax`:
 
@@ -292,9 +292,11 @@ return [
 - An option that is also derived from other settings, such as `path`, replaces the derived value.
 - Set an option to `null` to leave it out.
 
+These options only apply to this default session. You can bind `SessionInterface` to another implementation in your own definitions. That replaces the definition of the framework completely: `session.options` and the settings above are then not used, and your implementation is responsible for its own options, including the `SameSite` attribute of its cookie.
+
 ### Sessions in Tests
 
-For tests you usually do not want a PHP session at all. The session library has an in-memory implementation for that. Bind it in the definitions of your tests:
+For tests you usually do not want a PHP session at all. The session library has an in-memory implementation for that. This is an example of binding another implementation: bind it in the definitions of your tests:
 
 ~~~php
 <?php
