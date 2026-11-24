@@ -55,6 +55,10 @@
         "haydenpierce/class-finder": "^0.5.3",
         "phpunit/php-code-coverage": "^11.0"
     },
+    "bin": [
+        "bin/framework",
+        "bin/framework-publish"
+    ],
     "autoload": {
         "psr-4": {
             "WebFramework\\": "src/",

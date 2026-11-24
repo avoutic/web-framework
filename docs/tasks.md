@@ -33,17 +33,32 @@ In this example, the `CustomTask` class implements the `Task` and defines the `e
 
 ## Running Tasks from the Command Line
 
-Tasks can be executed from the command line using PHP scripts. These scripts initialize the `TaskRunner` and execute the specified task.
+Tasks are run with the `framework` command line tool, which Composer installs as `vendor/bin/framework`:
 
-### Example: Running a Task
+~~~bash
+# Show the available commands
+vendor/bin/framework
 
-To run a task from the command line, create a script similar to the following:
+# Show the help of a command
+vendor/bin/framework help db:migrate
+
+# Run a command
+vendor/bin/framework db:migrate
+~~~
+
+The tool finds your application through Composer, so it works from any directory.
+
+To make a task of your own available as a command, extend `ConsoleTask` and register it under the `console_tasks` key in your configuration. Any other task that implements the `Task` interface can be run with the `task:run` command, see below.
+
+### Example: Running a Task from Your Own Script
+
+You can also run a task from a script of your own:
 
 ~~~php
 <?php
 
-use WebFramework\Core\TaskRunner;
 use App\Task\CustomTask;
+use WebFramework\Task\TaskRunner;
 
 require_once __DIR__.'/../vendor/autoload.php';
 
@@ -60,7 +75,7 @@ This script initializes the `TaskRunner`, builds the application environment, an
 The `framework` command line tool uses the same configuration as the application. Set the `APP_ENV` environment variable to run a command with the configuration of another environment, for example to migrate a test database:
 
 ~~~bash
-APP_ENV=testing php framework db:migrate
+APP_ENV=testing vendor/bin/framework db:migrate
 ~~~
 
 With `APP_ENV=testing`:
@@ -83,32 +98,30 @@ The WebFramework includes several predefined tasks for common operations. Here a
 ### SlimAppTask
 
 - **Purpose**: Initializes and runs the Slim application.
-- **Script**: `public/index.php`
-- **Script**: Typically run as part of the web server setup, not directly from the command line.
+- **Script**: `public/index.php`. It is run by the web server, not from the command line.
 
-### DbInitTask
+### Commands
 
-- **Purpose**: Initializes the database schema.
-- **Script**: `scripts/db_init.php`
-- **Usage**: Run this script to set up the initial database schema.
+The `framework` command line tool comes with these commands:
 
-### DbUpdateTask
+| Command | Purpose |
+|---|---|
+| `cache:clear` | Clear the entire cache |
+| `config:show [path]` | Display the loaded configuration |
+| `definitions:show [key]` | Display the loaded definition files and their contents |
+| `db:migrate` | Run pending database migrations |
+| `db:status` | Show database migration status |
+| `db:make` | Generate a new migration file |
+| `db:convert-from-scheme` | Migrate from the old db_scheme system to the migrations system |
+| `db:convert-production` | Convert a production database to the migrations system |
+| `queue:list` | List all queues |
+| `queue:worker` | Run a queue worker |
+| `queue:clear` | Clear a task queue |
+| `sanity:check` | Run sanity checks on the application |
+| `task:run` | Run a task class, see below |
+| `verification-codes:cleanup` | Clean up expired and used verification codes |
 
-- **Purpose**: Updates the database schema to the latest version.
-- **Script**: `scripts/db_update.php`
-- **Usage**: Run this script to apply database migrations and update the schema.
-
-### DbVersionTask
-
-- **Purpose**: Displays the current database version.
-- **Script**: `scripts/db_version.php`
-- **Usage**: Run this script to check the current version of the database schema.
-
-### SanityCheckTask
-
-- **Purpose**: Runs sanity checks on the application.
-- **Script**: `scripts/sanity_check.php`
-- **Usage**: Run this script to perform sanity checks and ensure the application environment is correct.
+Run `vendor/bin/framework help <command>` for the arguments and options of a command.
 
 ### TaskRunnerTask
 
@@ -128,13 +141,13 @@ The WebFramework includes several predefined tasks for common operations. Here a
 
 ```bash
 # Run a task once
-php scripts/framework.php task:run App\\Task\\MyTask
+vendor/bin/framework task:run App\\Task\\MyTask
 
 # Run a task with retry logic (3 attempts with 2 second base backoff)
-php scripts/framework.php task:run --attempts 3 --backoff 2 App\\Task\\MyTask
+vendor/bin/framework task:run --attempts 3 --backoff 2 App\\Task\\MyTask
 
 # Run a task continuously with retry logic
-php scripts/framework.php task:run --continuous --delay 60 --attempts 3 --backoff 5 App\\Task\\MyTask
+vendor/bin/framework task:run --continuous --delay 60 --attempts 3 --backoff 5 App\\Task\\MyTask
 ```
 
 When using retry logic, if a task throws an exception, it will be retried up to the specified number of attempts. The delay between retries follows an exponential backoff pattern: `backoff * attempt_number`. For example, with `--backoff 2` and `--attempts 3`, the delays will be 2 seconds (after attempt 1), 4 seconds (after attempt 2), and then the final exception will be thrown if attempt 3 also fails.

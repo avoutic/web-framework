@@ -20,12 +20,12 @@ In a production environment, sanity checks are only run once on each new 'commit
 
 ## Triggering Sanity Checks Manually
 
-You can manually trigger sanity checks by running the `sanity_check.php` script. This script initializes the application and executes the `SanityCheckTask`.
+You can manually trigger sanity checks with the `sanity:check` command of the `framework` command line tool. It initializes the application and executes the `SanityCheckTask`.
 
 #### Example Command
 
 ~~~bash
-php scripts/sanity_check.php
+vendor/bin/framework sanity:check
 ~~~
 
 This command will execute all registered sanity checks and output the results to the console.

@@ -13,6 +13,9 @@
 use WebFramework\Console\ConsoleApplication;
 use WebFramework\Task\TaskRunner;
 
+// This script is for a copy in the root of a project. Composer also installs the command
+// line tool as vendor/bin/framework, which does not have to be copied.
+//
 // Get the project root directory
 $projectRoot = __DIR__;
 

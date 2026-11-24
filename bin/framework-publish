@@ -1,0 +1,74 @@
+#!/usr/bin/env php
+<?php
+
+/*
+ * This file is part of WebFramework.
+ *
+ * (c) Avoutic <avoutic@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+use Composer\InstalledVersions;
+use WebFramework\Console\EntryPointPublisher;
+
+// Find the Composer autoloader. Composer sets $_composer_autoload_path when this script is
+// run through vendor/bin. The other locations are for running it directly, from the
+// installed package or from the repository of the framework itself.
+//
+$autoloadCandidates = [
+    $GLOBALS['_composer_autoload_path'] ?? null,
+    __DIR__.'/../../../autoload.php',
+    __DIR__.'/../vendor/autoload.php',
+];
+
+$autoloadFile = null;
+foreach ($autoloadCandidates as $candidate)
+{
+    if (is_string($candidate) && file_exists($candidate))
+    {
+        $autoloadFile = $candidate;
+
+        break;
+    }
+}
+
+if ($autoloadFile === null)
+{
+    fwrite(STDERR, 'Composer not initialized'.PHP_EOL.'Please run "composer install"'.PHP_EOL);
+
+    exit(1);
+}
+
+require_once $autoloadFile;
+
+// The project root is the directory of the root package: the application
+//
+$projectRoot = realpath(InstalledVersions::getRootPackage()['install_path']);
+
+if ($projectRoot === false)
+{
+    fwrite(STDERR, 'Cannot determine the project root'.PHP_EOL);
+
+    exit(1);
+}
+
+// Publish the web entry point into the application. This does not build the application,
+// so it also works before the application is configured. Any failure ends with a non-zero
+// exit code, so Composer reports it.
+//
+try
+{
+    $target = (new EntryPointPublisher())->publish(__DIR__.'/../public/index.php', $projectRoot.'/public/index.php');
+}
+catch (Throwable $e)
+{
+    fwrite(STDERR, $e->getMessage().PHP_EOL);
+
+    exit(1);
+}
+
+echo "Published {$target}".PHP_EOL;
+
+exit(0);

@@ -108,7 +108,7 @@ return [
 For asynchronous email sending to work, you need to run a queue worker:
 
 ~~~bash
-php scripts/framework.php queue:worker default
+vendor/bin/framework queue:worker default
 ~~~
 
 By default, the mail job handlers (`RawMailJobHandler` and `TemplateMailJobHandler`) are automatically registered when the `QueueService` is instantiated in the `definitions.php` file. If you want to register your own job handlers, you can do so by registering them with the `QueueService` in your application definitions. Use DI\decorate to register your own job handlers in addition to the default ones, use DI\autowire to register your own job handlers and override the default ones.

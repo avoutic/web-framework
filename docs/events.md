@@ -226,7 +226,7 @@ $queueService->registerJobHandler(EventJob::class, EventJobHandler::class);
 2. **Run queue workers** to process the jobs:
 
 ~~~bash
-php scripts/framework.php queue:worker
+vendor/bin/framework queue:worker
 ~~~
 
 3. **Configure queue names** in your listeners:

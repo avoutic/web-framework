@@ -1,0 +1,65 @@
+#!/usr/bin/env php
+<?php
+
+/*
+ * This file is part of WebFramework.
+ *
+ * (c) Avoutic <avoutic@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+use Composer\InstalledVersions;
+use WebFramework\Console\ConsoleApplication;
+use WebFramework\Task\TaskRunner;
+
+// Find the Composer autoloader. Composer sets $_composer_autoload_path when this script is
+// run through vendor/bin. The other locations are for running it directly, from the
+// installed package or from the repository of the framework itself.
+//
+$autoloadCandidates = [
+    $GLOBALS['_composer_autoload_path'] ?? null,
+    __DIR__.'/../../../autoload.php',
+    __DIR__.'/../vendor/autoload.php',
+];
+
+$autoloadFile = null;
+foreach ($autoloadCandidates as $candidate)
+{
+    if (is_string($candidate) && file_exists($candidate))
+    {
+        $autoloadFile = $candidate;
+
+        break;
+    }
+}
+
+if ($autoloadFile === null)
+{
+    fwrite(STDERR, 'Composer not initialized'.PHP_EOL.'Please run "composer install"'.PHP_EOL);
+
+    exit(1);
+}
+
+require_once $autoloadFile;
+
+// The project root is the directory of the root package: the application
+//
+$projectRoot = realpath(InstalledVersions::getRootPackage()['install_path']);
+
+if ($projectRoot === false)
+{
+    fwrite(STDERR, 'Cannot determine the project root'.PHP_EOL);
+
+    exit(1);
+}
+
+$taskRunner = new TaskRunner($projectRoot);
+$taskRunner->setPlaintext();
+$taskRunner->build();
+
+/** @var ConsoleApplication $application */
+$application = $taskRunner->get(ConsoleApplication::class);
+
+exit($application->run($argv));

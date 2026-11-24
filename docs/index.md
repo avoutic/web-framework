@@ -22,20 +22,22 @@ You can also add WebFramework to an existing project by installing it via Compos
 composer require avoutic/web-framework
 ```
 
-You then probably want to add something like the following to your `composer.json` file, to make sure the core files are installed:
+Composer installs the command line tool of the framework as `vendor/bin/framework`. Nothing has to be copied for it.
+
+The web entry point, `public/index.php`, has to be a file in the web root of your application. Add the following to your `composer.json` file, so it is published on every install and update:
 
 ```json
     "scripts": {
         "post-install-cmd": [
-            "php -r \"copy('vendor/avoutic/web-framework/public/index.php', 'public/index.php');\"",
-            "php -r \"copy('vendor/avoutic/web-framework/scripts/framework.php', 'framework');\""
+            "framework-publish"
         ],
         "post-update-cmd": [
-            "php -r \"copy('vendor/avoutic/web-framework/public/index.php', 'public/index.php');\"",
-            "php -r \"copy('vendor/avoutic/web-framework/scripts/framework.php', 'framework');\""
+            "framework-publish"
         ]
     },
 ```
+
+`framework-publish` copies `public/index.php` from the framework into your application. If that fails, it says why and makes Composer report an error, so you are not left with an old entry point without knowing. When you run Composer with `--no-scripts`, run `vendor/bin/framework-publish` yourself afterwards.
 
 ## Directory Structure
 

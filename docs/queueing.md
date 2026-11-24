@@ -173,7 +173,7 @@ The `dispatch()` method signature is:
 Queue workers can be started using the console command:
 
 ~~~bash
-php framework queue:worker email --max-jobs=100 --max-runtime=3600
+vendor/bin/framework queue:worker email --max-jobs=100 --max-runtime=3600
 ~~~
 
 Options:
