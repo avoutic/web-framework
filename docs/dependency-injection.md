@@ -106,3 +106,39 @@ Copy the lines from the entry of the service in `vendor/avoutic/web-framework/de
 
 Before you override a framework service, check if it has an extension point for what you need, such as the extension interfaces in `WebFramework\Security\Extension` or the `AccountStatusChecker`. Those are replaced with a single line and do not need any parameters.
 
+## Checking That Everything Can Be Instantiated
+
+A class whose constructor needs something the container cannot provide only fails when it is first used, which can be a request in production. `WebFramework\Testing\InstantiationSweep` finds those classes in a test: it tries to get every class of the namespaces you give it from the container.
+
+~~~php
+<?php
+
+use Psr\Container\ContainerInterface;
+use WebFramework\Task\TaskRunner;
+use WebFramework\Testing\InstantiationSweep;
+
+$taskRunner = new TaskRunner('/path/to/app');
+$taskRunner->build();
+
+$sweep = new InstantiationSweep($taskRunner->get(ContainerInterface::class));
+
+$result = $sweep->run(
+    // The namespaces to check
+    ['App\Actions', 'App\Core', 'App\Repository'],
+    // Classes that are not meant to come from the container
+    [App\Core\Money::class],
+);
+
+// In your test: an empty string means everything could be instantiated
+$this->assertSame('', $result->describeFailures());
+~~~
+
+How it works:
+
+- Classes are found through the PSR-4 map of Composer, so the namespaces have to be autoloaded by Composer.
+- Interfaces, traits, enums and abstract classes are left out. List other classes that should not be tried, such as value objects, events and entities, in the second argument.
+- Only the classes directly in a namespace are tried. Pass `true` as the third argument to include sub namespaces.
+- The result has `instantiated`, `failed` (class and reason), `skipped` and `emptyNamespaces`. `isSuccessful()` is false when a class failed, and also when a namespace contained no classes at all, as that usually is a typo that would make the check pass without checking anything.
+
+The helper does not depend on a test framework, so it works with PHPUnit, Codeception or anything else. You do not have to count classes: a new class is picked up by itself.
+

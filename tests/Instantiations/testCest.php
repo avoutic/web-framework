@@ -2,13 +2,12 @@
 
 namespace Tests\Instantiations;
 
-use HaydenPierce\ClassFinder\ClassFinder;
+use Psr\Container\ContainerInterface;
 use Tests\Support\InstantiationTester;
 use Tests\Support\TaskRunnerTrait;
 use WebFramework\Config\ConfigBuilder;
 use WebFramework\Database\DatabaseResultWrapper;
 use WebFramework\Database\Lock;
-use WebFramework\Event\QueuedEventListener;
 use WebFramework\Event\UserEmailChanged;
 use WebFramework\Event\UserLoggedIn;
 use WebFramework\Event\UserPasswordChanged;
@@ -18,12 +17,10 @@ use WebFramework\Migration\QueryStep;
 use WebFramework\Migration\TaskStep;
 use WebFramework\Queue\DatabaseQueue;
 use WebFramework\Repository\Column;
-use WebFramework\Repository\RepositoryCore;
 use WebFramework\Repository\RepositoryQuery;
-use WebFramework\SanityCheck\SanityCheckBase;
-use WebFramework\Task\ConsoleTask;
 use WebFramework\Task\TaskArgument;
 use WebFramework\Task\TaskOption;
+use WebFramework\Testing\InstantiationSweep;
 
 class testCest
 {
@@ -68,7 +65,6 @@ class testCest
         DatabaseResultWrapper::class,
         Lock::class,
         // Event
-        QueuedEventListener::class,
         UserEmailChanged::class,
         UserLoggedIn::class,
         UserPasswordChanged::class,
@@ -81,12 +77,8 @@ class testCest
         DatabaseQueue::class,
         // Repository
         Column::class,
-        RepositoryCore::class,
         RepositoryQuery::class,
-        // SanityCheck
-        SanityCheckBase::class,
         // Task
-        ConsoleTask::class,
         TaskArgument::class,
         TaskOption::class,
     ];
@@ -99,26 +91,11 @@ class testCest
     // tests
     public function instantiations(InstantiationTester $I)
     {
-        ClassFinder::disablePSR4Vendors();
+        $sweep = new InstantiationSweep($this->get(ContainerInterface::class));
 
-        $count = 0;
+        $result = $sweep->run($this->namespaces, $this->skippedClasses);
 
-        foreach ($this->namespaces as $namespace)
-        {
-            $classes = ClassFinder::getClassesInNamespace($namespace);
-
-            foreach ($classes as $class)
-            {
-                if (in_array($class, $this->skippedClasses))
-                {
-                    continue;
-                }
-
-                $this->get($class);
-                $count++;
-            }
-        }
-
-        verify($count)->equals(141);
+        verify($result->describeFailures())->equals('');
+        verify($result->isSuccessful())->true();
     }
 }
