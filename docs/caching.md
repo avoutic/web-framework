@@ -4,7 +4,7 @@ This document provides a guide for developers on how to use caching in the WebFr
 
 ## Overview
 
-Caching in WebFramework is managed using the `Cache` interface, which defines the contract for cache implementations. The framework provides two implementations:
+Caching in WebFramework is managed using the `Cache` interface, which defines the contract for cache implementations. These implementations are available:
 
 - **RedisCache**: A Redis-based implementation for high-performance caching in the **web-framework-redis** module.
 - **NullCache**: A no-op implementation that performs no caching, useful for testing or when caching is disabled.
