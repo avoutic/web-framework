@@ -187,6 +187,17 @@ The worker will:
 - Stop when max-jobs or max-runtime is reached, also when the queue is empty
 - Roll back a database transaction that a job handler left open, before continuing with the next job. A handler that returns with a transaction still open counts as failed. Use `Database::transaction()` in your handlers, so a transaction is always committed or rolled back
 
+### A Worker Is One Long-Running Process
+
+A web request starts with a fresh process and everything it built is gone when it ends. A worker is different: it is one process that handles job after job, with one container. The services a job handler uses are the same objects for every job.
+
+That is what makes a worker fast. The database connection, the container and the configuration are set up once. It also means two things for your own code:
+
+- A service must not keep data from one job that is wrong for the next. A property that caches entities, the current user or a result is still filled when the next job starts. Keep such data in local variables, clear it at the start of the handler that depends on it, or clear it in a listener for the job events below.
+- Code and configuration are loaded when the worker starts. Restart your workers when you deploy. `--max-runtime` makes a worker stop by itself, so whatever starts it again picks up the new code.
+
+The framework itself keeps nothing between jobs that needs a reset. A database transaction that a handler leaves open is rolled back before the next job.
+
 ### Job Events
 
 The worker dispatches an event after every job it handled:
