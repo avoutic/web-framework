@@ -64,12 +64,15 @@
         ],
         "psr-4": {
             "WebFramework\\": "src/",
-            "WebFramework\\Actions\\": "actions/"
+            "WebFramework\\Actions\\": "actions/",
+            "WebFramework\\PHPStan\\": "phpstan/"
         }
     },
-    "autoload-dev": {
-        "psr-4": {
-            "WebFramework\\PHPStan\\": "phpstan/"
+    "extra": {
+        "phpstan": {
+            "includes": [
+                "phpstan-core.neon"
+            ]
         }
     },
     "config": {

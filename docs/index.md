@@ -64,12 +64,20 @@ You are free to organize your project in any way you like, but the above structu
             "App\\Routes\\": "routes/"
         }
     },
-    "autoload-dev": {
-        "psr-4": {
-            "WebFramework\\PHPStan\\": "vendor/avoutic/web-framework/phpstan/"
-        }
-    },
 ```
+
+### Static Analysis
+
+The framework comes with a PHPStan extension that knows the `id` property of an entity is written by the repository. Without it, PHPStan reports the `id` of your entities as never written. Include it in the `phpstan.neon` of your application:
+
+```neon
+includes:
+    - vendor/avoutic/web-framework/phpstan-core.neon
+```
+
+If you use `phpstan/extension-installer`, it is included automatically and you can leave this out.
+
+The extension recognizes an entity by its type: a class that implements `WebFramework\Entity\Entity`, which every class that extends `EntityCore` does. It does not matter in which namespace the entity lives.
 
 ## Documentation Contents
 
