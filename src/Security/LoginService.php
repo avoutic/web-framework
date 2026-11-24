@@ -123,7 +123,7 @@ class LoginService
             throw new UserVerificationRequiredException($user);
         }
 
-        if (!$user->isVerifiedValid($this->validityPeriodDays))
+        if ($this->isVerificationExpired($request, $user))
         {
             $this->logger->debug('User verification expired', ['user_id' => $user->getId()]);
 
@@ -165,6 +165,26 @@ class LoginService
         $this->userRepository->save($user);
 
         $this->eventService->dispatch(new UserLoggedIn($request, $user));
+    }
+
+    /**
+     * Check if a verified user has to verify again, because the verification is too old.
+     */
+    private function isVerificationExpired(Request $request, User $user): bool
+    {
+        // A validity period of 0 means the verification does not expire
+        //
+        if ($this->validityPeriodDays <= 0)
+        {
+            return false;
+        }
+
+        if ($user->isVerifiedValid($this->validityPeriodDays))
+        {
+            return false;
+        }
+
+        return !$this->loginExtension->isExemptFromVerificationExpiry($request, $user);
     }
 
     /**

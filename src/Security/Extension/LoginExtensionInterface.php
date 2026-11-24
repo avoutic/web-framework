@@ -58,4 +58,18 @@ interface LoginExtensionInterface
      * @return bool True to allow the login, false to refuse it
      */
     public function preAuthenticate(Request $request, User $user): bool;
+
+    /**
+     * Decide if a user is exempt from verifying again when the verification has expired.
+     *
+     * This is asked at login, for a user whose last verification is older than the validity
+     * period. Use it for accounts that cannot verify again, such as a service account without
+     * a mailbox. It does not apply to a user that was never verified.
+     *
+     * @param Request $request The current request
+     * @param User    $user    The user whose verification has expired
+     *
+     * @return bool True to let the user log in without verifying again
+     */
+    public function isExemptFromVerificationExpiry(Request $request, User $user): bool;
 }

@@ -40,4 +40,9 @@ class NullLoginExtension implements LoginExtensionInterface
     {
         return true;
     }
+
+    public function isExemptFromVerificationExpiry(Request $request, User $user): bool
+    {
+        return false;
+    }
 }

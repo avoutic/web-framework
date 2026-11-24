@@ -346,6 +346,7 @@ final class LoginServiceTest extends Unit
                 'logger' => $this->makeEmpty(LoggerInterface::class, [
                     'debug' => Expected::once(),
                 ]),
+                'loginExtension' => $this->makeEmpty(LoginExtensionInterface::class, ['isExemptFromVerificationExpiry' => false]),
                 'validityPeriodDays' => 1,
             ],
         );
@@ -424,5 +425,83 @@ final class LoginServiceTest extends Unit
         })
             ->callableThrows(AccountDisabledException::class)
         ;
+    }
+
+    /**
+     * @param array<string, mixed> $loginExtension
+     */
+    private function buildServiceForExpiry(int $validityPeriodDays, array $loginExtension): LoginService
+    {
+        return $this->make(
+            LoginService::class,
+            [
+                'accountStatusChecker' => $this->makeEmpty(AccountStatusChecker::class, ['isEnabled' => true]),
+                'authenticationService' => $this->makeEmpty(NullAuthenticationService::class),
+                'eventService' => $this->makeEmpty(EventService::class),
+                'logger' => $this->makeEmpty(LoggerInterface::class),
+                'loginExtension' => $this->makeEmpty(LoginExtensionInterface::class, array_merge(['preAuthenticate' => true], $loginExtension)),
+                'userRepository' => $this->makeEmpty(UserRepository::class),
+                'validityPeriodDays' => $validityPeriodDays,
+            ],
+        );
+    }
+
+    public function testValidityPeriodOfZeroMeansVerificationNeverExpires()
+    {
+        $user = $this->makeEmpty(User::class, [
+            'isVerified' => true,
+            'isVerifiedValid' => Expected::never(),
+        ]);
+
+        $instance = $this->buildServiceForExpiry(0, []);
+
+        $instance->authenticate($this->makeEmpty(Request::class), $user);
+    }
+
+    public function testExemptUserIsNotAskedToVerifyAgain()
+    {
+        $user = $this->makeEmpty(User::class, [
+            'isVerified' => true,
+            'isVerifiedValid' => false,
+        ]);
+
+        $instance = $this->buildServiceForExpiry(30, [
+            'isExemptFromVerificationExpiry' => Expected::once(true),
+        ]);
+
+        $instance->authenticate($this->makeEmpty(Request::class), $user);
+    }
+
+    public function testExpiredVerificationOfAUserThatIsNotExempt()
+    {
+        $user = $this->makeEmpty(User::class, [
+            'getId' => 1,
+            'isVerified' => true,
+            'isVerifiedValid' => false,
+        ]);
+
+        $instance = $this->buildServiceForExpiry(30, [
+            'isExemptFromVerificationExpiry' => Expected::once(false),
+        ]);
+
+        verify(function () use ($instance, $user) {
+            $instance->authenticate($this->makeEmpty(Request::class), $user);
+        })->callableThrows(UserVerificationRequiredException::class);
+    }
+
+    public function testExemptionDoesNotApplyToAUserThatWasNeverVerified()
+    {
+        $user = $this->makeEmpty(User::class, [
+            'getId' => 1,
+            'isVerified' => false,
+        ]);
+
+        $instance = $this->buildServiceForExpiry(30, [
+            'isExemptFromVerificationExpiry' => Expected::never(),
+        ]);
+
+        verify(function () use ($instance, $user) {
+            $instance->authenticate($this->makeEmpty(Request::class), $user);
+        })->callableThrows(UserVerificationRequiredException::class);
     }
 }

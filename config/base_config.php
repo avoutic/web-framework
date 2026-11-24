@@ -59,7 +59,7 @@ return [
             'secret_key' => env('RECAPTCHA_SECRET_KEY', ''),
         ],
         'email_verification' => [
-            'validity_period_days' => 30,   // Days that email verification remains valid (default: 30)
+            'validity_period_days' => 30,   // Days that email verification remains valid (default: 30), 0 for never expiring
             'code_length' => 6,             // Length of verification code (default: 6)
             'code_expiry_minutes' => 15,    // Minutes until code expires (default: 15)
             'max_attempts' => 5,            // Maximum verification attempts per code (default: 5)

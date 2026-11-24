@@ -2,6 +2,8 @@
 
 ## Breaking changes
 
+* `LoginExtensionInterface` has a new method `isExemptFromVerificationExpiry(Request $request, User $user): bool`. Implementations that do not extend `NullLoginExtension` must add it. Return `false` to keep the current behaviour. Return `true` for a user that should not have to verify again when the verification has expired, such as a service account without a mailbox.
+* `security.email_verification.validity_period_days` set to `0` now means that verification does not expire. Before, it meant that every user had to verify again at every login.
 * `LoginExtensionInterface` has a new method `preAuthenticate(Request $request, User $user): bool`. Implementations that do not extend `NullLoginExtension` must add it. Return `true` to keep the current behavior.
 * `LoginService` has a new constructor parameter `LoginExtensionInterface $loginExtension`. Autowired definitions need no change.
 * The `LoginVerify` and `RegisterVerify` actions take `LoginService` instead of `AuthenticationService` in their constructor. Subclasses must be adapted. Subclasses that only existed to add a check before authentication can be replaced by `preAuthenticate()`.

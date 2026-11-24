@@ -98,6 +98,7 @@ The login flow handles user authentication, including cases where users need to 
 - `getCustomParams()`: Add custom template parameters
 - `customValueCheck()`: Perform additional validation checks before authentication and before a verification code is sent (password login form only)
 - `preAuthenticate()`: Last check right before a session is created. Runs on every login path: password login, LoginVerify and RegisterVerify. Return false to refuse the login
+- `isExemptFromVerificationExpiry()`: Asked for a user whose verification is older than `security.email_verification.validity_period_days`. Return true to let the user log in without verifying again, for example for a service account without a mailbox. It is not asked for a user that was never verified
 
 **Configuration**:
 - `actions.login.default_return_page`: Default page after successful login
@@ -427,6 +428,7 @@ return [
 - `getCustomParams(Request $request): array` - Add custom template parameters
 - `customValueCheck(Request $request, User $user): bool` - Perform additional validation before authentication
 - `preAuthenticate(Request $request, User $user): bool` - Allow or refuse the login right before a session is created, on every login path
+- `isExemptFromVerificationExpiry(Request $request, User $user): bool` - Let a user with an expired verification log in without verifying again
 
 #### ChangeEmailExtensionInterface
 - `getCustomParams(Request $request): array` - Add custom template parameters
