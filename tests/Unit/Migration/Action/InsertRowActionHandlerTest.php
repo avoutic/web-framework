@@ -96,4 +96,32 @@ final class InsertRowActionHandlerTest extends Unit
             $handler->buildStep($action);
         })->callableThrows(\InvalidArgumentException::class, 'No values array specified');
     }
+
+    public function testIgnoreSkipsARowThatAlreadyExists()
+    {
+        $step = (new InsertRowActionHandler())->buildStep([
+            'table_name' => 'rights',
+            'values' => ['short_name' => 'admin', 'name' => 'Administrator'],
+            'ignore' => true,
+        ]);
+
+        verify($step->getQuery())->stringContainsString('INSERT IGNORE INTO `rights`');
+        verify($step->getParams())->equals(['admin', 'Administrator']);
+    }
+
+    public function testWithoutIgnoreItIsAPlainInsert()
+    {
+        $handler = new InsertRowActionHandler();
+
+        foreach ([[], ['ignore' => false]] as $extra)
+        {
+            $step = $handler->buildStep(array_merge([
+                'table_name' => 'rights',
+                'values' => ['short_name' => 'admin'],
+            ], $extra));
+
+            verify($step->getQuery())->stringContainsString('INSERT INTO `rights`');
+            verify($step->getQuery())->stringNotContainsString('IGNORE');
+        }
+    }
 }

@@ -56,8 +56,13 @@ final class InsertRowActionHandler extends AbstractActionHandler
             }
         }
 
+        // With 'ignore', a row that conflicts with an existing one is skipped. Use it for
+        // a row that can already be present
+        //
+        $ignoreFmt = !empty($action['ignore']) ? 'IGNORE ' : '';
+
         $query = <<<SQL
-INSERT INTO `{$tableName}`
+INSERT {$ignoreFmt}INTO `{$tableName}`
     SET {$fieldsFmt}
 SQL;
 

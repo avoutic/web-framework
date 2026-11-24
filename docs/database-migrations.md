@@ -563,6 +563,7 @@ Inserts a new row into a table.
 - `type` (required): Must be "insert_row"
 - `table_name` (required): The name of the table to insert into
 - `values` (required): An array of column-value pairs to insert
+- `ignore` (optional): Set to `true` to skip the row when it conflicts with a row that already exists, for example a default row that some installations already have. This becomes an `INSERT IGNORE`. Be aware that the database then also turns other problems with the row, such as a value that does not fit its column, into warnings
 
 ### Example
 
