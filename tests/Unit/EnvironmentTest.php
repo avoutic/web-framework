@@ -4,8 +4,6 @@ namespace Tests\Unit;
 
 use Codeception\Test\Unit;
 
-require_once __DIR__.'/../../src/Environment.php';
-
 /**
  * @internal
  *
@@ -112,5 +110,15 @@ final class EnvironmentTest extends Unit
         $result = $authConfig();
         verify($result['test_setting'])->equals('auth_value');
         verify($result['missing_setting'])->equals('fallback');
+    }
+
+    public function testEnvIsAvailableFromTheComposerAutoloaderAlone()
+    {
+        $autoload = escapeshellarg(dirname(__DIR__, 2).'/vendor/autoload.php');
+
+        // A fresh process, as this one has the function already
+        $output = shell_exec(PHP_BINARY.' -r '.escapeshellarg("require {$autoload}; echo function_exists('env') ? 'defined' : 'missing';"));
+
+        verify($output)->equals('defined');
     }
 }

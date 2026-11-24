@@ -60,6 +60,9 @@
         "bin/framework-publish"
     ],
     "autoload": {
+        "files": [
+            "src/Environment.php"
+        ],
         "psr-4": {
             "WebFramework\\": "src/",
             "WebFramework\\Actions\\": "actions/"

@@ -151,6 +151,9 @@ class TaskRunner
 
         $envLoader->loadEnvFile($envFile);
 
+        // Normally already loaded by the Composer autoloader. Kept for when the framework
+        // is loaded in another way
+        //
         require_once __DIR__.'/../Environment.php';
     }
 
