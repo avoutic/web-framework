@@ -130,24 +130,59 @@ class ProcessUserDataListener extends QueuedEventListener
 
 ### Registering Events and Listeners
 
+Events and their listeners are registered on the `EventService`. Do this in your definitions, with `DI\decorate`. The decorator gets the `EventService` the container created, registers your events on it and returns it:
+
 ~~~php
 <?php
 
-// Register an event with its listeners
-$eventService->registerEvent(
-    UserRegisteredEvent::class,
-    [
-        SendWelcomeEmailListener::class,
-        ProcessUserDataListener::class,
-    ]
-);
+use WebFramework\Event\EventService;
 
-// Add a new listener to an existing event
-$eventService->addListener(
-    UserRegisteredEvent::class,
-    NewFeatureListener::class
-);
+return [
+    EventService::class => DI\decorate(function (EventService $eventService) {
+        // Register an event with its listeners
+        $eventService->registerEvent(
+            UserRegisteredEvent::class,
+            [
+                SendWelcomeEmailListener::class,
+                ProcessUserDataListener::class,
+            ]
+        );
+
+        return $eventService;
+    }),
+];
 ~~~
+
+This way your definitions do not depend on how the `EventService` is constructed. Do not create the `EventService` yourself in a definition: that breaks when its constructor changes.
+
+The same goes for the events of the framework itself, such as `WebFramework\Event\UserLoggedIn`: register them with your listeners to act on them. An event that is dispatched without being registered is ignored.
+
+Two rules to keep in mind:
+
+- `registerEvent()` can be called once per event. It throws an exception when the event is already registered.
+- `addListener()` adds a listener to an event that is already registered. It throws an exception when the event is not registered yet.
+
+So when a second definition file, for example a module of your application, wants to listen to an event that is registered elsewhere, it decorates the `EventService` as well and uses `addListener()`:
+
+~~~php
+<?php
+
+use WebFramework\Event\EventService;
+
+return [
+    EventService::class => DI\decorate(function (EventService $eventService) {
+        // Add a new listener to an existing event
+        $eventService->addListener(
+            UserRegisteredEvent::class,
+            NewFeatureListener::class
+        );
+
+        return $eventService;
+    }),
+];
+~~~
+
+The decorators run in the order of the definition files, so the file that registers the event has to be listed before the files that add listeners to it.
 
 ### Dispatching Events
 
