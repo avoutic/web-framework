@@ -91,6 +91,9 @@ class DatabaseConversionManager
         }
         catch (\RuntimeException $e)
         {
+            // Only reached on a database that has no stored_values table yet. That is before
+            // the migration that copies config_values, and so before the one that renames it
+            //
             $result = $this->database->query('SELECT value FROM config_values WHERE module = ? AND name = ?', ['db', 'app_db_version']);
             $currentVersion = (int) $result->fields['value'];
         }
@@ -313,6 +316,9 @@ class DatabaseConversionManager
 
         try
         {
+            // The fallback for a database that has no version in stored_values yet. Once the
+            // contents are copied there, config_values is renamed and this is not reached
+            //
             if ($this->database->tableExists('config_values'))
             {
                 $result = $this->database->query('SELECT value FROM config_values WHERE module = ? AND name = ?', ['db', 'app_db_version']);
