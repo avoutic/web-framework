@@ -55,6 +55,21 @@ $taskRunner->execute(CustomTask::class);
 
 This script initializes the `TaskRunner`, builds the application environment, and executes the `CustomTask`.
 
+### Running a Command for Another Environment
+
+The `framework` command line tool uses the same configuration as the application. Set the `APP_ENV` environment variable to run a command with the configuration of another environment, for example to migrate a test database:
+
+~~~bash
+APP_ENV=testing php framework db:migrate
+~~~
+
+With `APP_ENV=testing`:
+
+- `.env.testing` is used instead of `.env`, if it exists.
+- `/config/config_testing.php` is loaded on top of `/config/config.php`, if it exists.
+
+Put what differs for that environment, such as the database to use, in those files. `APP_ENV` has to be set in the environment of the command, as above: setting it in a `.env` file is too late. See [Configuration](configuration.md) for details.
+
 ### Failing Tasks
 
 A command that is run through the `framework` command line tool and fails with an exception is handled the same way as an unhandled exception in a web request: it is logged to the default and exception log channels and reported through the configured `ReportFunction`. The message is printed and the exit code is `1`. This way a failing scheduled task does not go unnoticed. Wrong arguments are not reported, they only show the usage.
