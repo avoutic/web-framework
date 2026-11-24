@@ -26,7 +26,8 @@ final class MailReportRateLimitSanityCheckTest extends Unit
             'get' => function ($path) use (&$store) {
                 return $store[$path] ?? false;
             },
-            'set' => function ($path, $value) use (&$store) {
+            'set' => function ($path, $value, $expiresAfter) use (&$store) {
+                verify($expiresAfter)->same(60);
                 $store[$path] = $value;
             },
             'invalidate' => Expected::once(function ($path) use (&$store) {

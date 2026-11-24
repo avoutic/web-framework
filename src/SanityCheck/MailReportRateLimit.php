@@ -11,7 +11,6 @@
 
 namespace WebFramework\SanityCheck;
 
-use Carbon\Carbon;
 use Psr\Log\LoggerInterface;
 use WebFramework\Cache\Cache;
 use WebFramework\Diagnostics\MailReportFunction;
@@ -56,7 +55,7 @@ class MailReportRateLimit extends SanityCheckBase
             return true;
         }
 
-        $this->cache->set(self::PROBE_KEY, 'probe', Carbon::now()->addMinute()->getTimestamp());
+        $this->cache->set(self::PROBE_KEY, 'probe', 60);
         $stored = $this->cache->get(self::PROBE_KEY) === 'probe';
         $this->cache->invalidate(self::PROBE_KEY);
 

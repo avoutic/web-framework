@@ -11,7 +11,6 @@
 
 namespace WebFramework\Diagnostics;
 
-use Carbon\Carbon;
 use Psr\Log\LoggerInterface;
 use WebFramework\Cache\Cache;
 use WebFramework\Mail\MailService;
@@ -69,7 +68,10 @@ class MailReportFunction implements ReportFunction
             $cached['count']++;
         }
 
-        $this->cache->set($cacheId, $cached, Carbon::now()->addMinutes(10)->getTimestamp());
+        // The counter covers ten minutes after the last occurrence. The cache takes a
+        // number of seconds, not a timestamp
+        //
+        $this->cache->set($cacheId, $cached, 600);
 
         // Rate limiting only works with a cache that stores values. With the default
         // NullCache every error is a first occurrence, and every error sends a mail.

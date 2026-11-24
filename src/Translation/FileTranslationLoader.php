@@ -52,12 +52,15 @@ class FileTranslationLoader implements TranslationLoader
             return $this->translations[$language];
         }
 
-        // Load from cache if present
+        // Load from cache if present. A single read, checked for what came back: asking
+        // first and reading after can find the entry expired in between
         //
         $cacheId = "translations[{$language}]";
-        if ($this->cache->exists($cacheId))
+        $cached = $this->cache->get($cacheId);
+
+        if (is_array($cached))
         {
-            $this->translations[$language] = $this->cache->get($cacheId);
+            $this->translations[$language] = $cached;
 
             return $this->translations[$language];
         }

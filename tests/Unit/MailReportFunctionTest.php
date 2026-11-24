@@ -31,7 +31,9 @@ final class MailReportFunctionTest extends Unit
                         'get' => Expected::exactly(2, function () use (&$stored) {
                             return $stored;
                         }),
-                        'set' => Expected::once(function ($path, $value) use (&$stored) {
+                        'set' => Expected::once(function ($path, $value, $expiresAfter) use (&$stored) {
+                            // A number of seconds, not a timestamp: the counter covers ten minutes
+                            verify($expiresAfter)->same(600);
                             $stored = $value;
                         }),
                     ]
