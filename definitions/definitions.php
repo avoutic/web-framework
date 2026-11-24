@@ -117,6 +117,7 @@ return [
     Http\HttpApplication::class => DI\autowire()
         ->constructorParameter('debug', DI\get('debug')),
     Http\ResponseEmitter::class => DI\autowire()
+        ->constructorParameter('jsonPaths', DI\get('json_response_paths'))
         ->constructorParameter('responseFactory', DI\get(ResponseFactoryInterface::class)),
 
     // Needed because the mapped config tree does not contain intermediate config nodes

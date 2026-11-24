@@ -410,4 +410,95 @@ final class ResponseEmitterTest extends Unit
         $result = $responseEmitter->unauthorized($request);
         verify($result->getHeaderLine('Location'))->equals('https://example.com/login?return_page=/protected-path&return_query=param=value');
     }
+
+    /**
+     * @param array<string, string> $headers
+     * @param array<string>         $jsonPaths
+     */
+    private function wantsJsonFor(array $headers, string $url = 'https://test.com/page', array $jsonPaths = []): bool
+    {
+        $request = new Request('GET', $url, $headers);
+
+        $responseEmitter = new ResponseEmitter(
+            $this->makeEmpty(Container::class),
+            $this->makeEmpty(ConfigService::class),
+            $this->makeEmpty(ResponseFactory::class),
+            $this->makeEmpty(UrlBuilder::class),
+            STDOUT,
+            $jsonPaths,
+        );
+
+        return $responseEmitter->wantsJson($request);
+    }
+
+    public function testWantsJsonFollowsAcceptHeader()
+    {
+        verify($this->wantsJsonFor(['Accept' => 'application/json']))->true();
+        verify($this->wantsJsonFor(['Accept' => 'application/json, text/plain, */*']))->true();
+        verify($this->wantsJsonFor(['Accept' => 'application/problem+json']))->true();
+        verify($this->wantsJsonFor(['Accept' => 'APPLICATION/JSON']))->true();
+    }
+
+    public function testWantsJsonIsFalseForBrowsersAndWildcards()
+    {
+        verify($this->wantsJsonFor(['Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8']))->false();
+        verify($this->wantsJsonFor(['Accept' => '*/*']))->false();
+        verify($this->wantsJsonFor([]))->false();
+    }
+
+    public function testWantsJsonRespectsPreferenceBetweenHtmlAndJson()
+    {
+        verify($this->wantsJsonFor(['Accept' => 'text/html, application/json;q=0.9']))->false();
+        verify($this->wantsJsonFor(['Accept' => 'application/json, text/html;q=0.9']))->true();
+        verify($this->wantsJsonFor(['Accept' => 'text/html, application/json']))->false();
+        verify($this->wantsJsonFor(['Accept' => 'application/json, text/html']))->true();
+        verify($this->wantsJsonFor(['Accept' => 'application/json;q=0, text/html']))->false();
+    }
+
+    public function testWantsJsonFallsBackToContentType()
+    {
+        verify($this->wantsJsonFor(['Content-Type' => 'application/json']))->true();
+        verify($this->wantsJsonFor(['Content-Type' => 'application/json', 'Accept' => '*/*']))->true();
+        verify($this->wantsJsonFor(['Content-Type' => 'text/html']))->false();
+    }
+
+    public function testWantsJsonForConfiguredPaths()
+    {
+        $browser = ['Accept' => 'text/html,application/xhtml+xml'];
+
+        verify($this->wantsJsonFor($browser, 'https://test.com/api/users', ['/api/']))->true();
+        verify($this->wantsJsonFor([], 'https://test.com/api/users', ['/api/']))->true();
+        verify($this->wantsJsonFor([], 'https://test.com/apiary', ['/api/']))->false();
+        verify($this->wantsJsonFor([], 'https://test.com/page', ['/api/', '/hooks/']))->false();
+        verify($this->wantsJsonFor([], 'https://test.com/hooks/stripe', ['/api/', '/hooks/']))->true();
+    }
+
+    public function testUnauthorizedIsJsonForGetWithAcceptHeader()
+    {
+        $request = new Request('GET', 'https://test.com/api/me', ['Accept' => 'application/json']);
+        $response = $this->createMockResponse();
+
+        $responseEmitter = $this->make(
+            ResponseEmitter::class,
+            [
+                'responseFactory' => $this->makeEmpty(
+                    ResponseFactory::class,
+                    [
+                        'createResponse' => Expected::once($response->withStatus(401, 'Unauthorized')),
+                    ]
+                ),
+                'urlBuilder' => $this->makeEmpty(
+                    UrlBuilder::class,
+                    [
+                        'buildQueryUrl' => Expected::never(),
+                    ]
+                ),
+            ]
+        );
+
+        $result = $responseEmitter->unauthorized($request);
+
+        verify($result->getStatusCode())->equals(401);
+        verify($result->getHeaderLine('Content-type'))->equals('application/json');
+    }
 }

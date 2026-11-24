@@ -54,6 +54,28 @@ Exceptions can be thrown in an Action or Service class to trigger specific respo
 - **Throwable**: Any other unhandled exception results in a generic error response.
   - **HTTP Code**: 500 (Internal Server Error)
 
+#### JSON or HTML
+
+These responses come in two forms. The HTML form uses your error handlers and, for a 401, redirects to the login page. The JSON form has the same HTTP code with the `Content-type` header set to `application/json`, and never redirects. The framework responds with JSON when, in this order:
+
+1. The `Accept` header of the request names `application/json` (or a type ending in `+json`) and does not prefer `text/html` over it. A wildcard such as `*/*` does not count, so browsers get HTML.
+2. The `Content-Type` of the request is `application/json`. This covers clients that post JSON without an `Accept` header.
+3. The path of the request starts with one of the prefixes in the `json_response_paths` configuration.
+
+Use `json_response_paths` for the parts of your application that are an API, so clients always get JSON, whatever headers they send:
+
+~~~php
+<?php
+
+return [
+    'json_response_paths' => ['/api/'],
+];
+~~~
+
+This is based on the path, and not on a middleware of a route group, because an unhandled exception is turned into a response by the `ErrorRedirectMiddleware`, outside of routing. What a middleware on a route group adds to the request is not available there.
+
+To make the same decision in your own code, use `ResponseEmitter::wantsJson($request)`.
+
 ## Error Reports
 
 When an unhandled exception occurs, an error report is built. Depending on your setup it is mailed (`MailReportFunction`), logged, and shown in the browser in debug mode. The report contains the request, so the framework scrubs it before it leaves the application:

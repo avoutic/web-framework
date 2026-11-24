@@ -19,6 +19,9 @@ return [
     ],
     'http_mode' => 'https',
     'base_url' => '',                    // Add a base_url to be used in external urls
+    'json_response_paths' => [],         /* Path prefixes (such as '/api/') that always get JSON error and
+                                          * authentication responses, whatever headers the client sends
+                                          */
     'sanity_check_modules' => [],        /* Associative array with application sanity check class names with
                                           * full namespace as key and their config array as the value
                                           */

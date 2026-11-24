@@ -33,14 +33,114 @@ class ResponseEmitter
      * @param ResponseFactory $responseFactory The PSR-7 response factory
      * @param UrlBuilder      $urlBuilder      The URL builder service
      * @param resource        $outputStream    The output stream to write to
+     * @param array<string>   $jsonPaths       Path prefixes that always get JSON error and authentication responses
      */
     public function __construct(
         private Container $container,
         private ConfigService $configService,
         private ResponseFactory $responseFactory,
         private UrlBuilder $urlBuilder,
-        private $outputStream = STDOUT
-    ) {}
+        private $outputStream = STDOUT,
+        array $jsonPaths = [],
+    ) {
+        $this->jsonPaths = $jsonPaths;
+    }
+
+    /** @var array<string> */
+    private array $jsonPaths = [];
+
+    /**
+     * Decide if an error or authentication response should be JSON instead of HTML.
+     *
+     * In order:
+     * - The Accept header, when it names JSON or HTML explicitly. Wildcards do not count.
+     * - The Content-Type of the request, for clients that post JSON without an Accept header.
+     * - The configured path prefixes that always get JSON.
+     *
+     * @param Request $request The current request
+     *
+     * @return bool True if the response should be JSON
+     */
+    public function wantsJson(Request $request): bool
+    {
+        $accept = $this->getAcceptedQuality($request->getHeaderLine('Accept'));
+
+        if ($accept['json'] > 0 && $accept['json'] > $accept['html'])
+        {
+            return true;
+        }
+
+        if ($accept['json'] > 0 && $accept['json'] === $accept['html'])
+        {
+            return $accept['json_first'];
+        }
+
+        if (str_contains(strtolower($request->getHeaderLine('Content-Type')), 'application/json'))
+        {
+            return true;
+        }
+
+        $path = $request->getUri()->getPath();
+
+        foreach ($this->jsonPaths as $prefix)
+        {
+            if ($prefix !== '' && str_starts_with($path, $prefix))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Get how much an Accept header wants JSON and HTML.
+     *
+     * @return array{json: float, html: float, json_first: bool} The highest quality for JSON and for HTML
+     *                                                           (0 when not named), and which one is named first
+     */
+    private function getAcceptedQuality(string $accept): array
+    {
+        $result = ['json' => 0.0, 'html' => 0.0, 'json_first' => false];
+        $seen = false;
+
+        foreach (explode(',', strtolower($accept)) as $part)
+        {
+            $params = array_map('trim', explode(';', $part));
+            $type = array_shift($params);
+            $quality = 1.0;
+
+            foreach ($params as $param)
+            {
+                if (str_starts_with($param, 'q='))
+                {
+                    $quality = (float) substr($param, 2);
+                }
+            }
+
+            $kind = match (true)
+            {
+                $type === 'application/json' || str_ends_with($type, '+json') => 'json',
+                $type === 'text/html' => 'html',
+                default => null,
+            };
+
+            if ($kind === null)
+            {
+                continue;
+            }
+
+            if (!$seen && $quality > 0)
+            {
+                $result['json_first'] = ($kind === 'json');
+                $seen = true;
+            }
+
+            $result[$kind] = max($result[$kind], $quality);
+        }
+
+        return $result;
+    }
 
     /**
      * Write a message to the output stream.
@@ -91,8 +191,7 @@ class ResponseEmitter
      */
     public function blacklisted(Request $request): Response
     {
-        $contentType = $request->getHeaderLine('Content-Type');
-        $isJson = (str_contains($contentType, 'application/json'));
+        $isJson = $this->wantsJson($request);
 
         $response = $this->responseFactory->createResponse(403, 'Forbidden');
 
@@ -135,8 +234,7 @@ class ResponseEmitter
      */
     public function error(Request $request, string $title, string $details = '', int $httpCode = 500, string $reasonPhrase = 'Internal error'): Response
     {
-        $contentType = $request->getHeaderLine('Content-Type');
-        $isJson = (str_contains($contentType, 'application/json'));
+        $isJson = $this->wantsJson($request);
 
         $response = $this->responseFactory->createResponse($httpCode, $reasonPhrase);
 
@@ -177,8 +275,7 @@ class ResponseEmitter
      */
     public function forbidden(Request $request): Response
     {
-        $contentType = $request->getHeaderLine('Content-Type');
-        $isJson = (str_contains($contentType, 'application/json'));
+        $isJson = $this->wantsJson($request);
 
         $response = $this->responseFactory->createResponse(403, 'Forbidden');
 
@@ -209,8 +306,7 @@ class ResponseEmitter
      */
     public function notFound(Request $request): Response
     {
-        $contentType = $request->getHeaderLine('Content-Type');
-        $isJson = (str_contains($contentType, 'application/json'));
+        $isJson = $this->wantsJson($request);
 
         $response = $this->responseFactory->createResponse(404, 'Not Found');
 
@@ -241,8 +337,7 @@ class ResponseEmitter
      */
     public function methodNotAllowed(Request $request): Response
     {
-        $contentType = $request->getHeaderLine('Content-Type');
-        $isJson = (str_contains($contentType, 'application/json'));
+        $isJson = $this->wantsJson($request);
 
         $response = $this->responseFactory->createResponse(405, 'Method Not Allowed');
 
@@ -325,8 +420,7 @@ class ResponseEmitter
      */
     public function unauthorized(Request $request): Response
     {
-        $contentType = $request->getHeaderLine('Content-Type');
-        $isJson = (str_contains($contentType, 'application/json'));
+        $isJson = $this->wantsJson($request);
 
         $response = $this->responseFactory->createResponse(401, 'Unauthorized');
 
