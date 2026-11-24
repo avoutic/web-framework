@@ -256,6 +256,36 @@ Configuration values are resolved in the following order (highest to lowest prec
 
 This allows you to override any configuration value at any level while maintaining sensible defaults.
 
+### Optional Auth Configuration
+
+Auth configuration files are read with `WebFramework\Security\ConfigService`, from the directory in `security.auth_dir` (`/config/auth` by default). `getAuthConfig('name')` throws a `MissingAuthConfigException` when the file does not exist.
+
+For an integration that is optional, do not let its definition fail when the file is not there. A definition is built as soon as something needs the service, which can be before any of your own code runs. Check for the file, or ask for a default:
+
+~~~php
+<?php
+
+use Psr\Container\ContainerInterface;
+use WebFramework\Security\ConfigService;
+
+return [
+    SlackNotifier::class => function (ContainerInterface $c) {
+        $configService = $c->get(ConfigService::class);
+
+        if (!$configService->hasAuthConfig('slack'))
+        {
+            return new NullSlackNotifier();
+        }
+
+        return new WebhookSlackNotifier($configService->getAuthConfig('slack'));
+    },
+];
+~~~
+
+`getAuthConfigOrDefault('slack', null)` does the same in one call. The default is only used when the file does not exist. A file that exists but has no usable content still throws.
+
+The `RequiredAuth` sanity check lists the files that have to be present, and looks in the same directory.
+
 ## Session Options
 
 By default the session of the application is a PHP session: the framework binds `Odan\Session\SessionInterface` to `PhpSession` in its definitions. Its name, lifetime, path, domain and the `secure` and `httponly` flags of its cookie follow from other settings: `app_name`, `authenticator.session_timeout`, `host_name` and `http_mode`.

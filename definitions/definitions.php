@@ -162,6 +162,8 @@ return [
         return $queueService;
     }),
 
+    SanityCheck\RequiredAuth::class => DI\autowire()
+        ->constructorParameter('authDir', DI\get('security.auth_dir')),
     SanityCheck\SanityCheckRunner::class => DI\autowire()
         ->constructorParameter('buildInfo', DI\get('build_info')),
 

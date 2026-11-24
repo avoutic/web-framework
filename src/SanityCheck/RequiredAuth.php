@@ -26,10 +26,13 @@ class RequiredAuth extends SanityCheckBase
      *
      * @param LoggerInterface    $logger             The logger
      * @param RuntimeEnvironment $runtimeEnvironment The runtime environment service
+     * @param string             $authDir            The directory with the auth configuration files,
+     *                                               relative to the application directory
      */
     public function __construct(
         private LoggerInterface $logger,
         private RuntimeEnvironment $runtimeEnvironment,
+        private string $authDir = '/config/auth',
     ) {}
 
     /**
@@ -47,7 +50,7 @@ class RequiredAuth extends SanityCheckBase
 
         foreach ($this->config as $filename)
         {
-            $path = "{$this->runtimeEnvironment->getAppDir()}/config/auth/{$filename}";
+            $path = "{$this->runtimeEnvironment->getAppDir()}{$this->authDir}/{$filename}";
 
             $exists = file_exists($path);
 

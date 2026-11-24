@@ -13,6 +13,7 @@ namespace WebFramework\Security;
 
 use Psr\Log\LoggerInterface;
 use WebFramework\Core\RuntimeEnvironment;
+use WebFramework\Exception\MissingAuthConfigException;
 
 /**
  * Class ConfigService.
@@ -41,7 +42,8 @@ class ConfigService
      *
      * @return mixed The auth configuration
      *
-     * @throws \RuntimeException If the configuration is invalid or doesn't exist
+     * @throws MissingAuthConfigException If the configuration file doesn't exist
+     * @throws \RuntimeException          If the configuration is invalid
      */
     public function getAuthConfig(string $name): mixed
     {
@@ -58,23 +60,67 @@ class ConfigService
     }
 
     /**
+     * Check if an auth configuration file exists.
+     *
+     * Use this for an integration that is optional, so its definition can leave the
+     * integration out when it is not configured.
+     *
+     * @param string $name The name of the auth configuration
+     */
+    public function hasAuthConfig(string $name): bool
+    {
+        return file_exists($this->getFilename($name));
+    }
+
+    /**
+     * Get an auth configuration, or a default when its file does not exist.
+     *
+     * A file that exists but has no usable content still throws: that is a mistake, not
+     * an integration that is left out.
+     *
+     * @param string $name    The name of the auth configuration
+     * @param mixed  $default The value to return when the file does not exist
+     *
+     * @return mixed The auth configuration, or the default
+     *
+     * @throws \RuntimeException If the auth configuration is invalid
+     */
+    public function getAuthConfigOrDefault(string $name, mixed $default): mixed
+    {
+        if (!$this->hasAuthConfig($name))
+        {
+            return $default;
+        }
+
+        return $this->getAuthConfig($name);
+    }
+
+    private function getFilename(string $name): string
+    {
+        return "{$this->runtimeEnvironment->getAppDir()}{$this->authDir}/{$name}.php";
+    }
+
+    /**
      * Load a configuration file.
      *
      * @param string $name The name of the configuration file to load
      *
      * @return array<mixed>|string The loaded configuration
      *
-     * @throws \RuntimeException If the configuration file doesn't exist
+     * @throws MissingAuthConfigException If the configuration file doesn't exist
      */
     private function loadFile(string $name): array|string
     {
-        $filename = "{$this->runtimeEnvironment->getAppDir()}{$this->authDir}/{$name}.php";
-
-        if (!file_exists($filename))
+        if (!$this->hasAuthConfig($name))
         {
-            throw new \RuntimeException("Auth Config {$name} does not exist");
+            throw new MissingAuthConfigException($name);
         }
 
-        return require $filename;
+        // In a scope of its own: a file that is required can change the variables of the
+        // code that requires it
+        //
+        return (static function (string $authConfigFilename): mixed {
+            return require $authConfigFilename;
+        })($this->getFilename($name));
     }
 }
